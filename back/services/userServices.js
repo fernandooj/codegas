@@ -20,16 +20,16 @@ class userServices {
 	create(user, token, callback){ 
 		let fecha2 = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
 		var newUsuario = new User() 
-		// newUsuario.razon_social	=  user.razon_social,
-		// newUsuario.cedula		=  user.cedula,
-		// newUsuario.direccion	=  user.direccion,
-		// newUsuario.tipo			=  user.tipo,
-		
-		
+		newUsuario.razon_social	=  user.razon_social,
+		newUsuario.cedula		=  user.cedula,
+		newUsuario.direccion	=  user.direccion,
+		newUsuario.tipo			=  user.tipo,		
+		newUsuario.cedula		=  user.cedula,
 		newUsuario.celular		=  user.celular,
+		newUsuario.codt		    =  user.codt,
 		newUsuario.nombre		=  user.nombre,
 		newUsuario.password		=  user.acceso!=="cliente" &&newUsuario.generateHash(token),
-		newUsuario.email		=  user.email.toLowerCase(),
+		newUsuario.email		=  user.email ?user.email.toLowerCase() :"",
 		newUsuario.acceso		=  user.acceso,
 		newUsuario.tokenPhone	=  user.tokenPhone,
 		newUsuario.token  		=  token,
@@ -52,6 +52,7 @@ class userServices {
 			'cedula':       user.cedula,
 			'direccion':   	user.direccion,
 			'nombre':     	user.nombre,
+			'codt':     	user.codt,
 			'celular':  	user.celular,
 			'password':  	newUsuario.generateHash(user.password),
 			'tipo':   	    user.tipo,

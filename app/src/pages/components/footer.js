@@ -19,7 +19,7 @@ export default class FooterComponent extends Component{
 	}
 	componentWillMount = async () =>{
 		const status   = await AsyncStorage.getItem('status')
-		console.log(status)
+		 
 		
 			const idUsuario = await AsyncStorage.getItem('userId')
 			const nombre    = await AsyncStorage.getItem('nombre')
@@ -62,22 +62,19 @@ export default class FooterComponent extends Component{
 	}
 	mensaje(){
 		this.setState({badgeMessage:false, badgeSocketMessage:0})
-		this.props.navigation.navigate('mensaje')
+		this.props.navigation.navigate('conversacion')
 	} 
 
 	renderFooter(){
 		const {home, titulo, navigation} = this.props
 		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, acceso, user} = this.state
-	 
 		return(
 			<View style={style.contenedorFooter}>
-				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('Home')}>
+				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>
 					<Icon name="home" style={style.icon} />
 					<Text style={style.textFooter}>Inicio</Text>
 				</TouchableOpacity>
-				{
-					acceso!=="conductor"
-					&&<TouchableOpacity style={style.subContenedorFooter} onPress={()=>this.mensaje()}>
+			 		<TouchableOpacity style={style.subContenedorFooter} onPress={()=>this.mensaje()}>
 						<Icon name="comment" style={style.icon} />
 						<Text style={style.textFooter}>Chat</Text>
 						{ 
@@ -85,14 +82,12 @@ export default class FooterComponent extends Component{
 							&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketMessage}</Text></View>
 						}
 					</TouchableOpacity>
-				}
-				{
-					acceso!=="conductor"
-					&&<TouchableOpacity style={style.subContenedorFooter2} onPress={()=>navigation.navigate('nuevo_pedido')}>
+				 
+					 <TouchableOpacity style={style.subContenedorFooter2} onPress={()=>navigation.navigate('nuevo_pedido')}>
 						<Icon name="plus-square" style={style.icon} />
 						<Text style={style.textFooter}>Nuevo pedido</Text>
 					</TouchableOpacity>
-				}
+				 
 				
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('pedido')}>
 					<Icon name="cloud-upload" style={style.icon} />

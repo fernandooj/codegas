@@ -9,11 +9,15 @@ import Icon                from 'react-native-fa-icons';
 import {Calendar}          from 'react-native-calendars';
 import { createFilter }    from 'react-native-search-filter';
 import { connect }         from "react-redux";
+import ImageProgress 	   from 'react-native-image-progress';
 import Footer              from '../components/footer'
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
 import {getUsuariosAcceso} from '../../redux/actions/usuarioActions' 
- 
-import {style} from './style'
+import TomarFoto           from "../components/tomarFoto";
+import {style}             from './style'
+
+
+
 const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidad', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado"] 
 let size  = Dimensions.get('window');
 class Pedido extends Component{
@@ -23,9 +27,9 @@ class Pedido extends Component{
         openModal:false,
         modalConductor:false,
         terminoBuscador:"",
-        kilos:"",
-        factura:"",
-        valor_unitario:"",
+        kilosTexto:"",
+        facturaTexto:"",
+        valor_unitarioTexto:"",
         novedad:"",
         fechasFiltro:["0","1"],
         top:new Animated.Value(size.height),
@@ -35,9 +39,14 @@ class Pedido extends Component{
     componentWillMount = async () =>{
         this.props.getPedidos()
         this.props.getUsuariosAcceso("conductor")
-        const idUsuario = await AsyncStorage.getItem('userId')
-        const acceso   	= await AsyncStorage.getItem('acceso')
-        this.setState({idUsuario, acceso})
+        try {
+            let idUsuario = await AsyncStorage.getItem('userId')
+            const acceso  = await AsyncStorage.getItem('acceso')
+            idUsuario = idUsuario ?idUsuario : "FAIL"
+            this.setState({idUsuario, acceso})
+        } catch (error) {
+            console.log(error)
+        }
     }
     componentDidMount(){
         NetInfo.isConnected.addEventListener('change', this.estadoRed);
@@ -65,52 +74,64 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilo:e.kilo, valor_unitario:e.valor_unitario })
-                        :null
-                                                
+                        ?this.setState({openModal:true, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
+                        :null                               
                     }
                 >
-                    <View style={style.fechas}>
-                        <Text style={style.fechaText}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
+                    <View style={style.containerPedidos}>
+                        <Text style={style.textPedido}>{e.usuarioId.nombre}</Text>
+                        <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
+                    </View>
+                   
+                    
+                    
+                     <View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Fecha creación </Text>
+                            <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
+                        </View>
                         {
                             e.fechaEntrega
-                            &&<Text style={style.fechaText}>{moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD ")}</Text>
+                            && <View style={style.containerPedidos}>
+                                <Text style={style.textPedido}>Fecha Asignacion </Text>
+                                <Text style={style.textPedido}>{moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD ")}</Text>
+                            </View>
                         }
-                    </View>
-                    <View style={style.pedido}>
-                        <View style={style.columna1}>
-                            <Text style={style.text}>{e.forma}</Text>
-                            <Text style={style.text}>{e.cantidad ?e.cantidad :""}</Text>
-                        </View>
-                        <View style={style.columna1}>
-                            <Text style={style.text}>{e.usuarioId.nombre}</Text>
-                            <Text style={style.text}>{e.usuarioId.cedula}</Text>
+                     
+                   
+                        <View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>{e.forma}</Text>
+                            <Text style={style.textPedido}>{e.cantidad ?e.cantidad :""}</Text>
                         </View>
                         {
                             e.conductorId
-                            ?<View style={style.columna1}>
+                            &&<View style={style.containerPedidos}>
+                                <Text style={style.textPedido}>Conductor Asignado</Text>
                                 <Text style={style.text}>{e.conductorId.nombre}</Text>
                                 <Text style={style.text}>{e.conductorId.cedula}</Text>
                             </View>
-                            :<View style={style.columna1}>
-                                <Text style={style.text}>Sin conductor asignado</Text>
-                            </View>
                         }
-                    
-                        <View style={style.columna2}>
                         {
-                            e.estado=="activo"
-                            ?<Icon name="check" style={style.icon} />
-                            :e.estado=="innactivo"
-                            ?<Icon name="ban" style={style.icon} />
-                            :<Icon name="pause" style={style.icon} />
+                            e.factura
+                            &&<View style={style.containerPedidos}>
+                                    <Text style={style.textPedido}>Factura N</Text>
+                                    <Text>{e.factura}</Text>
+                                </View>
                         }
+                        <View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Estado</Text>
+                            {
+                                e.estado=="activo" &&!e.entregado
+                                ?<Text>Activo</Text>
+                                :e.estado=="innactivo"
+                                ?<Text>In Activo</Text>
+                                :e.estado=="innactivo"
+                                ?<Text>Espera</Text>
+                                :e.estado=="activo" &&e.entregado
+                                ?<Text>Entregado</Text>
+                                :null
+                            }
+                             
                         </View>
-                    </View>
-                    {
-                        e.entregado
-                        &&<Text>Entregado</Text>
-                    }
                 </TouchableOpacity>
             )
         })
@@ -133,8 +154,8 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
-        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilos, factura, valor_unitario, height, keyboard, entregado } = this.state
-         
+        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario } = this.state
+        console.log({imagenPedido})
         return <Modal transparent visible={openModal} animationType="fade" >
                 <KeyboardListener
                     onWillShow={() => { this.setState({ keyboard: true }); }}
@@ -142,7 +163,7 @@ class Pedido extends Component{
                 />
             <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  openModal: false }) }} >   
                 <View style={size.height<height ?style.contenedorModal :style.contenedorModal2}>
-                    <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:-280}]}>
+                    <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-500: -180}]}>
                         <ScrollView onContentSizeChange={(height) => { this.setState({height}) }}  keyboardDismissMode="on-drag">
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
                                 <Icon name={'times-circle'} style={style.iconCerrar} />
@@ -154,7 +175,7 @@ class Pedido extends Component{
                             
                             {/* CAMBIAR ESTADO */}
                             {
-                                acceso=="admin" || acceso=="despacho"
+                                acceso=="admin" || acceso=="solucion"
                                 ?<View style={style.contenedorEspera}>
                                     <View style={style.separador}></View>
                                     <Text style={style.tituloModal}>Estado</Text>
@@ -170,7 +191,7 @@ class Pedido extends Component{
                                         <Text style={style.textoEspera}>Espera</Text>
                                         {estado=="espera" &&<Icon name="check" style={style.iconEditar} />}
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                                    <TouchableOpacity style={style.btnGuardar2} onPress={()=>this.handleSubmit()}>
                                         <Text style={style.textGuardar}>Cambiar Estado</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -178,22 +199,20 @@ class Pedido extends Component{
                             }
                             {/* ASIGNAR USUARIOS TIPO  */}
                             {
-                                acceso=="admin" || acceso=="despacho"
+                                (acceso=="admin" || acceso=="despacho") && estado=="activo"
                                 ?<View>
                                     <View style={style.separador}></View>
                                     <Text style={style.tituloModal}>Asignar conductor y fecha</Text>
-                                    <View style={{alignItems:"center"}}>
-                                        <TouchableOpacity style={[style.btnGuardar, {flexDirection:"row"}]} onPress={()=>this.setState({modalConductor:true})}>
-                                            <Text style={style.textGuardar}>Asignar</Text>
-                                            <Icon name="user" style={style.iconBtnGuardar} />
-                                        </TouchableOpacity>   
-                                    </View>
+                                    <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row"}]} onPress={()=>this.setState({modalConductor:true})}>
+                                        <Text style={style.textGuardar}>Asignar</Text>
+                                        <Icon name="user" style={style.iconBtnGuardar} />
+                                    </TouchableOpacity>   
                                 </View>
                                 :null
                             }
                             {/* CERRAR PEDIDO  */}
                             {
-                                acceso=="admin" || acceso=="conductor"
+                                (acceso=="admin" || acceso=="conductor") && fechaEntrega
                                 ?<View>
                                     {
                                         entregado
@@ -201,40 +220,62 @@ class Pedido extends Component{
                                             <View style={style.separador}></View>
                                             <Text style={style.tituloModal}>Pedido Cerrado</Text>
                                             <View style={style.pedido}>
-                                                <Text>Kilo</Text>
+                                            <ImageProgress 
+                                                resizeMode="cover" 
+                                                renderError={ (err) => { return (<ImageProgress source={require('../../assets/img/filtro.png')} imageStyle={{height: 40, width: 40, borderRadius: 10, left:-30, top:5}}  />) }} 
+                                                source={{ uri:  imagenPedido}} 
+                                                indicator={{
+                                                    size: 20, 
+                                                    borderWidth: 0,
+                                                    color: '#ffffff',
+                                                    unfilledColor: '#ffffff'
+                                                    }} 
+                                                style={style.imagen}
+                                            />
+                                            </View>
+                                            <View style={style.pedido}>
+                                                <Text>Kilos: </Text>
                                                 <Text>{kilos}</Text>
                                             </View>
                                             <View style={style.pedido}>
-                                                <Text>Factura</Text>
+                                                <Text>Factura: </Text>
                                                 <Text>{factura}</Text>
                                             </View>
                                             <View style={style.pedido}>
-                                                <Text>Valor unitario</Text>
+                                                <Text>Valor unitario: </Text>
                                                 <Text>{valor_unitario}</Text>
                                             </View>
                                         </View>
-                                        :<View>
+                                        :<View style={style.contenedorCerrarPedido}>
                                             <View style={style.separador}></View>
                                             <Text style={style.tituloModal}>Cerrar Pedido</Text>
+                                            <TomarFoto 
+                                                source={avatar}
+                                                
+                                                limiteImagenes={1}
+                                                imagenes={(imagen) => {  this.setState({imagen}) }}
+                                            /> 
                                             <TextInput
                                                 placeholder="N Kilos"
                                                 autoCapitalize = 'none'
-                                                onChangeText={(kilos)=> this.setState({ kilos: kilos })}
-                                                value={kilos}
+                                                onChangeText={(kilosTexto)=> this.setState({ kilosTexto })}
+                                                value={kilosTexto}
+                                                keyboardType='numeric'
                                                 style={[style.inputTerminarPedido, {marginTop:20}]}
                                             />
                                             <TextInput
                                                 placeholder="N Factura"
                                                 autoCapitalize = 'none'
-                                                onChangeText={(factura)=> this.setState({ factura: factura })}
-                                                value={factura}
+                                                onChangeText={(facturaTexto)=> this.setState({ facturaTexto })}
+                                                value={facturaTexto}
                                                 style={style.inputTerminarPedido}
                                             />
                                             <TextInput
                                                 placeholder="Valor Unitario"
                                                 autoCapitalize = 'none'
-                                                onChangeText={(valor_unitario)=> this.setState({ valor_unitario: valor_unitario })}
-                                                value={valor_unitario}
+                                                keyboardType='numeric'
+                                                onChangeText={(valor_unitarioTexto)=> this.setState({ valor_unitarioTexto })}
+                                                value={valor_unitarioTexto}
                                                 style={style.inputTerminarPedido}
                                             />
                                             <TextInput
@@ -248,10 +289,10 @@ class Pedido extends Component{
                                             />
                                             <View style={style.contenedorConductor}>
                                                 <TouchableOpacity 
-                                                    style={kilos.length<1 || factura.length<1 || valor_unitario.length<1  || novedad.length<1
-                                                    ?style.btnDisable2 :style.btnGuardar2} 
+                                                    style={kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1
+                                                    ?style.btnDisable3 :style.btnGuardar3} 
                                                     onPress={
-                                                        kilos.length<1 || factura.length<1 || valor_unitario.length<1  || novedad.length<1
+                                                        kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1  || novedad.length<1
                                                         ?()=>alert("llene todos los campos")
                                                         :()=>this.cerrarPedido()
                                                     }
@@ -259,7 +300,7 @@ class Pedido extends Component{
                                                     <Text style={style.textGuardar}>Cerrar Pedido</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity 
-                                                    style={ novedad.length<4 ?style.btnDisable2 :style.btnGuardar2} 
+                                                    style={ novedad.length<4 ?style.btnDisable3 :style.btnGuardar3} 
                                                     onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.asignarFecha()}>
                                                     <Text style={style.textGuardar}>Guardar novedad</Text>
                                                 </TouchableOpacity>
@@ -438,17 +479,25 @@ class Pedido extends Component{
     }
 	render(){
         const {navigation} = this.props
-	    return (
-            <View style={style.container}>
-                {this.renderCabezera()}
-                {this.renderModalFiltro()}
-                <ScrollView style={style.subContenedor}>
-                    {this.editarPedido()}
-                    {this.renderPedidos()}
-                </ScrollView>
-                <Footer navigation={navigation} />
-            </View>
-		)
+        const {idUsuario} = this.state
+        console.log(idUsuario)
+        if(!idUsuario){
+            return <ActivityIndicator color="#00218b" />
+        }else if(idUsuario=="FAIL"){
+            return (navigation.navigate("perfil"))
+        }else{
+            return (
+                <View style={style.container}>
+                    {this.renderCabezera()}
+                    {this.renderModalFiltro()}
+                    <ScrollView style={style.subContenedor}>
+                        {this.editarPedido()}
+                        {this.renderPedidos()}
+                    </ScrollView>
+                    <Footer navigation={navigation} />
+                </View>
+            )    
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -510,7 +559,7 @@ class Pedido extends Component{
     ////////////////////////           CERRAR PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
-        const {novedad, kilos, factura, valor_unitario, id} = this.state
+        let {novedad, kilosTexto, facturaTexto, valor_unitarioTexto, id, imagen} = this.state
         Alert.alert(
             `Seguros desea cerrar este pedido`,
             '',
@@ -521,16 +570,29 @@ class Pedido extends Component{
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.post(`ped/pedido/finalizar/${id}`, {_id:id, kilos, factura, valor_unitario})
+            let data = new FormData();
+            imagen = imagen[0]
+            data.append('imagen', imagen);
+            data.append('_id', id);
+            data.append('kilos', kilosTexto);
+            data.append('factura', facturaTexto);
+            data.append('valor_unitario', valor_unitarioTexto);
+            
+            // axios.post(`ped/pedido/finalizar/${id}`, {_id:id, kilos, factura, valor_unitario})
+            axios({
+                method: 'post',  
+                url: 'ped/pedido/finalizar/${id}',
+                data: data,
+            })
             .then((res)=>{
                 if(res.data.status){
                     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
                     .then((res2)=>{
                         this.setState({openModal:false})
                         setTimeout(() => {
-                            this.props.getPedidos()
+                            alert("Pedido cerrado")
                         }, 1000);
-                        alert("Pedido cerrado")
+                        this.props.getPedidos()
                     })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)

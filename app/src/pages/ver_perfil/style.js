@@ -83,6 +83,22 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5,
         paddingLeft:10
     },
+    btnGuardar:{
+        flexDirection:"row",
+        justifyContent:"center",
+        backgroundColor:"#00218b",
+		padding:10,
+        borderRadius:5,
+        width:size.width/2,
+        left:size.width/3.5,
+        marginBottom:50
+	},
+	textGuardar:{
+		color:"#ffffff"
+	},
+	iconCargando:{
+		color:"#ffffff"
+	},
     /////////////////////////////////////////////////////////////////
     ////////////////////        PICKER
     /////////////////////////////////////////////////////////////////

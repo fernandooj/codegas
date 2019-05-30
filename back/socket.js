@@ -4,25 +4,25 @@ let io = require('socket.io')(server)
 let redis = require('redis');
 let cliente = redis.createClient()
 
-cliente.subscribe('conversacion')
+cliente.subscribe('nuevoChat')
 
  
-io.on('connection', (socket)=>{
- 	socket.on('chatConversacion', (mensaje)=>{
-		console.log('mensaje: ' + mensaje)
-		io.emit('chatConversacion', JSON.parse(mensaje))
-	})
+// io.on('connection', (socket)=>{
+//  	socket.on('nuevoChat', (mensaje)=>{
+// 		console.log('mensaje: ' + mensaje)
+// 		io.emit('nuevoChat', JSON.parse(mensaje))
+// 	})
 
-})
+// })
 
 	///////////////////// CADA VEZ QUE UN USUARIO INGRESA
 	cliente.on('message', (canal, info)=>{
-		console.log(info)
-		if (canal=='conversacion') {
+		console.log("info")
+		if (canal=='nuevoChat') {
 			console.log('+++++++++++++++')
 			let newInfo = JSON.parse(info)
 			console.log(newInfo)
-		io.emit('message'+newInfo.idUsuario, JSON.parse(info))
+			io.emit('nuevoChat', JSON.parse(info))
 		}	
 	})
 }

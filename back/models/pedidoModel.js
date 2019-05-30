@@ -3,7 +3,8 @@ let Schema   = mongoose.Schema;
 
 const Pedido = new Schema({
 	forma         :String,
-	cantidad      :Number,
+	imagen        :String,
+	cantidad      :String,
 	frecuencia    :String,
 	dia1          :String,
     dia2          :String,

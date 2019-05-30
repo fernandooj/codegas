@@ -25,6 +25,16 @@ export const style = MediaQueryStyleSheet.create({
 	text:{
 		color:"#ffffff",
 		fontSize:30
+	},
+	btnUsuariosOnline:{
+		backgroundColor:"#5cb85c",
+		padding:20,
+		borderRadius:10,
+		marginBottom:20
+	},
+	textUsuariosOnline:{
+		color:"#ffffff",
+		fontSize:22
 	}
 
 	 

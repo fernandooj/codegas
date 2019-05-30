@@ -32,9 +32,9 @@ class pedidoServices{
 			dia2       : data.dia2,
 			usuarioId,
 			usuarioCrea,
-            estado     :"espera",
-            entregado  :false,
-            eliminado  :false,
+			estado     :"espera",
+			entregado  :false,
+			eliminado  :false,
 			creado
 		})
 		newPedido.save(callback)	
@@ -44,12 +44,13 @@ class pedidoServices{
 			'estado':estado
 		}}, callback);
     }
-    finalizar(data, activo, callback){
+    finalizar(data, activo, imagen, callback){
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
 			'factura'  		:data.factura,
 			'valor_unitario':data.valor_unitario,
+			'imagen':imagen,
 		}}, callback);
     }
     eliminar(_id, eliminado, callback){

@@ -7,7 +7,7 @@ import {connect}   from 'react-redux'
  
 import Icon from 'react-native-fa-icons'; 
 import axios from 'axios'
-import FCM, { NotificationActionType } from "react-native-fcm";
+
 import CodeInput from 'react-native-confirmation-code-input';
  
  
@@ -30,10 +30,7 @@ const {
 	}
 	async componentWillMount(){
 		GoogleSignin.configure()
-		FCM.getFCMToken().then(tokenPhone => {
-		console.log("TOKEN (getFCMToken)", tokenPhone);
-			this.setState({ tokenPhone: tokenPhone || "" });
-		});
+		
 	}
 	 
 	 

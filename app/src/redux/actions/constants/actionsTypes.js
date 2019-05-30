@@ -20,3 +20,22 @@ export const CAMBIAR_CONTRASENA   = "CAMBIAR_CONTRASENA";
 export const GET_PEDIDO  = "GET_PEDIDO";
 export const GET_PEDIDOS = "GET_PEDIDOS";
 
+
+///////////////////////////////////////////////////////////////////////////
+/*
+   Acciones para conversaciones
+*/
+///////////////////////////////////////////////////////////////////////////
+export const GET_CONVERSACION   = "GET_CONVERSACION";
+export const GET_CONVERSACIONES = "GET_CONVERSACIONES";
+export const GET_MENSAJES       = "GET_MENSAJES";
+
+
+
+///////////////////////////////////////////////////////////////////////////
+/*
+   Acciones para vehiculos
+*/
+///////////////////////////////////////////////////////////////////////////
+export const GET_VEHICULO  = "GET_VEHICULO";
+export const GET_VEHICULOS = "GET_VEHICULOS";

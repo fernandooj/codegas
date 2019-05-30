@@ -31,17 +31,13 @@ router.get('/byUser/:idUser', (req,res)=>{
 
 router.get('/:conversacionId', function(req,res){
 	mensajeServices.getByConversacionId(req.params.conversacionId, function(err, mensaje){
-		if (err) {
+		if (err) {	
 			res.json({ status: 'FAIL', message: err }); 
 		}else{
 			conversacionServices.getById(req.params.conversacionId, function(err, conversacion){
 				if(err){
 					res.json({ status: 'FAIL', message: err }); 
-				}else{
-					// let usuario = req.session.usuario.email==conversacion[0].userData.email ?conversacion[0].userData2.email :conversacion[0].userData.email
-					
-					 
-				 
+				}else{				 
 					res.json({ status: 'SUCCESS',   mensaje });
 				}
 			})
@@ -81,9 +77,6 @@ router.post('/:conversacionId', function(req,res){
 						})
 					}
 				})
-				
-				
-				 
 			}else{
 				res.json({ status: 'FAIL', message: err }); 
 			}

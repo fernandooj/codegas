@@ -118,7 +118,7 @@ export default class tomarPhoto extends Component{
                     imagenes.length<limiteImagenes && !source
                     &&<TouchableOpacity style={style.contenedorUploadPortada} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
                         <Icon name={'camera'} style={style.iconPortada} />
-                        <Text style={style.textPortada}> {!avatar ?"Subir Portada" :"Subir Avatar"}</Text>
+                        <Text style={style.textPortada}> {!avatar ?"Subir Factura" :"Subir Avatar"}</Text>
                         {!avatar &&<Text style={style.textPortada2}>Sube al menos 1 imagen</Text>}
                     </TouchableOpacity>
                 }

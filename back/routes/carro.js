@@ -1,0 +1,143 @@
+let express = require('express')
+let router = express.Router();
+let moment = require('moment-timezone');
+ 
+
+let carroServices = require('../services/carroServices.js') 
+ 
+ 
+
+////////////////////////////////////////////////////////////
+////////////        OBTENGO TODOS LOS carroS SI ES CLIENTE, TRAE SUS RESPECTIVOS carroS
+////////////////////////////////////////////////////////////
+router.get('/', (req,res)=>{
+    if (!req.session.usuario) {
+        res.json({ status:false, message: 'No hay un usuario logueado' }); 
+    }else{
+        carroServices.get((err, carro)=>{
+            if (!err) {
+                res.json({ status: true, carro }); 
+            }else{
+                res.json({ status:false, message: err,  carro:[] }); 
+            }
+        })
+ 
+    }
+})
+
+////////////////////////////////////////////////////////////
+////////////        OBTENGO UN CARRO POR SU ID
+////////////////////////////////////////////////////////////
+router.get('/:carroId', (req,res)=>{
+	carroServices.getByCarro(req.params.carroId, (err, carro)=>{
+		if (err) {
+			res.json({ status:false, message: err }); 
+		}else{
+			res.json({ status:true, carro });
+		}
+	})
+})
+
+///////////////////////////////////////////////////////////////
+////////////        OBTENGO UN CARRO POR UN CONDUCTOR
+//////////////////////////////////////////////////////////////
+router.get('/byConductor/:idConductor', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        carroServices.getByConductor(req.params.idConductor, (err, carro)=>{
+            if (!err) {
+                res.json({ status:true, carro }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+///////////////////////////////////////////////////////////////
+////////////      ASIGNA UN CONDUCTOR
+//////////////////////////////////////////////////////////////
+router.get('/asignarConductor/:idCarro/:idConductor', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        carroServices.asignarConductor(req.params.idCarro, req.params.idConductor, (err, carro)=>{
+            if (!err) {
+                res.json({ status:true, carro }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+
+///////////////////////////////////////////////////////////////
+////////////      DESVINCULA UN CONDUCTOR
+//////////////////////////////////////////////////////////////
+router.get('/desvincularConductor/:idCarro/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        carroServices.desvincularConductor(req.params.idCarro,  (err, carro)=>{
+            if (!err) {
+                res.json({ status:true, carro }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+///////////////////////////////////////////////////////////////
+////////////       CAMBIAR ESTADO
+//////////////////////////////////////////////////////////////
+router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        carroServices.cambiarEstado(req.params.idPedido, req.params.estado, (err, pedido)=>{
+            if (!err) {
+                res.json({ status:true, pedido }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+///////////////////////////////////////////////////////////////
+////////////      ELIMINAR
+//////////////////////////////////////////////////////////////
+router.get('/eliminar/:idPedido/:estado', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        carroServices.eliminar(req.params.idPedido, req.params.estado, (err, pedido)=>{
+            if (!err) {
+                res.json({ status:true, pedido }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+///////////////////////////////////////////////////////////////
+////////////       GUARDO UN CARRO
+//////////////////////////////////////////////////////////////
+router.post('/', (req,res)=>{
+	if (!req.session.usuario) {
+		res.json({ status: false, message: 'No hay un usuario logueado' }); 
+	}else{
+		carroServices.create(req.body, req.session.usuario._id, (err, pedido)=>{
+			if (!err) {
+                res.json({ status: true, pedido });	
+            } 
+		})
+	}
+})
+
+
+module.exports = router;

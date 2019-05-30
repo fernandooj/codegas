@@ -7,39 +7,31 @@ import axios    from 'axios'
 import Icon from 'react-native-fa-icons';
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
- 
- 
 import {style} from './style'
 
- 
-let screenWidth = Dimensions.get('window').width;
- 
- 
 class Home extends Component{
 	constructor(props) {
 	  super(props);
 	  this.state={
-        email:""
+        email:"",
 	  }
 	}
 	 
 	async componentWillMount(){
         try{
-            const userId = await AsyncStorage.getItem('userId')
+            const userId    = await AsyncStorage.getItem('userId')
             const nombre    = await AsyncStorage.getItem('nombre')
             const email 	= await AsyncStorage.getItem('email')
             const avatar    = await AsyncStorage.getItem('avatar')
             const acceso    = await AsyncStorage.getItem('acceso')
-          
             userId ?this.setState({userId, nombre, email, avatar, acceso}) :null
         }catch(e){
             console.log(e)
         }
-        
 	}
 	 
 	iniciarSesion(){
-        const {email2, password2} = this.state
+        const {email2, password2, cargando} = this.state
         return (
             <ScrollView style={style.containerRegistro}>
                 <View style={style.subContainerRegistro}>
@@ -60,7 +52,8 @@ class Home extends Component{
                         value={password2}
                     />
                      <TouchableOpacity style={style.btnGuardar} onPress={()=>this.login()}>
-                        <Text style={style.textGuardar}>Iniciar Sesion</Text>
+                        {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
+                        <Text style={style.textGuardar}>{cargando ?"Cargando" :"Iniciar Sesión"}</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -89,7 +82,7 @@ class Home extends Component{
     }
     renderPerfil(){
         const {navigation} = this.props
-        const {nombre, idUsuario, avatar, email, tipo, acceso} = this.state
+        const {nombre, idUsuario, avatar, email, err, acceso} = this.state
         console.log(avatar)
         return (
             <View style={style.containerRegistro}>
@@ -119,18 +112,28 @@ class Home extends Component{
                             <Icon name={'plus'} style={style.icon} />
                         </TouchableOpacity>
                     }
-                     {
+                    {
                         acceso=="solucion"
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"solucion"})} >
                             <Text style={style.txtLista}>Crear Cliente</Text> 
                             <Icon name={'plus'} style={style.icon} />
                         </TouchableOpacity>
                     }
+                    {
+                        (acceso=="admin" || acceso=="despacho")
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("vehiculo", {tipoAcceso:"admin"})} >
+                            <Text style={style.txtLista}>Vehiculos</Text> 
+                            <Icon name={'car'} style={style.icon} />
+                        </TouchableOpacity>
+                    }
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
                         <Text style={style.txtLista}>Cerrar Sesion</Text> 
                         <Icon name={'sign-out'} style={style.icon} />
                     </TouchableOpacity> 
-
+                    {
+                        err
+                        &&<Text>{err}</Text>
+                    }
                 </View>
             </View>  
             
@@ -167,13 +170,20 @@ class Home extends Component{
         })
     }
     async login(){
+        this.setState({cargando:true})
         const {email2, password2} = this.state
         axios.post("user/login", {email:email2, password:password2})
         .then(res=>{
-            res.data.status ?this.loginExitoso(res.data.user) :Toast.show("Datos Incorrectos")
+            if(res.data.status){
+                this.loginExitoso(res.data.user)
+            }else{
+                this.setState({cargando:false})
+                Toast.show("Datos Incorrectos")
+            }
         })
         .catch(err=>{
             console.log(err)
+            this.setState({cargando:false})
         })
     }
     async loginExitoso(user){
@@ -183,7 +193,7 @@ class Home extends Component{
         AsyncStorage.setItem('email',  user.email)
         AsyncStorage.setItem('acceso', user.acceso)
         AsyncStorage.setItem('avatar', user.avatar ?user.avatar :"null")
-        this.setState({userId:user._id, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
+        this.setState({userId:user._id, cargando:false, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
         // this.props.navigation.navigate("Home")
     }
     cerrarSesion(){
@@ -191,10 +201,11 @@ class Home extends Component{
         .then(res => {
             this.setState({userId:null, email:"", password:"", email2:"", password2:""})
             AsyncStorage.removeItem('userId')
+            AsyncStorage.removeItem('acceso')
             AsyncStorage.removeItem('avatar')
         })
         .catch(err => {
-            loginFailure(err);
+            this.setState({err})
         });
     }	 
 }

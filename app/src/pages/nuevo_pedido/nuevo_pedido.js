@@ -73,19 +73,32 @@ class Nuevo_pedido extends Component{
 		inicio:0,
 		final:7,
         categoriaUser:[],
+        clientes:[],
         modalCliente:false
 	  }
 	}
 	 
 	async componentWillMount(){
-        this.props.getUsuariosAcceso("cliente")
-        const idUsuario = await AsyncStorage.getItem('userId')
+        axios
+        .get(`users/acceso/cliente`)
+        .then(res => {
+            if(res.data.status){
+                let clientes = res.data.usuarios.map(e=>{
+                    return {key:e._id, label:e.nombre+" -" +e.cedula, email:e.email}
+                }) 
+                this.setState({clientes})
+            }
+        })
+        let idUsuario = await AsyncStorage.getItem('userId')
         const acceso   	= await AsyncStorage.getItem('acceso')
         const email   	= await AsyncStorage.getItem('email')
+        idUsuario = idUsuario ?idUsuario : "FAIL"
         this.setState({idUsuario, acceso, email})
-	}
+       
+    }
+   
 	renderPedido(){
-        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia, dia2, franja, idCliente} = this.state
+        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, franja, idCliente} = this.state
         return(
             <KeyboardAwareScrollView style={style.containerNuevo}>
                 <View style={style.subContainerNuevo}>
@@ -183,8 +196,8 @@ class Nuevo_pedido extends Component{
                                         style={style.btnFrecuencia}
                                         data={diasN.slice(0,15)}
                                         initValue={"Dia 1"}
-                                        onChange={(option)=>{ this.setState({dia:option.key}) }} 
-                                        selectStyle={!dia &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
+                                        onChange={(option)=>{ this.setState({dia1:option.key}) }} 
+                                        selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                     />
                                     <ModalSelector
                                         style={style.btnFrecuencia}
@@ -196,7 +209,7 @@ class Nuevo_pedido extends Component{
                                 </View>
                                 :null
                             }
-                            {
+                            {/* {
                                 frecuencia
                                 &&<ModalSelector
                                     style={style.btnFrecuencia}
@@ -205,7 +218,7 @@ class Nuevo_pedido extends Component{
                                     onChange={(option)=>{ this.setState({franja:option.key}) }} 
                                     selectStyle={!franja &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                 />
-                            }
+                            } */}
                         </View>
                     }
                     {
@@ -227,11 +240,12 @@ class Nuevo_pedido extends Component{
        
     }
     filtroClientes(idCliente){
-		let cliente = this.props.clientes.filter(e=>{ return e.key==idCliente })
+		let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
 		this.setState({cliente:cliente[0].label, idCliente, emailCliente:cliente[0].email, modalCliente:false})
 	}
     renderCliente(){
-        const {idCliente, modalCliente, cliente} = this.state
+        const {idCliente, modalCliente, cliente, clientes} = this.state
+        console.log(clientes)
 		return (
 			<View>
 				<ModalFilterPicker
@@ -239,9 +253,7 @@ class Nuevo_pedido extends Component{
 					visible={modalCliente}
 					onSelect={(e)=>this.filtroClientes(e)}
 					onCancel={()=>this.setState({modalCliente:false})}
-					options={this.props.clientes}
-					// noResultsText="Crear Titulo"
-					// crearTitulo={(titulo)=>this.setState({titulo, showTitulo:false})}
+					options={clientes}
                 />
                 {
                     idCliente
@@ -261,15 +273,22 @@ class Nuevo_pedido extends Component{
 	}	
 	render(){
         const {navigation} = this.props
-	    return (
-				<View style={style.container}>
-					<ScrollView>
+        const {idUsuario} = this.state
+        if(!idUsuario){
+            return <ActivityIndicator color="#00218b" />
+        }else if(idUsuario=="FAIL"){
+            return (navigation.navigate("perfil"))
+        }else{
+            return (
+                <View style={style.container}>
+                    <ScrollView>
                         {this.renderPedido()}
-                   
-					</ScrollView>
-					<Footer navigation={navigation} />
-				</View>
-		)
+                
+                    </ScrollView>
+                    <Footer navigation={navigation} />
+                </View>
+            )
+        }
 	}
     handleSubmit(){
         let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia} = this.state
@@ -292,11 +311,8 @@ class Nuevo_pedido extends Component{
 }
 
 const mapState = state => {
-    let clientes = state.usuario.usuariosAcceso.map(e=>{
-        return {key:e._id, label:e.nombre+" -" +e.cedula, email:e.email}
-    })
 	return {
-        clientes
+        
     };
 };
   

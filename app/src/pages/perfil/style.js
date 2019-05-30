@@ -28,7 +28,6 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:50,
 		color:"#00218b"
 	},
-	
 	//////////////////////////////////////////////////////////////////
     //////////////////////      CABEZERA
     //////////////////////////////////////////////////////////////////
@@ -96,11 +95,15 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom:20
 	},
 	btnGuardar:{
+		flexDirection:"row",
 		backgroundColor:"#00218b",
 		padding:10,
 		borderRadius:5
 	},
 	textGuardar:{
+		color:"#ffffff"
+	},
+	iconCargando:{
 		color:"#ffffff"
 	},
 })

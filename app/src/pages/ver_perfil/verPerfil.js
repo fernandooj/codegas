@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, Image, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView} from 'react-native'
+import {View, Text, Image, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator} from 'react-native'
 import {style}   from './style'
 import {connect} from 'react-redux' 
 import axios from "axios"
@@ -9,7 +9,7 @@ import Icon from 'react-native-fa-icons'
 import RNPickerSelect from 'react-native-picker-select';
 import Footer    from '../components/footer'
 import TomarFoto from "../components/tomarFoto";
-
+import Toast from 'react-native-simple-toast';
  
 
 class verPerfil extends Component{
@@ -26,6 +26,7 @@ class verPerfil extends Component{
         tipo:"Tipo",
         acceso:"",
         password:"",
+        codt:"",
         textGuardar:"GUARDAR",
         
 	  }
@@ -34,7 +35,12 @@ class verPerfil extends Component{
     componentWillMount(){
         console.log(this.props.navigation.state.params)
         const {params} = this.props.navigation.state
-        params.tipoAcceso ?this.setState({tipoAcceso:params.tipoAcceso}) :null
+        if(params.tipoAcceso){
+            this.setState({tipoAcceso:params.tipoAcceso})
+            params.tipoAcceso=="solucion" &&this.setState({acceso: "cliente"})
+        }else{
+          null
+        } 
         !params.tipoAcceso
         ?axios.get("user/perfil").then(e=>{
             const {user} = e.data
@@ -57,7 +63,7 @@ class verPerfil extends Component{
      
      
     renderPerfil(){
-        const {razon_social, cedula, direccion, email, nombre, celular,  tipo, acceso, tipoAcceso, avatar, showLoading, textGuardar} = this.state
+        const {razon_social, cedula, direccion, email, nombre, celular,  codt, acceso, tipoAcceso, avatar, cargando, textGuardar} = this.state
         console.log(tipoAcceso)
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:50}}>
@@ -66,9 +72,7 @@ class verPerfil extends Component{
                         source={avatar}
                         avatar
                         limiteImagenes={1}
-                        imagenes={(imagen) => {
-                            this.updateAvatar(imagen)
-                        }}
+                        imagenes={(imagen) => {  this.setState({imagen, showLoading:false}) }}
                     /> 
                 </View>
                 <Text style={{textAlign:"center"}}>{email}</Text>
@@ -122,17 +126,14 @@ class verPerfil extends Component{
                 }
 
             {/* CEDULA */}	 
-                {
-                    acceso=="cliente"
-                    &&<TextInput
-                        type='outlined'
-                        placeholder="Cedula"
-                        keyboardType='numeric'
-                        value={cedula}
-                        onChangeText={cedula => this.setState({ cedula })}
-                        style={cedula.length<3 ?[style.input, style.inputRequired] :style.input}
-                    />
-                }
+                <TextInput
+                    type='outlined'
+                    placeholder="Cedula"
+                    keyboardType='numeric'
+                    value={cedula}
+                    onChangeText={cedula => this.setState({ cedula })}
+                    style={cedula.length<3 ?[style.input, style.inputRequired] :style.input}
+                />
             {/* DIRECCION */}	
                 {
                     acceso=="cliente"
@@ -143,6 +144,18 @@ class verPerfil extends Component{
                         value={direccion}
                         onChangeText={direccion => this.setState({ direccion })}
                         style={direccion.length<3 ?[style.input, style.inputRequired] :style.input}
+                    />
+                }
+            {/* DIRECCION */}	
+            {
+                    acceso=="cliente"
+                    &&<TextInput
+                        type='outlined'
+                        placeholder="CODT"
+                        autoCapitalize = 'none'
+                        value={codt}
+                        onChangeText={codt => this.setState({ codt })}
+                        style={codt.length<3 ?[style.input, style.inputRequired] :style.input}
                     />
                 }
             {/* EMAIL */}	 
@@ -213,19 +226,23 @@ class verPerfil extends Component{
                 }
 
                 
-            {/* BOTON GUARDAR */}	     
-                <Button color="#0071bb" loading={showLoading} 
+            {/* BOTON GUARDAR */}	    
+            <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
+                <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
+            </TouchableOpacity> 
+                {/* <Button color="#0071bb" loading={showLoading} 
                     title= {textGuardar}
                     disabled={nombre.length<3  ?true :false} 
                     onPress={() => this.handleSubmit()}
-                />
+                /> */}
             </ScrollView>  
             
         )
     }
 
     renderFormPass(){
-        const {password, confirmar, showLoading} = this.state
+        const {password, confirmar, showLoading, cargando} = this.state
         return <View>
                     <Text style={style.tituloContrasena}>Inserta tu contraseña</Text>
                         <TextInput
@@ -246,12 +263,15 @@ class verPerfil extends Component{
                             style={style.input}
                             secureTextEntry={true}
                         />
-                    <Button color="#0071bb" loading={showLoading} 
+                    {/* <Button color="#0071bb" loading={showLoading} 
                         title="Guardar"
                         disabled={ password!==confirmar ?true :false} 
                         onPress={() => this.savePassword()}
-                    />
-                       
+                    /> */}
+                    <TouchableOpacity style={style.btnGuardar} onPress={()=>this.savePassword()}>
+                        {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
+                        <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
+                    </TouchableOpacity>
                     {
                         password!==confirmar
                         &&<Button 
@@ -281,24 +301,30 @@ class verPerfil extends Component{
     ///////////////////////////////////////////////////////////////
     //////////////          ACTUALIZA EL AVATAR
     ///////////////////////////////////////////////////////////////
-    updateAvatar(imagen){
-        if(imagen.length>0){
-            this.setState({showLoading:true})
-            let data = new FormData();
-            imagen = imagen[0]
-            data.append('imagen', imagen);
-            axios({
-                method: 'post',  
-                url: 'user/avatar',
-                data: data,
-            })
-            .then((res)=>{
-                res.data.status=="SUCCESS" &&this.setState({showLoading:false})
-            })
-            .catch(err=>{
-                this.setState({showLoading:false})
-            })
-        }  
+    avatar(imagen, idUser){
+        console.log({imagen, idUser})
+        this.setState({showLoading:true})
+        let data = new FormData();
+        imagen = imagen[0]
+        data.append('imagen', imagen);
+        data.append('imagenOtroUsuario', true);
+        data.append('idUser', idUser);
+        axios({
+            method: 'post',  
+            url: 'user/avatar',
+            data: data,
+        })
+        .then((res)=>{
+            console.log(res.data)
+            if(res.data.status){
+                alert("Usuario guardado con exito")
+                this.props.navigation.navigate("perfil")
+            }
+            // res.data.status=="SUCCESS" &&this.setState({showLoading:false})
+        })
+        .catch(err=>{
+            this.setState({cargando:false})
+        })
     }
 
     ///////////////////////////////////////////////////////////////
@@ -313,18 +339,29 @@ class verPerfil extends Component{
     ///////////////////////////////////////////////////////////////
     //////////////          EDITA EL PERFIL
     ///////////////////////////////////////////////////////////////
-    async handleSubmit(e){
-        // this.setState({showLoading:true, textGuardar:"GUARDANDO..."})
-        const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso} = this.state
+    handleSubmit(e){
+        this.setState({cargando:true})
+        const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
         
-        console.log({razon_social, cedula, ubicacion, direccion, nombre, email,  celular, tipo, acceso})
-        axios.post("user/sign_up", {razon_social, cedula, ubicacion, direccion, nombre, email, celular, tipo, acceso})
+        console.log({razon_social, cedula, ubicacion, direccion, nombre, email,  celular, tipo, acceso, codt})
+        axios.post("user/sign_up", {razon_social, cedula, ubicacion, direccion, nombre, email, celular, tipo, acceso, codt})
         .then(e=>{
             console.log(e.data)
-            // e.data.status ?this.props.navigation.navigate("Home") :Toast.show("Tenemos un problema, intentelo mas tarde")
+            if(e.data.status){
+                if(acceso=="cliente") {
+                    alert("Usuario guardado con exito")
+                    this.props.navigation.navigate("perfil")
+                }else{
+                    this.avatar(imagen, e.data.user._id)
+                } 
+            }else{
+                Toast.show("Este email ya existe")
+                this.setState({cargando:false})
+            }
         })
         .catch(err=>{
             console.log(err)
+            this.setState({cargando:false})
         })
     }	 
 }

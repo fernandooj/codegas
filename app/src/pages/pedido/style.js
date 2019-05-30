@@ -25,9 +25,7 @@ export const style = MediaQueryStyleSheet.create({
 		borderWidth:1,
 		padding:10
 	},
-	pedido:{
-		flexDirection:"row",
-	},
+ 
 	icon:{
 		color:"#ffffff",
 	},
@@ -47,13 +45,16 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom:5,
 		paddingBottom:5
 	},
-	fechaText:{
-		alignItems:"center",
-		textAlign:"center",
-		width:"50%"
+	containerPedidos:{
+		flexDirection:"row"
 	},
-
-	
+	textPedido:{
+		width:"40%"
+	},	
+	imagen:{
+		width:size.width-40,
+		height:300
+	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				MODAL FILTRO
 	//////////////////////////////////////////////////////////////////
@@ -218,16 +219,36 @@ export const style = MediaQueryStyleSheet.create({
 	btnGuardar2:{
 		backgroundColor: "#00218b",
 		paddingVertical:8,
-		width:"42%",
+		width:size.width-150,
 		marginVertical:20,
-		marginLeft:15
+		left:size.width/10,
+		justifyContent:"center"
 	},
 	btnDisable2:{
 		backgroundColor:"grey",
 		paddingVertical:8,
-		width:"42%",
+		width:size.width-150,
 		marginVertical:20,
-		marginLeft:15
+		left:size.width/10,
+		justifyContent:"center"
+	},
+	btnGuardar3:{
+		backgroundColor: "#00218b",
+		paddingVertical:8,
+		width:size.width/2.6,
+		marginVertical:20,
+		left:0,
+		marginHorizontal:10,
+		justifyContent:"center"
+	},
+	btnDisable3:{
+		backgroundColor:"grey",
+		paddingVertical:8,
+		width:size.width/2.6,
+		marginVertical:20,
+		left:0,
+		marginHorizontal:10,
+		justifyContent:"center"
 	},
 	textGuardar:{
 		color:"white",
@@ -245,7 +266,8 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop:15,
 		borderWidth:1,
 		height:120,
-		padding:10
+		padding:10,
+		width:size.width-30
 	},
 	inputTerminarPedido:{
 		width:size.width-30,

@@ -7,14 +7,13 @@ let Schema   = mongoose.Schema;
 //////////////////////////////////////////////////////////////////////////////
 ////////***********     creo el esquema / ciudad        ****//////////////
 //////////////////////////////////////////////////////////////////////////////
-let Conversacion = new Schema({
+let Carro = new Schema({
 	creado: 	Number,
-	celular: 	String,
-	nombre: 	String,
-	tokenPhone: String,
+	placa: 	    String,
 	activo:     {type:Boolean, default:true},
-	usuarioId1: {type: Schema.ObjectId, ref:'User'},
-	usuarioId2: {type: Schema.ObjectId, ref:'User'},
+	eliminado:  {type:Boolean, default:false},
+	conductor:  {type: Schema.ObjectId, ref:'User'},
+	usuarioCrea:{type: Schema.ObjectId, ref:'User'},
 })
 
-module.exports = mongoose.model('Conversacion', Conversacion)
+module.exports = mongoose.model('Carro', Carro)

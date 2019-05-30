@@ -1,40 +1,33 @@
 import React, {Component} from 'react'
 import {View, Text, TextInput, KeyboardAvoidingView, ScrollView, TouchableOpacity, Platform, Image} from 'react-native'
-import {style}   from './style'
-import {connect} from 'react-redux' 
-import axios     from 'axios' 
-import Icon      from 'react-native-fa-icons' 
-import Spinner   from 'react-native-spinkit' 
-// import { getMensaje } from "../../redux/actions/conversacionActions";
-import {sendRemoteNotification} from '../push/envioNotificacion';
-import SocketIOClient from 'socket.io-client';
-import {URL} from "../../../App"
-class Mensaje extends Component{
+import {connect} 						from 'react-redux' 
+import axios     						from 'axios' 
+import Icon 		   					from 'react-native-fa-icons' 
+import { getMensajes, getConversacion }	from "../../redux/actions/mensajeActions";
+import {sendRemoteNotification} 		from '../push/envioNotificacion';
+import SocketIOClient 					from 'socket.io-client';
+import {style}   						from './style'
+import {URL} 							from "../../../App"
+class Conversacion extends Component{
 	constructor(props) {
 	  super(props);
 	  this.state={
 		top:0,
-        bottom:0,
-        showSpin:true
+		bottom:0
 	  }
 	}
 	componentWillMount(){
-		// const {id, titulo, nombre, avatar} = this.props.navigation.state.params
-		// console.log({titulo, nombre, avatar, id})
-		// this.props.getMensaje(id)
+		const {id} = this.props.navigation.state.params
+		// const id = "5ce23cbffb113a1bd5e0dd2e"
+		console.log({id})
+		this.props.getMensajes(id)
+		this.props.getConversacion(id)
 		// this.socket = SocketIOClient(URL);
-        // this.socket.on(`chatConversacion`, 	this.reciveMensanje.bind(this));
-        setTimeout(
-            function() {
-                this.setState({showSpin:false});
-            }
-            .bind(this),
-            5000
-        );
+		// this.socket.on(`chatConversacion`, 	this.reciveMensanje.bind(this));
 	}  
-	reciveMensanje(mensaje){
-		this.props.getMensaje(this.props.navigation.state.params.id)
-	} 
+	// reciveMensanje(mensaje){
+	// 	this.props.getMensaje(this.props.navigation.state.params.id)
+	// } 
 	renderMensajes(){
 		const {usuario, mensaje} = this.props
 		console.log(mensaje)
@@ -47,18 +40,19 @@ class Mensaje extends Component{
 		})
 	}
 	renderCabezera(){
-		// const {titulo, nombre, avatar} = this.props.navigation.state.params
+		const {usuarioId1} = this.props.conversacion
+		console.log(usuarioId1)
 		return(
 			<View style={style.contenedorCabezera}>
 				<TouchableOpacity onPress={()=>this.props.navigation.navigate("conversacion")}>
 					<Icon name={'chevron-left'} style={style.iconCabezera} />
 				</TouchableOpacity>
 				<TouchableOpacity style={style.contenedorAvatar} >
-					<Image source={{uri:"https://i0.wp.com/www.winhelponline.com/blog/wp-content/uploads/2017/12/user.png?resize=256%2C256&quality=100&ssl=1"}} style={style.avatar} />
+					<Image source={{uri:usuarioId1.avatar}} style={style.avatar} />
 				</TouchableOpacity>	
 				<View>
-					<Text style={style.titulo}></Text>
-					<Text>Fernando Ortiz</Text>
+					 
+					<Text>{usuarioId1.nombre}</Text>
 				</View>
 			</View>
 		)
@@ -81,50 +75,43 @@ class Mensaje extends Component{
 		)
 	}
 	render(){
-        const {showSpin} = this.state
-        if(showSpin){
-            return (
-                <View style={style.containerSpinner}>
-                    <Spinner style={style.spinner} isVisible={true} size={100} type="Bounce" color="#00218b"/>
-                    <Text>Estamos buscando un agente</Text>
-                </View>
-            )
-        }else{
-            return (
-                <View style={style.container}>
-                      
-                    {this.renderCabezera()}
-                    {
-                        Platform.OS=='android'
-                            ?<View style={{flex:1}}>
-                                <KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={0} >
-                                    <ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
-                                        onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})} 
-                                    >
-                                    {/* { this.renderMensajes()} */}
-                                    </ScrollView> 
-                                </KeyboardAvoidingView>
-                                <View>
-                                    {this.renderFooter()}
-                                </View>
-                            </View>
-                        :<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={32}  behavior={"position"} >
-                        <ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
-                            onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})} 
-                            >
-                            {
-                                // this.renderMensajes()
-                            }
-                        </ScrollView> 
-                        <View>
-                            {this.renderFooter()}
-                        </View>
-                            
-                        </KeyboardAvoidingView>
-                    } 
-                </View>   
-            )
-        }
+		const {keyboardOpen} = this.state
+        return (
+            <View style={style.container}>
+				 
+				{this.renderCabezera()}
+				{
+					Platform.OS=='android'
+						?<View style={{flex:1}}>
+							<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={0} >
+								<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
+									onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})} 
+								>
+								{ this.renderMensajes()}
+								</ScrollView> 
+							</KeyboardAvoidingView>
+							<View>
+								{this.renderFooter()}
+							</View>
+						</View>
+					:<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={32}  behavior={"position"} >
+					<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
+						onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})} 
+						>
+						{
+							this.renderMensajes()
+						}
+					</ScrollView> 
+					<View>
+						{this.renderFooter()}
+					</View>
+						
+					</KeyboardAvoidingView>
+				}
+					
+            </View>
+            
+        )
 	}
 	handleSubmit(){
 		this.setState({showSpin:true})
@@ -133,7 +120,6 @@ class Mensaje extends Component{
 		const {mensaje} = this.state
 		const Fullmensaje = {
 			mensaje: mensaje, 
-			avatar: avatar,
 			username:username,
 			nombre:nombre,
 			conversacionId:id
@@ -157,30 +143,29 @@ class Mensaje extends Component{
 	}
 }
 const mapState = state => {
-	// let mensajes = state.conversacion.mensaje[0].mensaje.reverse()
-	// let usuario =  state.conversacion.mensaje[0].usuario
-	// let tokenPhoneFiltro = mensajes.filter(e=>{if(e.username==usuario) return e})
-	// let tokenPhone = tokenPhoneFiltro[0] ?tokenPhoneFiltro[0].tokenPhone :""
-	// console.log(state)
+	console.log(state)
 	return {
-		// mensaje:mensajes,
-		// usuario,
+		conversacion:state.mensaje.conversacion,
+		mensaje:state.mensaje.mensaje,
 		// tokenPhone
 	};
 };
   
 const mapDispatch = dispatch => {
 	return {
-		// getMensaje: (id) => {
-		// 	dispatch(getMensaje(id));
-		// },
+		getMensajes: (id) => {
+			dispatch(getMensajes(id));
+		},
+		getConversacion: (id) => {
+			dispatch(getConversacion(id));
+		},
 	};
 };
-Mensaje.defaultProps = {
+Conversacion.defaultProps = {
 	mensaje: [],
 };
  
  
  
 	   
-export default connect(mapState, mapDispatch)(Mensaje) 
+export default connect(mapState, mapDispatch)(Conversacion) 

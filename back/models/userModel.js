@@ -26,6 +26,7 @@ let UserSchema = mongoose.Schema({
 	tokenPhone:  String,
 	token:       String,
 	avatar:      String,
+	codt:      	 String,
 	activo:      Boolean,   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
 });
 
@@ -37,7 +38,11 @@ UserSchema.methods.generateHash = function(password){
 	return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null)
 }
 UserSchema.methods.validPassword = function(password) {
-    return bcrypt.compareSync(password, this.password);
+    if(this.password != null) {
+		return bcrypt.compareSync(password, this.password);
+	} else {
+		return false; 
+	}
 };
 
 
@@ -50,4 +55,4 @@ module.exports =  mongoose.model('User', UserSchema)
 // despacho
 // conductor
 // cliente
-
+// chat

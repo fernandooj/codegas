@@ -39,10 +39,11 @@
 		3A1BB90CF0EE47FCBE13239A /* libPods-codegas.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0B94E79F64A5AAA6EE0B2A2 /* libPods-codegas.a */; };
 		665E985756C7434DABCB67AC /* libLRDRCTSimpleToast.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D44D9991C2C14124809F4106 /* libLRDRCTSimpleToast.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
-		AD2192B82276B0ED00BAA20D /* libRNFIRMessaging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD2192B72276B0D500BAA20D /* libRNFIRMessaging.a */; };
+		AD19418D2299C0EA00915392 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
+		AD1941972299C4FF00915392 /* libRNGestureHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD1941942299C4F300915392 /* libRNGestureHandler.a */; };
 		AD2192EF2276B85400BAA20D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD2192EE2276B85300BAA20D /* GoogleService-Info.plist */; };
+		AD270EC0229F8DCC0064E705 /* libRNFIRMessaging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD270EBF229F8DA90064E705 /* libRNFIRMessaging.a */; };
 		ADB9474C2278681500D3E975 /* libRNSpinkit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADB94749227867EA00D3E975 /* libRNSpinkit.a */; };
-		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		C96FABA0EB0A482AB5673048 /* libRNFirebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CB54AC96A1984D03B02CDB88 /* libRNFirebase.a */; };
 		D2985169CEBE4A67BC028201 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8D688C723B5C42559CA58ADB /* FontAwesome.ttf */; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
@@ -288,9 +289,23 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
-		AD2192B62276B0D500BAA20D /* PBXContainerItemProxy */ = {
+		AD1941932299C4F300915392 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = AD21928C2276B0D500BAA20D /* RNFIRMessaging.xcodeproj */;
+			containerPortal = AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = RNGestureHandler;
+		};
+		AD1941952299C4F300915392 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B5C32A36220C603B000FFB8D;
+			remoteInfo = "RNGestureHandler-tvOS";
+		};
+		AD270EBE229F8DA90064E705 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AD270EBA229F8DA80064E705 /* RNFIRMessaging.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 134814201AA4EA6300B7C361;
 			remoteInfo = RNFIRMessaging;
@@ -391,8 +406,9 @@
 		907260EEBA111558CA1BDBA1 /* Pods-codegas.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-codegas.release.xcconfig"; path = "Target Support Files/Pods-codegas/Pods-codegas.release.xcconfig"; sourceTree = "<group>"; };
 		9D596AA430674DB9BAA622D5 /* LRDRCTSimpleToast.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = LRDRCTSimpleToast.xcodeproj; path = "../node_modules/react-native-simple-toast/ios/LRDRCTSimpleToast.xcodeproj"; sourceTree = "<group>"; };
 		A24D2DB1443DAA7CD1A26042 /* Pods-codegas.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-codegas.debug.xcconfig"; path = "Target Support Files/Pods-codegas/Pods-codegas.debug.xcconfig"; sourceTree = "<group>"; };
-		AD21928C2276B0D500BAA20D /* RNFIRMessaging.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNFIRMessaging.xcodeproj; path = "../../../muneo/app/node_modules/react-native-fcm/ios/RNFIRMessaging.xcodeproj"; sourceTree = "<group>"; };
+		AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNGestureHandler.xcodeproj; path = "../node_modules/react-native-gesture-handler/ios/RNGestureHandler.xcodeproj"; sourceTree = "<group>"; };
 		AD2192EE2276B85300BAA20D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		AD270EBA229F8DA80064E705 /* RNFIRMessaging.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNFIRMessaging.xcodeproj; path = "../node_modules/react-native-fcm/ios/RNFIRMessaging.xcodeproj"; sourceTree = "<group>"; };
 		AD95C91A22769E54004025F8 /* codegas.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = codegas.entitlements; path = codegas/codegas.entitlements; sourceTree = "<group>"; };
 		ADB94743227867E800D3E975 /* RNSpinkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNSpinkit.xcodeproj; path = "../node_modules/react-native-spinkit/ios/RNSpinkit.xcodeproj"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
@@ -416,10 +432,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD270EC0229F8DCC0064E705 /* libRNFIRMessaging.a in Frameworks */,
+				AD1941972299C4FF00915392 /* libRNGestureHandler.a in Frameworks */,
+				AD19418D2299C0EA00915392 /* libRCTBlob.a in Frameworks */,
 				ADB9474C2278681500D3E975 /* libRNSpinkit.a in Frameworks */,
-				AD2192B82276B0ED00BAA20D /* libRNFIRMessaging.a in Frameworks */,
 				ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */,
-				ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */,
 				11D1A2F320CAFA9E000508D9 /* libRCTAnimation.a in Frameworks */,
 				146834051AC3E58100842450 /* libReact.a in Frameworks */,
 				00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */,
@@ -623,8 +640,9 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				AD270EBA229F8DA80064E705 /* RNFIRMessaging.xcodeproj */,
+				AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */,
 				ADB94743227867E800D3E975 /* RNSpinkit.xcodeproj */,
-				AD21928C2276B0D500BAA20D /* RNFIRMessaging.xcodeproj */,
 				5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */,
 				146833FF1AC3E56700842450 /* React.xcodeproj */,
 				00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */,
@@ -688,10 +706,19 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		AD21928D2276B0D500BAA20D /* Products */ = {
+		AD19418F2299C4F200915392 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AD2192B72276B0D500BAA20D /* libRNFIRMessaging.a */,
+				AD1941942299C4F300915392 /* libRNGestureHandler.a */,
+				AD1941962299C4F300915392 /* libRNGestureHandler-tvOS.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AD270EBB229F8DA80064E705 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AD270EBF229F8DA90064E705 /* libRNFIRMessaging.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -921,8 +948,12 @@
 					ProjectRef = 28F0F2430E3F48AC9B1BF1D8 /* RNFirebase.xcodeproj */;
 				},
 				{
-					ProductGroup = AD21928D2276B0D500BAA20D /* Products */;
-					ProjectRef = AD21928C2276B0D500BAA20D /* RNFIRMessaging.xcodeproj */;
+					ProductGroup = AD270EBB229F8DA80064E705 /* Products */;
+					ProjectRef = AD270EBA229F8DA80064E705 /* RNFIRMessaging.xcodeproj */;
+				},
+				{
+					ProductGroup = AD19418F2299C4F200915392 /* Products */;
+					ProjectRef = AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */;
 				},
 				{
 					ProductGroup = ADB94744227867E800D3E975 /* Products */;
@@ -1164,11 +1195,25 @@
 			remoteRef = 832341B41AAA6A8300B99B32 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		AD2192B72276B0D500BAA20D /* libRNFIRMessaging.a */ = {
+		AD1941942299C4F300915392 /* libRNGestureHandler.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNGestureHandler.a;
+			remoteRef = AD1941932299C4F300915392 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AD1941962299C4F300915392 /* libRNGestureHandler-tvOS.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libRNGestureHandler-tvOS.a";
+			remoteRef = AD1941952299C4F300915392 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AD270EBF229F8DA90064E705 /* libRNFIRMessaging.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libRNFIRMessaging.a;
-			remoteRef = AD2192B62276B0D500BAA20D /* PBXContainerItemProxy */;
+			remoteRef = AD270EBE229F8DA90064E705 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		AD8A6432227693E9009B5180 /* libjsi.a */ = {

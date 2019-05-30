@@ -81,9 +81,6 @@ export const style = MediaQueryStyleSheet.create({
     /////////////////////////////////////////////
     contenedorFooter:{
         flexDirection:"row",
-        // position:"absolute",
-        // bottom:0,
-        // width:"100%"
     },
     input:{
         width:"85%",

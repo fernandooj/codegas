@@ -30,7 +30,7 @@ module.exports = function(app, passport){
             let asunto = req.body.acceso=="cliente" ?"Nuevo codigo de verificación" :"Cuenta creada en Codegas"
             if (users) {
                 if(users.activo){
-                    res.json({ status: 'FAIL', message: 'este email ya existe', code:0 });            
+                    res.json({ status:false, message: 'este email ya existe', code:0 });            
                 }else{
                     userServices.modificaToken(users, token, (err2, user)=>{
                         if(!err2){
@@ -45,7 +45,7 @@ module.exports = function(app, passport){
                         return res.json({ err })
                     }else{
                         htmlTemplate(req, req.body, titulo, text1, text2, asunto)
-                        res.json({ status:true, message: 'usuario registrado', code:2, token });     
+                        res.json({ status:true, message: 'usuario registrado', user, code:2, token });     
                     }
                 })  
             }  
@@ -264,7 +264,8 @@ module.exports = function(app, passport){
             fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
             
             ///////////////////    guardo la imagen
-            userServices.avatar(req.session.usuario._id, ruta, function(err, avatar){
+            let id = req.body.imagenOtroUsuario ?req.body.idUser :req.session.usuario._id
+            userServices.avatar(id, ruta, function(err, avatar){
                 if (!err) {
                     userServices.getEmail(avatar, (err2, user)=>{
                         if(!err2){
@@ -309,11 +310,11 @@ module.exports = function(app, passport){
                 if(!err){
                     res.json({status:'SUCCESS', usuarios})
                 }else{
-                    res.json({ status: 'FAIL', err}) 
+                    res.json({ status: 'FAIL', usuarios:[], err}) 
                 }
             })
         }else{
-            res.json({ status: 'FAIL', message:'usuario no logueado'})  
+            res.json({ status: 'FAIL', message:'usuario no logueado', usuarios:[]})  
         }
     })
 

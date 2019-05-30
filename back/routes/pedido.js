@@ -1,11 +1,11 @@
 let express = require('express')
 let router = express.Router();
-let redis        = require('redis')
-let cliente      = redis.createClient()
+let fs = require('fs');
+let  moment = require('moment-timezone');
+let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 
 let pedidoServices = require('../services/pedidoServices.js') 
  
-let userServices = require('./../services/userServices.js') 
 const htmlTemplate = require('../template-email.js')
 
 ////////////////////////////////////////////////////////////
@@ -94,7 +94,9 @@ router.post('/', function(req,res){
                         
                 htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
                 res.json({ status: true, pedido });	
-            } 
+            }else{
+                console.log(err)
+            }
 		})
 	}
 })
@@ -158,7 +160,18 @@ router.post('/finalizar/:estado', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        pedidoServices.finalizar(req.body, req.params.estado, (err, pedido)=>{
+        let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+
+        ////////////////////    ruta que se va a guardar en el folder
+        let fullUrl = '../front/docs/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
+        console.log(req.files)
+        ////////////////////    ruta que se va a guardar en la base de datos
+        let ruta = req.protocol+'://'+req.get('Host') + '/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
+    
+        ///////////////////     envio la imagen al nuevo path
+        fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
+
+        pedidoServices.finalizar(req.body, req.params.estado, ruta, (err, pedido)=>{
             if (!err) {
                 res.json({ status:true, pedido }); 
             }else{
@@ -167,6 +180,8 @@ router.post('/finalizar/:estado', (req,res)=>{
         })
     }
 })
+
+ 
 
 ///////////////////////////////////////////////////////////////
 ////////////      ELIMINAR
