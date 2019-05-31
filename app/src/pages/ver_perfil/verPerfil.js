@@ -1,11 +1,9 @@
 import React, {Component} from 'react'
-import {View, Text, Image, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator} from 'react-native'
+import {View, Text, Image, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert} from 'react-native'
 import {style}   from './style'
 import {connect} from 'react-redux' 
 import axios from "axios"
-import moment from "moment" 
-import AsyncStorage from '@react-native-community/async-storage';
-import Icon from 'react-native-fa-icons' 
+ 
 import RNPickerSelect from 'react-native-picker-select';
 import Footer    from '../components/footer'
 import TomarFoto from "../components/tomarFoto";
@@ -23,17 +21,14 @@ class verPerfil extends Component{
         nombre:"",
         password:"",
         celular:"",
-        tipo:"Tipo",
-        acceso:"",
+        tipo:"",
+        acceso:"usuario",
         password:"",
         codt:"",
-        textGuardar:"GUARDAR",
-        
 	  }
     }
  
     componentWillMount(){
-        console.log(this.props.navigation.state.params)
         const {params} = this.props.navigation.state
         if(params.tipoAcceso){
             this.setState({tipoAcceso:params.tipoAcceso})
@@ -55,7 +50,6 @@ class verPerfil extends Component{
                 tipo :        user.tipo         ?user.tipo         :"",
                 acceso:       user.acceso       ?user.acceso       :"",
                 avatar:       user.avatar       ?user.avatar       :"",
-               
             })
         })
         :null
@@ -63,19 +57,12 @@ class verPerfil extends Component{
      
      
     renderPerfil(){
-        const {razon_social, cedula, direccion, email, nombre, celular,  codt, acceso, tipoAcceso, avatar, cargando, textGuardar} = this.state
-        console.log(tipoAcceso)
+        const {razon_social, cedula, direccion, email, nombre, celular,  codt, acceso, tipoAcceso, avatar, cargando} = this.state
+        console.log(acceso)
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:50}}>
-                <View>
-                    <TomarFoto 
-                        source={avatar}
-                        avatar
-                        limiteImagenes={1}
-                        imagenes={(imagen) => {  this.setState({imagen, showLoading:false}) }}
-                    /> 
-                </View>
-                <Text style={{textAlign:"center"}}>{email}</Text>
+                
+                <Text style={style.titulo}>Nuevo {acceso}</Text>
             {/* ACCESO */}	 
                 {
                     tipoAcceso=="admin"
@@ -92,12 +79,7 @@ class verPerfil extends Component{
                             {label: 'Conductor',        value: 'conductor', key: 'conductor'},
                             {label: 'Cliente',          value: 'cliente',   key: 'cliente'}
                         ]}
-                        onValueChange={value => {
-                            this.setState({
-                            acceso: value,
-                            // tipoAcceso: value,
-                            });
-                        }}
+                        onValueChange={acceso => { this.setState({ acceso,  });  }}
                         mode="dropdown"
                         style={{
                             ...style,
@@ -107,8 +89,7 @@ class verPerfil extends Component{
                             },
                         }}
                         value={acceso}
-                    />
-                     
+                    />    
                 }
                 
 
@@ -202,11 +183,7 @@ class verPerfil extends Component{
                             {label: 'Comercial', value: 'comercial',key:   'comercial'},
                             {label: 'Industrial',value: 'industrial',key:   'industrial'}
                         ]}
-                        onValueChange={value => {
-                            this.setState({
-                            tipo: value,
-                            });
-                        }}
+                        onValueChange={tipo => { this.setState({tipo}); }}
                         // onUpArrow={() => {
                         //     this.inputRefs.firstTextInput.focus();
                         // }}
@@ -224,18 +201,23 @@ class verPerfil extends Component{
                         value={this.state.tipo}
                     />
                 }
-
-                
+            {/* AVATAR */}	 
+                {
+                    acceso!=="cliente"    
+                    &&<View>
+                        <TomarFoto 
+                            source={avatar}
+                            avatar
+                            limiteImagenes={1}
+                            imagenes={(imagen) => {  this.setState({imagen, showLoading:false}) }}
+                        /> 
+                    </View>
+                }
             {/* BOTON GUARDAR */}	    
-            <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
-                {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
-                <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
-            </TouchableOpacity> 
-                {/* <Button color="#0071bb" loading={showLoading} 
-                    title= {textGuardar}
-                    disabled={nombre.length<3  ?true :false} 
-                    onPress={() => this.handleSubmit()}
-                /> */}
+                <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                    {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
+                    <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
+                </TouchableOpacity> 
             </ScrollView>  
             
         )
@@ -337,13 +319,44 @@ class verPerfil extends Component{
     }
 
     ///////////////////////////////////////////////////////////////
-    //////////////          EDITA EL PERFIL
+    //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
     ///////////////////////////////////////////////////////////////
-    handleSubmit(e){
+    handleSubmit(){
+        const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
+        console.log({razon_social, cedula, ubicacion, direccion, nombre, email,  tipo, celular, tipo, acceso, codt, imagen})
+        if(acceso=="cliente"){
+            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="" || codt==""){
+                Alert.alert(
+                    'Todos los campos son obligatorios',
+                    '',
+                    [
+                      {text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                    ],
+                    { cancelable: false }
+                )
+            }else{
+                this.guardarUsuario()
+            }
+        }else{
+            if(cedula=="" || email=="" || nombre=="" ||  celular=="" || !imagen){
+                Alert.alert(
+                    'Todos los campos son obligatorios',
+                    "",
+                    [
+                      {text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                    ],
+                    { cancelable: false }
+                )
+            }else{
+                this.guardarUsuario()
+            }
+        }
+
+    }
+    guardarUsuario(e){
         this.setState({cargando:true})
         const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
         
-        console.log({razon_social, cedula, ubicacion, direccion, nombre, email,  celular, tipo, acceso, codt})
         axios.post("user/sign_up", {razon_social, cedula, ubicacion, direccion, nombre, email, celular, tipo, acceso, codt})
         .then(e=>{
             console.log(e.data)

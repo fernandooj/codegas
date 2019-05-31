@@ -9,11 +9,12 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop:15,
     },
     titulo:{
-        fontSize:18,
-        marginTop:8,
+        textAlign:"center",
+        fontSize:20,
+        marginTop:12,
+        marginBottom:5,
         marginLeft:"6%",
     },
-    
 	btnNacimiento:{
         alignItems:"center",
         borderColor:"rgba(0,0,0,.2)",
@@ -91,7 +92,8 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5,
         width:size.width/2,
         left:size.width/3.5,
-        marginBottom:50
+        marginBottom:50,
+        marginTop:20
 	},
 	textGuardar:{
 		color:"#ffffff"

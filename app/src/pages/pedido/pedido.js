@@ -26,6 +26,7 @@ class Pedido extends Component{
 	  this.state={
         openModal:false,
         modalConductor:false,
+        modalFechaEntrega:false,
         terminoBuscador:"",
         kilosTexto:"",
         facturaTexto:"",
@@ -90,10 +91,9 @@ class Pedido extends Component{
                             <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
                         </View>
                         {
-                            e.fechaEntrega
-                            && <View style={style.containerPedidos}>
+                            <View style={style.containerPedidos}>
                                 <Text style={style.textPedido}>Fecha Asignacion </Text>
-                                <Text style={style.textPedido}>{moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD ")}</Text>
+                                <Text style={style.textPedido}>{ e.fechaEntrega ?moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD") :"sin fecha de asignación"}</Text>
                             </View>
                         }
                      
@@ -124,7 +124,7 @@ class Pedido extends Component{
                                 ?<Text>Activo</Text>
                                 :e.estado=="innactivo"
                                 ?<Text>In Activo</Text>
-                                :e.estado=="innactivo"
+                                :e.estado=="espera"
                                 ?<Text>Espera</Text>
                                 :e.estado=="activo" &&e.entregado
                                 ?<Text>Entregado</Text>
@@ -137,25 +137,56 @@ class Pedido extends Component{
         })
     }
     showModal(){
-		Animated.timing(this.state.top,{
-			toValue:0,
+        Animated.timing(this.state.top,{
+            toValue:0,
 			duration:400,
 			// easing:Easing.inOut
 		}).start()
     }
     hideModal(){
-		Animated.timing(this.state.top,{
-			toValue:size.height,
+        Animated.timing(this.state.top,{
+            toValue:size.height,
 			duration:400,
 			// easing:Easing.inOut
 		}).start()
 	}
+    modalFechaEntrega(){
+        let {modalFechaEntrega, fechaEntrega} = this.state
+        fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
+        let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
+        return(
+            <Modal transparent visible={modalFechaEntrega} animationType="fade" >
+                <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  modalFechaEntrega: false }) }} >   
+                    <View style={style.contenedorModal}>
+                        <View style={style.subContenedorModal}>
+                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalFechaEntrega:false})} style={style.btnModalClose}>
+                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                            </TouchableOpacity>
+                            <Text style={style.tituloModal}>Fecha entrega</Text>
+                            <Calendar
+                                style={style.calendar}
+                                current={fechaEntrega ?fechaEntrega :diaActual}
+                                minDate={diaActual}
+                                firstDay={1}
+                                onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
+                                markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
+                            />
+                        </View>
+                        <TouchableOpacity style={style.btnGuardar} onPress={fechaEntrega ?()=>this.asignarFecha() :null}>
+                            <Text style={style.textGuardar}>Guardar fecha</Text>
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        )
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
-        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario } = this.state
-        console.log({imagenPedido})
+        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, 
+                keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario } = this.state
+       
         return <Modal transparent visible={openModal} animationType="fade" >
                 <KeyboardListener
                     onWillShow={() => { this.setState({ keyboard: true }); }}
@@ -203,7 +234,7 @@ class Pedido extends Component{
                                 ?<View>
                                     <View style={style.separador}></View>
                                     <Text style={style.tituloModal}>Asignar conductor y fecha</Text>
-                                    <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row"}]} onPress={()=>this.setState({modalConductor:true})}>
+                                    <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row", left:45}]} onPress={()=>this.setState({modalConductor:true})}>
                                         <Text style={style.textGuardar}>Asignar</Text>
                                         <Icon name="user" style={style.iconBtnGuardar} />
                                     </TouchableOpacity>   
@@ -311,6 +342,7 @@ class Pedido extends Component{
                                 </View>
                                 :null
                             }
+                            {this.modalFechaEntrega()}
                             {this.modalConductores()}
                         </ScrollView>
                     </View>                   
@@ -400,7 +432,8 @@ class Pedido extends Component{
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LOS CONDUCTORES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     modalConductores(){
-        const {idConductor, modalConductor, showCalendar, fechaEntrega, nombreConductor} = this.state
+        let {idConductor, modalConductor, showCalendar, fechaEntrega, nombreConductor} = this.state
+        fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
         return(
             <Modal transparent visible={modalConductor} animationType="fade" >
@@ -416,21 +449,21 @@ class Pedido extends Component{
                             </TouchableOpacity>
                             <View style={style.contenedorConductor}>
                                 <Button title="Asignar conductor" disabled={!showCalendar ? true :false} onPress={()=>this.setState({showCalendar:false})} />
-                                <Button title="Asignar fecha entrega" disabled={showCalendar ? true :false}  onPress={()=>this.setState({showCalendar:true})} />
+                                <Button title="Fecha entrega" disabled={showCalendar ? true :false}  onPress={()=>this.setState({showCalendar:true})} />
                             </View>
                             {
                                 showCalendar
                                 ?<View>
                                     <Calendar
                                         style={style.calendar}
-                                        current={diaActual}
+                                        current={fechaEntrega ?fechaEntrega :diaActual}
                                         minDate={diaActual}
                                         firstDay={1}
                                         onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
                                         markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
                                     />
                                     <TouchableOpacity style={style.btnGuardar} onPress={()=>this.asignarFecha()}>
-                                        <Text style={style.textGuardar}>Asignar fecha</Text>
+                                        <Text style={style.textGuardar}>Guardar fecha</Text>
                                     </TouchableOpacity>
                                 </View>    
                                 :<View>
@@ -609,8 +642,13 @@ class Pedido extends Component{
         .then(res=>{
             console.log(res.data)
             if(res.data.status){
-                alert("Pedido actualizado")
-                this.props.getPedidos()
+                if(estado=="activo"){
+                    this.setState({modalFechaEntrega:true})
+                }else{
+                    alert("Pedido actualizado")
+                    this.props.getPedidos()
+                }
+                
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }

@@ -49,7 +49,7 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection:"row"
 	},
 	textPedido:{
-		width:"40%"
+		width:"48%"
 	},	
 	imagen:{
 		width:size.width-40,

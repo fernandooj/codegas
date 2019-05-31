@@ -49,7 +49,7 @@ import nuevoPedidoComponent	 from '../pages/nuevo_pedido/nuevo_pedido';
 // 	}
 // }
 const AppNavigator = createStackNavigator({
-	Home  		 : {screen: vehiculoComponent},
+	Home  		 : {screen: homeComponent},
 	inicio  	 : {screen: homeComponent},
 	perfil       : {screen: perfilComponent},
 	verPerfil    : {screen: verPerfilComponent},
