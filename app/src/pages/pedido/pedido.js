@@ -12,7 +12,7 @@ import { connect }         from "react-redux";
 import ImageProgress 	   from 'react-native-image-progress';
 import Footer              from '../components/footer'
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
-import {getUsuariosAcceso} from '../../redux/actions/usuarioActions' 
+import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import {sendRemoteNotification} from '../push/envioNotificacion';
 import TomarFoto           from "../components/tomarFoto";
 import {style}             from './style'
@@ -40,7 +40,7 @@ class Pedido extends Component{
 	 
     componentWillMount = async () =>{
         this.props.getPedidos()
-        this.props.getUsuariosAcceso("conductor")
+        this.props.getVehiculos()
         try {
             let idUsuario = await AsyncStorage.getItem('userId')
             const acceso  = await AsyncStorage.getItem('acceso')
@@ -59,12 +59,15 @@ class Pedido extends Component{
     renderPedidos(){
         const {acceso, terminoBuscador} = this.state
         let pedidos = this.props.pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        console.log(pedidos)
         return pedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
                     key={key}
                     style={e.estado=="espera" 
                         ?[style.pedidoBtn, {backgroundColor:"#5bc0de"}] 
+                        :e.estado=="noentregado" 
+                        ?[style.pedidoBtn, {backgroundColor:"#b5b4b4"}] 
                         :e.estado=="innactivo" 
                         ?[style.pedidoBtn, {backgroundColor:"#d9534f"}] 
                         :e.estado=="activo" && !e.entregado 
@@ -75,7 +78,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
                         :null                               
                     }
                 >
@@ -98,11 +101,11 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>{e.cantidad ?e.cantidad :""}</Text>
                     </View>
                     {
-                        e.conductorId
+                        e.carroId
                         &&<View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>Conductor Asignado</Text>
-                            <Text style={style.text}>{e.conductorId.nombre}</Text>
-                            <Text style={style.text}>{e.conductorId.cedula}</Text>
+                            <Text style={style.textPedido}>Vehiculo Asignado</Text>
+                            <Text style={style.text}>{e.carroId.placa}</Text>
+                            {/* <Text style={style.text}>{e.carroId.cedula}</Text> */}
                         </View>
                     }
                     {
@@ -123,7 +126,7 @@ class Pedido extends Component{
                             ?<Text>Espera</Text>
                             :e.estado=="activo" &&e.entregado
                             ?<Text>Entregado</Text>
-                            :null
+                            :<Text>Cerrado sin entregar</Text>
                         }
                             
                     </View>
@@ -180,7 +183,7 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
         const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, 
-                keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario } = this.state
+                keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen } = this.state
        
         return <Modal transparent visible={openModal} animationType="fade" >
                 <KeyboardListener
@@ -228,7 +231,8 @@ class Pedido extends Component{
                                 (acceso=="admin" || acceso=="despacho") && estado=="activo"
                                 ?<View>
                                     <View style={style.separador}></View>
-                                    <Text style={style.tituloModal}>Asignar conductor y fecha</Text>
+                                    <Text style={style.tituloModal}>Asignar Vehiculo y fecha</Text>
+                                    {placaPedido &&<Text style={style.tituloModal}>{placaPedido}</Text>}
                                     <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row", left:45}]} onPress={()=>this.setState({modalConductor:true})}>
                                         <Text style={style.textGuardar}>Asignar</Text>
                                         <Icon name="user" style={style.iconBtnGuardar} />
@@ -315,10 +319,10 @@ class Pedido extends Component{
                                             />
                                             <View style={style.contenedorConductor}>
                                                 <TouchableOpacity 
-                                                    style={kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1
+                                                    style={kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1 || !imagen
                                                     ?style.btnDisable3 :style.btnGuardar3} 
                                                     onPress={
-                                                        kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1  || novedad.length<1
+                                                        kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1  || novedad.length<1 || !imagen
                                                         ?()=>alert("llene todos los campos")
                                                         :()=>this.cerrarPedido()
                                                     }
@@ -327,7 +331,7 @@ class Pedido extends Component{
                                                 </TouchableOpacity>
                                                 <TouchableOpacity 
                                                     style={ novedad.length<4 ?style.btnDisable3 :style.btnGuardar3} 
-                                                    onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.asignarFecha()}>
+                                                    onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.guardarNovedad()}>
                                                     <Text style={style.textGuardar}>Guardar novedad, sin cerrar</Text>
                                                 </TouchableOpacity>
                                             </View>
@@ -338,7 +342,7 @@ class Pedido extends Component{
                                 :null
                             }
                             {this.modalFechaEntrega()}
-                            {this.modalConductores()}
+                            {this.modalVehiculos()}
                         </ScrollView>
                     </View>                   
                 </View>
@@ -426,24 +430,24 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LOS CONDUCTORES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    modalConductores(){
-        let {idConductor, modalConductor, showCalendar, fechaEntrega, nombreConductor} = this.state
+    modalVehiculos(){
+        let {idVehiculo, modalConductor, showCalendar, fechaEntrega, placa} = this.state
         fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
         return(
             <Modal transparent visible={modalConductor} animationType="fade" >
-                <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({modalConductor:false, nombreConductor:null, idConductor:null})}} > 
+                <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({modalConductor:false, placa:null, idVehiculo:null})}} > 
                     <View style={style.contenedorModal}>
                         <View style={style.subContenedorModal}>
                             <TouchableOpacity
                                 activeOpacity={1}
-                                onPress={() => {this.setState({modalConductor:false, nombreConductor:null, idConductor:null})}}
+                                onPress={() => {this.setState({modalConductor:false, placa:null, idVehiculo:null})}}
                                 style={style.btnModalConductorClose}
                             >
                                 <Icon name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
                             <View style={style.contenedorConductor}>
-                                <Button title="Asignar conductor" disabled={!showCalendar ? true :false} onPress={()=>this.setState({showCalendar:false})} />
+                                <Button title="Asignar Vehiculo" disabled={!showCalendar ? true :false} onPress={()=>this.setState({showCalendar:false})} />
                                 <Button title="Fecha entrega" disabled={showCalendar ? true :false}  onPress={()=>this.setState({showCalendar:true})} />
                             </View>
                             {
@@ -463,18 +467,19 @@ class Pedido extends Component{
                                 </View>    
                                 :<View>
                                     {
-                                        this.props.conductores.map(e=>{
+                                        this.props.vehiculos.map(e=>{
                                             return <TouchableOpacity
                                                     key={e._id}
-                                                    style={idConductor == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
-                                                    onPress={()=>this.setState({idConductor:e._id, nombreConductor:e.nombre})}
+                                                    style={idVehiculo == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
+                                                    onPress={()=>this.setState({idVehiculo:e._id, placa:e.placa})}
                                                 >
-                                                <Text style={style.conductor}>{e.nombre}</Text>       
+                                                <Text style={style.conductor}>{e.placa}</Text>       
+                                                <Text style={style.conductor}>{e.conductor ? e.conductor.nombre :""}</Text>       
                                                 <Image source={{uri:e.avatar}} style={style.avatar} />
                                             </TouchableOpacity>
                                         })
                                     }
-                                    <TouchableOpacity style={style.btnGuardar} onPress={()=>nombreConductor ?this.asignarConductor() :alert("selecciona un conductor")}>
+                                    <TouchableOpacity style={style.btnGuardar} onPress={()=>placa ?this.asignarConductor() :alert("selecciona un Vehiculo")}>
                                         <Text style={style.textGuardar}>Asignar Vehiculo</Text>
                                     </TouchableOpacity>  
                                 </View>
@@ -533,23 +538,23 @@ class Pedido extends Component{
     ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     asignarConductor(){
-        const {nombreConductor, idConductor, id} = this.state
+        const {placa, idVehiculo, id} = this.state
         Alert.alert(
-            `Seguros deseas agregar a ${nombreConductor}`,
+            `Seguros deseas agregar a ${placa}`,
             'a este pedido',
             [
               {text: 'Confirmar', onPress: () => confirmar()},
                
-              {text: 'Cancelar', onPress: () => this.setState({modalConductor:false, nombreConductor:null, idConductor:null})},
+              {text: 'Cancelar', onPress: () => this.setState({modalConductor:false, placa:null, idVehiculo:null})},
             ],
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.get(`ped/pedido/asignarConductor/${id}/${idConductor}`)
+            axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}`)
             .then((res)=>{
                 if(res.data.status){
                     this.props.getPedidos()
-                    alert("Conductor Agregado con exito")
+                    alert("Vehiculo Agregado con exito")
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                 }
@@ -568,7 +573,7 @@ class Pedido extends Component{
             [
               {text: 'Confirmar', onPress: () => confirmar()},
                
-              {text: 'Cancelar', onPress: () => this.setState({modalConductor:false, nombreConductor:null})},
+              {text: 'Cancelar', onPress: () => this.setState({modalConductor:false, placa:null})},
             ],
             {cancelable: false},
         );
@@ -578,6 +583,40 @@ class Pedido extends Component{
                 if(res.data.status){
                     alert("Fecha agregada con exito")
                     this.props.getPedidos()
+                }else{
+                    Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                }
+            })
+        }
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           GUARDAR NOVEDAD 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    guardarNovedad(){
+        let {novedad, id, tokenPhone} = this.state
+        Alert.alert(
+            `Va a finalizar este pedido`,
+            'sin exito en la entrega',
+            [
+              {text: 'Confirmar', onPress: () => confirmar()},
+              {text: 'Cancelar', onPress: () => console.log("cerrado")},
+            ],
+            {cancelable: false},
+        );
+        const confirmar =()=>{
+            axios.post('ped/pedido/novedad', {_id:id})
+            .then((res)=>{
+                console.log(res.data)
+                if(res.data.status){
+                    axios.post(`nov/novedad/`, {pedidoId:id, novedad})
+                    .then((res2)=>{
+                        this.setState({openModal:false})
+                        sendRemoteNotification(2, tokenPhone, "pedido no entregado", `${novedad}`, null, null, null )
+                        setTimeout(() => {
+                            alert("Pedido cerrado")
+                        }, 1000);
+                        this.props.getPedidos()
+                    })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                 }
@@ -660,7 +699,7 @@ class Pedido extends Component{
 const mapState = state => {
 	return {
         pedidos: state.pedido.pedidos,
-        conductores:state.usuario.usuariosAcceso
+        vehiculos:state.vehiculo.vehiculos
 	};
 };
   
@@ -669,15 +708,15 @@ const mapDispatch = dispatch => {
         getPedidos: () => {
             dispatch(getPedidos());
         },
-        getUsuariosAcceso: (acceso) => {
-            dispatch(getUsuariosAcceso(acceso));
+        getVehiculos: () => {
+            dispatch(getVehiculos());
         },
     };
 };
   
 Pedido.defaultProps = {
     pedidos:[],
-    conductores:[]
+    vehiculos:[]
 };
 
 Pedido.propTypes = {

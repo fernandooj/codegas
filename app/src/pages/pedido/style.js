@@ -286,7 +286,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	conductor:{
 		fontSize:22,
-		width:size.width-100,
+		width:120,
 		top:5
 	},
 	avatar:{

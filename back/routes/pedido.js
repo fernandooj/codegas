@@ -27,10 +27,10 @@ router.get('/', (req,res)=>{
         ?pedidoServices.get( (err, pedido)=>{
             if (!err) {
                 pedido = pedido.filter(e=>{
-                    return e.conductorId
+                    return e.carroId
                 })
                 pedido = pedido.filter(e=>{
-                    return e.conductorId._id==req.session.usuario._id
+                    return e.carroId.conductor==req.session.usuario._id
                 })
                 console.log(req.session.usuario._id)
                 res.json({ status:true, pedido }); 
@@ -102,13 +102,13 @@ router.post('/', function(req,res){
 })
 
 ///////////////////////////////////////////////////////////////
-////////////      ASIGNA UN CONDUCTOR
+////////////      ASIGNA UN VEHICULO
 //////////////////////////////////////////////////////////////
-router.get('/asignarConductor/:idPedido/:idConductor', (req,res)=>{
+router.get('/asignarConductor/:pedidoId/:carroId', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        pedidoServices.asignarConductor(req.params.idPedido, req.params.idConductor, (err, pedido)=>{
+        pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, (err, pedido)=>{
             if (!err) {
                 res.json({ status:true, pedido }); 
             }else{
@@ -187,7 +187,18 @@ router.post('/finalizar/:estado', (req,res)=>{
     }
 })
 
- 
+////////////////////////////////////////////////////////////////////////////
+////////////       GUARDAR NOVEDAD --> LO CIERRA PERO NO SE PUDO ENTREGAR
+////////////////////////////////////////////////////////////////////////////
+router.post('/novedad/', (req,res)=>{
+    pedidoServices.novedad(req.body._id, (err, pedido)=>{
+        if (!err) {
+            res.json({ status:true, pedido }); 
+        }else{
+            res.json({ status:false, message: err }); 
+        }
+    })
+})
 
 ///////////////////////////////////////////////////////////////
 ////////////      ELIMINAR

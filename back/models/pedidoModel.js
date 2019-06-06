@@ -17,7 +17,7 @@ const Pedido = new Schema({
     kilos         :Number,
     factura       :String,
     valor_unitario:Number,
-	conductorId   :{type: Schema.ObjectId, ref:'User'},
+	carroId       :{type: Schema.ObjectId, ref:'Carro'},
 	usuarioId     :{type: Schema.ObjectId, ref:'User'},
 	usuarioCrea   :{type: Schema.ObjectId, ref:'User'},
 })
@@ -35,6 +35,7 @@ module.exports = mongoose.model('Pedido', Pedido)
 // activo
 // espera
 // innactivo
+// noentregado
 
 /////////////////////////// 	FORMA   //////////////////
 // monto
