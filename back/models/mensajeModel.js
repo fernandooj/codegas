@@ -14,6 +14,8 @@ let moment   = require('moment');
 let Mensaje = new Schema({
 	mensaje: String,
 	creado: Number,
+	tipo: Number,
+	imagen: String,
 	usuarioId: {type: Schema.ObjectId, ref:'User'},
 	conversacionId: {type: Schema.ObjectId, ref:'Conversacion'},
 })
@@ -25,3 +27,7 @@ let Mensaje = new Schema({
 
 
 module.exports = mongoose.model('Mensaje', Mensaje)
+
+
+// tipo 1 ==> mensaje normal
+// tipo 2 ==> tipo imagen

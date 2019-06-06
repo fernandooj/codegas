@@ -45,17 +45,7 @@ const getMensajes = idConversacion => {
         .get(`men/mensaje/${idConversacion}`)
         .then(res => {
             console.log(res.data)
-            // let mensaje = res.data.mensaje.map((e)=>{
-            //     return {
-            //         mensajeId: e._id,
-            //         mensaje:e.mensaje,
-            //         username:e.usuarioId.username,
-            //         tokenPhone:e.usuarioId.tokenPhone,
-            //         usuarioId:e.usuarioId._id,
-            //         nombre:e.usuarioId.nombre,
-            //         avatar:e.usuarioId.avatar
-            //     }
-            // })
+ 
             dispatch({
                 type: GET_MENSAJES,
                 mensajes: res.data.mensaje

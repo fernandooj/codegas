@@ -39,10 +39,12 @@
 		3A1BB90CF0EE47FCBE13239A /* libPods-codegas.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D0B94E79F64A5AAA6EE0B2A2 /* libPods-codegas.a */; };
 		665E985756C7434DABCB67AC /* libLRDRCTSimpleToast.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D44D9991C2C14124809F4106 /* libLRDRCTSimpleToast.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
+		AD135CC822A17B530001D314 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD135C9B22A17B530001D314 /* UserNotifications.framework */; };
 		AD19418D2299C0EA00915392 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		AD1941972299C4FF00915392 /* libRNGestureHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD1941942299C4F300915392 /* libRNGestureHandler.a */; };
 		AD2192EF2276B85400BAA20D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD2192EE2276B85300BAA20D /* GoogleService-Info.plist */; };
 		AD270EC0229F8DCC0064E705 /* libRNFIRMessaging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD270EBF229F8DA90064E705 /* libRNFIRMessaging.a */; };
+		AD90A3AC22A750B5005E117B /* libFastImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD90A37F22A7509F005E117B /* libFastImage.a */; };
 		ADB9474C2278681500D3E975 /* libRNSpinkit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADB94749227867EA00D3E975 /* libRNSpinkit.a */; };
 		C96FABA0EB0A482AB5673048 /* libRNFirebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CB54AC96A1984D03B02CDB88 /* libRNFirebase.a */; };
 		D2985169CEBE4A67BC028201 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8D688C723B5C42559CA58ADB /* FontAwesome.ttf */; };
@@ -345,6 +347,13 @@
 			remoteGlobalIDString = 134814201AA4EA6300B7C361;
 			remoteInfo = RNFirebase;
 		};
+		AD90A37E22A7509F005E117B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AD90A37922A7509E005E117B /* FastImage.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A287971D1DE0C0A60081BDFA;
+			remoteInfo = FastImage;
+		};
 		ADB9474122782EF800D3E975 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9D596AA430674DB9BAA622D5 /* LRDRCTSimpleToast.xcodeproj */;
@@ -406,9 +415,11 @@
 		907260EEBA111558CA1BDBA1 /* Pods-codegas.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-codegas.release.xcconfig"; path = "Target Support Files/Pods-codegas/Pods-codegas.release.xcconfig"; sourceTree = "<group>"; };
 		9D596AA430674DB9BAA622D5 /* LRDRCTSimpleToast.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = LRDRCTSimpleToast.xcodeproj; path = "../node_modules/react-native-simple-toast/ios/LRDRCTSimpleToast.xcodeproj"; sourceTree = "<group>"; };
 		A24D2DB1443DAA7CD1A26042 /* Pods-codegas.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-codegas.debug.xcconfig"; path = "Target Support Files/Pods-codegas/Pods-codegas.debug.xcconfig"; sourceTree = "<group>"; };
+		AD135C9B22A17B530001D314 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNGestureHandler.xcodeproj; path = "../node_modules/react-native-gesture-handler/ios/RNGestureHandler.xcodeproj"; sourceTree = "<group>"; };
 		AD2192EE2276B85300BAA20D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AD270EBA229F8DA80064E705 /* RNFIRMessaging.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNFIRMessaging.xcodeproj; path = "../node_modules/react-native-fcm/ios/RNFIRMessaging.xcodeproj"; sourceTree = "<group>"; };
+		AD90A37922A7509E005E117B /* FastImage.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FastImage.xcodeproj; path = "../node_modules/react-native-fast-image/ios/FastImage.xcodeproj"; sourceTree = "<group>"; };
 		AD95C91A22769E54004025F8 /* codegas.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = codegas.entitlements; path = codegas/codegas.entitlements; sourceTree = "<group>"; };
 		ADB94743227867E800D3E975 /* RNSpinkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNSpinkit.xcodeproj; path = "../node_modules/react-native-spinkit/ios/RNSpinkit.xcodeproj"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
@@ -432,6 +443,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD90A3AC22A750B5005E117B /* libFastImage.a in Frameworks */,
+				AD135CC822A17B530001D314 /* UserNotifications.framework in Frameworks */,
 				AD270EC0229F8DCC0064E705 /* libRNFIRMessaging.a in Frameworks */,
 				AD1941972299C4FF00915392 /* libRNGestureHandler.a in Frameworks */,
 				AD19418D2299C0EA00915392 /* libRCTBlob.a in Frameworks */,
@@ -602,6 +615,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AD135C9B22A17B530001D314 /* UserNotifications.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
 				2D16E6891FA4F8E400B85C8A /* libReact.a */,
@@ -640,6 +654,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				AD90A37922A7509E005E117B /* FastImage.xcodeproj */,
 				AD270EBA229F8DA80064E705 /* RNFIRMessaging.xcodeproj */,
 				AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */,
 				ADB94743227867E800D3E975 /* RNSpinkit.xcodeproj */,
@@ -736,6 +751,14 @@
 			isa = PBXGroup;
 			children = (
 				AD8A643D227693EA009B5180 /* libRNFirebase.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AD90A37A22A7509E005E117B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AD90A37F22A7509F005E117B /* libFastImage.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -891,6 +914,10 @@
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = AD90A37A22A7509E005E117B /* Products */;
+					ProjectRef = AD90A37922A7509E005E117B /* FastImage.xcodeproj */;
+				},
 				{
 					ProductGroup = ADB9473E22782EF700D3E975 /* Products */;
 					ProjectRef = 9D596AA430674DB9BAA622D5 /* LRDRCTSimpleToast.xcodeproj */;
@@ -1249,6 +1276,13 @@
 			fileType = archive.ar;
 			path = libRNFirebase.a;
 			remoteRef = AD8A643C227693EA009B5180 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AD90A37F22A7509F005E117B /* libFastImage.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFastImage.a;
+			remoteRef = AD90A37E22A7509F005E117B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		ADB9474222782EF800D3E975 /* libLRDRCTSimpleToast.a */ = {

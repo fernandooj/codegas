@@ -14,6 +14,9 @@ class userServices {
 	getByAcceso(acceso, callback){
 		User.find({'acceso':acceso, activo:true}).populate('categoria').exec(callback)
 	}
+	getAdminSolucion(callback){
+		User.find({ $or: [ {acceso: "admin"}, {acceso: "solucion"}]}).exec(callback)
+	}
 	getById(_id, callback){
 		User.find({_id}).populate('categoria').exec(callback)
 	}

@@ -17,7 +17,7 @@ YellowBox.ignoreWarnings(['Require cycle:']);
 //////  RUTA GENERAL DE LA URL PARA EL API
 //////////////////////////////////////////////////////////////////////////////////////////
 // export const URL = 'https://releo.co';       //// URL PRODUCCION
-export const URL = 'http://192.168.0.4:8080';   //// URL local
+export const URL = 'http://192.168.0.6:8080';   //// URL local
 export const VERSION = "1.0.0"
 axios.defaults.baseURL = URL+"/x/v1";
 

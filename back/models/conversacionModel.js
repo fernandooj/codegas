@@ -11,6 +11,7 @@ let Conversacion = new Schema({
 	creado: 	Number,
 	celular: 	String,
 	nombre: 	String,
+	email: 		String,
 	tokenPhone: String,
 	activo:     {type:Boolean, default:true},
 	usuarioId1: {type: Schema.ObjectId, ref:'User'},

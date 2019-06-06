@@ -133,7 +133,7 @@ module.exports = function(app, passport){
                 }else{
                     if(user.validPassword(req.body.password)){
                         req.session.usuario = user
-                        user.tokenPhone!==req.body.tokenPhone  ?modificaTokenPhone(req, res) :res.json({status:true, user, code:1})
+                        modificaTokenPhone(req, res)  
                     }else{
                         res.json({status:false, user: 'Datos incorrectos', code:0 })
                     }     
@@ -316,6 +316,23 @@ module.exports = function(app, passport){
         }else{
             res.json({ status: 'FAIL', message:'usuario no logueado', usuarios:[]})  
         }
+    })
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////      lista usuario ADMIN Y SOLUCION
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/by/adminsolucion', (req,res)=>{
+        
+        userServices.getAdminSolucion((err, usuarios)=>{
+            if(!err){
+                console.log(usuarios)
+                res.json({status:'SUCCESS', usuarios})
+            }else{
+                res.json({ status: 'FAIL', usuarios:[], err}) 
+            }
+        })
+        
     })
 
 

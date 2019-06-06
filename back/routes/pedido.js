@@ -172,7 +172,13 @@ router.post('/finalizar/:estado', (req,res)=>{
         fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
 
         pedidoServices.finalizar(req.body, req.params.estado, ruta, (err, pedido)=>{
+            const {kilos, factura, valor_unitario} = req.body
             if (!err) {
+                let titulo = `<font size="5">Pedido entregado</font>`
+                let text1  = `Su pedido ha sido entregado con exito`
+                let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/><img src="${ruta}" width="500"/>` 
+                let asunto = "Estado pedido Codegas, entregado"
+                htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
                 res.json({ status:true, pedido }); 
             }else{
                 res.json({ status:false, message: err }); 

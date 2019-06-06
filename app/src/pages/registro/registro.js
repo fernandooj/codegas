@@ -1,12 +1,12 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, ScrollView} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Dimensions, Alert, ScrollView} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
  
 import Footer   from '../components/footer'
 import axios    from 'axios'
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
- 
+import Icon from 'react-native-fa-icons';
  
 import {style} from './style'
 
@@ -38,7 +38,7 @@ class Home extends Component{
 			
 	}
 	renderRegistro(){
-        const {razon_social, cedula, ubicacion, direccion, email, nombre, password, celular, tipo} = this.state
+        const {razon_social, cedula, showcontrasena, direccion, email, nombre, password, celular, tipo} = this.state
         return(
             <ScrollView style={style.containerRegistro}>
                 <View style={style.subContainerRegistro}>
@@ -71,14 +71,19 @@ class Home extends Component{
                         value={nombre}
                         autoCapitalize="none"
                     />
-                    
-                    <TextInput
-                        style={password.length<2 ?[style.input, style.inputInvalid] :style.input}
-                        placeholder="Contraseña"
-                        onChangeText={(password) => this.setState({password})}
-                        secureTextEntry
-                        value={password}
-                    />
+                    <View style={{flexDirection:"row"}}>
+                        <TextInput
+                            style={password.length<2 ?[style.input, style.inputInvalid] :style.input}
+                            placeholder="Contraseña"
+                            onChangeText={(password) => this.setState({password})}
+                            secureTextEntry
+                            value={password}
+                            secureTextEntry={showcontrasena ?false :true}
+                        />
+                        <TouchableOpacity style={style.btnIconPassLogin} onPress={()=>this.setState({showcontrasena:!this.state.showcontrasena})}>
+                            <Icon name={showcontrasena ?'eye-slash' :'eye'} allowFontScaling style={style.iconPass} />
+                        </TouchableOpacity>
+                    </View>
                     <TextInput
                         style={celular.length<2 ?[style.input, style.inputInvalid] :style.input}
                         placeholder="Celular"
@@ -86,7 +91,8 @@ class Home extends Component{
                         value={celular}
                         keyboardType="numeric"
                     />
-                    <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                    <TouchableOpacity style={style.btnGuardar} 
+                        onPress={()=> razon_social.length<2 || cedula.length<2 || direccion.length<2 || nombre.length<2 || password.length<2 || celular.length<2 ?alert("Todos los campos son obligatorios") :this.handleSubmit()}>
                         <Text style={style.textGuardar}>Guardar</Text>
                     </TouchableOpacity>
                 </View>
@@ -113,7 +119,22 @@ class Home extends Component{
         axios.put("user/update", {razon_social, cedula, ubicacion, direccion, nombre, password, celular, tipo, acceso})
         .then(e=>{
             console.log(e.data)
-            e.data.status ?this.props.navigation.navigate("Home") :Toast.show("Tenemos un problema, intentelo mas tarde")
+            if(e.data.status) {
+                Alert.alert(
+                    `Ya puedes iniciar sesion`,
+                    ``,
+                    [
+                      {text: 'Cerrar', onPress: () => confirmar()},
+                    ],
+                    {cancelable: false},
+                )
+                const confirmar = ()=>{
+                    this.props.navigation.navigate("perfil")
+                }
+                
+            }else{
+                Toast.show("Tenemos un problema, intentelo mas tarde")
+            }
         })
         .catch(err=>{
             console.log(err)

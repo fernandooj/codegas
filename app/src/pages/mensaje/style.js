@@ -13,38 +13,63 @@ export const style = MediaQueryStyleSheet.create({
         flex:1 ,
     },
     conMensaje1:{
-        backgroundColor:"rgba(56,164,264,.5)",
         alignSelf:"flex-start",
-        marginLeft:10,
-        marginVertical:2,
-        borderRadius:5,
-        padding:5
     },
     mensaje1:{
-        
+        marginLeft:10,
+        marginVertical:2,
+        padding:10,
+        shadowColor: 'rgba(0,0,0, .4)', // IOS
+        borderColor:"rgba(0,0,0,0)",
+        shadowOffset: { height: 2, width: 2 }, // IOS
+        shadowOpacity: .5, // IOS
+        shadowRadius: 5, //IOS
+        elevation: 7, // Android
+        borderRadius:5,
+        backgroundColor:"rgba(56,164,264,.5)",
     },
     conMensaje2:{
-        backgroundColor:"rgba(233,120,5,.5)",
         alignSelf:"flex-end",
         marginRight:10,
         marginVertical:2,
-        borderRadius:5,
         padding:5
     },
     mensaje2:{
-
+        backgroundColor:"rgba(233,120,5,.5)",
+        marginLeft:10,
+        marginVertical:2,
+        padding:10,
+        shadowColor: 'rgba(0,0,0, .4)', // IOS
+        borderColor:"rgba(0,0,0,0)",
+        shadowOffset: { height: 2, width: 2 }, // IOS
+        shadowOpacity: .5, // IOS
+        shadowRadius: 5, //IOS
+        elevation: 7, // Android
+        borderRadius:5,
+    },
+    contenedorImagen1:{
+        marginLeft:10,
+        marginVertical:2,
+        padding:10,
+        shadowColor: 'rgba(0,0,0, .4)', // IOS
+        borderColor:"rgba(0,0,0,0)",
+        shadowOffset: { height: 2, width: 2 }, // IOS
+        shadowOpacity: .5, // IOS
+        shadowRadius: 5, //IOS
+        elevation: 7, // Android
+        borderRadius:5,
     },
     contenedorMensajes:{
-       
-        // minHeight:size.height,
-        // borderWidth:10,
         flex:Platform.OS=='android' ?1 :.94
     },
     subContenedorMensajes:{
         marginBottom:8,
-        minHeight:size.height-131,
-        // borderWidth:10,
-         
+        minHeight:size.height-161, 
+    },
+    textoUnirse:{
+        textAlign:"center",
+        fontSize:11,
+        marginVertical:10
     },
     /////////////////////////////////////////////
     //////////////////     CABEZERA
@@ -76,6 +101,33 @@ export const style = MediaQueryStyleSheet.create({
         left:5,
         top:15
     },
+    nombre:{
+        width:"55%",
+        fontSize:22,
+        top:10
+    },
+    iconUser:{
+        color:"#0071bb",
+        fontSize:24,
+        left:5,
+        top:12,
+        paddingTop:0,
+        paddingBottom:20,
+        paddingHorizontal:0
+    },
+    btnCerrar:{
+        flexDirection:"row",
+        backgroundColor:"#0071bb",
+        justifyContent:"center",
+        paddingVertical:5,
+        paddingHorizontal:8,
+        height:30,
+        top:12,
+        borderRadius:5
+    },
+    textCerrar:{
+        color:"#fff"
+    },
     /////////////////////////////////////////////
     //////////////////     FOOTER
     /////////////////////////////////////////////
@@ -83,7 +135,7 @@ export const style = MediaQueryStyleSheet.create({
         flexDirection:"row",
     },
     input:{
-        width:"85%",
+        width:"75%",
         backgroundColor:"#ffffff",
         borderColor:"rgba(90,90,90,.3)",
         borderWidth:1,
@@ -103,6 +155,36 @@ export const style = MediaQueryStyleSheet.create({
     icon:{
         color:"#0071bb",
         fontSize:20,
-    }
+    },
+    //////////////////////////////////////////////////////////////////		
+    ///////////				MODAL
+    //////////////////////////////////////////////////////////////////
+    contenedorModal:{
+		position:Platform.OS=='android' ?null :"absolute",
+		alignItems:"center",
+		justifyContent: 'center',
+		backgroundColor:"rgba(0,0,0,.5)",
+		height:size.height,
+		zIndex:100,
+		width:"100%",
+		bottom:50,
+		top:0,
+		left:0,	
+	},
+	subContenedorModal:{
+		backgroundColor:"#ffffff",
+		borderRadius:7,
+		padding:10,
+        alignItems:"center",
+        
+	},
+	btnModalClose:{
+		top:0,
+		zIndex:100
+	},
+	iconCerrar:{
+        fontSize:35,
+        color:"#ffffff",
+	},
     
 })

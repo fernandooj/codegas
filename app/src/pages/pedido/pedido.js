@@ -13,6 +13,7 @@ import ImageProgress 	   from 'react-native-image-progress';
 import Footer              from '../components/footer'
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
 import {getUsuariosAcceso} from '../../redux/actions/usuarioActions' 
+import {sendRemoteNotification} from '../push/envioNotificacion';
 import TomarFoto           from "../components/tomarFoto";
 import {style}             from './style'
 
@@ -54,7 +55,6 @@ class Pedido extends Component{
     }
     estadoRed(estadoRed){
         console.log(estadoRed)
-    //    this.setState({estadoRed})
     }
     renderPedidos(){
         const {acceso, terminoBuscador} = this.state
@@ -75,7 +75,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
                         :null                               
                     }
                 >
@@ -83,55 +83,50 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>{e.usuarioId.nombre}</Text>
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
                     </View>
-                   
-                    
-                    
-                     <View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>Fecha creación </Text>
-                            <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
-                        </View>
-                        {
-                            <View style={style.containerPedidos}>
-                                <Text style={style.textPedido}>Fecha Asignacion </Text>
-                                <Text style={style.textPedido}>{ e.fechaEntrega ?moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD") :"sin fecha de asignación"}</Text>
-                            </View>
-                        }
-                     
-                   
+                    <View style={style.containerPedidos}>
+                        <Text style={style.textPedido}>Fecha creación </Text>
+                        <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
+                    </View>
+                    {
                         <View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>{e.forma}</Text>
-                            <Text style={style.textPedido}>{e.cantidad ?e.cantidad :""}</Text>
+                            <Text style={style.textPedido}>Fecha Asignacion </Text>
+                            <Text style={style.textPedido}>{ e.fechaEntrega ?moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD") :"sin fecha de asignación"}</Text>
                         </View>
-                        {
-                            e.conductorId
-                            &&<View style={style.containerPedidos}>
-                                <Text style={style.textPedido}>Conductor Asignado</Text>
-                                <Text style={style.text}>{e.conductorId.nombre}</Text>
-                                <Text style={style.text}>{e.conductorId.cedula}</Text>
+                    }
+                    <View style={style.containerPedidos}>
+                        <Text style={style.textPedido}>{e.forma}</Text>
+                        <Text style={style.textPedido}>{e.cantidad ?e.cantidad :""}</Text>
+                    </View>
+                    {
+                        e.conductorId
+                        &&<View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Conductor Asignado</Text>
+                            <Text style={style.text}>{e.conductorId.nombre}</Text>
+                            <Text style={style.text}>{e.conductorId.cedula}</Text>
+                        </View>
+                    }
+                    {
+                        e.factura
+                        &&<View style={style.containerPedidos}>
+                                <Text style={style.textPedido}>Factura N</Text>
+                                <Text>{e.factura}</Text>
                             </View>
-                        }
+                    }
+                    <View style={style.containerPedidos}>
+                        <Text style={style.textPedido}>Estado</Text>
                         {
-                            e.factura
-                            &&<View style={style.containerPedidos}>
-                                    <Text style={style.textPedido}>Factura N</Text>
-                                    <Text>{e.factura}</Text>
-                                </View>
+                            e.estado=="activo" &&!e.entregado
+                            ?<Text>Activo</Text>
+                            :e.estado=="innactivo"
+                            ?<Text>In Activo</Text>
+                            :e.estado=="espera"
+                            ?<Text>Espera</Text>
+                            :e.estado=="activo" &&e.entregado
+                            ?<Text>Entregado</Text>
+                            :null
                         }
-                        <View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>Estado</Text>
-                            {
-                                e.estado=="activo" &&!e.entregado
-                                ?<Text>Activo</Text>
-                                :e.estado=="innactivo"
-                                ?<Text>In Activo</Text>
-                                :e.estado=="espera"
-                                ?<Text>Espera</Text>
-                                :e.estado=="activo" &&e.entregado
-                                ?<Text>Entregado</Text>
-                                :null
-                            }
-                             
-                        </View>
+                            
+                    </View>
                 </TouchableOpacity>
             )
         })
@@ -333,7 +328,7 @@ class Pedido extends Component{
                                                 <TouchableOpacity 
                                                     style={ novedad.length<4 ?style.btnDisable3 :style.btnGuardar3} 
                                                     onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.asignarFecha()}>
-                                                    <Text style={style.textGuardar}>Guardar novedad</Text>
+                                                    <Text style={style.textGuardar}>Guardar novedad, sin cerrar</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -480,7 +475,7 @@ class Pedido extends Component{
                                         })
                                     }
                                     <TouchableOpacity style={style.btnGuardar} onPress={()=>nombreConductor ?this.asignarConductor() :alert("selecciona un conductor")}>
-                                        <Text style={style.textGuardar}>Asignar conductor</Text>
+                                        <Text style={style.textGuardar}>Asignar Vehiculo</Text>
                                     </TouchableOpacity>  
                                 </View>
                             }    
@@ -511,9 +506,10 @@ class Pedido extends Component{
         )
     }
 	render(){
-        const {navigation} = this.props
+        const {navigation, pedidos} = this.props
         const {idUsuario} = this.state
-        console.log(idUsuario)
+        console.log(this.state.tokenPhone)
+        console.log(pedidos)
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
         }else if(idUsuario=="FAIL"){
@@ -592,7 +588,7 @@ class Pedido extends Component{
     ////////////////////////           CERRAR PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
-        let {novedad, kilosTexto, facturaTexto, valor_unitarioTexto, id, imagen} = this.state
+        let {novedad, kilosTexto, facturaTexto, valor_unitarioTexto, id, tokenPhone, imagen, email} = this.state
         Alert.alert(
             `Seguros desea cerrar este pedido`,
             '',
@@ -606,6 +602,7 @@ class Pedido extends Component{
             let data = new FormData();
             imagen = imagen[0]
             data.append('imagen', imagen);
+            data.append('email', email);
             data.append('_id', id);
             data.append('kilos', kilosTexto);
             data.append('factura', facturaTexto);
@@ -614,14 +611,16 @@ class Pedido extends Component{
             // axios.post(`ped/pedido/finalizar/${id}`, {_id:id, kilos, factura, valor_unitario})
             axios({
                 method: 'post',  
-                url: 'ped/pedido/finalizar/${id}',
+                url: 'ped/pedido/finalizar/true',
                 data: data,
             })
             .then((res)=>{
+                console.log(res.data)
                 if(res.data.status){
                     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
                     .then((res2)=>{
                         this.setState({openModal:false})
+                        sendRemoteNotification(2, tokenPhone, "pedido entregado", `Su pedido ha sido entregado`, null, null, null )
                         setTimeout(() => {
                             alert("Pedido cerrado")
                         }, 1000);

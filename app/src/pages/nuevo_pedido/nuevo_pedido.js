@@ -8,6 +8,7 @@ import ModalSelector       from 'react-native-modal-selector'
 import ModalFilterPicker   from 'react-native-modal-filter-picker'
 import { TextInputMask }   from 'react-native-masked-text'
 import { connect }         from "react-redux";
+import {sendRemoteNotification} from '../push/envioNotificacion';
 import {getUsuariosAcceso} from '../../redux/actions/usuarioActions' 
 import Footer              from '../components/footer'
 import {style}             from './style'
@@ -89,6 +90,15 @@ class Nuevo_pedido extends Component{
                 this.setState({clientes})
             }
         })
+        axios
+        .get(`users/by/adminsolucion`)
+        .then(res => {
+            console.log(res.data)
+            if(res.data.status){
+                this.setState({usuarios:res.data.usuarios})
+            }
+        })
+
         let idUsuario = await AsyncStorage.getItem('userId')
         const acceso   	= await AsyncStorage.getItem('acceso')
         const email   	= await AsyncStorage.getItem('email')
@@ -96,7 +106,7 @@ class Nuevo_pedido extends Component{
         this.setState({idUsuario, acceso, email})
        
     }
-   
+
 	renderPedido(){
         const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, franja, idCliente} = this.state
         return(
@@ -291,13 +301,16 @@ class Nuevo_pedido extends Component{
         }
 	}
     handleSubmit(){
-        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia} = this.state
+        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios} = this.state
         email = idCliente ?emailCliente :email
         console.log({forma, email, cantidad, dia1, dia2, frecuencia, idCliente})
         axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente})
         .then(e=>{
-            console.log(e.data)
+            console.log(usuarios)
             if(e.data.status){
+                usuarios.filter(e=>{
+                    sendRemoteNotification(2, e.tokenPhone, "pedidos", `Nuevo Pedido ${forma} - ${cantidad}`, null, null, null )
+                })
                 alert("Su pedido ha sido guardado")    
                 this.props.navigation.navigate("pedido")
             }else{

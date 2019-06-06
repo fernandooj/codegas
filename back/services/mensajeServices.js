@@ -16,19 +16,20 @@ class mensajeServices{
 		Mensaje.find({}, callback)
 	}
 	getByConversacionId(id, callback){
-		Mensaje.find({conversacionId:id}).populate('usuarioId').sort({_id: 'desc'}).exec(callback)
+		Mensaje.find({conversacionId:id}).populate('usuarioId').sort({_id: 'asc'}).exec(callback)
 	}
 	getByUser(usuarioId, callback){
 		Mensaje.find({usuarioId}).populate('usuarioId').sort({_id: 'desc'}).exec(callback)
 	}
-	create(data, usuarioId, notificacion, callback){
+	create(data, imagen, callback){
 		let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
 		let creado = moment(fecha).valueOf()
-		console.log(creado)
 		let newMensaje = new Mensaje({
-			mensaje  : data.mensaje,
-			usuarioId,
-			conversacionId : notificacion,
+			mensaje    : data.mensaje,
+			usuarioId  : data.usuarioId,
+			conversacionId :data.conversacionId,
+			tipo :data.tipo,
+			imagen,
 			creado
 		})
 		newMensaje.save(callback)	

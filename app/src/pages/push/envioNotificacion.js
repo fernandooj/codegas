@@ -11,13 +11,13 @@ import axios from 'axios'
 
 export const sendRemoteNotification = (tipo, token, targetScreen, titulo, mensaje, imagen, parameter)=> {
 	
-	axios.get('user/profile') 
+	axios.get('user/perfil') 
 	.then((res)=>{
 		console.log(res.data)
-	    let body;
+	    let bodyIos;
 	    let nombre = tipo==4 ?'' :res.data.user.nombre
-	    let avatar  = res.data.user.avatar
-	    imagen = imagen==null ? avatar :imagen
+	    let avatar = res.data.user.avatar
+	    imagen 	   = imagen==null ? avatar :imagen
 	   	
 	    if(Platform.OS === 'android'){
 	    	console.log("android")
@@ -58,7 +58,6 @@ export const sendRemoteNotification = (tipo, token, targetScreen, titulo, mensaj
 		         	title: titulo,
 					body : `${nombre} ${mensaje}`,
 					priority:"high",
-					icon:"ic_notif",
 					targetScreen:targetScreen,
 					color:"#00ACD4",
 					big_picture:imagen,

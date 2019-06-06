@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TextInput, KeyboardAvoidingView, ScrollView, TouchableOpacity, Platform, Image} from 'react-native'
+import {View, Text, ScrollView, TouchableOpacity} from 'react-native'
 import {style}   from './style'
 import {connect} from 'react-redux' 
 import axios     from 'axios' 
@@ -7,12 +7,11 @@ import moment 			   from 'moment-timezone'
 import Spinner   from 'react-native-spinkit' 
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-fa-icons';
-import {sendRemoteNotification} from '../push/envioNotificacion';
-import SocketIOClient from 'socket.io-client';
 import { getConversaciones } from "../../redux/actions/mensajeActions";
 import Footer   from '../components/footer'
-import {URL} from "../../../App"
+ 
 class Mensaje extends Component{
+ 
 	constructor(props) {
 	  super(props);
 	  this.state={
@@ -20,35 +19,54 @@ class Mensaje extends Component{
         bottom:0,
         showSpin:true
 	  }
+	  this.conversacion = this.conversacion.bind(this)
 	}
-	async componentWillMount(){
-		// const {id, titulo, nombre, avatar} = this.props.navigation.state.params
-		// console.log({titulo, nombre, avatar, id})
-		// this.props.getMensaje(id)
-		// this.socket = SocketIOClient(URL);
-		// this.socket.on(`chatConversacion`, 	this.reciveMensanje.bind(this));
-		try{
-			const acceso 	 = await AsyncStorage.getItem('acceso')
-			const tokenPhone = await AsyncStorage.getItem('tokenPhone')
+	 
+	async componentDidMount(){
+		const {nombre, email, celular} = this.props.navigation.state.params
+		try {
+			const acceso   = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
+			const tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
+			console.log(tokenPhone)
 			if(acceso){
 				this.props.getConversaciones()
 				this.setState({showSpin:false})
-			}else{
-				setTimeout(() => {
-					setInterval(() => {
-						axios.get(`con/conversacion/byTokenPhone/${tokenPhone}/true/fernando/papi@gmail.com`)
-						.then(res=>{
-							console.log(res.data)
-							res.data.status &&this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})
-						})
-					}, 1000);
-				}, 1000);	
-
+			}else{			
+				axios.get(`con/conversacion/byTokenPhone/${JSON.parse(tokenPhone)}/true/${nombre}/${email}/${celular}`)
+				.then(res=>{
+					console.log("res.data")
+					console.log(res.data)
+					if(res.data.status){
+						clearInterval(this.myInterval);
+						this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})
+					}else{
+						this.myInterval = setInterval(()=>this.conversacion(), 2000)
+					}
+				})
 			}
-		}catch(e){
-            console.log(e)
-        }
+			
+		} catch (error) {
+			
+		}
 	}  
+	conversacion(){
+		const {acceso, tokenPhone, nombre, email, celular} = this.props.navigation.state.params
+		console.log({acceso, tokenPhone})		 
+		axios.get(`con/conversacion/byTokenPhone/${tokenPhone}/true/${nombre}/${email}/${celular}`)
+		.then(res=>{
+			console.log(res.data)
+			if(res.data.status){
+				clearInterval(this.myInterval);
+				this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})
+			}else{
+				
+			}
+		})
+	}
+	componentWillUnmount(){
+		console.log(`Unmounting... clearing interval`);
+    	clearInterval(this.myInterval);
+	}
 	renderConversaciones(){
 		return this.props.conversaciones.map((e,key)=>{
 			return(
@@ -83,6 +101,7 @@ class Mensaje extends Component{
                 <View style={style.containerSpinner}>
                     <Spinner style={style.spinner} isVisible={true} size={100} type="Bounce" color="#00218b"/>
                     <Text>Estamos buscando un agente</Text>
+					<Footer navigation={navigation} />
                 </View>
             )
         }else{

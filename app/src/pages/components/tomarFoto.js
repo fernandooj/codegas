@@ -10,14 +10,12 @@ export default class tomarPhoto extends Component{
         imagenes:[]
     }
     subirImagen(){
-        const {avatar} = this.props
         let {imagenes} = this.state
         const options = {
-            compressImageMaxWidth:800,
-            compressImageMaxHeight:avatar?800 :1200,
-            width: 800,
-            height: avatar?800 :1200,
-            cropping: true,
+            // compressImageMaxWidth:800,
+            // compressImageMaxHeight:avatar?800 :1200,
+            // width: 800,
+            
             forgeJpg: true,
         };
 
@@ -37,14 +35,13 @@ export default class tomarPhoto extends Component{
 		});
     }
     tomarFoto(){
-        const {avatar} = this.props
         let {imagenes} = this.state
         const options = {
-            compressImageMaxWidth:800,
-            compressImageMaxHeight:avatar?800 :1200,
-            width: 800,
-            height: avatar?800 :1200,
-            cropping: true,
+            // compressImageMaxWidth:800,
+            // compressImageMaxHeight:800,
+            // width: 800,
+            // height: avatar?800 :1200,
+            // cropping: true,
             forgeJpg: true,
         };
         ImagePicker.openCamera(options).then(response => {
@@ -80,6 +77,7 @@ export default class tomarPhoto extends Component{
         this.props.imagenes(imagenes)
     }
     renderModal(){
+        const {tipoMensaje, cerrar} = this.props
         return(
             <Modal
                 transparent
@@ -89,7 +87,7 @@ export default class tomarPhoto extends Component{
             >
                 <TouchableOpacity
                     activeOpacity={1}
-                    onPress={() => {  this.setState({  isAndroidShareOpen: false });   }}
+                    onPress={() => {  tipoMensaje ?cerrar() :this.setState({  isAndroidShareOpen: false });   }}
                     style={style.btnModal}
                 >
                     <View style={style.contenedorModal}>
@@ -104,28 +102,35 @@ export default class tomarPhoto extends Component{
             </Modal>
         )
     }
+
+    /*
+        TIPOMENSAJE == cuando la foto es para el chat, no muestra, la opcion de tomar foto, si no que muestra directamente el modal
+    */
     render(){
         const {imagenes, showModal} = this.state
-        const {source, limiteImagenes, avatar} = this.props
+        const {tipoMensaje, avatar} = this.props
  
         return(
             <View style={style.contenedorPortada}>
-            {
-                showModal
-                &&this.renderModal()
-            }
                 {
-                    imagenes.length<limiteImagenes && !source
-                    &&<TouchableOpacity style={style.contenedorUploadPortada} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
+                    showModal
+                    &&this.renderModal()
+                }
+                {
+                    tipoMensaje
+                    ?this.renderModal()
+                    :<TouchableOpacity style={style.contenedorUploadPortada} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
                         <Icon name={'camera'} style={style.iconPortada} />
                         <Text style={style.textPortada}> {!avatar ?"Subir Factura" :"Subir Avatar"}</Text>
                         {!avatar &&<Text style={style.textPortada2}>Sube al menos 1 imagen</Text>}
                     </TouchableOpacity>
                 }
-               
-                <View style={{flexDirection:"row"}}>
-                    {this.renderImagenes()}
-                </View>
+                {
+                    !tipoMensaje
+                    &&<View style={{flexDirection:"row"}}>
+                        {this.renderImagenes()}
+                    </View>
+                }
             </View>	
         )
     }

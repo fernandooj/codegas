@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Footer   from '../components/footer'
 import axios    from 'axios'
 import Icon from 'react-native-fa-icons';
+import FCM, { NotificationActionType } from "react-native-fcm";
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
 import {style} from './style'
@@ -29,7 +30,11 @@ class Home extends Component{
             console.log(e)
         }
 	}
-	 
+    componentDidMount(){
+        FCM.getFCMToken().then(token => {
+			this.setState({ tokenPhone: token || "" });
+		});
+    }
 	iniciarSesion(){
         const {email2, password2, cargando} = this.state
         return (
@@ -83,7 +88,6 @@ class Home extends Component{
     renderPerfil(){
         const {navigation} = this.props
         const {nombre, idUsuario, avatar, email, err, acceso} = this.state
-        console.log(avatar)
         return (
             <View style={style.containerRegistro}>
                 <View style={style.perfilContenedor}>
@@ -171,8 +175,8 @@ class Home extends Component{
     }
     async login(){
         this.setState({cargando:true})
-        const {email2, password2} = this.state
-        axios.post("user/login", {email:email2, password:password2})
+        const {email2, password2, tokenPhone} = this.state
+        axios.post("user/login", {email:email2, password:password2, tokenPhone})
         .then(res=>{
             if(res.data.status){
                 this.loginExitoso(res.data.user)
@@ -193,18 +197,22 @@ class Home extends Component{
         AsyncStorage.setItem('email',  user.email)
         AsyncStorage.setItem('acceso', user.acceso)
         AsyncStorage.setItem('avatar', user.avatar ?user.avatar :"null")
+        AsyncStorage.setItem('tokenPhone', this.state.tokenPhone)
         this.setState({userId:user._id, cargando:false, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
         // this.props.navigation.navigate("Home")
     }
     cerrarSesion(){
         axios.get(`user/logout`)
         .then(res => {
-            this.setState({userId:null, email:"", password:"", email2:"", password2:""})
             AsyncStorage.removeItem('userId')
             AsyncStorage.removeItem('acceso')
             AsyncStorage.removeItem('avatar')
+            AsyncStorage.removeItem('formularioChat')
+            AsyncStorage.removeItem('usuariosEntrando')
+            this.setState({userId:null, email:"", password:"", email2:"", password2:""})
         })
         .catch(err => {
+            console.log(err)
             this.setState({err})
         });
     }	 

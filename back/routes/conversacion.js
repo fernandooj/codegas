@@ -40,7 +40,7 @@ router.get('/byUser', (req,res)=>{
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////		OBTIENE LAS CONVERSACIONES DE UN USUARIO POR SU TOKEN
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-router.get('/byTokenPhone/:tokenPhone/:activo/:nombre/:celular', (req,res)=>{
+router.get('/byTokenPhone/:tokenPhone/:activo/:nombre/:email/:celular', (req,res)=>{
 	conversacionServices.getByToken(req.params.tokenPhone, req.params.activo, (err, mensaje)=>{
 		if (mensaje) {
 			res.json({ status: true, mensaje }); 
@@ -90,32 +90,25 @@ router.post('/', function(req,res){
 			}
 		})  
 	}
-		// conversacionServices.getById(req.params.conversacionId, function(err, conversacion){
-		// 	if (err) {
-		// 		res.json({ status: 'FAIL', message: err }); 
-		// 	}else{
-		// 		// let text1 = `<font size="5">tienes un nuevo mensaje de ${req.session.usuario.nombre}, contestale lo más pronto posible <br/>${req.body.mensaje}</font>`;
-		// 		// let boton = `ver_mensaje`;
-		// 		// let text2 = `Héchale una ojeada a los libros que <font size=6 color="#000000">${req.session.usuario.nombre}</font> ha publicado <a href="${req.protocol+'://'+req.get('Host')}/#/usuario/${req.session.usuario._id}">Aqui</a>`
-		// 		// let url1  = `#/conversacion/${req.params.conversacionId}`
-				
-		// 		// htmlTemplate(req, req.body, text1, boton, text2, url1, "Tienes un nuevo mensaje")
-				
-		// 		//////// envio el badge
-		// 		let data={username:req.body.email}
-					
-		// 		userServices.getEmail(data, (err3, users)=>{
-		// 			if(!err3){
-		// 				let mensajeJson={
-		// 					userId:users._id, 
-		// 					badge:1
-		// 				}
-		// 				cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
-		// 				res.json({ status: 'SUCCESS', conversacion });	
-		// 			}
-		// 		})
-		// 	}
-		// })
+})
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////		CIERRO LA CONVERSACION
+////////////////////////////////////////////////////////////////////////////////////////////////	
+router.post('/cerrar/:idConversacion', (req,res)=>{
+	if (!req.session.usuario) {
+		res.json({ status: 'FAIL', message: 'No hay un usuario logueado' }); 
+	}else{
+		conversacionServices.cerrar(req.params.idConversacion, (err2, conversacion)=>{
+			if(err2){
+				res.json({ err, status:false })
+			}else{
+				cliente.publish('cerrarConversacion', req.params.idConversacion) 
+				res.json({ status:true, conversacion })
+			}
+		})  
+	}
 })
  
 

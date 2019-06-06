@@ -13,13 +13,13 @@ class pedidoServices{
 
 	}
 	get(callback){
-		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social').populate("conductorId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByPedido(_id, callback){
-		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social').populate("conductorId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioId, callback){
-		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social').populate("conductorId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	create(data, usuarioId, usuarioCrea, callback){
 		let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')

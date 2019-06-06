@@ -4,7 +4,7 @@ import {
     GET_MENSAJES,
   } from "../actions/constants/actionsTypes";
 
-const getConversacion = (state = {usuarioId1:{}}, action) => {
+const getConversacion = (state = {usuarioId1:{}, usuarioId2:{} }, action) => {
   switch (action.type) {
     case GET_CONVERSACION:
       return action.conversacion;
