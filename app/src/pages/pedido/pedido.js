@@ -35,6 +35,7 @@ class Pedido extends Component{
         novedad:"",
         fechasFiltro:["0","1"],
         top:new Animated.Value(size.height),
+        elevation:7
 	  }
 	}
 	 
@@ -139,14 +140,16 @@ class Pedido extends Component{
             toValue:0,
 			duration:400,
 			// easing:Easing.inOut
-		}).start()
+        }).start()
+        this.setState({elevation:0})
     }
     hideModal(){
         Animated.timing(this.state.top,{
             toValue:size.height,
 			duration:400,
 			// easing:Easing.inOut
-		}).start()
+        }).start()
+        this.setState({elevation:7})
 	}
     modalFechaEntrega(){
         let {modalFechaEntrega, fechaEntrega} = this.state
@@ -491,7 +494,7 @@ class Pedido extends Component{
         )
     }
     renderCabezera(){
-        const {terminoBuscador} = this.state
+        const {terminoBuscador, elevation} = this.state
         return(
             <View style={style.contenedorCabezera}>
                 <Text style={style.titulo}>Pedidos</Text>
@@ -501,7 +504,7 @@ class Pedido extends Component{
                         autoCapitalize = 'none'
                         onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador: terminoBuscador })}
                         value={terminoBuscador}
-                        style={style.inputCabezera}
+                        style={[style.inputCabezera, {elevation}]}
                     />
                     <TouchableOpacity style={style.btnFiltro} onPress={()=>this.showModal()}>
                         <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />

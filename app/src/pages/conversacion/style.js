@@ -8,6 +8,9 @@ export const style = MediaQueryStyleSheet.create({
         marginTop: Platform.OS=='android' ?5 :45,
         alignItems:"center"
     },
+    subContainer:{
+        marginBottom:55
+    },
     titulo:{
         fontSize:28,
         marginBottom:8

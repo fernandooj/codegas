@@ -114,11 +114,11 @@ export const style = MediaQueryStyleSheet.create({
 		shadowOpacity: .5, // IOS
 		shadowRadius: 5, //IOS
 		backgroundColor: '#fff',
-		elevation: 7, // Android
 		paddingLeft:10,
 		marginBottom:20,
 		borderRadius:5,
-		height:30
+		paddingVertical:2
+		// height:30
 	},
 	imgFiltro:{
 		width:28,

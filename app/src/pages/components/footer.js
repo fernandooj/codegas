@@ -74,16 +74,16 @@ export default class FooterComponent extends Component{
 					<Icon name="home" style={style.icon} />
 					<Text style={style.textFooter}>Inicio</Text>
 				</TouchableOpacity>
-			 		<TouchableOpacity style={style.subContenedorFooter} onPress={()=>this.mensaje()}>
+			 		{/* <TouchableOpacity style={style.subContenedorFooter} onPress={()=>this.mensaje()}>
 						<Icon name="comment" style={style.icon} />
 						<Text style={style.textFooter}>Chat</Text>
 						{ 
 							badgeSocketMessage>0  && badgeMessage 
 							&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketMessage}</Text></View>
 						}
-					</TouchableOpacity>
+					</TouchableOpacity> */}
 				 
-					 <TouchableOpacity style={style.subContenedorFooter2} onPress={()=>navigation.navigate('nuevo_pedido')}>
+					 <TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('nuevo_pedido')}>
 						<Icon name="plus-square" style={style.icon} />
 						<Text style={style.textFooter}>Nuevo pedido</Text>
 					</TouchableOpacity>

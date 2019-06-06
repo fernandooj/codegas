@@ -22,11 +22,11 @@ export const style = MediaQueryStyleSheet.create({
 		paddingVertical:10,
 	},
 	subContenedorFooter:{
-		width:"19.0%"
+		width:"25.0%"
 	},
-	subContenedorFooter2:{
-		width:"24.5%"
-	},
+	// subContenedorFooter2:{
+	// 	width:"24.5%"
+	// },
 	icon:{
 		color:"#ffffff",
 		textAlign:"center",

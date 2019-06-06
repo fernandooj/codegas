@@ -11,7 +11,10 @@ import com.facebook.react.shell.MainReactPackage;
 import io.invertase.firebase.RNFirebasePackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import com.facebook.soloader.SoLoader;
-
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
+import com.evollu.react.fcm.FIRMessagingPackage;
+import com.react.rnspinkit.RNSpinkitPackage;    
+import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,10 +30,14 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new RNAndroidLocationEnablerPackage(),
-            new AsyncStoragePackage(),
+          new RNAndroidLocationEnablerPackage(),
+          new AsyncStoragePackage(),
           new RNFirebasePackage(),
-          new RNFirebaseMessagingPackage() 
+          new RNFirebaseMessagingPackage(),
+          new RNGestureHandlerPackage(),
+          new FIRMessagingPackage(),
+          new RNSpinkitPackage(),
+          new PickerPackage()
       );
     }
 
