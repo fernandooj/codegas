@@ -24,7 +24,7 @@ const getVehiculo = vehiculoId => {
 const getVehiculos = data => {
   return dispatch => {
     return axios
-      .get(`veh/vehiculo`)
+      .get(`veh/vehiculo/no_eliminados`)
       .then(res => {
         console.log(res.data)
         dispatch({

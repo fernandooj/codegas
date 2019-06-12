@@ -15,6 +15,7 @@ import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.evollu.react.fcm.FIRMessagingPackage;
 import com.react.rnspinkit.RNSpinkitPackage;    
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
+import com.dylanvann.fastimage.FastImageViewPackage;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,7 +38,8 @@ public class MainApplication extends Application implements ReactApplication {
           new RNGestureHandlerPackage(),
           new FIRMessagingPackage(),
           new RNSpinkitPackage(),
-          new PickerPackage()
+          new PickerPackage(),
+          new FastImageViewPackage()
       );
     }
 

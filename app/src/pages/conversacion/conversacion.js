@@ -27,15 +27,13 @@ class Mensaje extends Component{
 		try {
 			const acceso   = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
 			const tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
-			console.log(tokenPhone)
 			if(acceso){
 				this.props.getConversaciones()
 				this.setState({showSpin:false})
 			}else{			
 				axios.get(`con/conversacion/byTokenPhone/${JSON.parse(tokenPhone)}/true/${nombre}/${email}/${celular}`)
 				.then(res=>{
-					console.log("res.data")
-					console.log(res.data)
+ 
 					if(res.data.status){
 						clearInterval(this.myInterval);
 						this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})

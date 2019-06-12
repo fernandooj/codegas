@@ -41,6 +41,7 @@ class Home extends Component{
 			usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"
 			usuariosEntrando = JSON.parse(usuariosEntrando)
 			this.setState({formularioChat})
+			console.log({formularioChat})
 			if(acceso=="solucion" || acceso=="admin"){
 				this.socket = SocketIOClient(URL);
 				this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
@@ -84,6 +85,7 @@ class Home extends Component{
 		}
 	
 		FCM.getFCMToken().then(token => {
+			console.log(token)
 			this.setState({ tokenPhone: token || "" });
 			AsyncStorage.setItem('tokenPhone', JSON.stringify(token))
 		});
@@ -120,7 +122,7 @@ class Home extends Component{
 	renderBotones(){
 		const {navigation} = this.props
 		const {acceso, tokenPhone, formularioChat} = this.state
-		console.log(formularioChat)
+		console.log({formularioChat, acceso})
 		return(
 			<View>
 				<TouchableOpacity style={style.btn} onPress={()=>navigation.navigate("nuevo_pedido")}>
@@ -187,7 +189,7 @@ class Home extends Component{
 	render(){
 		const {navigation} = this.props
 		const {acceso, usuariosEntrando} = this.state
-		console.log(acceso)
+	 
 	    return (
 				<View style={style.container}>
 					{this.renderFormulario()}

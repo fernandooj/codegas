@@ -68,7 +68,7 @@ class Pedido extends Component{
                     style={e.estado=="espera" 
                         ?[style.pedidoBtn, {backgroundColor:"#5bc0de"}] 
                         :e.estado=="noentregado" 
-                        ?[style.pedidoBtn, {backgroundColor:"#b5b4b4"}] 
+                        ?[style.pedidoBtn, {backgroundColor:"#ffffff"}] 
                         :e.estado=="innactivo" 
                         ?[style.pedidoBtn, {backgroundColor:"#d9534f"}] 
                         :e.estado=="activo" && !e.entregado 
@@ -88,18 +88,18 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
                     </View>
                     <View style={style.containerPedidos}>
-                        <Text style={style.textPedido}>Fecha creación </Text>
+                        <Text style={style.textPedido}>Fecha de creación </Text>
                         <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
                     </View>
                     {
                         <View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>Fecha Asignacion </Text>
+                            <Text style={style.textPedido}>Fecha solicitud </Text>
                             <Text style={style.textPedido}>{ e.fechaEntrega ?moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD") :"sin fecha de asignación"}</Text>
                         </View>
                     }
                     <View style={style.containerPedidos}>
-                        <Text style={style.textPedido}>{e.forma}</Text>
-                        <Text style={style.textPedido}>{e.cantidad ?e.cantidad :""}</Text>
+                        <Text style={style.textPedido}>Tipo de solicitud:</Text>
+                        <Text style={style.textPedido}>{e.forma} {e.cantidad ?" - "+e.cantidad :""}</Text>
                     </View>
                     {
                         e.carroId
@@ -516,8 +516,6 @@ class Pedido extends Component{
 	render(){
         const {navigation, pedidos} = this.props
         const {idUsuario} = this.state
-        console.log(this.state.tokenPhone)
-        console.log(pedidos)
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
         }else if(idUsuario=="FAIL"){

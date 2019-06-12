@@ -62,7 +62,7 @@ export function registerAppListener(navigation){
         }, 500)
       }
       setTimeout(()=>{
-        alert(`User tapped notification\n${JSON.stringify(notif)}`)
+        // alert(`User tapped notification\n${JSON.stringify(notif)}`)
       }, 500)
     }
 

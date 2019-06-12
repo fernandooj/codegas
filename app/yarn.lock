@@ -5334,6 +5334,13 @@ react-native-keyboard-listener@^1.1.0:
   dependencies:
     prop-types "^15.6.0"
 
+react-native-lightbox@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/react-native-lightbox/-/react-native-lightbox-0.8.0.tgz#d132e9df458936bae6ae912c309775dce301fffc"
+  integrity sha512-qiPx8ordPiDuyBNIfR0pxxNERSIeOSU0P40bpPSEMyuQ6xsI4JDghyuRFD+onRjIpNnuOolsLCbsTTjeVwAB5g==
+  dependencies:
+    prop-types "^15.5.10"
+
 react-native-masked-text@^1.12.2:
   version "1.12.2"
   resolved "https://registry.yarnpkg.com/react-native-masked-text/-/react-native-masked-text-1.12.2.tgz#0c91bc24ccfdf3266da7fac3f10834fa21fb02c4"
@@ -5398,10 +5405,10 @@ react-native-simple-toast@^0.0.8:
   resolved "https://registry.yarnpkg.com/react-native-simple-toast/-/react-native-simple-toast-0.0.8.tgz#513f4add8d30e4c5109e536bfc6ea5825fea5d83"
   integrity sha512-qfhHsAtZuMV7llF74WjAHCjAQhfyDDRVrE9nmczCZSHZ5JRZ3XkqnZ8IyNnNUQMsGQodyV+0QEf5uPiWBICnUA==
 
-react-native-spinkit@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-spinkit/-/react-native-spinkit-1.2.0.tgz#bc3eb2cf44f0233928721b53f3eb1d6bfb1322e4"
-  integrity sha512-q+o0LcoF6x0cr9rByA9QUaykTra5jwkuQnwzS1thaHF1aNSQ0LD4DuIu/qkvaO+zXtz5U9MPszghjVTcqn2ENA==
+react-native-spinkit@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/react-native-spinkit/-/react-native-spinkit-1.3.0.tgz#d238fb2a52e7c4e121c1ee2025a4fd55568b1f7a"
+  integrity sha512-VZW/ZpWVDZ+3ZibVVEPBKtwniXLj1gPWFikXROOHLa7wIs2C6SM5tzceTUxW7XqP5KjmVx+56EFFQPqmY4Xf/A==
   dependencies:
     prop-types "^15.5.8"
 

@@ -6,12 +6,13 @@ import {connect} from 'react-redux'
 import axios     from 'axios' 
 import Icon from 'react-native-fa-icons' 
 import { getMensajes, getConversacion } from "../../redux/actions/mensajeActions";
-import AutoHeightImage from 'react-native-scalable-image';
+import ImageEscalable from 'react-native-scalable-image';
 import { createImageProgress } from 'react-native-image-progress';
 import FastImage from 'react-native-fast-image';
 import {sendRemoteNotification} from '../push/envioNotificacion';
 import SocketIOClient from 'socket.io-client';
 import TomarFoto from "../components/tomarFoto";
+import Lightbox from 'react-native-lightbox';
 import {URL} from "../../../App"
 let size = Dimensions.get('window');
 const ImageProgress = createImageProgress(FastImage);
@@ -29,16 +30,19 @@ class Conversacion extends Component{
 		try {
 			let idUsuario = await AsyncStorage.getItem('userId')
 			const acceso  = await AsyncStorage.getItem('acceso')
+			let tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
+			tokenPhone = JSON.parse(tokenPhone)
 			idUsuario = idUsuario ?idUsuario :123
-			this.setState({idUsuario, acceso})
+			this.setState({idUsuario, acceso, tokenPhone})
+			// let tokenPhone ="dSX6avjLBQo:APA91bFhrGvki63yKSSKG3up0YxaDlX9U856ZKQb-c-ZAafiV6_uwk0Mr3kE-9cmlSfQhJ_YAytBhvYlBNvqn9ZU0E3Zc7gzbbmDkPVSFxW_C1dPjfRwZft7U46hBYa3DtT_XXrVf-Zm"
+			// let  id = "5cf0a17eeb2fa0220b12e38d"
+			console.log({tokenPhone})
+			
 		} catch (error) {
 			alert(error)
 		}
-		const {id, tokenPhone} = this.props.navigation.state.params
-		// let tokenPhone ="dSX6avjLBQo:APA91bFhrGvki63yKSSKG3up0YxaDlX9U856ZKQb-c-ZAafiV6_uwk0Mr3kE-9cmlSfQhJ_YAytBhvYlBNvqn9ZU0E3Zc7gzbbmDkPVSFxW_C1dPjfRwZft7U46hBYa3DtT_XXrVf-Zm"
-		// let  id = "5cf0a17eeb2fa0220b12e38d"
-		// console.log({tokenPhone})
-		this.setState({id, tokenPhone})
+		const {id} = this.props.navigation.state.params
+		this.setState({id})
 		this.props.getMensajes(id)
 		this.props.getConversacion(id)
 		this.socket = SocketIOClient(URL);
@@ -61,11 +65,13 @@ class Conversacion extends Component{
 		}
 	}
 	reciveMensanje(mensaje){
+		console.log({mensaje})
 		this.props.getMensajes(this.state.id)
 	} 
 	renderMensajes(){
-		const {usuario, mensaje} = this.props
+		const {usuario, mensaje, navigator} = this.props
 		const {tokenPhone} = this.state
+		console.log({tokenPhone, mensaje})
 		return mensaje.map((e, key)=>{
 			return(
 				<View style={tokenPhone==e.usuarioId.tokenPhone ?style.conMensaje1 :style.conMensaje2} key={key}>
@@ -75,15 +81,21 @@ class Conversacion extends Component{
 							<Text>{e.mensaje}</Text>	
 						</View>
 						:<View style={tokenPhone==e.usuarioId.tokenPhone ?style.contenedorImagen1 :style.contenedorImagen2}>
-							<ImageProgress 
-								resizeMode="contain" 
-								// renderError={ (err) => { return (<Image source={require('../../assets/img/imgError.png')} style={style.imagenError} />) }} 
-								source={{uri: e.imagen}}
-								style={{width:size.width/2, height:130}}
-							/>
+							<Lightbox 
+								renderContent={() => (
+									<ImageEscalable 
+										source={{ uri: e.imagen }}
+										width={size.width}
+									/>
+								)}
+							>
+								<ImageProgress 
+									source={{uri: e.imagen}}
+									style={{width:size.width/2, height:140}}
+								/>
+							</Lightbox>	
 						</View>
-					}
-					
+					}			
 				</View>
 			)
 		})
@@ -155,6 +167,7 @@ class Conversacion extends Component{
 				
 				{this.renderCabezera()}
 				<Text style={style.textoUnirse}>{acceso=="admin" || acceso=="solucion" ?usuarioId2.nombre :usuarioId1.nombre} se ha unido a esta conversacion</Text>
+			 
 			{
 				Platform.OS=='android'
 					?<View style={{flex:1}}>
@@ -215,8 +228,8 @@ class Conversacion extends Component{
 							>
 									<Icon name={'times-circle'} style={style.iconCerrar} />
 							</TouchableOpacity>
-							<AutoHeightImage
-								width={size.width}
+							<ImageEscalable
+								width={size.width-120}
 								source={{uri: imagen.uri}}
 							/>
 
@@ -262,6 +275,7 @@ class Conversacion extends Component{
 				if(res.data.status){
 					this.setState({previewImagen:false})
 					this.setState({loadingImage:false})
+					this.props.getMensajes(this.state.id)
 					sendRemoteNotification(2, tokenPhone, "conversacion", "nuevo mensaje", `: ${imagen.uri}`, null, null )
 				}
 		})
@@ -294,6 +308,7 @@ class Conversacion extends Component{
 			if(e.data.status){
 				this.setState({mensaje:"", showSpin:false}) 
 				sendRemoteNotification(1, tokenPhone, "conversacion", "nuevo mensaje", `: ${mensaje}`, null, null )
+			
 			}else{
 				alert("Opss!! tuvimos un error intentalo nuevamente")
 			}

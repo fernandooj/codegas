@@ -8,7 +8,7 @@ let carroServices = require('../services/carroServices.js')
  
 
 ////////////////////////////////////////////////////////////
-////////////        OBTENGO TODOS LOS carroS SI ES CLIENTE, TRAE SUS RESPECTIVOS carroS
+////////////        OBTENGO TODOS LOS CARROS
 ////////////////////////////////////////////////////////////
 router.get('/', (req,res)=>{
     if (!req.session.usuario) {
@@ -21,7 +21,24 @@ router.get('/', (req,res)=>{
                 res.json({ status:false, message: err,  carro:[] }); 
             }
         })
- 
+    }
+})
+
+
+////////////////////////////////////////////////////////////
+////////////        OBTENGO TODOS LOS ACTIVOS
+////////////////////////////////////////////////////////////
+router.get('/no_eliminados', (req,res)=>{
+    if (!req.session.usuario) {
+        res.json({ status:false, message: 'No hay un usuario logueado' }); 
+    }else{
+        carroServices.getNoEliminados((err, carro)=>{
+            if (!err) {
+                res.json({ status: true, carro }); 
+            }else{
+                res.json({ status:false, message: err,  carro:[] }); 
+            }
+        })
     }
 })
 
@@ -110,11 +127,11 @@ router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
 ///////////////////////////////////////////////////////////////
 ////////////      ELIMINAR
 //////////////////////////////////////////////////////////////
-router.get('/eliminar/:idPedido/:estado', (req,res)=>{
+router.get('/eliminar/:idVehiculo/:estado', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        carroServices.eliminar(req.params.idPedido, req.params.estado, (err, pedido)=>{
+        carroServices.eliminar(req.params.idVehiculo, req.params.estado, (err, pedido)=>{
             if (!err) {
                 res.json({ status:true, pedido }); 
             }else{

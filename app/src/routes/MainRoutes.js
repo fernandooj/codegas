@@ -16,6 +16,7 @@ import conversacionComponent from '../pages/conversacion/conversacion';
 import mensajeComponent	 	 from '../pages/mensaje/mensaje';
 import vehiculoComponent	 from '../pages/vehiculo/vehiculo';
 import nuevoPedidoComponent	 from '../pages/nuevo_pedido/nuevo_pedido';
+import recuperarComponent	 from '../pages/recuperar_pass/recuperar_pass';
  
  
  
@@ -50,6 +51,7 @@ import nuevoPedidoComponent	 from '../pages/nuevo_pedido/nuevo_pedido';
 // }
 const AppNavigator = createStackNavigator({
 	Home  		 : {screen: homeComponent},
+	inicio 		 : {screen: homeComponent},
 	perfil       : {screen: perfilComponent},
 	verPerfil    : {screen: verPerfilComponent},
 	confirmar    : {screen: confirmarComponent},
@@ -59,6 +61,7 @@ const AppNavigator = createStackNavigator({
 	vehiculo     : {screen: vehiculoComponent},
 	nuevo_pedido : {screen: nuevoPedidoComponent},
 	conversacion : {screen: conversacionComponent},
+	recuperar 	 : {screen: recuperarComponent},
   },{ headerMode: 'none'});
 
 export default createAppContainer(AppNavigator)

@@ -1,9 +1,9 @@
 import React, {Component} from 'react'
-import {View, Text, Image, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert} from 'react-native'
 import {style}   from './style'
 import {connect} from 'react-redux' 
 import axios from "axios"
- 
+import AsyncStorage from '@react-native-community/async-storage';
 import RNPickerSelect from 'react-native-picker-select';
 import Footer    from '../components/footer'
 import TomarFoto from "../components/tomarFoto";
@@ -58,11 +58,10 @@ class verPerfil extends Component{
      
     renderPerfil(){
         const {razon_social, cedula, direccion, email, nombre, celular,  codt, acceso, tipoAcceso, avatar, cargando} = this.state
-        console.log(acceso)
+        console.log({acceso, tipoAcceso})
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:50}}>
-                
-                <Text style={style.titulo}>Nuevo {acceso}</Text>
+            {tipoAcceso=="admin" &&<Text style={style.titulo}>Nuevo {acceso}</Text> }
             {/* ACCESO */}	 
                 {
                     tipoAcceso=="admin"
@@ -79,7 +78,7 @@ class verPerfil extends Component{
                             {label: 'Conductor',        value: 'conductor', key: 'conductor'},
                             {label: 'Cliente',          value: 'cliente',   key: 'cliente'}
                         ]}
-                        onValueChange={acceso => { this.setState({ acceso,  });  }}
+                        onValueChange={acceso => {this.setState({ acceso })}}
                         mode="dropdown"
                         style={{
                             ...style,
@@ -213,11 +212,19 @@ class verPerfil extends Component{
                         /> 
                     </View>
                 }
-            {/* BOTON GUARDAR */}	    
-                <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+            {/* BOTON GUARDAR */}
+                {
+                    tipoAcceso
+                    ?<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                        {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
+                        <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
+                    </TouchableOpacity> 
+                    :<TouchableOpacity style={style.btnGuardar} onPress={()=>this.editarUsuario()}>
                     {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
-                    <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
+                    <Text style={style.textGuardar}>{cargando ?"Editando" :"Editar"}</Text>
                 </TouchableOpacity> 
+                }
+                
             </ScrollView>  
             
         )
@@ -299,10 +306,8 @@ class verPerfil extends Component{
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                alert("Usuario guardado con exito")
-                this.props.navigation.navigate("perfil")
+                this.loginExitoso(res.data.user)
             }
-            // res.data.status=="SUCCESS" &&this.setState({showLoading:false})
         })
         .catch(err=>{
             this.setState({cargando:false})
@@ -325,7 +330,7 @@ class verPerfil extends Component{
         const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
         console.log({razon_social, cedula, ubicacion, direccion, nombre, email,  tipo, celular, tipo, acceso, codt, imagen})
         if(acceso=="cliente"){
-            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="" || codt==""){
+            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario" || codt==""){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
@@ -338,7 +343,7 @@ class verPerfil extends Component{
                 this.guardarUsuario()
             }
         }else{
-            if(cedula=="" || email=="" || nombre=="" ||  celular=="" || !imagen){
+            if(cedula=="" || email=="" || nombre=="" || acceso=="usuario" || celular=="" || !imagen){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     "",
@@ -376,7 +381,40 @@ class verPerfil extends Component{
             console.log(err)
             this.setState({cargando:false})
         })
-    }	 
+    }	
+    editarUsuario(e){
+        this.setState({cargando:true})
+        const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
+        
+        axios.put("user/update", {razon_social, cedula, ubicacion, direccion, nombre, email, celular, tipo, acceso, codt})
+        .then(e=>{
+            console.log(imagen)
+            console.log(e.data)
+            if(e.data.status){
+                if(imagen) {
+                    this.avatar(imagen, e.data.user._id)
+                }else{
+                    this.loginExitoso(e.data.user)
+                    
+                }
+            }else{
+                Toast.show("Tenemos problemas, intentalo nuevamente")
+                this.setState({cargando:false})
+            }
+        })
+        .catch(err=>{
+            console.log(err)
+            this.setState({cargando:false})
+        })
+    } 
+    async loginExitoso(user){
+        console.log(user)
+        AsyncStorage.setItem('nombre', user.nombre)
+        AsyncStorage.setItem('avatar', user.avatar)
+        alert("Usuario guardado con exito")
+        this.setState({cargando:false})
+        // this.setState({userId:user._id, cargando:false, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
+    }
 }
 const mapState = state => {
    

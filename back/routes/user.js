@@ -85,12 +85,13 @@ module.exports = function(app, passport){
             }else{
                 userServices.modificaToken(user, token, (err2, user)=>{
                     if(!err2){
-                        let text1 = `<font size="5">Si solicitaste cambiar tu contraseña, inserta este codigo </h2>`;
-                        let boton = `completar_perfil`;
-                        let text2 = "de lo contrario has caso omiso a este mensaje";
-                        let url1  = `x/v1/user/token?username=${user.username}&token=${user.token}`
+                        let titulo = `<font size="5">Recuperar Contraseña</font>`
+                         
+                        let text1  = `Hola ${user.nombre} si desea recuperar su contraseña este es el codigo de recuperación: ${token}`
+                        let text2  = `Este codigo tiene valides de 1 hora`
+                        let asunto =  "Nuevo codigo de verificación"  
                             
-                        htmlTemplate(req, user, text1, boton, text2, url1, "Cambio contraseña", token)
+                        htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
                         res.json({status: 'SUCCESS', token, code:1})  
                     }
                 })   
@@ -213,34 +214,19 @@ module.exports = function(app, passport){
     modificar usuarios
     */
     ///////////////////////////////////////////////////////////////////////////
-    app.put('/x/v1/user/update', function(req, res){
+    app.put('/x/v1/user/update', (req, res)=>{
         if(!req.session.usuario){
             res.json({ status: false, message: 'Usuario Innactivo'}) 
         } else{
-           
             userServices.edit(req.body, req.session.usuario._id, (err, user)=>{ 
                 if(!err){
-                    console.log(err)
                     userServices.getEmail(user, (err2, users)=>{    
-                        if(!users.avatar){
-                            let random = Math.round(Math.random()*3);
-                            let avatar = req.protocol+'://'+req.get('Host')+"/uploads/avatar/avatar"+random+".png"
-                            users["avatar"] = avatar
-                            userServices.avatar(req.session.usuario._id, avatar, function(err, avatar){
-                                if (!err) {
-                                    req.session.usuario=users
-                                    res.json({ status: true, message: 'Avatar Actualizado', avatar }); 
-                                }else{
-                                    res.json({ status: false, message: err }); 
-                                }
-                            })
-                        }else{
+                        if(!err2){
                             req.session.usuario=users
-                            res.json({ status: true, message: 'Usuario Activado'});
+                            res.json({ status: true, user: users, message: 'Usuario Editado'});
                         }
                     })   
                 }
-                
             })                 
         }
     })
@@ -318,6 +304,22 @@ module.exports = function(app, passport){
         }
     })
 
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////      lista conductores sin vehiculos asignados
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/conductores/sinVehiculo', (req,res)=>{
+        if(req.session.usuario){
+            userServices.sinVehiculo(req.params.acceso, (err, usuarios)=>{
+                if(!err){
+                    res.json({status:'SUCCESS', usuarios})
+                }else{
+                    res.json({ status: 'FAIL', usuarios:[], err}) 
+                }
+            })
+        }else{
+            res.json({ status: 'FAIL', message:'usuario no logueado', usuarios:[]})  
+        }
+    })
 
     ///////////////////////////////////////////////////////////////////////////
     //////////////////      lista usuario ADMIN Y SOLUCION

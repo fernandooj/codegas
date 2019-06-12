@@ -106,4 +106,10 @@ export const style = MediaQueryStyleSheet.create({
 	iconCargando:{
 		color:"#ffffff"
 	},
+	btnOlvidar:{
+		marginVertical:25
+	},
+	textOlvidar:{
+		color:"#00218b"
+	},
 })

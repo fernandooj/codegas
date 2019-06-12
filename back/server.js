@@ -41,7 +41,7 @@ let flash    = require('connect-flash');
 /////////////////////////////////////////////////////////////////////////
 /***** puerto donde va a funcionar el servidor por defecto 3030  *******/
 /////////////////////////////////////////////////////////////////////////
-let port = process.env.port || 8080;
+let port = process.env.port || 8181;
 
 
 
@@ -72,13 +72,13 @@ mongoose.connect(config.database, { useMongoClient: true })
 
 // llamo a los archivos estaticos
 app.get('/:url', (req, res) => {
-  res.sendFile(path.join(__dirname, '../front/docs/index.html'));
+  res.sendFile(path.join(__dirname, '../front/public/index.html'));
 });
 app.get('/:url/:url', (req, res) => {
-  res.sendFile(path.join(__dirname, '../front/docs/index.html'));
+  res.sendFile(path.join(__dirname, '../front/public/index.html'));
 });
 
-app.use(express.static('../front/docs'));
+app.use(express.static('../front/public'));
 
 app.use(bodyParser.urlencoded({limit: '50mb', extended: false }));
 app.use(bodyParser.json({limit: '50mb', extended: true}));
@@ -109,7 +109,7 @@ app.use('/x/v1/men/mensaje',      mensajeRutas)
 app.use('/x/v1/ped/pedido',       pedidoRutas) 
 app.use('/x/v1/nov/novedad',      novedadRutas) 
 app.use('/x/v1/veh/vehiculo',        carroRutas) 
-require('./routes/User.js')(app, passport);
+require('./routes/user.js')(app, passport);
 
 server.listen(port)
 console.log("run in: " + port)

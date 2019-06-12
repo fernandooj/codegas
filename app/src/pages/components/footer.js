@@ -70,7 +70,7 @@ export default class FooterComponent extends Component{
 		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, acceso, user} = this.state
 		return(
 			<View style={style.contenedorFooter}>
-				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('Home')}>
+				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>
 					<Icon name="home" style={style.icon} />
 					<Text style={style.textFooter}>Inicio</Text>
 				</TouchableOpacity>

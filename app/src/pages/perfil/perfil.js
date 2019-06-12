@@ -1,11 +1,11 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, ScrollView, Image} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage from '@react-native-community/async-storage';
 import Footer   from '../components/footer'
 import axios    from 'axios'
 import Icon from 'react-native-fa-icons';
-import FCM, { NotificationActionType } from "react-native-fcm";
+import FCM from "react-native-fcm";
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
 import {style} from './style'
@@ -25,6 +25,7 @@ class Home extends Component{
             const email 	= await AsyncStorage.getItem('email')
             const avatar    = await AsyncStorage.getItem('avatar')
             const acceso    = await AsyncStorage.getItem('acceso')
+            console.log(nombre)
             userId ?this.setState({userId, nombre, email, avatar, acceso}) :null
         }catch(e){
             console.log(e)
@@ -56,9 +57,12 @@ class Home extends Component{
                         secureTextEntry
                         value={password2}
                     />
-                     <TouchableOpacity style={style.btnGuardar} onPress={()=>this.login()}>
+                    <TouchableOpacity style={style.btnGuardar} onPress={()=>this.login()}>
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
                         <Text style={style.textGuardar}>{cargando ?"Cargando" :"Iniciar Sesión"}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={style.btnOlvidar} onPress={()=>this.props.navigation.navigate("recuperar")}>
+                        <Text style={style.textOlvidar}>Olvide mi contraseña</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -176,6 +180,7 @@ class Home extends Component{
     async login(){
         this.setState({cargando:true})
         const {email2, password2, tokenPhone} = this.state
+        console.log(tokenPhone)
         axios.post("user/login", {email:email2, password:password2, tokenPhone})
         .then(res=>{
             if(res.data.status){

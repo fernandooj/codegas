@@ -22,7 +22,7 @@ class pedidoServices{
 		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({_id: 'desc'}).exec(callback)
 	}
 	create(data, usuarioId, usuarioCrea, callback){
-		let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
+		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		let creado = moment(fecha).valueOf()
 		let newPedido = new pedido({
 			forma      : data.forma,

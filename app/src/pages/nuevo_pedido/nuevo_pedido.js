@@ -3,6 +3,7 @@ import {View, Text, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage        from '@react-native-community/async-storage';
 import Icon                from 'react-native-fa-icons';
+import moment 			   from 'moment-timezone'
 import axios               from 'axios'
 import ModalSelector       from 'react-native-modal-selector'
 import ModalFilterPicker   from 'react-native-modal-filter-picker'
@@ -303,13 +304,14 @@ class Nuevo_pedido extends Component{
     handleSubmit(){
         let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios} = this.state
         email = idCliente ?emailCliente :email
+        
         console.log({forma, email, cantidad, dia1, dia2, frecuencia, idCliente})
         axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente})
         .then(e=>{
             console.log(usuarios)
             if(e.data.status){
                 usuarios.filter(e=>{
-                    sendRemoteNotification(2, e.tokenPhone, "pedidos", `Nuevo Pedido ${forma} - ${cantidad}`, null, null, null )
+                    sendRemoteNotification(2, e.tokenPhone, "pedidos", `Nuevo Pedido`, `${forma} ${cantidad ?cantidad :""}`, null, null )
                 })
                 alert("Su pedido ha sido guardado")    
                 this.props.navigation.navigate("pedido")

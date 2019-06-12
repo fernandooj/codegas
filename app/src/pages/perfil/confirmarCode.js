@@ -72,7 +72,6 @@ export default class ConfirmarComponent extends Component{
         }else{
             Toast.show("Codigo Incorrecto")
         }
-
     }
  
 }

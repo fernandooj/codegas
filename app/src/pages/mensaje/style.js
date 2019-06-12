@@ -24,7 +24,7 @@ export const style = MediaQueryStyleSheet.create({
         shadowOffset: { height: 2, width: 2 }, // IOS
         shadowOpacity: .5, // IOS
         shadowRadius: 5, //IOS
-        elevation: 7, // Android
+        elevation: Platform.OS==='android' ?1 :7, // Android
         borderRadius:5,
         backgroundColor:"rgba(56,164,264,.5)",
     },
@@ -44,7 +44,7 @@ export const style = MediaQueryStyleSheet.create({
         shadowOffset: { height: 2, width: 2 }, // IOS
         shadowOpacity: .5, // IOS
         shadowRadius: 5, //IOS
-        elevation: 7, // Android
+        elevation: Platform.OS==='android' ?1 :7, // Android
         borderRadius:5,
     },
     contenedorImagen1:{
@@ -56,7 +56,7 @@ export const style = MediaQueryStyleSheet.create({
         shadowOffset: { height: 2, width: 2 }, // IOS
         shadowOpacity: .5, // IOS
         shadowRadius: 5, //IOS
-        elevation: 7, // Android
+        elevation: Platform.OS==='android' ?1 :7, // Android
         borderRadius:5,
     },
     contenedorMensajes:{

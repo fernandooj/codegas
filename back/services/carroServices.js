@@ -15,6 +15,9 @@ class carroServices{
 	get(callback){
 		carro.find({}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").sort({_id: 'desc'}).exec(callback)
 	}
+	getNoEliminados(callback){
+		carro.find({eliminado:false}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").sort({_id: 'desc'}).exec(callback)
+	}
 	getByCarro(_id, callback){
 		carro.findOne({_id}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").exec(callback)
 	}
@@ -32,13 +35,14 @@ class carroServices{
 			creado
 		})
 		newCarro.save(callback)	
-  }
+  	}
     cambiarEstado(_id, activo, callback){
 			carro.findByIdAndUpdate(_id, {$set: {
 				'activo':activo
 			}}, callback);
     }
     eliminar(_id, eliminado, callback){
+		console.log({_id})
 		carro.findByIdAndUpdate(_id, {$set: {
 			'eliminado':eliminado
 		}}, callback);

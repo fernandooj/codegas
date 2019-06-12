@@ -17,6 +17,7 @@ class Pedido extends Component{
 	constructor(props) {
 	  super(props);
 	  this.state={
+        placa:"",
         modalConductor:false,
         top:new Animated.Value(size.height),
 	  }
@@ -48,7 +49,7 @@ class Pedido extends Component{
                     <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.setState({modalConductor:true, placaVehiculo:e.placa, conductor:e.conductor ?e.conductor._id :"", idVehiculo:e._id})}>
                         <Icon name={'pencil'} style={style.iconCerrar} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={style.btnVehiculo}>
+                    <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.eliminarVehiculo(e.placa, e._id )}>
                         <Icon name={'trash'} style={style.iconCerrar} />
                     </TouchableOpacity>
                 </View>
@@ -120,7 +121,6 @@ class Pedido extends Component{
             </View>
         )    
     }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,8 +141,9 @@ class Pedido extends Component{
             axios.get(`veh/vehiculo/asignarConductor/${idVehiculo}/${idConductor}`)
             .then((res)=>{
                 if(res.data.status){
+                    // this.setState({modalConductor:false})
                     this.props.getVehiculos()
-                    alert("Conductor Agregado con exito") 
+                    Toast.show("Conductor Agregado con exito") 
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                 }
@@ -176,25 +177,57 @@ class Pedido extends Component{
                 }
             })
         }
-    }
-
-      
+    }     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            CREAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearVehiculo(){
         const {placa} = this.state
-        axios.post(`veh/vehiculo/`, {placa})
-        .then(res=>{
-            console.log(res.data)
-            if(res.data.status){
-                alert("Vehiculo Guardado")
-                this.setState({placa:""})
-                this.props.getVehiculos()
-            }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
-            }
-        })
+        if(placa.length>5){
+            axios.post(`veh/vehiculo/`, {placa})
+            .then(res=>{
+                console.log(res.data)
+                if(res.data.status){
+                    Toast.show("Vehiculo Guardado", Toast.LONG)
+                    this.setState({placa:""})
+                    this.props.getVehiculos()
+                }else{
+                    Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                }
+            })
+        }else{
+            Toast.show("Placa invalida")
+        }
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////            ELIMINAR VEHICULO
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    eliminarVehiculo(placaVehiculo, idVehiculo){
+        Alert.alert(
+            `Seguro deseas eliminar ${idVehiculo}`,
+            `a la placa: ${placaVehiculo}`,
+            [
+              {text: 'Confirmar', onPress: () => confirmar1()},
+               
+              {text: 'Cancelar', onPress: () => console.log()},
+            ],
+            {cancelable: false},
+        );
+        const confirmar1 =()=>{
+            axios.get(`veh/vehiculo/eliminar/${idVehiculo}/true`)
+            .then((res)=>{
+                console.log(res.data)
+                if(res.data.status){
+                    let textEliminado = `Vehiculo ${placaVehiculo} eliminado`;
+                    textEliminado = textEliminado.toString();
+                    Toast.show(textEliminado, Toast.LONG)
+                    
+                    this.props.getVehiculos()
+                }else{
+                    Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                }
+            })
+        }
     }
     
      
