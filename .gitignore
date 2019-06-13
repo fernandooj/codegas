@@ -14,4 +14,4 @@ front/docs/public
 /.nyc_output
 
 .DS_Store
-front/package.json
+front/yarn.lock
