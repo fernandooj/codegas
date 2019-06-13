@@ -1,0 +1,39 @@
+/* common: */
+
+@import "./common.scss";
+
+.navbar-default .navbar-collapse{
+	background:#148dc9
+}
+
+nav{
+	background:#eee;
+	margin-bottom: 30px;
+	a{
+		color:white ;
+		font-size: 18px;
+		display: inline !important;
+		margin-left:12px !important
+	}
+	img{
+		width: 100px;
+		margin-left: 20px;
+	}
+	section{
+		display:inline-block;
+	}
+	section:last-child{
+		float: right;
+	}
+	ul{
+		margin-top: 28px !important;
+		background: #eee !important;
+	}
+	i{
+		margin:0 !important;
+		font-size: 18px;
+	}
+	span{
+		margin-right:10px !important
+	}
+}

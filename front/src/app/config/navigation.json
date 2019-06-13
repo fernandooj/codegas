@@ -1,0 +1,36 @@
+{
+  "brand"       : "Qhse Tools",
+  "leftLinks"   : [],
+  "rightLinks"  : [
+    {
+      "label" : "Home",
+      "link"  : "/dashboard"
+    },
+ 
+    {
+      "label":   "Usuarios",
+      "link":    "/usuario",
+      "view":    "usuario"
+    },
+    {
+      "label":      "Planes",
+      "link":       "/plan",
+      "view":       "plan"
+    },
+    {
+      "label":      "Categoria",
+      "link":       "/categoria",
+      "view":       "categoria"
+    },
+    {
+      "label":      "Restriccion",
+      "link":       "/restriccion",
+      "view":       "restriccion"
+    },
+    {
+      "label":      "Estadisticas",
+      "link":       "/estadistica",
+      "view":       "estadistica"
+    }
+  ]
+}

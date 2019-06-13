@@ -8,7 +8,6 @@ build/
 dist/
 public/assets/
 recursos/
-front
 front/docs/
 front/docs/public
 /coverage

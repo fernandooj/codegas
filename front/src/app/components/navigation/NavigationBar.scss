@@ -1,0 +1,55 @@
+.subMenu{
+    background: #054b5f;
+    position: absolute;
+    top: 62px;
+    padding: 21px;
+    left: -250px;
+    transition:.5s;
+    z-index:1000;
+	a{
+		display: block;
+		padding: 13px;
+		:hover{
+			background:#ff8e00
+		}
+	}
+}
+.subMenu1{
+    background: #054b5f;
+    position: absolute;
+    top: 62px;
+    padding: 21px;
+    left: 0;
+    transition:.5s;
+        z-index:1000;
+    	a{
+		display: block;
+		padding: 13px;
+		:hover{
+			background:#ff8e00
+		}
+	}
+}
+.hamburger{
+	color: #ffffff;
+	padding: 6px 9px;
+	margin: 0 11px;
+	font-size: 22px !important;
+	cursor:pointer;
+}
+.Registrarse{
+	background: red
+}
+
+
+
+@media (max-width: 768px){
+	.subMenu1{
+		padding: 0;
+		width: 200px;
+	}
+	.hamburger{
+		padding: 6px 3px;
+		margin: 0 0px;
+	}
+}
