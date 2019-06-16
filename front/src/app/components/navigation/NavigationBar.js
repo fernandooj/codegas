@@ -2,13 +2,9 @@
 
 import React, { PureComponent } from "react";
 import PropTypes from "prop-types";
-import Humburger from "./humburger/Humburger";
 import { Link } from "react-router-dom";
-import {
-  getPerfil
-} from "../../redux/actions/usuarioActions";
+import { getPerfil } from "../../redux/actions/usuarioActions";
 import { connect } from "react-redux";
-
 import {
   Collapse,
   Navbar,
@@ -16,17 +12,15 @@ import {
   Nav,
   NavItem,
   Popover,
-  PopoverBody,
+ 
 } from "reactstrap";
+import style from "./NavigationBar.scss"
 import socket from '../../socket.js'
-
 import {URL} from "../../index"
 
 class NavigationBar extends PureComponent {
   constructor(props) {
     super(props);
-
-    this.toggle = this.toggle.bind(this);
     this.state = {
       isOpen: false,
       badgeMessage:true,
@@ -37,7 +31,7 @@ class NavigationBar extends PureComponent {
   }
   async componentWillMount() {
     this.props.getPerfil();
-    console.log(localStorage.getItem('userId'))
+    // console.log(localStorage.getItem('userId'))
     socket.on(`badgeMensaje${localStorage.getItem('userId')}`, 	this.reciveMensanje.bind(this));
     socket.on(`badgeCuenta${localStorage.getItem('userId')}`, 	this.reciveMensanjeCuenta.bind(this));
   }
@@ -48,12 +42,7 @@ class NavigationBar extends PureComponent {
     console.log(messages)
     this.setState({badgeSocketCuenta:this.state.badgeSocketCuenta+1, badgeCuenta:true })
   }
-  toggle() {
-    this.setState({
-      isOpen: !this.state.isOpen
-    });
-  }
-  
+   
   logout = e => {
     e.preventDefault();
     
@@ -70,137 +59,120 @@ class NavigationBar extends PureComponent {
   } 
 
   render() {
-    const { profile } = this.props;
-    console.log(this.state.badgeSocketMessage)
+    const { perfil, status } = this.props;
+    const { badgeSocketMessage, badgeSocketCuenta, badgeCuenta, badgeMessage } = this.state;
+    console.log({status})
     return (
-      <Navbar light expand="md">
-        {profile.status == "SUCCESS" ? <Humburger profile={profile} /> : null}
-          <Link to="/"><img src={`${URL}logo_releo.png`} style={{width:"95px"}}  /></Link>
-          
-        {
-          window.innerWidth<768
-          ?profile.status == "SUCCESS"
-          ?<section>
-            <Link to="/nuevo_libro" >
-              <img src={`${URL}nuevoLibro.png`} style={{width:"39px"}} id="Popover1"  onMouseEnter={()=>this.setState({popUp:true})} onMouseLeave={()=>this.setState({popUp:false})}  />
-              </Link>
-              <aside onClick={()=>this.redirecCuenta()}>
-                    <img src={`${URL}campana.png`}  />
-                    { 
-                      this.state.badgeSocketCuenta>0  
-                      ?<section>{this.state.badgeSocketCuenta+profile.user.badge}</section>
-                      :profile.user.badge>0 && this.state.badgeCuenta ?<section>{profile.user.badge}</section> :null
-                    }
-                   
-                  </aside>
-                  <aside onClick={()=>this.redirecMessage()}>
-                    <img src={`${URL}message.png`}  />
-                    { 
-                      this.state.badgeSocketMessage>0  && this.state.badgeMessage 
-                      &&<section>{this.state.badgeSocketMessage}</section>
-                       
-                    }
-                   
-                  </aside>
-          </section>
-          :<Link to="/registrarse" >
-            <img src={`${URL}nuevoLibro.png`} style={{width:"39px", top:"-9px"}}  id="Popover2"  onMouseEnter={()=>this.setState({popUp:true})} onMouseLeave={()=>this.setState({popUp:false})} />
-          </Link>
-          :null
-        }
+      <nav className={style.nav}>
         
-        <NavbarToggler onClick={this.toggle} />
-        <Collapse isOpen={this.state.isOpen} navbar>
-          {profile.status == "SUCCESS" ? (
-            <Nav className="ml-auto" navbar>
-              <Link to="/nuevo_libro" >
-                <img src={`${URL}nuevoLibro.png`}  id="Popover1"  onMouseEnter={()=>this.setState({popUp:true})} onMouseLeave={()=>this.setState({popUp:false})}  />
-              </Link>
-              <Popover
-                placement="bottom"
-                isOpen={this.state.popUp}
-                target="Popover1"
-              >
-                <PopoverBody>Subir Libro</PopoverBody>
-              </Popover>
-              <NavItem>
-                <Link to="/nuevo_libro">Subir Libro</Link>
-              </NavItem>
-              <NavItem>
-                  <aside onClick={()=>this.redirecCuenta()}>
-                    <img src={`${URL}campana.png`}  />
+          <Link to="/"><img src="https://codegascolombia.com/wp-content/uploads/2016/09/logo-codegas.png" className={style.logo} /></Link>
+        {
+          status
+          &&<ul>
+              {/* <li onClick={()=>this.redirecCuenta()}>
+                <img src={`${URL}campana.png`}  />
+                { 
+                  badgeSocketCuenta>0  
+                  ?<section>{badgeSocketCuenta+perfil.badge}</section>
+                  :perfil.badge>0 && badgeCuenta ?<section>{perfil.badge}</section> :null
+                }
+              </li>
+              <li onClick={()=>this.redirecMessage()}>
+                <img src={`${URL}message.png`}  />
+                { 
+                  badgeSocketMessage>0  && badgeMessage 
+                  &&<section>{badgeSocketMessage}</section>
+                }
+              </li> */}
+               <li>
+                  <Link to="/pedidos">
+                    Inicio
+                  </Link>
+                </li>
+               <li>
+                  <Link to="/pedidos">
+                    Pedidos
+                  </Link>
+                </li>
+               <li>
+                  <Link to="/ver_perfil" style={{background:"none"}}>
+                    <img src={perfil.avatar} />
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/ver_perfil">
+                     {perfil.nombre} 
+                  </Link>
+                </li>
+                 <li>
+                  <a href="" onClick={this.logout}>
+                    Salir
+                  </a>
+                </li>
+          </ul>
+        }
+      
+        
+          
+               
+              {/* <NavItem>
+                  <li onClick={()=>this.redirecCuenta()}>
+                    <img src={`${URL}campana.png`}  />  
                     { 
-                      this.state.badgeSocketCuenta>0  
-                      ?<section>{this.state.badgeSocketCuenta+profile.user.badge}</section>
-                      :profile.user.badge>0 && this.state.badgeCuenta ?<section>{profile.user.badge}</section> :null
+                      badgeSocketCuenta>0  
+                      ?<section>{badgeSocketCuenta+perfil.badge}</section>
+                      :perfil.badge>0 && badgeCuenta ?<section>{perfil.badge}</section> :null
                     }
                    
-                  </aside>
-                  <aside onClick={()=>this.redirecMessage()}>
+                  </li>
+                  <li onClick={()=>this.redirecMessage()}>
                     <img src={`${URL}message.png`}  />
                     { 
-                      this.state.badgeSocketMessage>0  && this.state.badgeMessage 
-                      &&<section>{this.state.badgeSocketMessage}</section>
-                       
+                      badgeSocketMessage>0  && badgeMessage 
+                      &&<section>{badgeSocketMessage}</section>
                     }
-                   
-                  </aside>
-              </NavItem>
-              <NavItem>
-                <Link to="/ver_perfil">
-                  <div style={{ backgroundImage: `url(${profile.user.avatar})` }}></div>
-                </Link>
-                <Link to="/ver_perfil">
-                  {" "}
-                  <p>{profile.user.nombre}</p>
-                </Link>
-              </NavItem>
-              <NavItem>
-                <a href="" onClick={this.logout} style={{background:"none", top:10}}>
-                  Salir
-                </a>
-              </NavItem>
-            </Nav>
-          ) : (
-            <Nav className="ml-auto" navbar>
-              <Link to="/registrarse" >
-                 <img src={`${URL}nuevoLibro.png`} id="Popover2"  onMouseEnter={()=>this.setState({popUp:true})} onMouseLeave={()=>this.setState({popUp:false})} style={{top:"-9px"}}/>
-              </Link>
-               <Popover
-                  placement="bottom"
-                  isOpen={this.state.popUp}
-                  target="Popover2"
-                >
-                <PopoverBody>Subir Libro</PopoverBody>
-              </Popover>
-              
-              <NavItem>
-                <Link to="/ingresar">Subir Libro</Link>
-              </NavItem>
-              <NavItem>
-                <Link to="/ingresar">Ingresar</Link>
-              </NavItem>
-              <NavItem>
-                <Link to="/registrarse" className="btn-registrarse">Registrarse</Link>
-              </NavItem>
-            </Nav>
-          )}
-        </Collapse>
-      </Navbar>
+                  </li>
+              </NavItem> */}
+              {/* <ul>
+                <li>
+                  <Link to="/ver_perfil">
+                    <div style={{ backgroundImage: `url(${perfil.avatar})` }}></div>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/ver_perfil">
+                    {" "}
+                    <p>{perfil.nombre}</p>
+                  </Link>
+                </li>
+              </ul>
+              <ul>
+                <li>
+                  <a href="" onClick={this.logout} style={{background:"none", top:10}}>
+                    Salir
+                  </a>
+                </li>
+              </ul> */}
+             
+          
+        
+      </nav>
     );
   }
 }
 NavigationBar.defaultProps = {
-  profile: {}
+  perfil: {}
 };
 
 NavigationBar.propTypes = {
-  profile: PropTypes.object.isRequired
+  perfil: PropTypes.object.isRequired
 };
 
 const mapState = state => {
+  console.log(state)
   return {
-    profile: state.usuario.profile
+    status:state.usuario.perfil.status,
+    perfil:state.usuario.perfil.user,
   };
 };
 

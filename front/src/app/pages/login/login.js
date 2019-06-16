@@ -82,7 +82,6 @@ class Home extends PureComponent {
       if(err){
         console.log(err)
       }else{
-        console.log(valor)
         let email = valor.username;
         let password = valor.password
         axios.post("/user/login", {email, password})

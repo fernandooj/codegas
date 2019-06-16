@@ -6,6 +6,7 @@ import { Route, Switch } from "react-router";
  
 import Home        from "../pages/home/home";
 import login       from "../pages/login/login";
+import pedido      from "../pages/pedido/pedido";
 import {connect} from 'react-redux' 
 import { getPerfil } from "../redux/actions/usuarioActions"; 
  
@@ -19,6 +20,7 @@ class MainRoutes extends React.Component {
       <Switch>
         <Route exact path="/" component={status ?Home :login} />
         <Route exact path="/home" component={Home} />
+        <Route exact path="/pedidos" component={pedido} />
 	
       </Switch>
     );

@@ -45,7 +45,7 @@ router.get('/no_eliminados', (req,res)=>{
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN CARRO POR SU ID
 ////////////////////////////////////////////////////////////
-router.get('/:carroId', (req,res)=>{
+router.get(':carroId', (req,res)=>{
 	carroServices.getByCarro(req.params.carroId, (err, carro)=>{
 		if (err) {
 			res.json({ status:false, message: err }); 
@@ -63,6 +63,24 @@ router.get('/byConductor/:idConductor', (req,res)=>{
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
         carroServices.getByConductor(req.params.idConductor, (err, carro)=>{
+            if (!err) {
+                res.json({ status:true, carro }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+///////////////////////////////////////////////////////////////
+////////////      OBTENGO TODOS LOS VEHICULOS CON SUS PEDIDOS
+//////////////////////////////////////////////////////////////
+router.get('/vehiculosConPedidos/:fecha', (req,res)=>{
+    console.log("fer")
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        carroServices.vehiculosConPedidos(req.params.fecha, (err, carro)=>{
             if (!err) {
                 res.json({ status:true, carro }); 
             }else{
@@ -155,5 +173,7 @@ router.post('/', (req,res)=>{
 		})
 	}
 })
+
+
 
 module.exports = router;

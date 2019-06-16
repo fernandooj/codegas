@@ -1,0 +1,15 @@
+
+
+.contenedorFechas{
+  margin: 20px auto;
+  width: 850px;
+  .subContenedorFechas{
+    border: 1px solid #d6d6d6;
+    display: inline-table;
+    padding: 25px;
+    p{
+      margin: 0;
+      font-size: 25px
+    }
+  }
+}

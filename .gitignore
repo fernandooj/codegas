@@ -9,6 +9,7 @@ dist/
 public/assets/
 recursos/
 front/docs/
+front/package-lock.json
 front/docs/public
 /coverage
 /.nyc_output

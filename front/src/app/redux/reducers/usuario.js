@@ -46,6 +46,6 @@ export default function authServiceReducer(state = {}, action) {
     usuariosAcceso: getUsuariosAcceso(state.usuariosAcceso, action),
     usuario:        getUsuario(state.usuario, action),
     usuarios:       getUsuarios(state.usuarios, action),
-    perfil:         getPerfil(state.usuario, action),
+    perfil:         getPerfil(state.perfil, action),
   };
 }

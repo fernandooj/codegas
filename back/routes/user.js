@@ -134,7 +134,7 @@ module.exports = function(app, passport){
                 }else{
                     if(user.validPassword(req.body.password)){
                         req.session.usuario = user
-                        modificaTokenPhone(req, res)  
+                        req.body.tokenPhone ?modificaTokenPhone(req, res)  :res.json({status:true, user, code:1})
                     }else{
                         res.json({status:false, user: 'Datos incorrectos', code:0 })
                     }     
@@ -178,6 +178,7 @@ module.exports = function(app, passport){
                 celular:      usuario.celular,
                 tipo:         usuario.tipo, 
                 acceso:       usuario.acceso, 
+                avatar:       usuario.avatar, 
             }
             res.json({status:true, user})
              
