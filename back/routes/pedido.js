@@ -5,7 +5,8 @@ let  moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 
 let pedidoServices = require('../services/pedidoServices.js') 
- 
+let userServices = require('./../services/userServices.js') 
+let carroServices = require('../services/carroServices.js') 
 const htmlTemplate = require('../template-email.js')
 
 ////////////////////////////////////////////////////////////
@@ -78,6 +79,24 @@ router.get('/byUser/:idUser', (req,res)=>{
     }
 })
 
+//////////////////////////////////////////////////////////////////
+////////////      OBTENGO TODOS LOS VEHICULOS CON SUS PEDIDOS
+//////////////////////////////////////////////////////////////////
+router.get('/vehiculosConPedidos/:fecha', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        pedidoServices.vehiculosConPedidos(req.params.fecha, (err, carro)=>{
+            if (!err) {
+                res.json({ status:true, carro }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+
 ///////////////////////////////////////////////////////////////
 ////////////       GUARDO UN PEDIDO
 //////////////////////////////////////////////////////////////
@@ -86,18 +105,22 @@ router.post('/', function(req,res){
 		res.json({ status: false, message: 'No hay un usuario logueado' }); 
 	}else{
         let id = req.session.usuario.acceso=="cliente" ?req.session.usuario._id : req.body.idCliente 
-		pedidoServices.create(req.body, id, req.session.usuario._id, (err, pedido)=>{
-			if (!err) {
-                let titulo = `<font size="5">Pedido guardado con exito</font>`;
-                let text1  = `Hola Estimado/a: el pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
-                let text2  = `Forma: <b>${req.body.forma}</b><br/>${req.body.cantidad &&"Cantidad: <b>"+req.body.cantidad+"</b>"}<br/>${req.body.frecuencia &&"Frecuencia: <b>"+req.body.frecuencia+"<b><br/> Dia:"+req.body.dia+"<b><br/>" + req.body.dia2 &&"Dia2:<b>"+req.body.dia+"</b>" } `
-                        
-                htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
-                res.json({ status: true, pedido });	
-            }else{
-                console.log(err)
+        userServices.getById(id, (err, cliente)=>{
+            if(!err){
+                pedidoServices.create(req.body, id, req.session.usuario._id, (err2, pedido)=>{
+                    if (!err2) {
+                        let titulo = `<font size="5">Pedido guardado con exito</font>`;
+                        let text1  = `Hola Estimado/a: el pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
+                        let text2  = `Forma: <b>${req.body.forma}</b><br/>${req.body.cantidad &&"Cantidad: <b>"+req.body.cantidad+"</b>"}<br/>${req.body.frecuencia &&"Frecuencia: <b>"+req.body.frecuencia+"<b><br/> Dia:"+req.body.dia+"<b><br/>" + req.body.dia2 &&"Dia2:<b>"+req.body.dia+"</b>" } `
+                                
+                        htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
+                        res.json({ status: true, pedido });	
+                    }else{
+                        console.log(err2)
+                    }
+                })
             }
-		})
+        })
 	}
 })
 
@@ -108,11 +131,16 @@ router.get('/asignarConductor/:pedidoId/:carroId', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, (err, pedido)=>{
-            if (!err) {
-                res.json({ status:true, pedido }); 
-            }else{
-                res.json({ status:false, message: err }); 
+        carroServices.getByCarro(req.params.carroId, (err, conductor)=>{
+            console.log(conductor.conductor._id)
+            if(!err){
+                pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, conductor.conductor._id, (err, pedido)=>{
+                    if (!err) {
+                        res.json({ status:true, pedido }); 
+                    }else{
+                        res.json({ status:false, message: err }); 
+                    }
+                })
             }
         })
     }

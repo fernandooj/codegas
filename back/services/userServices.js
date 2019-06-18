@@ -21,7 +21,7 @@ class userServices {
 		User.find({ $or: [ {acceso: "admin"}, {acceso: "solucion"}]}).exec(callback)
 	}
 	getById(_id, callback){
-		User.find({_id}).populate('categoria').exec(callback)
+		User.findOne({_id}).populate('categoria').exec(callback)
 	}
 	create(user, token, callback){ 
 		let fecha2 = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')

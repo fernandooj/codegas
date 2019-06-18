@@ -1,11 +1,8 @@
 let express = require('express')
 let router = express.Router();
 let moment = require('moment-timezone');
- 
 
 let carroServices = require('../services/carroServices.js') 
- 
- 
 
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS CARROS
@@ -63,24 +60,6 @@ router.get('/byConductor/:idConductor', (req,res)=>{
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
         carroServices.getByConductor(req.params.idConductor, (err, carro)=>{
-            if (!err) {
-                res.json({ status:true, carro }); 
-            }else{
-                res.json({ status:false, message: err }); 
-            }
-        })
-    }
-})
-
-///////////////////////////////////////////////////////////////
-////////////      OBTENGO TODOS LOS VEHICULOS CON SUS PEDIDOS
-//////////////////////////////////////////////////////////////
-router.get('/vehiculosConPedidos/:fecha', (req,res)=>{
-    console.log("fer")
-    if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' }); 
-	}else{
-        carroServices.vehiculosConPedidos(req.params.fecha, (err, carro)=>{
             if (!err) {
                 res.json({ status:true, carro }); 
             }else{

@@ -5,15 +5,7 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { getPerfil } from "../../redux/actions/usuarioActions";
 import { connect } from "react-redux";
-import {
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  Nav,
-  NavItem,
-  Popover,
  
-} from "reactstrap";
 import style from "./NavigationBar.scss"
 import socket from '../../socket.js'
 import {URL} from "../../index"
@@ -61,7 +53,6 @@ class NavigationBar extends PureComponent {
   render() {
     const { perfil, status } = this.props;
     const { badgeSocketMessage, badgeSocketCuenta, badgeCuenta, badgeMessage } = this.state;
-    console.log({status})
     return (
       <nav className={style.nav}>
         
@@ -84,32 +75,33 @@ class NavigationBar extends PureComponent {
                   &&<section>{badgeSocketMessage}</section>
                 }
               </li> */}
-               <li>
-                  <Link to="/pedidos">
-                    Inicio
-                  </Link>
-                </li>
-               <li>
-                  <Link to="/pedidos">
-                    Pedidos
-                  </Link>
-                </li>
-               <li>
-                  <Link to="/ver_perfil" style={{background:"none"}}>
-                    <img src={perfil.avatar} />
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/ver_perfil">
-                     {perfil.nombre} 
-                  </Link>
-                </li>
-                 <li>
-                  <a href="" onClick={this.logout}>
-                    Salir
-                  </a>
-                </li>
-          </ul>
+              
+              <li>
+                <Link to="/pedidos">
+                  Pedidos
+                </Link>
+              </li>
+              <li>
+                <Link to="/pedidoVehiculo">
+                  Fechas
+                </Link>
+              </li>
+              <li>
+                <Link to="/ver_perfil" style={{background:"none"}}>
+                  <img src={perfil.avatar} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/ver_perfil">
+                  {perfil.nombre} 
+                </Link>
+              </li>
+              <li>
+                <a href="" onClick={this.logout}>
+                  Salir
+                </a>
+              </li>
+            </ul>
         }
       
         
@@ -169,7 +161,6 @@ NavigationBar.propTypes = {
 };
 
 const mapState = state => {
-  console.log(state)
   return {
     status:state.usuario.perfil.status,
     perfil:state.usuario.perfil.user,

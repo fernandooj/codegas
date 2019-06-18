@@ -1,0 +1,89 @@
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////    FILA FECHAS
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+.contenedorFechas{
+  margin: 20px auto;
+  width: 920px;
+  .subContenedorFechas{
+    border: 1px solid #d6d6d6;
+    display: inline-table;
+    text-align: center;
+    padding: 25px 13px;
+    min-width: 134px;
+    p{
+      margin: 0;
+      font-size: 23px
+    }
+  }
+  i{
+    cursor: pointer;
+    font-size: 22px;
+    margin: 0 10px;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////    COLUMNA VEHICULOS
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+.contenedorVehiculosPedidos{
+  margin-top: 25px;
+  margin: 20px auto;
+  width: 950px;
+  >div{
+    box-shadow: 0px 5px 3px rgba(128, 128, 128, 0.09);
+    margin-bottom: 24px;
+  }
+}
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 1px;
+  height: 2px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+.columnaVehiculo{
+  display: inline-block;
+  text-align: center;
+  position: relative;
+  border: 1px solid rgba(173, 173, 173, 0.24);
+  padding: 21px;
+  width: 141px;
+  font-size: 17px;
+  margin: 0;
+  top: -13px;
+  border-bottom: 0;
+}
+
+.filaPedido{
+  display: inline-flex;
+  overflow-x: scroll;
+  white-space: nowrap;
+  overflow-y: hidden;
+  width: 776px;
+  ul{
+    padding: 0;
+    margin: 0;
+    li{
+      display: inline-block;
+      cursor: all-scroll;
+      text-align: center;
+      color:#ffffff;
+      border: 1px solid rgba(173, 173, 173, 0.24);
+      padding: 9px 15px;
+      font-size: 13px;
+      margin: 0;
+      border-bottom: 0;
+    }
+  }
+}
+.btnGuardar{
+  display: inline-flex;
+  position: relative;
+  cursor: pointer;
+  padding: 10px;
+  top: -26px;
+}

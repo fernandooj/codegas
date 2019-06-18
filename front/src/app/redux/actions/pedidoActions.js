@@ -1,6 +1,7 @@
 import {
     GET_PEDIDO,
     GET_PEDIDOS,
+    GET_VEHICULOS_PEDIDOS,
 } from "./constants/actionsTypes";
 import axios from "axios";
 
@@ -26,7 +27,6 @@ const getPedidos = data => {
     return axios
       .get(`ped/pedido`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_PEDIDOS,
           pedidos: res.data.pedido
@@ -37,9 +37,26 @@ const getPedidos = data => {
       });
   };
 };
-  
+
+const getVehiculosConPedidos = (data) => {
+  return dispatch => {
+    return axios
+      .get(`ped/pedido/vehiculosConPedidos/${data}`)
+      .then(res => {
+        console.log(res.data)
+        dispatch({
+          type: GET_VEHICULOS_PEDIDOS,
+          vehiculosPedidos: res.data.carro
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+};
 
 export {
     getPedido,
     getPedidos,
+    getVehiculosConPedidos
 };
