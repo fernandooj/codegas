@@ -8,7 +8,7 @@ import createHistory from "history/createHashHistory";
  
 import App from "./containers/app/App";
  
-import LogoutRoute from "./components/logoutRoute/LogoutRoute";
+ 
 import ErrorBoundary from "./components/error_boundary/ErrorBoundary";
  
 
@@ -26,13 +26,13 @@ class Root extends Component {
   render() {
       return (
         <Router history={history}>
-          <ErrorBoundary>
+          
             <Switch>
               <App />
               {/* logout: just redirects to login (App will take care of removing the token) */}
-              <LogoutRoute path="/logout" />
+          
             </Switch>
-          </ErrorBoundary>
+           
         </Router>
       );
   }

@@ -97,8 +97,12 @@ class Pedidos extends PureComponent {
   }
   componentWillMount(){
     let hoy = this.props.match.params.ruta ?this.props.match.params.ruta : moment().format("YYYY,MM,DD")
+    hoy = hoy.split(",")
+    hoy = hoy.join("-")
+    hoy = moment(hoy).valueOf()
+    console.log(hoy)
     this.props.getPedidos()
-    this.props.getVehiculosConPedidos(this.props.match.params.ruta)
+    this.props.getVehiculosConPedidos(hoy)
   }
   renderFechas(){
       let {fechaInicial, fechaFinal} = this.state

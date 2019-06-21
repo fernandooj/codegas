@@ -28,7 +28,6 @@ class Home extends PureComponent {
     this.props.getVehiculos()
   }
   componentWillReceiveProps(props){
-    console.log(props.pedidos)
     this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})
   }
   renderBotones(){
@@ -183,7 +182,6 @@ class Home extends PureComponent {
       },
     ];
     const {pedidos} = this.state
-    console.log(pedidos)
     return (<Table columns={columns} dataSource={pedidos} onChange={()=>this.onChange()} />)
   }
 
@@ -239,7 +237,6 @@ class Home extends PureComponent {
     let {modalFecha, fechaEntrega, loading} = this.state
     fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
     const dateFormat = 'YYYY-MM-DD';
-    console.log(fechaEntrega)
     return(
       <Modal
           title="Asignar Usuario"
@@ -268,7 +265,8 @@ class Home extends PureComponent {
   ////////////////////////          GUARDAR FECHA
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   asignarFecha(){
-    const {fechaEntrega, id} = this.state
+    let {fechaEntrega, id} = this.state
+    fechaEntrega = moment(fechaEntrega).valueOf()
     console.log({fechaEntrega})
     const openNotificationWithIcon = type => {
       notification[type]({

@@ -41,7 +41,7 @@ class pedidoServices{
 		newPedido.save(callback)	
 	}
 	vehiculosConPedidos(fecha, callback){
-		fecha = moment(fecha).valueOf()
+	// fecha = moment(fecha).valueOf()
 		console.log({fecha})
 		pedido.aggregate([
 			{
@@ -107,7 +107,7 @@ class pedidoServices{
 			},
 			{
 				$match:{
-					fechaEntrega:fecha
+					fechaEntrega:parseInt(fecha)
 				},
 			},
 			{
@@ -156,7 +156,9 @@ class pedidoServices{
 		}}, callback);
 	}
 	asignarFechaEntrega(_id, fechaEntrega, callback){
-		fechaEntrega = moment(fechaEntrega).valueOf()
+		// let fechaEntrega2 = moment(fechaEntrega).valueOf()
+		console.log({fechaEntrega})
+		
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'fechaEntrega':fechaEntrega
 		}}, callback) ;
