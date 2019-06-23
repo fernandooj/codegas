@@ -15,7 +15,6 @@ import "bootstrap/dist/js/bootstrap.min.js";
 import "./style/index.scss"; // import general styles, mixins etc...
 import { Provider } from "react-redux";
 import configStore from "./redux/store"; //redux config
-
 const store = configStore();
  
 if (window.location.hash && window.location.hash == '#_=_') {
@@ -31,9 +30,9 @@ const BootstrapedElement = document.getElementById(ELEMENT_TO_BOOTSTRAP);
 
  
  
-// export const URL = 'https://releo.co/public/assets/img/';
+export const URL = 'https://releo.co/public/assets/img/';
 export const URL2 = window.location.origin
-axios.defaults.baseURL = URL2+"/x/v1/";
+axios.defaults.baseURL = URL2+"/x/v1/"
 
 const renderApp = RootComponent => {
   render(
@@ -47,7 +46,7 @@ const renderApp = RootComponent => {
     BootstrapedElement
   );
 };
- 
+
 renderApp(Root);
 
 if (module.hot) {

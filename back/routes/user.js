@@ -242,7 +242,7 @@ module.exports = function(app, passport){
             let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
 
             ////////////////////    ruta que se va a guardar en el folder
-            let fullUrl = '../front/docs/uploads/avatar/'+fecha+'_'+randonNumber+'.jpg'
+            let fullUrl = '../front/docs/public/uploads/avatar/'+fecha+'_'+randonNumber+'.jpg'
 
             ////////////////////    ruta que se va a guardar en la base de datos
             let ruta = req.protocol+'://'+req.get('Host') + '/uploads/avatar/'+fecha+'_'+randonNumber+'.jpg'

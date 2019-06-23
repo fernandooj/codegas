@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, Platform, Dimensions, Modal, TextInput} fr
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-fa-icons';
 import FCM, { NotificationActionType } from "react-native-fcm";
-import { registerKilledListener, registerAppListener } from "../push/Listeners";
+import { registerAppListener } from "../push/Listeners";
 import Footer   from '../components/footer'
 import { connect } from "react-redux";
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
@@ -13,7 +13,7 @@ import {style} from './style'
 import axios from 'axios';
 import Toast from 'react-native-simple-toast';
 
-registerKilledListener();
+ 
 let screenWidth = Dimensions.get('window').width;
  
  
@@ -63,10 +63,8 @@ class Home extends Component{
 		})
 		registerAppListener(this.props.navigation);
 		FCM.getInitialNotification().then(notif => {
-		  this.setState({
-			initNotif: notif
-		  });
-		 
+		  this.setState({ initNotif: notif });
+			console.log(notif)
 		  if (notif && notif.targetScreen === "Home") {
 			setTimeout(() => {
 			  this.props.navigation.navigate("Detail");

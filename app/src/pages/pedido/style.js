@@ -118,7 +118,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom:20,
 		borderRadius:5,
 		paddingVertical:2,
-		height:Platform.OS==="ios" ?30 :0
+		height:Platform.OS==="ios" ?30 :30
 	},
 	imgFiltro:{
 		width:28,

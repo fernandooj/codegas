@@ -39,6 +39,7 @@ const getPedidos = data => {
 };
 
 const getVehiculosConPedidos = (data) => {
+  console.log({data})
   return dispatch => {
     return axios
       .get(`ped/pedido/vehiculosConPedidos/${data}`)

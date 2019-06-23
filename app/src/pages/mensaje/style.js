@@ -14,11 +14,13 @@ export const style = MediaQueryStyleSheet.create({
     },
     conMensaje1:{
         alignSelf:"flex-start",
+        paddingVertical:2
     },
     mensaje1:{
+        backgroundColor:"rgba(56,164,264,.5)",
         marginLeft:10,
-        marginVertical:2,
-        padding:10,
+        marginVertical:1,
+        padding:8,
         shadowColor: 'rgba(0,0,0, .4)', // IOS
         borderColor:"rgba(0,0,0,0)",
         shadowOffset: { height: 2, width: 2 }, // IOS
@@ -26,19 +28,17 @@ export const style = MediaQueryStyleSheet.create({
         shadowRadius: 5, //IOS
         elevation: Platform.OS==='android' ?1 :7, // Android
         borderRadius:5,
-        backgroundColor:"rgba(56,164,264,.5)",
     },
     conMensaje2:{
         alignSelf:"flex-end",
-        marginRight:10,
-        marginVertical:2,
-        padding:5
+        marginRight:5,
+        paddingVertical:2
     },
     mensaje2:{
         backgroundColor:"rgba(233,120,5,.5)",
         marginLeft:10,
-        marginVertical:2,
-        padding:10,
+        marginVertical:1,
+        padding:8,
         shadowColor: 'rgba(0,0,0, .4)', // IOS
         borderColor:"rgba(0,0,0,0)",
         shadowOffset: { height: 2, width: 2 }, // IOS
@@ -63,6 +63,7 @@ export const style = MediaQueryStyleSheet.create({
         flex:Platform.OS=='android' ?1 :.94
     },
     subContenedorMensajes:{
+        flex:1,
         marginBottom:8,
         minHeight:size.height-161, 
     },
@@ -71,6 +72,7 @@ export const style = MediaQueryStyleSheet.create({
         fontSize:11,
         marginVertical:10
     },
+
     /////////////////////////////////////////////
     //////////////////     CABEZERA
     /////////////////////////////////////////////
@@ -133,6 +135,12 @@ export const style = MediaQueryStyleSheet.create({
     /////////////////////////////////////////////
     contenedorFooter:{
         flexDirection:"row",
+    },
+    contenedorFooter2:{
+        flexDirection:"row",
+        position:"absolute",
+        width:"100%",
+        bottom:-275
     },
     input:{
         width:"75%",

@@ -21,6 +21,10 @@ class pedidoServices{
 	getByUser(usuarioId, callback){
 		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({_id: 'desc'}).exec(callback)
 	}
+	// getByCarroFecha(conductorId, fecha, callback){
+	// 	console.log({conductorId, fecha})
+	// 	pedido.find({conductorId, fecha}).sort({orden: 'asc'}).exec(callback)
+	// }
 	create(data, usuarioId, usuarioCrea, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		let creado = moment(fecha).valueOf()
@@ -41,8 +45,6 @@ class pedidoServices{
 		newPedido.save(callback)	
 	}
 	vehiculosConPedidos(fecha, callback){
-	// fecha = moment(fecha).valueOf()
-		console.log({fecha})
 		pedido.aggregate([
 			{
 				$lookup:{
@@ -96,6 +98,7 @@ class pedidoServices{
 					entregado:1,
 					eliminado:1,
 					estado:1,
+					orden:1,
 					fechaEntrega:1,
 					placa:'$CarroData.placa',
 					idPlaca:'$CarroData._id',
@@ -111,25 +114,30 @@ class pedidoServices{
 				},
 			},
 			{
+				$sort:{
+					orden:-1
+				}
+			},
+			{
 			    $group:{
 						_id:{
 							_id:'$placa',
 							idPlaca:'$idPlaca',
 						},
 			      data: { $addToSet: {info:[{_id:"$_id", placa:"$placa", activo:"$activo", eliminado:'$eliminado', forma:'$forma', cantidadKl:'$cantidadKl', cantidadPrecio:'$cantidadPrecio', estado:'$estado',
-						entregado:'$entregado', eliminado:'$eliminado', fechaEntrega:'$fechaEntrega', conductor:'$conductor', cliente:'$cliente'}]}
+						entregado:'$entregado', eliminado:'$eliminado', fechaEntrega:'$fechaEntrega', conductor:'$conductor', cliente:'$cliente', orden:'$orden'}]}
                     },
 			    }
 			},
 		], callback)
 	}  
 
-    cambiarEstado(_id, estado, callback){
+  cambiarEstado(_id, estado, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'estado':estado
 		}}, callback);
-    }
-    finalizar(data, activo, imagen, callback){
+  }
+  finalizar(data, activo, imagen, callback){
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
@@ -156,11 +164,15 @@ class pedidoServices{
 		}}, callback);
 	}
 	asignarFechaEntrega(_id, fechaEntrega, callback){
-		// let fechaEntrega2 = moment(fechaEntrega).valueOf()
-		console.log({fechaEntrega})
-		
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'fechaEntrega':fechaEntrega
+		}}, callback) ;
+	}
+
+	editarOrden(_id, orden, callback){
+		console.log({_id, orden})
+		pedido.findByIdAndUpdate(_id, {$set: {
+			'orden':orden
 		}}, callback) ;
 	}
 	

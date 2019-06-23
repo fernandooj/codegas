@@ -1,6 +1,8 @@
 node_modules/
 front/node_modules/
 back/node_modules/
+app/package-lock.json
+back/package-lock.json
 .idea/
 *.log
 

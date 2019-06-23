@@ -1,18 +1,19 @@
 import React, {Component} from 'react'
 import {View, Text, TextInput, KeyboardAvoidingView, ScrollView, TouchableOpacity, Platform, Image, Dimensions, Modal, ActivityIndicator, Alert} from 'react-native'
-import AsyncStorage from '@react-native-community/async-storage';
-import {style}   from './style'
-import {connect} from 'react-redux' 
-import axios     from 'axios' 
-import Icon from 'react-native-fa-icons' 
-import { getMensajes, getConversacion } from "../../redux/actions/mensajeActions";
+import AsyncStorage   from '@react-native-community/async-storage';
+import {style}   	    from './style'
+import {connect} 	    from 'react-redux' 
+import axios     		  from 'axios' 
+import Icon 			    from 'react-native-fa-icons' 
+import update 			  from 'react-addons-update';
+import Lightbox 		  from 'react-native-lightbox';
 import ImageEscalable from 'react-native-scalable-image';
-import { createImageProgress } from 'react-native-image-progress';
-import FastImage from 'react-native-fast-image';
-import {sendRemoteNotification} from '../push/envioNotificacion';
 import SocketIOClient from 'socket.io-client';
-import TomarFoto from "../components/tomarFoto";
-import Lightbox from 'react-native-lightbox';
+import FastImage 		  from 'react-native-fast-image';
+import { createImageProgress } from 'react-native-image-progress';
+import {sendRemoteNotification} from '../push/envioNotificacion';
+import TomarFoto 						   from "../components/tomarFoto";
+import { getMensajes, getConversacion } from "../../redux/actions/mensajeActions";
 import {URL} from "../../../App"
 let size = Dimensions.get('window');
 const ImageProgress = createImageProgress(FastImage);
@@ -23,6 +24,7 @@ class Conversacion extends Component{
 		top:0,
 		bottom:0,
 		mensaje:"",
+		mensajes:[]
 	  }
 	  this.cerrarConversacionSocket = this.cerrarConversacionSocket.bind(this)
 	}
@@ -46,51 +48,58 @@ class Conversacion extends Component{
 		this.props.getMensajes(id)
 		this.props.getConversacion(id)
 		this.socket = SocketIOClient(URL);
-		this.socket.on(`chatConversacion`, 	 	    this.reciveMensanje.bind(this));
+		this.socket.on(`chatConversacion`, 	 	  this.reciveMensanje.bind(this));
 		this.socket.on(`cerrarConversacion${id}`, this.cerrarConversacionSocket.bind(this));
 	}  
+	componentWillReceiveProps(props){
+		this.setState({mensajes:props.mensajes})
+	}
 	cerrarConversacionSocket(navigation){
 		console.log(this.props)
 		Alert.alert(
-            `Chat Finalizado`,
-            ``,
-            [
-              {text: 'Cerrar', onPress: () => confirmar()},
-            ],
-            {cancelable: false},
-        )
+				`Chat Finalizado`,
+				``,
+				[
+					{text: 'Cerrar', onPress: () => confirmar()},
+				],
+				{cancelable: false},
+		)
 		const confirmar = ()=>{
 			AsyncStorage.removeItem('formularioChat')
 			this.props.navigation.navigate("Home") 
 		}
 	}
-	reciveMensanje(mensaje){
-		console.log({mensaje})
-		this.props.getMensajes(this.state.id)
-	} 
+ 
+	reciveMensanje(messages) {
+		console.log({messages})
+		this.setState({
+			mensajes: update(this.state.mensajes, {$push: [messages]})
+	 	})
+	}
 	renderMensajes(){
-		const {usuario, mensaje, navigator} = this.props
-		const {tokenPhone} = this.state
-		console.log({tokenPhone, mensaje})
-		return mensaje.map((e, key)=>{
+		const {usuario, navigator} = this.props
+		const {tokenPhone, mensajes} = this.state
+		console.log(mensajes)
+		return mensajes.map((e, key)=>{
+			let imagen = e.tipo==2 ?e.imagen.split("-") :null
 			return(
-				<View style={tokenPhone==e.usuarioId.tokenPhone ?style.conMensaje1 :style.conMensaje2} key={key}>
+				<View style={tokenPhone==e.usuarioId.tokenPhone ?style.conMensaje2 :style.conMensaje1} key={key}>
 					{
 						e.tipo==1
-						?<View style={tokenPhone==e.usuarioId.tokenPhone ?style.mensaje1 :style.mensaje2}>
+						?<View style={tokenPhone==e.usuarioId.tokenPhone ?style.mensaje2 :style.mensaje1}>
 							<Text>{e.mensaje}</Text>	
 						</View>
-						:<View style={tokenPhone==e.usuarioId.tokenPhone ?style.contenedorImagen1 :style.contenedorImagen2}>
+						:<View style={tokenPhone==e.usuarioId.tokenPhone ?style.contenedorImagen2 :style.contenedorImagen1}>
 							<Lightbox 
 								renderContent={() => (
 									<ImageEscalable 
-										source={{ uri: e.imagen }}
+										source={{ uri: imagen[0]+"Resize"+imagen[2] }}
 										width={size.width}
 									/>
 								)}
 							>
 								<ImageProgress 
-									source={{uri: e.imagen}}
+									source={{uri:imagen[0]+imagen[2]}}
 									style={{width:size.width/2, height:140}}
 								/>
 							</Lightbox>	
@@ -129,7 +138,7 @@ class Conversacion extends Component{
 		)
 	}
 	renderFooter(){
-		const {mensaje, subirImagen, previewImagen} = this.state
+		const {mensaje, subirImagen, previewImagen, height} = this.state
 		return(
 			<View style={style.contenedorFooter}>
 				{
@@ -161,13 +170,12 @@ class Conversacion extends Component{
 	}
 	render(){
 		const {activo, usuarioId1, usuarioId2} = this.props.conversacion
-		const {acceso} = this.state
+		const {acceso, height, mensajes} = this.state
 		return (
 			<View style={style.container}>
-				
 				{this.renderCabezera()}
-				<Text style={style.textoUnirse}>{acceso=="admin" || acceso=="solucion" ?usuarioId2.nombre :usuarioId1.nombre} se ha unido a esta conversacion</Text>
-			 
+				<Text style={style.textoUnirse}>{acceso=="admin" || acceso=="solucion" ?usuarioId2.nombre :usuarioId1.nombre} se ha unido a esta conversación</Text>
+				{mensajes.length<=6 ?<View style={style.contenedorMensajes}>{this.renderMensajes()}</View> :null}
 			{
 				Platform.OS=='android'
 					?<View style={{flex:1}}>
@@ -182,21 +190,16 @@ class Conversacion extends Component{
 							{activo &&this.renderFooter()}
 						</View>
 					</View>
-				:<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={32}  behavior={"position"} >
-				<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
-					onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})} 
-					>
-					{
-						this.renderMensajes()
-					}
-				</ScrollView> 
-				<View>
-					{activo &&this.renderFooter()}
-				</View>
-					
+				:<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={mensajes.length<=6 ?0 :32} behavior={"position"} >
+					<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
+						onContentSizeChange={(width,height) => {this.scrollView.scrollTo({y:height}); this.setState({height}) }} > 
+						{mensajes.length>6 &&this.renderMensajes()}
+					</ScrollView> 
+					<View style={mensajes.length<=6 ?style.contenedorFooter2 :null}>
+						{activo &&this.renderFooter()}
+					</View>
 				</KeyboardAvoidingView>
 			}
-			
 			</View>
 		)
 	}
@@ -207,37 +210,36 @@ class Conversacion extends Component{
 	///////////////////////////////////////////////////////////////
 	avatar(){
 		const {imagen, previewImagen, loadingImage} = this.state
-		
 		return(
 			<Modal
-					transparent
-					visible={previewImagen}
-					animationType="fade"
-					onRequestClose={() => {}}
+				transparent
+				visible={previewImagen}
+				animationType="fade"
+				onRequestClose={() => {}}
 			>
-					<TouchableOpacity
-							activeOpacity={1}
-							onPress={() => { this.setState({  previewImagen: false });   }}
-							style={style.btnModal}
-					>
-						<View style={style.contenedorModal}>
-							<TouchableOpacity
-									activeOpacity={1}
-									onPress={() => {this.setState({previewImagen:false})}}
-									style={style.btnModalClose}
-							>
-									<Icon name={'times-circle'} style={style.iconCerrar} />
-							</TouchableOpacity>
-							<ImageEscalable
-								width={size.width-120}
-								source={{uri: imagen.uri}}
-							/>
+				<TouchableOpacity
+						activeOpacity={1}
+						onPress={() => { this.setState({  previewImagen: false });   }}
+						style={style.btnModal}
+				>
+					<View style={style.contenedorModal}>
+						<TouchableOpacity
+								activeOpacity={1}
+								onPress={() => {this.setState({previewImagen:false})}}
+								style={style.btnModalClose}
+						>
+								<Icon name={'times-circle'} style={style.iconCerrar} />
+						</TouchableOpacity>
+						<ImageEscalable
+							width={size.width-120}
+							source={{uri: imagen.uri}}
+						/>
 
-							<TouchableOpacity style={style.btnCerrar} onPress={()=>{!loadingImage &&this.subirImagen(imagen)}}>
-								{loadingImage &&<ActivityIndicator color="#ffffff" style={{marginHorizontal:10}}/>}
-								<Text style={style.textCerrar}>{loadingImage ?"Subiendo..." :"Enviar Imagen"}</Text>
-							</TouchableOpacity>
-						</View>
+						<TouchableOpacity style={style.btnCerrar} onPress={()=>{!loadingImage &&this.subirImagen(imagen)}}>
+							{loadingImage &&<ActivityIndicator color="#ffffff" style={{marginHorizontal:10}}/>}
+							<Text style={style.textCerrar}>{loadingImage ?"Subiendo..." :"Enviar Imagen"}</Text>
+						</TouchableOpacity>
+					</View>
 				</TouchableOpacity>
 			</Modal>
 		)
@@ -245,23 +247,24 @@ class Conversacion extends Component{
 	///////////////////////////////////////////////////////////////
 	//////////////          ENVIO LA IMAGEN
 	///////////////////////////////////////////////////////////////
-  subirImagen(imagen){
+	subirImagen(imagen){
 		this.setState({loadingImage:true})
 		const {usuarioId1, usuarioId2, _id} = this.props.conversacion
 		const {acceso} = this.state
 		let data = new FormData();
 		let userId 		=  acceso=="admin" || acceso=="solucion" ?usuarioId2._id :usuarioId1._id
-		let tokenPhone = acceso=="admin" || acceso=="solucion" ?usuarioId2.tokenPhone :usuarioId1.tokenPhone
+		let tokenPhone  = acceso=="admin" || acceso=="solucion" ?usuarioId2.tokenPhone :usuarioId1.tokenPhone
 		const Fullmensaje = {
 			usuarioId:userId,
 			conversacionId:_id,
+			tokenPhone:this.state.tokenPhone,
 			tipo:2
 		}
 		this.socket = SocketIOClient(URL);
 		this.socket.emit('chatConversacion', JSON.stringify(Fullmensaje))
 		//////////////////////////////////////////////////////////////////////
 		data.append('imagen', imagen);
-		data.append('usuarioId', userId);
+		data.append('userId', userId);
 		data.append('tokenPhone', tokenPhone);
 		data.append('conversacionId', _id);
 		data.append('tipo', 2);
@@ -290,12 +293,15 @@ class Conversacion extends Component{
 		this.setState({showSpin:true})
 		const {usuarioId1, usuarioId2, _id} = this.props.conversacion
 		const {id, acceso} = this.state
-		let userId 	   =  acceso=="admin" || acceso=="solucion" ?usuarioId2._id :usuarioId1._id
+		let userId 	   =  acceso=="admin" || acceso=="solucion" ?usuarioId1._id :usuarioId2._id
 		let tokenPhone = acceso=="admin" || acceso=="solucion" ?usuarioId2.tokenPhone :usuarioId1.tokenPhone
 		const {mensaje} = this.state
 		const Fullmensaje = {
 			mensaje: mensaje, 
-			usuarioId:userId,
+			usuarioId:{
+				usuarioId:userId,
+				tokenPhone:this.state.tokenPhone,
+			},
 			conversacionId:_id,
 			tipo:1
 		}
@@ -304,7 +310,7 @@ class Conversacion extends Component{
 	
 		axios.post('men/mensaje/', {...Fullmensaje})
 		.then(e=>{
-			console.log(tokenPhone)
+			console.log(e.data)
 			if(e.data.status){
 				this.setState({mensaje:"", showSpin:false}) 
 				sendRemoteNotification(1, tokenPhone, "conversacion", "nuevo mensaje", `: ${mensaje}`, null, null )
@@ -334,16 +340,9 @@ class Conversacion extends Component{
 
 }
 const mapState = state => {
-	// let mensajes = state.conversacion.mensaje[0].mensaje.reverse()
-	// let usuario =  state.conversacion.mensaje[0].usuario
-	// let tokenPhoneFiltro = mensajes.filter(e=>{if(e.username==usuario) return e})
-	// let tokenPhone = tokenPhoneFiltro[0] ?tokenPhoneFiltro[0].tokenPhone :""
- 
 	return {
 		conversacion :state.mensaje.conversacion,
-		mensaje:state.mensaje.mensaje,
-		// usuario,
-		// tokenPhone
+		mensajes:state.mensaje.mensaje,
 	};
 };
   

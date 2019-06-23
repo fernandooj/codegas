@@ -6,6 +6,7 @@ import {Provider}                  from 'react-redux';
 import FCM, { NotificationActionType } from "react-native-fcm";
 import MainRoutes                  from './src/routes/MainRoutes'
 import configStore                 from './src/redux/store.js' //redux config
+ 
 const store = configStore();
 // import {searchUser, getCarrito, getCarrito2, getCatalogo, getOrders, getProductos} from './src/redux/actionCreator' 
 YellowBox.ignoreWarnings(['Remote debugger']);
@@ -16,8 +17,8 @@ YellowBox.ignoreWarnings(['Require cycle:']);
 //////////////////////////////////////////////////////////////////////////////////////////
 //////  RUTA GENERAL DE LA URL PARA EL API
 //////////////////////////////////////////////////////////////////////////////////////////
-export const URL = 'http://104.248.181.79:8181';       //// URL WEB DEV
-// export const URL = 'http://192.168.0.5:8181';   //// URL local
+// export const URL = 'http://104.248.181.79:8181';       //// URL WEB DEV
+export const URL = 'http://192.168.0.6:8181';   //// URL local
 export const VERSION = "1.0.0"
 axios.defaults.baseURL = URL+"/x/v1";
 
@@ -29,6 +30,7 @@ axios.defaults.baseURL = URL+"/x/v1";
 export default class App extends Component<{}> {
 
   componentWillMount(){
+    console.log("fer")
     // FCM.getFCMToken().then(tokenPhone => {
     //   // console.log("TOKEN (getFCMToken)", tokenPhone);
     //   AsyncStorage.setItem('tokenPhone', tokenPhone || "123456")

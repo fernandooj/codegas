@@ -12,13 +12,13 @@ export default class tomarPhoto extends Component{
     subirImagen(){
         let {imagenes} = this.state
         const options = {
-            // compressImageMaxWidth:800,
-            // compressImageMaxHeight:avatar?800 :1200,
-            // width: 800,
-            
+            compressImageMaxWidth:800,
+            compressImageMaxHeight:800,
+            width: 800,
             forgeJpg: true,
+            compressImageQuality:0.5
         };
-
+       
         ImagePicker.openPicker(options).then(response => {
 		    if (response) {
 				let source = { uri: response.path };
@@ -27,7 +27,8 @@ export default class tomarPhoto extends Component{
 				    type: response.mime ?response.mime :'image/jpeg',
 				    name: response.fileName ?response.fileName :`imagen.jpg`,
 				    path: response.path
-				};
+                };
+                console.log(response)
                 imagenes.push(imagen)
 			    this.setState({ imagenes, showModal:false, isAndroidShareOpen:false });
                 this.props.imagenes(imagenes)
@@ -37,9 +38,9 @@ export default class tomarPhoto extends Component{
     tomarFoto(){
         let {imagenes} = this.state
         const options = {
-            // compressImageMaxWidth:800,
+            compressImageMaxWidth:800,
             // compressImageMaxHeight:800,
-            // width: 800,
+            width: 800,
             // height: avatar?800 :1200,
             // cropping: true,
             forgeJpg: true,

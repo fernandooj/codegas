@@ -245,4 +245,25 @@ router.get('/eliminar/:idPedido/:estado', (req,res)=>{
     }
 })
 
+
+///////////////////////////////////////////////////////////////
+////////////      EDITAR ORDEN PEDIDOS
+//////////////////////////////////////////////////////////////
+router.put('/editarOrden/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        req.body.pedidos.map((e, index)=>{
+            pedidoServices.editarOrden(e.info[0]._id, index, (err, pedido)=>{
+            //     if (!err) {
+            //         res.json({ status:true, pedido }); 
+            //     }else{
+            //         res.json({ status:false, message: err }); 
+            //     }
+            })
+        })
+        res.json({ status:true }); 
+    }
+})
+
 module.exports = router;

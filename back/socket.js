@@ -9,11 +9,7 @@ cliente.subscribe('chatConversacion')
 cliente.subscribe('cerrarConversacion')
  
 io.on('connection', (socket)=>{
-	socket.on('chatConversacion', (mensaje)=>{
-		console.log('---------')
-		console.log(mensaje)
-	   io.emit('chatConversacion', JSON.parse(mensaje))
-   })
+
 })
 
 	///////////////////// CADA VEZ QUE UN USUARIO INGRESA
@@ -30,6 +26,10 @@ io.on('connection', (socket)=>{
 			console.log(info)
 			io.emit(`cerrarConversacion${info}`, true)
 		}	
-		
+		if (canal=='chatConversacion') {
+			console.log('---------')
+			console.log(info)
+		   io.emit('chatConversacion', JSON.parse(info))
+	   }
 	})
 }

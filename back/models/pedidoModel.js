@@ -18,6 +18,7 @@ const Pedido = new Schema({
     kilos         :Number,
     factura       :String,
     valor_unitario:Number,
+    orden         :Number,
     conductorId   :{type: Schema.ObjectId, ref:'User'},
 	carroId       :{type: Schema.ObjectId, ref:'Carro'},
 	usuarioId     :{type: Schema.ObjectId, ref:'User'},
@@ -43,3 +44,6 @@ module.exports = mongoose.model('Pedido', Pedido)
 // monto
 // cantidad
 // lleno
+
+///////////////////////////     ORDEN   ///////////////////
+//orden es el numero de orden para la entrega

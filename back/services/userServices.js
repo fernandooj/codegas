@@ -39,7 +39,8 @@ class userServices {
 		newUsuario.acceso		=  user.acceso,
 		newUsuario.tokenPhone	=  user.tokenPhone,
 		newUsuario.token  		=  token,
-		newUsuario.activo 		=  user.acceso=="cliente" ?false :true,
+		// newUsuario.activo 		=  user.acceso=="cliente" ?false :true,
+		newUsuario.activo 		=  true,
 		newUsuario.created  	= fecha2;
 		newUsuario.save(callback);	 
 	}

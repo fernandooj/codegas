@@ -26,7 +26,7 @@ class mensajeServices{
 		let creado = moment(fecha).valueOf()
 		let newMensaje = new Mensaje({
 			mensaje    : data.mensaje,
-			usuarioId  : data.usuarioId,
+			usuarioId  : data.tipo==1 ?data.usuarioId.usuarioId :data.userId,
 			conversacionId :data.conversacionId,
 			tipo :data.tipo,
 			imagen,

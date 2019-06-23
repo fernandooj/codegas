@@ -9,6 +9,7 @@
     border: 1px solid #d6d6d6;
     display: inline-table;
     text-align: center;
+    cursor: pointer;
     padding: 25px 13px;
     min-width: 134px;
     p{
@@ -64,6 +65,7 @@
   white-space: nowrap;
   overflow-y: hidden;
   width: 776px;
+  padding-bottom: 5px;
   ul{
     padding: 0;
     margin: 0;

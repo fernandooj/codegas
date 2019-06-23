@@ -58,8 +58,13 @@ class List extends React.Component {
     e.target.parentNode.insertBefore(placeholder, e.target);
   }
 	render() {
-    var listItems = this.state.pedidos.map((item, i) => {
-      let {_id, entregado, forma, cantidadKl, cantidadPrecio, cliente, estado} = item.info[0]
+         
+    let nuevoPedidos = this.state.pedidos.sort((a, b)=>{
+      return a.info[0].orden - b.info[0].orden;
+    });
+    console.log(nuevoPedidos)
+    let listItems = nuevoPedidos.map((item, i) => {
+    let {_id, entregado, forma, cantidadKl, cantidadPrecio, cliente, estado} = item.info[0]
      
       return (
         <li 
@@ -91,21 +96,25 @@ class Pedidos extends PureComponent {
   constructor(props){
     super(props)
     this.state={
-      fechaInicial : moment().format("YYYY,MM,DD"),               //// obtengo la fecha inicial que es el dia actual
-      fechaFinal : moment().add(5, 'days').format("YYYY,MM,DD")   //// obtengo la fecha final, que es dentro de 5 dias
+      // fechaInicial : moment().format("YYYY,MM,DD"),               //// obtengo la fecha inicial que es el dia actual
+      // fechaFinal : moment().add(5, 'days').format("YYYY,MM,DD")   //// obtengo la fecha final, que es dentro de 5 dias
     }
   }
   componentWillMount(){
-    let hoy = this.props.match.params.ruta ?this.props.match.params.ruta : moment().format("YYYY,MM,DD")
-    hoy = hoy.split(",")
-    hoy = hoy.join("-")
-    hoy = moment(hoy).valueOf()
-    console.log(hoy)
+    let fechaInicial = this.props.match.params.ruta ?this.props.match.params.ruta : moment().format("YYYY,MM,DD")
+    let fechaFinal   = moment(fechaInicial).add(5, 'days').format("YYYY,MM,DD")
+    this.setState({fechaInicial, fechaSeleccionada:fechaInicial, fechaFinal})
+  
+    fechaInicial = fechaInicial.split(",")
+    fechaInicial = fechaInicial.join("-")
+    fechaInicial = moment(fechaInicial).valueOf()
+    
     this.props.getPedidos()
-    this.props.getVehiculosConPedidos(hoy)
+    this.props.getVehiculosConPedidos(fechaInicial)
   }
+ 
   renderFechas(){
-      let {fechaInicial, fechaFinal} = this.state
+      let {fechaInicial, fechaFinal, fechaSeleccionada} = this.state
       fechaInicial = new Date(fechaInicial);
       fechaFinal = new Date(fechaFinal);
       const dayInterval = 1000 * 60 * 60 * 24; // 1 day
@@ -115,12 +124,19 @@ class Pedidos extends PureComponent {
  
       return fechas.map((e, key)=>{
         return (
-          <Link key={key} className={style.subContenedorFechas} to={`/pedidoVehiculo/${moment(e).format("YYYY,MM,DD")}`}>
+          <div style={moment(e).format("YYYY,MM,DD")==fechaSeleccionada ?{backgroundColor:"#057fee"} :null} className={style.subContenedorFechas} key={key} onClick={()=>this.redirect(e)}> 
             <p>{moment(e).format("MMM DD")}</p>
-          </Link>
+          </div>
         )
       })
   }
+  redirect(e){
+    window.location.href = `#/pedidoVehiculo/${moment(e).format("YYYY,MM,DD")}`;
+    e = moment(e).format("YYYY-MM-DD")
+    e = moment(e).valueOf()
+    this.setState({fechaSeleccionada:moment(e).format("YYYY,MM,DD")})
+    this.props.getVehiculosConPedidos(e)
+	}
   renderVehiculos(){
     const {ordenPedidos} = this.state
     const {vehiculosPedido} = this.props
@@ -146,8 +162,6 @@ class Pedidos extends PureComponent {
     if(tipo=="siguiente"){
       fechaInicial = moment(fechaInicial).add(5, 'days').format("YYYY,MM,DD") 
       fechaFinal = moment(fechaFinal).add(5, 'days').format("YYYY,MM,DD") 
-      console.log(fechaInicial)
-      console.log(fechaFinal)
       this.setState({fechaInicial})
       this.setState({fechaFinal})
     }else{
@@ -185,12 +199,12 @@ class Pedidos extends PureComponent {
           ``,
       });
     };
-    ordenPedidos = ordenPedidos.map(e=>{
-      return e.info[0]._id
-    })
+    // ordenPedidos = ordenPedidos.map(e=>{
+    //   return e.info[0]._id
+    // })
     let fecha = "2019-06-28"
-    console.log({carroId, pedidos:ordenPedidos, fecha })
-    axios.post("ord/ordenPedido/",{carroId, pedidos:ordenPedidos, fecha })
+    console.log({ordenPedidos})
+    axios.put("ped/pedido/editarOrden",{pedidos: ordenPedidos})
     .then(e=>{
       console.log(e.data)
       e.data.status ?openNotificationWithIcon('success') :alert("Tenemos un problema intenta nuevamente")
