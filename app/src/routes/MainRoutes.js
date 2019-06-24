@@ -50,7 +50,7 @@ import recuperarComponent	 from '../pages/recuperar_pass/recuperar_pass';
 // 	}
 // }
 const AppNavigator = createStackNavigator({
-	Home  		 : {screen: homeComponent},
+	Home  		 : {screen: pedidoComponent},
 	inicio 		 : {screen: homeComponent},
 	perfil       : {screen: perfilComponent},
 	verPerfil    : {screen: verPerfilComponent},

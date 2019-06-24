@@ -24,7 +24,7 @@ const getDates=(startDate, endDate, interval)=> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///  COMPONENTE QUE VUELVE DRAGABLE LA LISTA
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-var placeholder = document.createElement("li");
+let placeholder = document.createElement("li");
 placeholder.className = "placeholder";
 
 class List extends React.Component {
@@ -199,10 +199,6 @@ class Pedidos extends PureComponent {
           ``,
       });
     };
-    // ordenPedidos = ordenPedidos.map(e=>{
-    //   return e.info[0]._id
-    // })
-    let fecha = "2019-06-28"
     console.log({ordenPedidos})
     axios.put("ped/pedido/editarOrden",{pedidos: ordenPedidos})
     .then(e=>{

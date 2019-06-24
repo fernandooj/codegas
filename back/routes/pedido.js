@@ -4,15 +4,15 @@ let fs = require('fs');
 let  moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 
-let pedidoServices = require('../services/pedidoServices.js') 
-let userServices = require('./../services/userServices.js') 
-let carroServices = require('../services/carroServices.js') 
-const htmlTemplate = require('../template-email.js')
-
+let pedidoServices     = require('../services/pedidoServices.js') 
+let userServices       = require('./../services/userServices.js') 
+let carroServices      = require('../services/carroServices.js') 
+const htmlTemplate     = require('../template-email.js')
+const notificacionPush = require('../notificacionPush.js')
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
 ////////////////////////////////////////////////////////////
-router.get('/', (req,res)=>{
+router.get('/todos/:fechaEntrega', (req,res)=>{
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado' }); 
     }else{
@@ -25,7 +25,7 @@ router.get('/', (req,res)=>{
             }
         })
         :req.session.usuario.acceso=="conductor"
-        ?pedidoServices.get( (err, pedido)=>{
+        ?pedidoServices.getByConductor(req.session.usuario._id, req.params.fechaEntrega, (err, pedido)=>{
             if (!err) {
                 pedido = pedido.filter(e=>{
                     return e.carroId
@@ -33,16 +33,19 @@ router.get('/', (req,res)=>{
                 pedido = pedido.filter(e=>{
                     return e.carroId.conductor==req.session.usuario._id
                 })
-                console.log(req.session.usuario._id)
+                
                 res.json({ status:true, pedido }); 
             }else{
                 res.json({ status:false, message: err, pedido:[] }); 
+                console.log(err)
             }
         })
         :pedidoServices.get( (err, pedido)=>{
             if (!err) {
+                
                 res.json({ status:true, pedido }); 
             }else{
+               
                 res.json({ status:false, message: err, pedido:[] }); 
             }
         })
@@ -191,27 +194,36 @@ router.post('/finalizar/:estado', (req,res)=>{
         let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
 
         ////////////////////    ruta que se va a guardar en el folder
-        let fullUrl = '../front/docs/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
+        let fullUrl = '../front/docs/public/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
         console.log(req.files)
         ////////////////////    ruta que se va a guardar en la base de datos
-        let ruta = req.protocol+'://'+req.get('Host') + '/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
+        let ruta = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
     
         ///////////////////     envio la imagen al nuevo path
         fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
 
-        pedidoServices.finalizar(req.body, req.params.estado, ruta, (err, pedido)=>{
-            const {kilos, factura, valor_unitario} = req.body
-            if (!err) {
-                let titulo = `<font size="5">Pedido entregado</font>`
-                let text1  = `Su pedido ha sido entregado con exito`
-                let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/><img src="${ruta}" width="500"/>` 
-                let asunto = "Estado pedido Codegas, entregado"
-                htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
-                res.json({ status:true, pedido }); 
-            }else{
+        /////////////////////////////////////////////       ANTES DE CERRAR SACO EL ULTIMO NUMERO DE ORDEN GUARDADO, ESTO PARA VERIFICAR SI ESTA CAMBIANDO O NO EL ORDEN DE GUARDADO
+        pedidoServices.getLastRowConductor(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
+            if(err){
                 res.json({ status:false, message: err }); 
+            }else{
+                pedidoServices.finalizar(req.body, req.params.estado, ruta, pedido.orden+1, (err2, pedido)=>{
+                    console.log(err2)
+                    const {kilos, factura, valor_unitario} = req.body
+                    if (!err2) {
+                        let titulo = `<font size="5">Pedido entregado</font>`
+                        let text1  = `Su pedido ha sido entregado con exito`
+                        let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/><img src="${ruta}" width="500"/>` 
+                        let asunto = "Estado pedido Codegas, entregado"
+                        htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
+                        enviaNotificacion(res, "admin", req.session.usuario.nombre, "Ha cerrado un nuevo pedido exitosamente")
+                       
+                    }else{
+                        res.json({ status:false, message: err2 }); 
+                    }
+                })
             }
-        })
+        })        
     }
 })
 
@@ -219,14 +231,33 @@ router.post('/finalizar/:estado', (req,res)=>{
 ////////////       GUARDAR NOVEDAD --> LO CIERRA PERO NO SE PUDO ENTREGAR
 ////////////////////////////////////////////////////////////////////////////
 router.post('/novedad/', (req,res)=>{
-    pedidoServices.novedad(req.body._id, (err, pedido)=>{
-        if (!err) {
-            res.json({ status:true, pedido }); 
-        }else{
+    pedidoServices.getLastRowConductor(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
+        if(err){
             res.json({ status:false, message: err }); 
+        }else{
+            pedidoServices.novedad(req.body._id, (err, pedido)=>{
+                if (!err) {
+                    enviaNotificacion(res, "admin", req.session.usuario.nombre, `Ha cerrado un nuevo pedido NO exitosamente, ${req.body.novedad}`)
+                }else{
+                    res.json({ status:false, message: err }); 
+                }
+            })
         }
     })
 })
+
+const enviaNotificacion=(res, acceso, titulo, body)=>{
+    userServices.getByAcceso(acceso, (err, usuarios)=>{
+        if(!err){
+            usuarios.map(e=>{
+                notificacionPush(e.tokenPhone, titulo, body)
+            })
+            res.json({status:'SUCCESS', usuarios})
+        }else{
+            res.json({ status: 'FAIL', usuarios:[], err}) 
+        }
+    })
+}
 
 ///////////////////////////////////////////////////////////////
 ////////////      ELIMINAR
@@ -253,17 +284,15 @@ router.put('/editarOrden/', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
+        let pedidos=[]
         req.body.pedidos.map((e, index)=>{
-            pedidoServices.editarOrden(e.info[0]._id, index, (err, pedido)=>{
-            //     if (!err) {
-            //         res.json({ status:true, pedido }); 
-            //     }else{
-            //         res.json({ status:false, message: err }); 
-            //     }
+            pedidoServices.editarOrden(e.info[0]._id, index+1, (err, pedido)=>{
+                
             })
         })
-        res.json({ status:true }); 
+        console.log(pedidos)
+        res.json({ status:true, pedidos }); 
     }
 })
-
+ 
 module.exports = router;

@@ -13,7 +13,7 @@ class pedidoServices{
 
 	}
 	get(callback){
-		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({orden: 'desc'}).exec(callback)
 	}
 	getByPedido(_id, callback){
 		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({_id: 'desc'}).exec(callback)
@@ -21,10 +21,12 @@ class pedidoServices{
 	getByUser(usuarioId, callback){
 		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({_id: 'desc'}).exec(callback)
 	}
-	// getByCarroFecha(conductorId, fecha, callback){
-	// 	console.log({conductorId, fecha})
-	// 	pedido.find({conductorId, fecha}).sort({orden: 'asc'}).exec(callback)
-	// }
+	getByConductor(conductorId, fechaEntrega, callback){
+		pedido.find({conductorId, fechaEntrega:parseInt(fechaEntrega)}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({orden: 'asc'}).exec(callback)
+	}
+	getLastRowConductor(conductorId, fechaEntrega, callback){
+		pedido.findOne({conductorId, fechaEntrega:parseInt(fechaEntrega), entregado:true}).sort({orden: 'desc'}).exec(callback)
+	}
 	create(data, usuarioId, usuarioCrea, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		let creado = moment(fecha).valueOf()
@@ -137,22 +139,25 @@ class pedidoServices{
 			'estado':estado
 		}}, callback);
   }
-  finalizar(data, activo, imagen, callback){
+  finalizar(data, activo, imagen, orden_cerrado, callback){
+		console.log({imagen})
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
 			'factura'  		:data.factura,
 			'valor_unitario':data.valor_unitario,
 			'imagen':imagen,
+			'orden_cerrado':orden_cerrado,
 		}}, callback);
 	}
 	novedad(_id, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'entregado'		:true,
 			'estado'	   	:"noentregado",
+			'orden_cerrado':orden_cerrado,
 		}}, callback);
     }
-    eliminar(_id, eliminado, callback){
+  eliminar(_id, eliminado, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'eliminado':eliminado
 		}}, callback);
@@ -168,16 +173,11 @@ class pedidoServices{
 			'fechaEntrega':fechaEntrega
 		}}, callback) ;
 	}
-
 	editarOrden(_id, orden, callback){
-		console.log({_id, orden})
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'orden':orden
 		}}, callback) ;
 	}
-	
-
- 
 }
 
 module.exports = new pedidoServices();

@@ -1,7 +1,6 @@
 import { Dimensions, Platform} from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
 const size = Dimensions.get('window');
-console.log(size)
 export const style = MediaQueryStyleSheet.create({
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////			CABEZERA

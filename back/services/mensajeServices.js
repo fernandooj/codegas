@@ -22,7 +22,7 @@ class mensajeServices{
 		Mensaje.find({usuarioId}).populate('usuarioId').sort({_id: 'desc'}).exec(callback)
 	}
 	create(data, imagen, callback){
-		let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
+		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		let creado = moment(fecha).valueOf()
 		let newMensaje = new Mensaje({
 			mensaje    : data.mensaje,

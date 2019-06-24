@@ -34,13 +34,15 @@ class Pedido extends Component{
         valor_unitarioTexto:"",
         novedad:"",
         fechasFiltro:["0","1"],
+        pedidos:[],
         top:new Animated.Value(size.height),
-        elevation:7
+        elevation:7,     ////// en Android sale un error al abrir el filtro debido a la elevation
+        fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
 	  }
 	}
 	 
     componentWillMount = async () =>{
-        this.props.getPedidos()
+        this.props.getPedidos(moment(this.state.fechaEntregaFiltro).valueOf())
         this.props.getVehiculos()
         try {
             let idUsuario = await AsyncStorage.getItem('userId')
@@ -54,14 +56,17 @@ class Pedido extends Component{
     componentDidMount(){
         NetInfo.isConnected.addEventListener('change', this.estadoRed);
     }
+    componentWillReceiveProps(props){
+        this.setState({pedidos:props.pedidos})
+    }
     estadoRed(estadoRed){
         console.log(estadoRed)
     }
     renderPedidos(){
-        const {acceso, terminoBuscador} = this.state
-        let pedidos = this.props.pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-        console.log(pedidos)
-        return pedidos.map((e, key)=>{
+        const {acceso, terminoBuscador, pedidos} = this.state
+        let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        console.log(pedidosFiltro)
+        return pedidosFiltro.map((e, key)=>{
             return (
                 <TouchableOpacity 
                     key={key}
@@ -75,7 +80,7 @@ class Pedido extends Component{
                         ?[style.pedidoBtn, {backgroundColor:"#f0ad4e"}]
                         :[style.pedidoBtn, {backgroundColor:"#5cb85c"}]
                     }
-                    ////// solo activa el modal si es de despachos o administrador
+                    ////// solo activa el modal si es de despachos o administrador o conductor 
                     onPress={
                         ()=>
                         acceso!=="cliente"
@@ -83,6 +88,8 @@ class Pedido extends Component{
                         :null                               
                     }
                 >
+                        <Text>{e._id}</Text>
+                        <Text>{e.orden}</Text>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>{e.usuarioId.nombre}</Text>
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
@@ -193,7 +200,7 @@ class Pedido extends Component{
                     onWillShow={() => { this.setState({ keyboard: true }); }}
                     onWillHide={() => { this.setState({ keyboard: false }); }}
                 />
-            <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  openModal: false }) }} >   
+            <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({   }) }} >   
                 <View style={size.height<height ?style.contenedorModal :style.contenedorModal2}>
                     <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-500: -180}]}>
                         <ScrollView onContentSizeChange={(height) => { this.setState({height}) }}  keyboardDismissMode="on-drag">
@@ -357,15 +364,16 @@ class Pedido extends Component{
     ////////////////////////           RENDER MODAL FILTROS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     renderModalFiltro(){
-        let {fechasFiltro} = this.state
+        let {fechaEntregaFiltro} = this.state
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
+        fechaEntregaFiltro = moment(fechaEntregaFiltro).format("YYYY-MM-DD")
 		return(
 			<Animated.View style={[style.modal, {top:this.state.top}]}>
 				<View style={style.cabezera}>
 					<TouchableOpacity style={style.btnRegresar} onPress={()=>this.hideModal()}>
 						<Icon name={'arrow-left'} style={style.iconFiltro} />
 					</TouchableOpacity>
-					<Text>
+					<Text style={style.btnRegresar}>
 						Filtros de búsqueda
 					</Text>
 				</View>
@@ -403,33 +411,34 @@ class Pedido extends Component{
 					<View style={style.subContenedorFiltro}>
 						<Text style={style.titulo1}>Fecha entrega</Text>
                         <Calendar
-                            style={style.btnFiltro}
-                            current={diaActual}
+                            current={fechaEntregaFiltro}
                             markedDates={this.state.dates} 
-                            markingType={'period'}
-                            onDayPress={(date)=>this.onSelectDay(date.dateString)}
-                            markedDates={{
-                                [fechasFiltro[0]]: {startingDay: true, color: 'green'},
-                                [fechasFiltro[1]]: {endingDay: true, color: 'green'} 
-                            }}
+                            onDayPress={(day) => {console.log('selected day', day); this.props.getPedidos(moment(day.dateString).valueOf()); this.setState({fechaEntregaFiltro:day.dateString})}}
+                            markedDates={{[fechaEntregaFiltro]: {selected: true,  marked: true}}}
+                            // markingType={'period'}
+                            // onDayPress={(date)=>this.onSelectDay(date.dateString)}
+                            // markedDates={{
+                            //     [fechasFiltro[0]]: {startingDay: true, color: 'green'},
+                            //     [fechasFiltro[1]]: {endingDay: true, color: 'green'} 
+                            // }}
                         />
 					</View>
 				</ScrollView>
 			</Animated.View>
 		)
     }
-    onSelectDay(date){
-        const { fechasFiltro } = this.state
-        if (fechasFiltro.length==2 ) {
-            fechasFiltro.length = 0
-            fechasFiltro.push(date)
-            this.setState( { fechasFiltro } )
-        } else {
-            fechasFiltro.push(date)
-            this.setState( { fechasFiltro } )
-        }
+    // onSelectDay(date){
+    //     const { fechasFiltro } = this.state
+    //     if (fechasFiltro.length==2 ) {
+    //         fechasFiltro.length = 0
+    //         fechasFiltro.push(date)
+    //         this.setState( { fechasFiltro } )
+    //     } else {
+    //         fechasFiltro.push(date)
+    //         this.setState( { fechasFiltro } )
+    //     }
         
-    }
+    // }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LOS CONDUCTORES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -439,7 +448,7 @@ class Pedido extends Component{
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
         return(
             <Modal transparent visible={modalConductor} animationType="fade" >
-                <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({modalConductor:false, placa:null, idVehiculo:null})}} > 
+                <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({placa:null, idVehiculo:null})}} > 
                     <View style={style.contenedorModal}>
                         <View style={style.subContenedorModal}>
                             <TouchableOpacity
@@ -594,7 +603,7 @@ class Pedido extends Component{
     ////////////////////////           GUARDAR NOVEDAD 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     guardarNovedad(){
-        let {novedad, id, tokenPhone} = this.state
+        let {novedad, id, tokenPhone, fechaEntrega, fechaEntregaFiltro} = this.state
         Alert.alert(
             `Va a finalizar este pedido`,
             'sin exito en la entrega',
@@ -605,18 +614,18 @@ class Pedido extends Component{
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.post('ped/pedido/novedad', {_id:id})
+            axios.post('ped/pedido/novedad', {_id:id, fechaEntrega, novedad})
             .then((res)=>{
                 console.log(res.data)
                 if(res.data.status){
                     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
                     .then((res2)=>{
-                        this.setState({openModal:false})
+                        this.setState({openModal:false, novedad:""})
                         sendRemoteNotification(2, tokenPhone, "pedido no entregado", `${novedad}`, null, null, null )
                         setTimeout(() => {
                             alert("Pedido cerrado")
                         }, 1000);
-                        this.props.getPedidos()
+                        this.props.getPedidos(fechaEntregaFiltro)
                     })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
@@ -628,7 +637,7 @@ class Pedido extends Component{
     ////////////////////////           CERRAR PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
-        let {novedad, kilosTexto, facturaTexto, valor_unitarioTexto, id, tokenPhone, imagen, email} = this.state
+        let {novedad, kilosTexto, facturaTexto, valor_unitarioTexto, id, tokenPhone, imagen, email, fechaEntrega, fechaEntregaFiltro} = this.state
         Alert.alert(
             `Seguros desea cerrar este pedido`,
             '',
@@ -647,8 +656,8 @@ class Pedido extends Component{
             data.append('kilos', kilosTexto);
             data.append('factura', facturaTexto);
             data.append('valor_unitario', valor_unitarioTexto);
+            data.append('fechaEntrega', fechaEntrega);
             
-            // axios.post(`ped/pedido/finalizar/${id}`, {_id:id, kilos, factura, valor_unitario})
             axios({
                 method: 'post',  
                 url: 'ped/pedido/finalizar/true',
@@ -659,12 +668,12 @@ class Pedido extends Component{
                 if(res.data.status){
                     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
                     .then((res2)=>{
-                        this.setState({openModal:false})
+                        this.setState({openModal:false, novedad:"", kilosTexto:"", facturaTexto:"", valor_unitarioTexto:"", id:"", fechaEntrega:""})
                         sendRemoteNotification(2, tokenPhone, "pedido entregado", `Su pedido ha sido entregado`, null, null, null )
                         setTimeout(() => {
                             alert("Pedido cerrado")
                         }, 1000);
-                        this.props.getPedidos()
+                        this.props.getPedidos(moment(fechaEntrega).format("YYYY-MM-DD"))
                     })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
@@ -686,15 +695,12 @@ class Pedido extends Component{
                 }else{
                     alert("Pedido actualizado")
                     this.props.getPedidos()
-                }
-                
+                } 
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }
         })
-    }
-    
-     
+    }    
 }
 
 const mapState = state => {
@@ -706,8 +712,8 @@ const mapState = state => {
   
 const mapDispatch = dispatch => {
     return {
-        getPedidos: () => {
-            dispatch(getPedidos());
+        getPedidos: (fechaEntrega) => {
+            dispatch(getPedidos(fechaEntrega));
         },
         getVehiculos: () => {
             dispatch(getVehiculos());
@@ -724,8 +730,7 @@ Pedido.propTypes = {
     
 };
   
-  export default connect(
+export default connect(
 	mapState,
 	mapDispatch
-  )(Pedido);
-  
+)(Pedido);  

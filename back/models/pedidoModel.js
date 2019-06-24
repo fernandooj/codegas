@@ -17,8 +17,9 @@ const Pedido = new Schema({
     fechaEntrega  :Number,
     kilos         :Number,
     factura       :String,
-    valor_unitario:Number,
+    valor_unitario:String,
     orden         :Number,
+    orden_cerrado :Number,
     conductorId   :{type: Schema.ObjectId, ref:'User'},
 	carroId       :{type: Schema.ObjectId, ref:'Carro'},
 	usuarioId     :{type: Schema.ObjectId, ref:'User'},
@@ -47,3 +48,7 @@ module.exports = mongoose.model('Pedido', Pedido)
 
 ///////////////////////////     ORDEN   ///////////////////
 //orden es el numero de orden para la entrega
+
+
+///////////////////////////     ORDEN ENTREGADO   ///////////////////
+// orden_cerrado ES EL ORDEN EN EL QUE SE VAN TERMINANDO LOS PEDIDOS

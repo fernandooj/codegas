@@ -1,18 +1,18 @@
 import {
-    GET_VEHICULO,
-    GET_VEHICULOS,
+    GET_PEDIDO,
+    GET_PEDIDOS,
 } from "./constants/actionsTypes";
 import axios from "axios";
 
 
-const getVehiculo = vehiculoId => {
+const getPedido = pedidoId => {
   return dispatch => {
     return axios
-      .get(`/veh/vehiculo/${vehiculoId}`)
+      .get(`/ped/pedido/${pedidoId}`)
       .then(res => {
         dispatch({
-          type: GET_VEHICULO,
-          vehiculo: res.data.carro
+          type: GET_PEDIDO,
+          pedido: res.data.pedido
         });
       })
       .catch(err => {
@@ -21,24 +21,25 @@ const getVehiculo = vehiculoId => {
   };
 };
 
-const getVehiculos = data => {
+const getPedidos = data => {
   return dispatch => {
     return axios
-      .get(`veh/vehiculo/no_eliminados`)
+      .get(`ped/pedido`)
       .then(res => {
         console.log(res.data)
         dispatch({
-          type: GET_VEHICULOS,
-          vehiculos: res.data.carro
+          type: GET_PEDIDOS,
+          pedidos: res.data.pedido
         });
       })
       .catch(err => {
         console.log(err);
       });
   };
-};  
+};
+  
 
 export {
-    getVehiculo,
-    getVehiculos
+    getPedido,
+    getPedidos,
 };

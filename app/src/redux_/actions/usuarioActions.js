@@ -1,5 +1,5 @@
 import {
-  GET_PERFIL,
+  GET_PROFILE,
   GET_USUARIOS,
   GET_USUARIO,
   GET_USUARIOS_ACCESO,
@@ -11,11 +11,11 @@ import axios from "axios";
 const getPerfil = data => {
   return dispatch => {
     return axios
-      .get(`user/perfil/`)
+      .get(`user/profile/`)
       .then(res => {
         console.log(res.data)
         dispatch({
-          type: GET_PERFIL,
+          type: GET_PROFILE,
           usuario: res.data
         });
       })
@@ -24,6 +24,8 @@ const getPerfil = data => {
       });
   };
 };
+ 
+ 
 
 const getUsuario = userId => {
   return dispatch => {

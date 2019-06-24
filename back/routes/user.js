@@ -1,11 +1,9 @@
 'use strict';
 let fs = require('fs');
-let  moment = require('moment-timezone');
+let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
- 
-let userServices = require('./../services/userServices.js') 
-const htmlTemplate = require('../template-email.js')
- 
+let userServices       = require('./../services/userServices.js') 
+const htmlTemplate     = require('../template-email.js')
 
 module.exports = function(app, passport){ 
     ///////////////////////////////////////////////////////////////////////////

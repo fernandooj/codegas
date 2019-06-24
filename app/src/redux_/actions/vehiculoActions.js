@@ -36,9 +36,10 @@ const getVehiculos = data => {
         console.log(err);
       });
   };
-};  
+};
+  
 
 export {
     getVehiculo,
-    getVehiculos
+    getVehiculos,
 };

@@ -64,12 +64,11 @@ export const style = MediaQueryStyleSheet.create({
 		zIndex:100,
 		width:size.width,
 		height:size.height,
-		// alignItems:"center"
 	},
 	subContenedorFiltro:{
 		backgroundColor:"#e3e3e3",
 		marginHorizontal:12,
-		marginVertical:6,
+		marginTop:12,
 		width:"90%"
 	},
 	titulo1:{
@@ -80,18 +79,20 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection:"row",
 		backgroundColor:"#ffffff",
 		paddingTop:Platform.OS==='android' ?5 :30,
-		paddingBottom:10
+		paddingBottom:10,
+		top:5
 	},
+	btnRegresar:{
+		paddingVertical:4,
+		paddingHorizontal:8,
+		marginRight:8,
+		top:5
+	},	
 	btnFiltro:{
+		paddingTop:5,
 		paddingVertical:0,
 		paddingHorizontal:10
 	},
-	btnRegresar:{
-		paddingVertical:2,
-		paddingHorizontal:6,
-		marginRight:6,
-		top:-1
-	},	
 	iconFiltro:{
 		fontSize:15
 	},

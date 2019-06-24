@@ -1,7 +1,6 @@
 import {
   GET_PEDIDO,
   GET_PEDIDOS,
-  GET_VEHICULOS_PEDIDOS
 } from "../actions/constants/actionsTypes";
  
  
@@ -22,19 +21,10 @@ const getPedidos = (state = [], action) => {
   }
 };
  
-const getVehiculosConPedidos = (state = [], action) => {
-  switch (action.type) {
-    case GET_VEHICULOS_PEDIDOS:
-      return action.vehiculosPedidos;
-    default:
-      return state;
-  }
-};
-
+ 
 export default function authServiceReducer(state = {}, action) {
   return {   
     pedido:  getPedido(state.pedido, action),
     pedidos: getPedidos(state.pedidos, action),
-    vehiculosPedidos: getVehiculosConPedidos(state.vehiculosPedidos, action),
   };
 }
