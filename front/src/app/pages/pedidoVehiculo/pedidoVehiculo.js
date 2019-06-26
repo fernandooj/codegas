@@ -1,14 +1,16 @@
 // @flow weak
 
 import React, { PureComponent } from "react";
-import { Link } from "react-router-dom";
+ 
 import style from "./style.scss"
-import { Table, Icon, Input, notification } from 'antd'; 
+import { Spin, Icon, Popover, notification } from 'antd'; 
 import 'antd/dist/antd.css';
 import axios from "axios";
+import { connect }     from "react-redux";
 import moment 			   from 'moment-timezone'
+import List from "./scrollPedidos" 
 import {getPedidos, getVehiculosConPedidos}  from '../../redux/actions/pedidoActions' 
-import { connect }               from "react-redux";
+
 
 moment.locale('es');
 
@@ -24,78 +26,16 @@ const getDates=(startDate, endDate, interval)=> {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///  COMPONENTE QUE VUELVE DRAGABLE LA LISTA
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-let placeholder = document.createElement("li");
+var placeholder = document.createElement("li");
 placeholder.className = "placeholder";
 
-class List extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {...props};
-  }
-  dragStart(e) {
-    this.dragged = e.currentTarget;
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', this.dragged);
-  }
-  dragEnd(e) {
-    this.dragged.style.display = 'inline-block';
-    this.dragged.parentNode.removeChild(placeholder);
-    
-    // update state
-    var data = this.state.pedidos;
-    var from = Number(this.dragged.dataset.id);
-    var to = Number(this.over.dataset.id);
-    if(from < to) to--;
-    data.splice(to, 0, data.splice(from, 1)[0]);
-    this.setState({pedidos: data});
-    this.props.ordenPedidos(data)
-  }
-  dragOver(e) {
-    e.preventDefault();
-    this.dragged.style.display = "inline-block";
-    if(e.target.className === 'placeholder') return;
-    this.over = e.target;
-    e.target.parentNode.insertBefore(placeholder, e.target);
-  }
-	render() {
-         
-    let nuevoPedidos = this.state.pedidos.sort((a, b)=>{
-      return a.info[0].orden - b.info[0].orden;
-    });
-    console.log(nuevoPedidos)
-    let listItems = nuevoPedidos.map((item, i) => {
-    let {_id, entregado, forma, cantidadKl, cantidadPrecio, cliente, estado} = item.info[0]
-     
-      return (
-        <li 
-          style={entregado ?{backgroundColor:"#00218b"} :{backgroundColor:"#5cb85c"}}
-          data-id={i}
-          key={i}
-          draggable='true'
-          onDragEnd={this.dragEnd.bind(this)}
-          onDragStart={this.dragStart.bind(this)}>
-            {_id}<br/>
-            {/* {.estado}<br/> */}
-            {entregado ?"Entregado" :"En ruta"}<br/>
-            {forma}: 
-            {forma=="cantidad" ?cantidadKl+" Kl" :forma=="monto" ?" $"+cantidadPrecio :" "}<br/>
-            {cliente}<br/>
-        </li>
-      )
-     });
-		return (
-			<ul onDragOver={this.dragOver.bind(this)}>
-        {listItems}
-      </ul>
-		)
-	}
-}
 
 
 class Pedidos extends PureComponent {
   constructor(props){
     super(props)
     this.state={
+      vehiculosPedido:null
       // fechaInicial : moment().format("YYYY,MM,DD"),               //// obtengo la fecha inicial que es el dia actual
       // fechaFinal : moment().add(5, 'days').format("YYYY,MM,DD")   //// obtengo la fecha final, que es dentro de 5 dias
     }
@@ -112,7 +52,9 @@ class Pedidos extends PureComponent {
     this.props.getPedidos()
     this.props.getVehiculosConPedidos(fechaInicial)
   }
- 
+  componentWillReceiveProps(props){
+    this.setState({vehiculosPedido:props.vehiculosPedido})
+  }
   renderFechas(){
       let {fechaInicial, fechaFinal, fechaSeleccionada} = this.state
       fechaInicial = new Date(fechaInicial);
@@ -124,7 +66,7 @@ class Pedidos extends PureComponent {
  
       return fechas.map((e, key)=>{
         return (
-          <div style={moment(e).format("YYYY,MM,DD")==fechaSeleccionada ?{backgroundColor:"#057fee"} :null} className={style.subContenedorFechas} key={key} onClick={()=>this.redirect(e)}> 
+          <div style={moment(e).format("YYYY,MM,DD")==fechaSeleccionada ?{backgroundColor:"#00218b", color:"white"} :null} className={style.subContenedorFechas} key={key} onClick={()=>this.redirect(e)}> 
             <p>{moment(e).format("MMM DD")}</p>
           </div>
         )
@@ -134,13 +76,16 @@ class Pedidos extends PureComponent {
     window.location.href = `#/pedidoVehiculo/${moment(e).format("YYYY,MM,DD")}`;
     e = moment(e).format("YYYY-MM-DD")
     e = moment(e).valueOf()
-    this.setState({fechaSeleccionada:moment(e).format("YYYY,MM,DD")})
-    this.props.getVehiculosConPedidos(e)
+    this.setState({vehiculosPedidos:null, fechaSeleccionada:moment(e).format("YYYY,MM,DD")})
+    setTimeout(()=>{ 
+      this.props.getVehiculosConPedidos(e)
+    }, 1000);
+    
 	}
   renderVehiculos(){
-    const {ordenPedidos} = this.state
-    const {vehiculosPedido} = this.props
+    const {ordenPedidos, vehiculosPedido} = this.state
     return vehiculosPedido.map((e, key)=>{
+      console.log(e.data)
       return(
         <div key={key}>
           <div className={style.columnaVehiculo}>
@@ -148,7 +93,7 @@ class Pedidos extends PureComponent {
             {e.data[0].info[0].conductor}
           </div>
           <div className={style.filaPedido}>
-            <List pedidos={e.data} ordenPedidos={(ordenPedidos)=>this.setState({ordenPedidos})} />	
+            {e.data.length>0 ?<List pedidos={e.data} ordenPedidos={(ordenPedidos)=>this.setState({ordenPedidos})} /> :<Spin indicator={antIcon} size="large"/>	}
           </div>
           <div className={style.btnGuardar} onClick={()=>this.guardarOrden(ordenPedidos ?ordenPedidos :e.data, e._id.idPlaca)}>
           <i className="fa fa-floppy-o" aria-hidden="true"></i>
@@ -172,7 +117,8 @@ class Pedidos extends PureComponent {
     }
   }
   render() {
-    const {vehiculosPedido} = this.props
+    const {vehiculosPedido} = this.state
+    const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
     return (
       <div>
         <section className={style.contenedorFechas}>
@@ -182,7 +128,9 @@ class Pedidos extends PureComponent {
         </section>
           {
             !vehiculosPedido
-            ?<i className="fa fa-spinner" aria-hidden="true"></i>
+            ?<section className={style.contenedorSpin}>
+              <Spin indicator={antIcon} size="large"/>
+            </section>
             :<section className={style.contenedorVehiculosPedidos}>
               {this.renderVehiculos()}
             </section>
@@ -211,7 +159,6 @@ class Pedidos extends PureComponent {
   }
 }
 const mapState = state => {
-
 	return {
     pedidos: state.pedido.pedidos,
     vehiculosPedido:state.pedido.vehiculosPedidos

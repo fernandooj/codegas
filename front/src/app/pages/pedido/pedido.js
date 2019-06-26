@@ -191,9 +191,10 @@ class Home extends PureComponent {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   renderModalVehiculo(){
     const {modal, idVehiculo, loading} = this.state
+  
     return(
       <Modal
-          title="Asignar Usuario"
+          title="Asignar Vehiculo"
           visible={modal}
           onOk={this.handleOk}
           onCancel={()=>this.setState({modal:false})}
@@ -306,7 +307,7 @@ class Home extends PureComponent {
   ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   asignarConductor(){
-    const {placa, idVehiculo, id} = this.state
+    const {placa, idVehiculo, id, fechaEntrega} = this.state
     const openNotificationWithIcon = type => {
       notification[type]({
         message: 'Vehiculo agregado',
@@ -330,14 +331,14 @@ class Home extends PureComponent {
     });
     const confirmar =()=>{
         console.log("confirmar")
-        axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}`)
+        axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}`)
         .then((res)=>{
             if(res.data.status){
                 this.props.getPedidos()
                 openNotificationWithIcon('success')
-                this.setState({modal:false})
+                this.setState({modal:false, fechaEntrega:null})
             }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+              console.log(res.data)
             }
         })
     }

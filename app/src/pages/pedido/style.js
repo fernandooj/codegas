@@ -16,7 +16,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	titulo:{
 		fontSize:22,
-		marginVertical:10
+		marginVertical:10,
+		textAlign:"center"
 	},
 	pedidoBtn:{
 		borderColor:"rgba(255,255,255,.5)",
@@ -55,6 +56,10 @@ export const style = MediaQueryStyleSheet.create({
 		width:size.width-40,
 		height:300
 	},
+	sinPedidos:{
+		textAlign:"center",
+		fontSize:22
+	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				MODAL FILTRO
 	//////////////////////////////////////////////////////////////////
@@ -89,12 +94,25 @@ export const style = MediaQueryStyleSheet.create({
 		top:5
 	},	
 	btnFiltro:{
+		flexDirection:"row",
 		paddingTop:5,
 		paddingVertical:0,
 		paddingHorizontal:10
 	},
 	iconFiltro:{
 		fontSize:15
+	},
+	textoFiltro:{
+		width:100
+	},
+	btnLimpiar:{
+		flexDirection:"row",
+		position:"absolute",
+		right:10,
+		top:35
+	},
+	textoLimpiar:{
+		width:50
 	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				CABEZERA

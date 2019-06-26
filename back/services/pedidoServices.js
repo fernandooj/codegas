@@ -16,15 +16,18 @@ class pedidoServices{
 		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({orden: 'desc'}).exec(callback)
 	}
 	getByPedido(_id, callback){
-		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt').populate("carroId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioId, callback){
-		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt').populate("carroId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByConductor(conductorId, fechaEntrega, callback){
-		pedido.find({conductorId, fechaEntrega:parseInt(fechaEntrega)}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone').populate("carroId").sort({orden: 'asc'}).exec(callback)
+		pedido.find({conductorId, fechaEntrega:parseInt(fechaEntrega)}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt').populate("carroId").sort({orden: 'asc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
+		pedido.findOne({conductorId, fechaEntrega:parseInt(fechaEntrega)}).sort({orden: 'desc'}).exec(callback)
+	}
+	getLastRowConductorEntregados(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:parseInt(fechaEntrega), entregado:true}).sort({orden: 'desc'}).exec(callback)
 	}
 	create(data, usuarioId, usuarioCrea, callback){
@@ -101,12 +104,13 @@ class pedidoServices{
 					eliminado:1,
 					estado:1,
 					orden:1,
+					orden_cerrado:1,
 					fechaEntrega:1,
 					placa:'$CarroData.placa',
 					idPlaca:'$CarroData._id',
 					conductor:'$ConductorData.nombre',
 					cliente:'$ClienteData.nombre',
-					// conductor:"$UserData.nombre",
+					direccion:"$ClienteData.direccion",
 					// monto:'$PagoData.monto'
 				},
 			},
@@ -127,7 +131,7 @@ class pedidoServices{
 							idPlaca:'$idPlaca',
 						},
 			      data: { $addToSet: {info:[{_id:"$_id", placa:"$placa", activo:"$activo", eliminado:'$eliminado', forma:'$forma', cantidadKl:'$cantidadKl', cantidadPrecio:'$cantidadPrecio', estado:'$estado',
-						entregado:'$entregado', eliminado:'$eliminado', fechaEntrega:'$fechaEntrega', conductor:'$conductor', cliente:'$cliente', orden:'$orden'}]}
+						entregado:'$entregado', eliminado:'$eliminado', fechaEntrega:'$fechaEntrega', conductor:'$conductor', cliente:'$cliente', orden:'$orden', orden_cerrado:'$orden_cerrado', direccion:'$direccion'}]}
                     },
 			    }
 			},
@@ -150,7 +154,7 @@ class pedidoServices{
 			'orden_cerrado':orden_cerrado,
 		}}, callback);
 	}
-	novedad(_id, callback){
+	novedad(_id, orden_cerrado, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'entregado'		:true,
 			'estado'	   	:"noentregado",
@@ -162,10 +166,11 @@ class pedidoServices{
 			'eliminado':eliminado
 		}}, callback);
 	}
-	asignarVehiculo(_id, carroId, conductorId, callback){
+	asignarVehiculo(_id, carroId, conductorId, orden, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'carroId':carroId,
-			"conductorId":conductorId
+			"conductorId":conductorId,
+			"orden":orden
 		}}, callback);
 	}
 	asignarFechaEntrega(_id, fechaEntrega, callback){

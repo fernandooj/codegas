@@ -103,7 +103,7 @@ router.get('/vehiculosConPedidos/:fecha', (req,res)=>{
 ///////////////////////////////////////////////////////////////
 ////////////       GUARDO UN PEDIDO
 //////////////////////////////////////////////////////////////
-router.post('/', function(req,res){
+router.post('/', (req,res)=>{
 	if (!req.session.usuario) {
 		res.json({ status: false, message: 'No hay un usuario logueado' }); 
 	}else{
@@ -130,18 +130,27 @@ router.post('/', function(req,res){
 ///////////////////////////////////////////////////////////////
 ////////////      ASIGNA UN VEHICULO
 //////////////////////////////////////////////////////////////
-router.get('/asignarConductor/:pedidoId/:carroId', (req,res)=>{
+router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
         carroServices.getByCarro(req.params.carroId, (err, conductor)=>{
-            console.log(conductor.conductor._id)
             if(!err){
-                pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, conductor.conductor._id, (err, pedido)=>{
-                    if (!err) {
-                        res.json({ status:true, pedido }); 
-                    }else{
+                pedidoServices.getLastRowConductor(conductor.conductor._id, req.params.fechaEntrega, (err2, pedido)=>{
+                   
+                    if(err2){
                         res.json({ status:false, message: err }); 
+                       
+                    }else{
+                        orden = pedido ?pedido.orden+1 :1
+                        pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden,  (err3, pedido)=>{
+                            if (!err3) {
+                                notificacionPush(conductor.conductor.tokenPhone, "Nuevo pedido asignado", `el pedido ${req.params.pedidoId} le ha sido asignado`)
+                                res.json({ status:true, pedido }); 
+                            }else{
+                                res.json({ status:false, message: err }); 
+                            }
+                        })
                     }
                 })
             }
@@ -161,6 +170,7 @@ router.get('/asignarFechaEntrega/:idPedido/:fecha', (req,res)=>{
                 res.json({ status:true, pedido }); 
             }else{
                 res.json({ status:false, message: err }); 
+                console.log(err)
             }
         })
     }
@@ -176,7 +186,8 @@ router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
 	}else{
         pedidoServices.cambiarEstado(req.params.idPedido, req.params.estado, (err, pedido)=>{
             if (!err) {
-                res.json({ status:true, pedido }); 
+                enviaNotificacion(res, "admin", "Nuevo pedido activado", `${pedido._id} se ha hactivado`)
+                // res.json({ status:true, pedido }); 
             }else{
                 res.json({ status:false, message: err }); 
             }
@@ -203,11 +214,12 @@ router.post('/finalizar/:estado', (req,res)=>{
         fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
 
         /////////////////////////////////////////////       ANTES DE CERRAR SACO EL ULTIMO NUMERO DE ORDEN GUARDADO, ESTO PARA VERIFICAR SI ESTA CAMBIANDO O NO EL ORDEN DE GUARDADO
-        pedidoServices.getLastRowConductor(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
+        pedidoServices.getLastRowConductorEntregados(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
             if(err){
                 res.json({ status:false, message: err }); 
             }else{
-                pedidoServices.finalizar(req.body, req.params.estado, ruta, pedido.orden+1, (err2, pedido)=>{
+                let orden = pedido ?pedido.orden+1 :1
+                pedidoServices.finalizar(req.body, req.params.estado, ruta, orden, (err2, pedido)=>{
                     console.log(err2)
                     const {kilos, factura, valor_unitario} = req.body
                     if (!err2) {
@@ -217,7 +229,6 @@ router.post('/finalizar/:estado', (req,res)=>{
                         let asunto = "Estado pedido Codegas, entregado"
                         htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
                         enviaNotificacion(res, "admin", req.session.usuario.nombre, "Ha cerrado un nuevo pedido exitosamente")
-                       
                     }else{
                         res.json({ status:false, message: err2 }); 
                     }
@@ -231,15 +242,16 @@ router.post('/finalizar/:estado', (req,res)=>{
 ////////////       GUARDAR NOVEDAD --> LO CIERRA PERO NO SE PUDO ENTREGAR
 ////////////////////////////////////////////////////////////////////////////
 router.post('/novedad/', (req,res)=>{
-    pedidoServices.getLastRowConductor(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
+    pedidoServices.getLastRowConductorEntregados(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
         if(err){
             res.json({ status:false, message: err }); 
         }else{
-            pedidoServices.novedad(req.body._id, (err, pedido)=>{
+            let orden = pedido ?pedido.orden+1 :1
+            pedidoServices.novedad(req.body._id, orden, (err, pedido)=>{
                 if (!err) {
                     enviaNotificacion(res, "admin", req.session.usuario.nombre, `Ha cerrado un nuevo pedido NO exitosamente, ${req.body.novedad}`)
                 }else{
-                    res.json({ status:false, message: err }); 
+                    res.json({ status:false, message: err });
                 }
             })
         }
@@ -252,9 +264,9 @@ const enviaNotificacion=(res, acceso, titulo, body)=>{
             usuarios.map(e=>{
                 notificacionPush(e.tokenPhone, titulo, body)
             })
-            res.json({status:'SUCCESS', usuarios})
+            res.json({status:true, usuarios})
         }else{
-            res.json({ status: 'FAIL', usuarios:[], err}) 
+            res.json({ status:false, usuarios:[], err}) 
         }
     })
 }
@@ -284,14 +296,13 @@ router.put('/editarOrden/', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        let pedidos=[]
         req.body.pedidos.map((e, index)=>{
             pedidoServices.editarOrden(e.info[0]._id, index+1, (err, pedido)=>{
                 
             })
         })
-        console.log(pedidos)
-        res.json({ status:true, pedidos }); 
+        
+        res.json({ status:true }); 
     }
 })
  

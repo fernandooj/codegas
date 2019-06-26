@@ -57,7 +57,7 @@ class Pedido extends Component{
         NetInfo.isConnected.addEventListener('change', this.estadoRed);
     }
     componentWillReceiveProps(props){
-        this.setState({pedidos:props.pedidos})
+        this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})
     }
     estadoRed(estadoRed){
         console.log(estadoRed)
@@ -65,7 +65,6 @@ class Pedido extends Component{
     renderPedidos(){
         const {acceso, terminoBuscador, pedidos} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-        console.log(pedidosFiltro)
         return pedidosFiltro.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -88,18 +87,27 @@ class Pedido extends Component{
                         :null                               
                     }
                 >
-                        <Text>{e._id}</Text>
-                        <Text>{e.orden}</Text>
+                    {/* <Text>{e._id}</Text>
+                    <Text>{e.orden}</Text> */}
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>{e.usuarioId.nombre}</Text>
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
                     </View>
                     <View style={style.containerPedidos}>
-                        <Text style={style.textPedido}>Fecha de creación </Text>
-                        <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
+                        <Text style={style.textPedido}>CODT</Text>
+                        <Text style={style.textPedido}>{e.usuarioId.codt}</Text>
                     </View>
                     {
-                        <View style={style.containerPedidos}>
+                        acceso!=="conductor"
+                        &&<View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Fecha de creación </Text>
+                            <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
+                        </View>
+                    }
+                    
+                    {   
+                        acceso!=="conductor"
+                        &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha solicitud </Text>
                             <Text style={style.textPedido}>{ e.fechaEntrega ?moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD") :"sin fecha de asignación"}</Text>
                         </View>
@@ -109,7 +117,7 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>{e.forma} {e.cantidad ?" - "+e.cantidad :""}</Text>
                     </View>
                     {
-                        e.carroId
+                        (e.carroId && acceso!=="conductor")
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Vehiculo Asignado</Text>
                             <Text style={style.text}>{e.carroId.placa}</Text>
@@ -156,7 +164,7 @@ class Pedido extends Component{
 			duration:400,
 			// easing:Easing.inOut
         }).start()
-        this.setState({elevation:7})
+        this.state.textEstado=="todos" ?this.setState({elevation:7, textEstado:""}) :this.setState({elevation:7})
 	}
     modalFechaEntrega(){
         let {modalFechaEntrega, fechaEntrega} = this.state
@@ -364,8 +372,7 @@ class Pedido extends Component{
     ////////////////////////           RENDER MODAL FILTROS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     renderModalFiltro(){
-        let {fechaEntregaFiltro} = this.state
-        let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
+        let {fechaEntregaFiltro, textEstado} = this.state
         fechaEntregaFiltro = moment(fechaEntregaFiltro).format("YYYY-MM-DD")
 		return(
 			<Animated.View style={[style.modal, {top:this.state.top}]}>
@@ -376,44 +383,61 @@ class Pedido extends Component{
 					<Text style={style.btnRegresar}>
 						Filtros de búsqueda
 					</Text>
+                    <TouchableOpacity style={style.btnLimpiar} onPress={()=>this.setState({pedidos:this.state.pedidosFiltro, textEstado:"todos"})}>
+                        <Text style={style.textoLimpiar}>Limpiar</Text>	
+                        {textEstado=="todos" &&<Icon name={'check'} style={style.iconFiltro} />}
+                    </TouchableOpacity>
 				</View>
 				<ScrollView>
 					<View style={style.subContenedorFiltro}>
 						<Text style={style.titulo1}>Estado</Text>
-						<TouchableOpacity style={style.btnFiltro}>
-							<Text>Espera</Text>	
+						<TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarTabla("innactivo")}>
+							<Text style={style.textoFiltro}>Innactivo</Text>	
+                            {textEstado=="innactivo" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
-						<TouchableOpacity style={style.btnFiltro}>
-							<Text>Innactivo</Text>	
+						<TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarTabla("espera")}>
+							<Text style={style.textoFiltro}>Espera</Text>	
+                            {textEstado=="espera" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
-						<TouchableOpacity style={style.btnFiltro}>
-							<Text>Activo</Text>	
+						<TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarTabla2("activo", false, "activo")}>
+							<Text style={style.textoFiltro}>Activo</Text>	
+                            {textEstado=="activo" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
-                        <TouchableOpacity style={style.btnFiltro}>
-							<Text>En camino</Text>	
+                        <TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarTabla2("activo", true, "asignado")}>
+							<Text style={style.textoFiltro}>Asignado</Text>	
+                            {textEstado=="asignado" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
-                        <TouchableOpacity style={style.btnFiltro}>
-							<Text>Entregado</Text>	
+                        <TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarTabla3("activo", "entregado")}>
+							<Text style={style.textoFiltro}>Entregado</Text>	
+                            {textEstado=="entregado" &&<Icon name={'check'} style={style.iconFiltro} />}
+						</TouchableOpacity>
+                        <TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarTabla("noentregado")}>
+							<Text style={style.textoFiltro}>No Entregado</Text>	
+                            {textEstado=="noentregado" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
 					</View>
 					<View style={style.subContenedorFiltro}>
 						<Text style={style.titulo1}>Forma</Text>
-						<TouchableOpacity style={style.btnFiltro}>
-							<Text>LLeno</Text>	
+						 <TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarForma("lleno")}>
+							<Text style={style.textoFiltro}>LLeno</Text>	
+                            {textEstado=="lleno" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
-						<TouchableOpacity style={style.btnFiltro}>
-							<Text>Monto</Text>	
+						 <TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarForma("monto")}>
+							<Text style={style.textoFiltro}>Monto</Text>	
+                            {textEstado=="monto" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
-						<TouchableOpacity style={style.btnFiltro}>
-							<Text>Cantidad</Text>	
+						 <TouchableOpacity style={style.btnFiltro} onPress={()=>this.actualizarForma("cantidad")}>
+							<Text style={style.textoFiltro}>Cantidad</Text>	
+                            {textEstado=="cantidad" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
+                       
 					</View> 
 					<View style={style.subContenedorFiltro}>
 						<Text style={style.titulo1}>Fecha entrega</Text>
                         <Calendar
                             current={fechaEntregaFiltro}
                             markedDates={this.state.dates} 
-                            onDayPress={(day) => {console.log('selected day', day); this.props.getPedidos(moment(day.dateString).valueOf()); this.setState({fechaEntregaFiltro:day.dateString})}}
+                            onDayPress={(day) => {console.log('selected day', day); this.actualizarFecha(moment(day.dateString).valueOf())}}
                             markedDates={{[fechaEntregaFiltro]: {selected: true,  marked: true}}}
                             // markingType={'period'}
                             // onDayPress={(date)=>this.onSelectDay(date.dateString)}
@@ -426,6 +450,50 @@ class Pedido extends Component{
 				</ScrollView>
 			</Animated.View>
 		)
+    }
+    actualizarTabla(filtro){
+        let {pedidos, pedidosFiltro} = this.state
+        pedidos = pedidosFiltro.filter(e=>{
+          return e.estado==filtro
+        })
+        this.setState({pedidos, textEstado:filtro})
+    }
+    actualizarTabla2(filtro, filtro2, textEstado){
+        let {pedidos, pedidosFiltro} = this.state
+        if(filtro2){
+          pedidos = pedidosFiltro.filter(e=>{
+            return e.estado==filtro &&e.carroId
+          })
+        }else{
+          pedidos = pedidosFiltro.filter(e=>{
+            return e.estado==filtro &&!e.carroId
+          })
+        }
+       this.setState({pedidos, textEstado})
+    }
+    actualizarTabla3(filtro, textEstado){
+        let {pedidos, pedidosFiltro} = this.state
+        pedidos = pedidosFiltro.filter(e=>{
+          return e.estado==filtro &&e.entregado
+        })
+        this.setState({pedidos, textEstado})
+    }
+    actualizarForma(filtro){
+        let {pedidos, pedidosFiltro} = this.state
+        pedidos = pedidosFiltro.filter(e=>{
+          return e.forma==filtro
+        })
+        this.setState({pedidos, textEstado:filtro})
+    }
+    actualizarFecha(filtro){
+        let {pedidos, pedidosFiltro, acceso} = this.state
+        pedidos = pedidosFiltro.filter(e=>{
+          return e.fechaEntrega==filtro
+        })
+        console.log({filtro})
+        this.setState({fechaEntregaFiltro:filtro})
+        acceso == "conductor" ?this.props.getPedidos(filtro) :this.setState({pedidos})
+        
     }
     // onSelectDay(date){
     //     const { fechasFiltro } = this.state
@@ -503,10 +571,10 @@ class Pedido extends Component{
         )
     }
     renderCabezera(){
-        const {terminoBuscador, elevation} = this.state
+        const {terminoBuscador, elevation, acceso, fechaEntregaFiltro, pedidos} = this.state
         return(
             <View style={style.contenedorCabezera}>
-                <Text style={style.titulo}>Pedidos</Text>
+                <Text style={style.titulo}>Pedidos:{pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
                 <View style={style.subContenedorCabezera}>
                     <TextInput
                         placeholder="Buscar por: cliente, fecha, forma"
@@ -523,8 +591,8 @@ class Pedido extends Component{
         )
     }
 	render(){
-        const {navigation, pedidos} = this.props
-        const {idUsuario} = this.state
+        const {navigation} = this.props
+        const {idUsuario, pedidos} = this.state
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
         }else if(idUsuario=="FAIL"){
@@ -536,7 +604,11 @@ class Pedido extends Component{
                     {this.renderModalFiltro()}
                     <ScrollView style={style.subContenedor}>
                         {this.editarPedido()}
-                        {this.renderPedidos()}
+                        {
+                            pedidos.length==0
+                            ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
+                            :this.renderPedidos()
+                        }
                     </ScrollView>
                     <Footer navigation={navigation} />
                 </View>
@@ -588,14 +660,21 @@ class Pedido extends Component{
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.get(`ped/pedido/asignarFechaEntrega/${id}/${fechaEntrega}`)
+            axios.get(`ped/pedido/asignarFechaEntrega/${id}/${moment(fechaEntrega).valueOf()}`)
             .then((res)=>{
                 if(res.data.status){
-                    alert("Fecha agregada con exito")
+                    this.setState({modalFechaEntrega:false, novedad:""})
+                    setTimeout(() => {
+                        Toast.show("Fecha agregada con exito", Toast.LONG)
+                    }, 1000);
                     this.props.getPedidos()
                 }else{
+                    console.log(res.data)
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                 }
+            })
+            .catch(err=>{
+                console.log(err)
             })
         }
     }
@@ -625,7 +704,7 @@ class Pedido extends Component{
                         setTimeout(() => {
                             alert("Pedido cerrado")
                         }, 1000);
-                        this.props.getPedidos(fechaEntregaFiltro)
+                        this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
                     })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
@@ -673,7 +752,7 @@ class Pedido extends Component{
                         setTimeout(() => {
                             alert("Pedido cerrado")
                         }, 1000);
-                        this.props.getPedidos(moment(fechaEntrega).format("YYYY-MM-DD"))
+                        this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
                     })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
