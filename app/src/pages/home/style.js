@@ -42,7 +42,7 @@ export const style = MediaQueryStyleSheet.create({
 	contenedorModal:{
 		position:Platform.OS=='android' ?null :"absolute",
 		alignItems:"center",
-		justifyContent: 'center',
+		// justifyContent: 'center',
 		backgroundColor:"rgba(0,0,0,.5)",
 		height:size.height,
 		zIndex:100,
@@ -55,6 +55,7 @@ export const style = MediaQueryStyleSheet.create({
 		backgroundColor:"#ffffff",
 		borderRadius:7,
 		padding:10,
+		top:100,
 		alignItems:"center"
 	},
 	btnModalClose:{
@@ -68,23 +69,24 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	tituloModal:{
 		textAlign:"center",
-		marginVertical:5
+		marginVertical:5,
+		fontWeight: "bold"
 	},	
 	btnGuardar:{
 		backgroundColor:"#00218b",
 		padding:10,
-        borderRadius:5,
-        marginTop:25
-    },
-    btnGuardarDisable:{
+			borderRadius:5,
+			marginTop:25
+  },
+  btnGuardarDisable:{
 		backgroundColor:"grey",
 		padding:10,
-        borderRadius:5,
-        marginTop:25
-    },
-    textGuardar:{
+		borderRadius:5,
+		marginTop:25
+	},
+	textGuardar:{
 		color:"#ffffff"
-    },
+	},
 	input:{
         width:size.width-100,
         backgroundColor:"#ffffff",

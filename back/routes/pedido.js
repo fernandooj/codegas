@@ -13,6 +13,7 @@ const notificacionPush = require('../notificacionPush.js')
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
 ////////////////////////////////////////////////////////////
 router.get('/todos/:fechaEntrega', (req,res)=>{
+    console.log(req.session.usuario)
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado' }); 
     }else{
@@ -137,10 +138,8 @@ router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega', (req,res)=>{
         carroServices.getByCarro(req.params.carroId, (err, conductor)=>{
             if(!err){
                 pedidoServices.getLastRowConductor(conductor.conductor._id, req.params.fechaEntrega, (err2, pedido)=>{
-                   
                     if(err2){
                         res.json({ status:false, message: err }); 
-                       
                     }else{
                         orden = pedido ?pedido.orden+1 :1
                         pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden,  (err3, pedido)=>{

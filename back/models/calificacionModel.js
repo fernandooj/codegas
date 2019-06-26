@@ -7,11 +7,11 @@ let Schema   = mongoose.Schema;
 //////////////////////////////////////////////////////////////////////////////
 ////////***********     creo el esquema / ciudad        ****//////////////
 //////////////////////////////////////////////////////////////////////////////
-let ordenPedido = new Schema({
-	fecha:     Number,
-	carroId:   {type: Schema.ObjectId, ref:'Carro'},
-	usuarioId: {type: Schema.ObjectId, ref:'User'},
-    pedidos:   [{type: Schema.ObjectId, ref:'Pedido'}],
+let calificacion = new Schema({
+	sugerencia  : String,
+	calificacion: Number,
+	creado:       Number,
+	idConversacion: {type: Schema.ObjectId, ref:'Conversacion'},
 })
 
-module.exports = mongoose.model('ordenPedido', ordenPedido)
+module.exports = mongoose.model('calificacion', calificacion)

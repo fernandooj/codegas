@@ -19,7 +19,7 @@ let mensajeRutas      = require('./routes/mensaje.js');
 let pedidoRutas       = require('./routes/pedido.js');
 let novedadRutas      = require('./routes/novedad.js');
 let carroRutas        = require('./routes/carro.js');
-let ordenPedidoRutas  = require('./routes/ordenPedido.js');
+let calificacionRutas = require('./routes/calificacion.js');
 
 let SocketIO = require('./socket.js')
 const path   = require('path');
@@ -110,7 +110,7 @@ app.use('/x/v1/men/mensaje',      mensajeRutas)
 app.use('/x/v1/ped/pedido',       pedidoRutas) 
 app.use('/x/v1/nov/novedad',      novedadRutas) 
 app.use('/x/v1/veh/vehiculo',     carroRutas) 
-app.use('/x/v1/ord/ordenPedido',     ordenPedidoRutas) 
+app.use('/x/v1/cal/calificacion', calificacionRutas) 
 require('./routes/user.js')(app, passport);
 
 server.listen(port)

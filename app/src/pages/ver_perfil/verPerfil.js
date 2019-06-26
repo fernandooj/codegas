@@ -61,7 +61,7 @@ class verPerfil extends Component{
         console.log({acceso, tipoAcceso})
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:50}}>
-            {tipoAcceso=="admin" &&<Text style={style.titulo}>Nuevo {acceso}</Text> }
+            {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
             {/* ACCESO */}	 
                 {
                     tipoAcceso=="admin"
@@ -295,6 +295,7 @@ class verPerfil extends Component{
         this.setState({showLoading:true})
         let data = new FormData();
         imagen = imagen[0]
+        this.state.tipoAcceso ?data.append('crear', true) :null
         data.append('imagen', imagen);
         data.append('imagenOtroUsuario', true);
         data.append('idUser', idUser);
@@ -306,7 +307,12 @@ class verPerfil extends Component{
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                this.loginExitoso(res.data.user)
+                if(this.state.tipoAcceso){
+                    alert("Usuario guardado con exito")
+                    this.props.navigation.navigate("perfil")
+                }else{
+                    this.loginExitoso(res.data.user)
+                }
             }
         })
         .catch(err=>{

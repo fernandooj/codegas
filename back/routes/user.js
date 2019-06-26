@@ -60,7 +60,7 @@ module.exports = function(app, passport){
             if(err){
                 res.json({status:false, mensaje:"TOKEN INVALIDO", code:0})
             } else{
-                console.log(token)
+               
                 userServices.estadoUsuario(token, true, (err2, user)=>{
                     req.session.usuario=user
                     if (user) {
@@ -147,7 +147,7 @@ module.exports = function(app, passport){
     */
     ///////////////////////////////////////////////////////////////////////////
     const modificaTokenPhone = (req, res)=>{
-        console.log(req.session.usuario)
+      
         userServices.modificaTokenPhone(req.session.usuario._id, req.body.tokenPhone, (err, user)=>{
             if (err) {
                 res.json({status:false, err, code:0})    
@@ -254,7 +254,8 @@ module.exports = function(app, passport){
                 if (!err) {
                     userServices.getEmail(avatar, (err2, user)=>{
                         if(!err2){
-                            req.session.usuario=user
+                            req.body.crear ?null :req.session.usuario=user /// esta linea crea la sesion cuando se edita el avatar, 
+                            // ya que se puede crear un usuario desde el front, pero no necesito editar la sesion
                             res.json({ status:true, message: 'Avatar Actualizado', user });
                         }
                     })
@@ -327,7 +328,7 @@ module.exports = function(app, passport){
         
         userServices.getAdminSolucion((err, usuarios)=>{
             if(!err){
-                console.log(usuarios)
+            
                 res.json({status:'SUCCESS', usuarios})
             }else{
                 res.json({ status: 'FAIL', usuarios:[], err}) 

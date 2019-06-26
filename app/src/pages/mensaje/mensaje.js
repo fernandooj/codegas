@@ -55,7 +55,7 @@ class Conversacion extends Component{
 		this.setState({mensajes:props.mensajes})
 	}
 	cerrarConversacionSocket(navigation){
-		console.log(this.props)
+		const {acceso, id}=this.state
 		Alert.alert(
 				`Chat Finalizado`,
 				``,
@@ -66,7 +66,9 @@ class Conversacion extends Component{
 		)
 		const confirmar = ()=>{
 			AsyncStorage.removeItem('formularioChat')
-			this.props.navigation.navigate("Home") 
+			acceso=="admin" || acceso=="solucion"
+			?this.props.navigation.navigate("Home") 
+			:this.props.navigation.navigate("calificacion", {id}) 
 		}
 	}
  

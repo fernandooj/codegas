@@ -46,7 +46,7 @@ class Home extends Component{
 				this.socket = SocketIOClient(URL);
 				this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
 			}else{
-				this.setState({formularioChat})
+				this.setState({formularioChat, nombre:"", email:"", celular:""})
 			}
 			userId ?this.setState({userId, nombre, email, avatar, acceso, usuariosEntrando}) :null
 		}catch(e){
@@ -146,14 +146,15 @@ class Home extends Component{
 		const {modal, email, nombre, celular} = this.state
 		return(
 			<Modal transparent visible={modal} animationType="fade" >
-				<TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  modal: false }) }} >   
+				<TouchableOpacity activeOpacity={1}>   
 						<View style={style.contenedorModal}>
 								<View style={style.subContenedorModal}>
 									<TouchableOpacity activeOpacity={1} onPress={() => this.setState({modal:false})} style={style.btnModalClose}>
 											<Icon name={'times-circle'} style={style.iconCerrar} />
 									</TouchableOpacity>
-									<Text style={style.tituloModal}>Bienvenido al Chat Nuestro horario de atención es lunes a viernes 8:00AM - 6:00PM. </Text>
-									<Text style={style.tituloModal}>Ingresa tus datos para iniciar </Text>
+									<Text style={style.tituloModal}>Bienvenido a nuestro chat </Text>
+									<Text>Horario de atención es lunes a viernes 8:00AM - 5:00PM. </Text>
+									<Text>Ingresa tus datos para iniciar </Text>
 									<TextInput
 										value={nombre}
 										onChangeText={nombre => this.setState({ nombre })}

@@ -134,6 +134,13 @@ class Home extends Component{
                             <Icon name={'car'} style={style.icon} />
                         </TouchableOpacity>
                     }
+                    {
+                        acceso=="admin"
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios")} >
+                            <Text style={style.txtLista}>Usuarios</Text> 
+                            <Icon name={'users'} style={style.icon} />
+                        </TouchableOpacity>
+                    }
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
                         <Text style={style.txtLista}>Cerrar Sesion</Text> 
                         <Icon name={'sign-out'} style={style.icon} />

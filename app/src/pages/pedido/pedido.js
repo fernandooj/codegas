@@ -783,6 +783,7 @@ class Pedido extends Component{
 }
 
 const mapState = state => {
+    console.log(state)
 	return {
         pedidos: state.pedido.pedidos,
         vehiculos:state.vehiculo.vehiculos

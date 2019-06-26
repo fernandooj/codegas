@@ -144,7 +144,6 @@ class pedidoServices{
 		}}, callback);
   }
   finalizar(data, activo, imagen, orden_cerrado, callback){
-		console.log({imagen})
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
