@@ -141,6 +141,20 @@ class Home extends Component{
                             <Icon name={'users'} style={style.icon} />
                         </TouchableOpacity>
                     }
+                    {
+                        acceso=="admin"
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("zona")} >
+                            <Text style={style.txtLista}>Zonas</Text> 
+                            <Icon name={'globe'} style={style.icon} />
+                        </TouchableOpacity>
+                    }
+                    {
+                        acceso=="admin"
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("verCalificacion")} >
+                            <Text style={style.txtLista}>Calificaciones</Text> 
+                            <Icon name={'star'} style={style.icon} />
+                        </TouchableOpacity>
+                    }
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
                         <Text style={style.txtLista}>Cerrar Sesion</Text> 
                         <Icon name={'sign-out'} style={style.icon} />

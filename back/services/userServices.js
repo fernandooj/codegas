@@ -23,21 +23,23 @@ class userServices {
 	getById(_id, callback){
 		User.findOne({_id}).populate('categoria').exec(callback)
 	}
-	create(user, token, callback){ 
+	create(user, token, idPadre, callback){ 
+		console.log(user)
 		let fecha2 = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
 		var newUsuario = new User() 
 		newUsuario.razon_social	=  user.razon_social,
 		newUsuario.cedula		=  user.cedula,
-		newUsuario.direccion	=  user.direccion,
+		newUsuario.direccion_factura	=  user.direccion_factura,
 		newUsuario.tipo			=  user.tipo,		
 		newUsuario.cedula		=  user.cedula,
 		newUsuario.celular		=  user.celular,
 		newUsuario.codt		    =  user.codt,
 		newUsuario.nombre		=  user.nombre,
-		newUsuario.password		=  user.acceso!=="cliente" &&newUsuario.generateHash(token),
+		newUsuario.password		=  newUsuario.generateHash(token),
 		newUsuario.email		=  user.email ?user.email.toLowerCase() :"",
 		newUsuario.acceso		=  user.acceso,
 		newUsuario.tokenPhone	=  user.tokenPhone,
+		newUsuario.idPadre  	=  idPadre,
 		newUsuario.token  		=  token,
 		// newUsuario.activo 		=  user.acceso=="cliente" ?false :true,
 		newUsuario.activo 		=  true,
@@ -53,11 +55,12 @@ class userServices {
 		}}, callback);
 	}
 	edit(user, id, callback){
+		console.log(user.password)
 		let newUsuario = new User() 
 		User.findByIdAndUpdate(id, {$set: {
 			'razon_social': user.razon_social,
 			'cedula':       user.cedula,
-			'direccion':   	user.direccion,
+			'direccion_factura':   	user.direccion_factura,
 			'nombre':     	user.nombre,
 			'codt':     	user.codt,
 			'celular':  	user.celular,

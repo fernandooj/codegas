@@ -6,20 +6,26 @@ import moment 			   from 'moment-timezone'
 import axios               from 'axios';
 import KeyboardListener    from 'react-native-keyboard-listener';
 import Icon                from 'react-native-fa-icons';
-import {Calendar}          from 'react-native-calendars';
+import {Calendar, LocaleConfig}     from 'react-native-calendars';
 import { createFilter }    from 'react-native-search-filter';
 import { connect }         from "react-redux";
 import ImageProgress 	   from 'react-native-image-progress';
 import Footer              from '../components/footer'
-import {getPedidos}        from '../../redux/actions/pedidoActions' 
+import {getPedidos, getZonasPedidos} from '../../redux/actions/pedidoActions' 
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import {sendRemoteNotification} from '../push/envioNotificacion';
 import TomarFoto           from "../components/tomarFoto";
 import {style}             from './style'
+LocaleConfig.locales['es'] = {
+    monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
+    monthNamesShort: ['Ener.','Febr.','Marzo.','Abril.','Mayo.','Jun.','Jul.','Agos','Sept.','Oct.','Nov.','Dic.'],
+    dayNames: ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'],
+    dayNamesShort: ['Dom.','Lun.','Mar.','Mie.','Jue.','Vie.','Sab.'],
+    today: 'Hoy'
+  };
+LocaleConfig.defaultLocale = 'es';
 
-
-
-const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidad', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado"] 
+const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidad', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
 let size  = Dimensions.get('window');
 class Pedido extends Component{
 	constructor(props) {
@@ -28,6 +34,7 @@ class Pedido extends Component{
         openModal:false,
         modalConductor:false,
         modalFechaEntrega:false,
+        modalZona:false,
         terminoBuscador:"",
         kilosTexto:"",
         facturaTexto:"",
@@ -35,6 +42,7 @@ class Pedido extends Component{
         novedad:"",
         fechasFiltro:["0","1"],
         pedidos:[],
+        zonaPedidos:[],
         top:new Animated.Value(size.height),
         elevation:7,     ////// en Android sale un error al abrir el filtro debido a la elevation
         fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
@@ -42,7 +50,8 @@ class Pedido extends Component{
 	}
 	 
     componentWillMount = async () =>{
-        this.props.getPedidos(moment(this.state.fechaEntregaFiltro).valueOf())
+        this.props.getPedidos()
+        this.props.getZonasPedidos(this.state.fechaEntregaFiltro)
         this.props.getVehiculos()
         try {
             let idUsuario = await AsyncStorage.getItem('userId')
@@ -57,10 +66,11 @@ class Pedido extends Component{
         NetInfo.isConnected.addEventListener('change', this.estadoRed);
     }
     componentWillReceiveProps(props){
-        this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})
-    }
+        this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos})   
+    }    
+   
     estadoRed(estadoRed){
-        console.log(estadoRed)
+        // console.log(estadoRed)
     }
     renderPedidos(){
         const {acceso, terminoBuscador, pedidos} = this.state
@@ -87,11 +97,15 @@ class Pedido extends Component{
                         :null                               
                     }
                 >
-                    {/* <Text>{e._id}</Text>
-                    <Text>{e.orden}</Text> */}
+                     <Text>{e._id}</Text>
+                   {/* <Text>{e.orden}</Text> */}
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>{e.usuarioId.nombre}</Text>
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
+                    </View>
+                    <View style={style.containerPedidos}>
+                        <Text style={style.textPedido}>Dirección</Text>
+                        <Text style={style.textPedido}>{e.puntoId.direccion}</Text>
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>CODT</Text>
@@ -101,7 +115,7 @@ class Pedido extends Component{
                         acceso!=="conductor"
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha de creación </Text>
-                            <Text style={style.textPedido}>{moment(JSON.parse(e.creado)).format("YYYY-MM-DD h:mm a")}</Text>
+                            <Text style={style.textPedido}>{e.creado}</Text>
                         </View>
                     }
                     
@@ -109,12 +123,23 @@ class Pedido extends Component{
                         acceso!=="conductor"
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha solicitud </Text>
-                            <Text style={style.textPedido}>{ e.fechaEntrega ?moment(JSON.parse(e.fechaEntrega)).format("YYYY-MM-DD") :"sin fecha de asignación"}</Text>
+                            <Text style={style.textPedido}>{ e.fechaSolicitud ?e.fechaSolicitud :"sin fecha de solicitud"}</Text>
+                        </View>
+                    }
+                     {   
+                        acceso!=="conductor"
+                        &&<View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Fecha entrega </Text>
+                            <Text style={style.textPedido}>{ e.fechaEntrega ?e.fechaEntrega :"sin fecha de asignación"}</Text>
                         </View>
                     }
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>Tipo de solicitud:</Text>
-                        <Text style={style.textPedido}>{e.forma} {e.cantidad ?" - "+e.cantidad :""}</Text>
+                        <Text style={style.textPedido}>{e.forma} 
+                        {
+                            e.forma=="cantidad" 
+                            ?' '+Number(e.cantidadKl).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")+" KL" 
+                            :e.forma=="monto" ?'$ '+Number(e.cantidadPrecio).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") :""}</Text>
                     </View>
                     {
                         (e.carroId && acceso!=="conductor")
@@ -196,6 +221,7 @@ class Pedido extends Component{
             </Modal>
         )
     }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -369,11 +395,49 @@ class Pedido extends Component{
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    modalZonas(){
+        const {modalZona, zonas, idZona, zonaPedidos} = this.state
+        console.log(zonaPedidos)
+        return(
+            <Modal transparent visible={modalZona} animationType="fade" >
+                <TouchableOpacity activeOpacity={1}  >   
+                    <View style={style.modalZona}>
+                        <View style={style.subModalZona}>
+                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalZona:false})} style={style.btnModalClose}>
+                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                            </TouchableOpacity>
+                            <Text style={style.tituloModal}>Total pedidos Zona</Text>
+                            <ScrollView>
+                                {
+                                    zonaPedidos.map((e, key)=>{
+                                        return(
+                                            <TouchableOpacity key={key} onPress={()=>this.actualizaZona(e._id, e.nombre)}
+                                                style={
+                                                    (e.total>3 && e.total<=5) ?[style.btnZona,{backgroundColor:"#F59F24"}]
+                                                    :e.total>5 ?[style.btnZona,{backgroundColor:"#F55024"}]
+                                                    :[style.btnZona,{backgroundColor:"#42DF18"}]
+                                                }
+                                            >
+                                                <Text style={style.textZona}>{e._id}</Text>
+                                                <Text style={style.textZona}>{e.total}</Text>
+                                            </TouchableOpacity>
+                                        )
+                                    })
+                                }
+                            </ScrollView>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        )
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           RENDER MODAL FILTROS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     renderModalFiltro(){
-        let {fechaEntregaFiltro, textEstado} = this.state
-        fechaEntregaFiltro = moment(fechaEntregaFiltro).format("YYYY-MM-DD")
+        let {fechaEntregaFiltro, textEstado, fechaSolicitudFiltro} = this.state
 		return(
 			<Animated.View style={[style.modal, {top:this.state.top}]}>
 				<View style={style.cabezera}>
@@ -383,7 +447,7 @@ class Pedido extends Component{
 					<Text style={style.btnRegresar}>
 						Filtros de búsqueda
 					</Text>
-                    <TouchableOpacity style={style.btnLimpiar} onPress={()=>this.setState({pedidos:this.state.pedidosFiltro, textEstado:"todos"})}>
+                    <TouchableOpacity style={style.btnLimpiar} onPress={()=>this.limpiar()}>
                         <Text style={style.textoLimpiar}>Limpiar</Text>	
                         {textEstado=="todos" &&<Icon name={'check'} style={style.iconFiltro} />}
                     </TouchableOpacity>
@@ -437,7 +501,7 @@ class Pedido extends Component{
                         <Calendar
                             current={fechaEntregaFiltro}
                             markedDates={this.state.dates} 
-                            onDayPress={(day) => {console.log('selected day', day); this.actualizarFecha(moment(day.dateString).valueOf())}}
+                            onDayPress={(day) => {console.log('selected day', day); this.actualizarFechaEntrega(day.dateString)}}
                             markedDates={{[fechaEntregaFiltro]: {selected: true,  marked: true}}}
                             // markingType={'period'}
                             // onDayPress={(date)=>this.onSelectDay(date.dateString)}
@@ -445,6 +509,15 @@ class Pedido extends Component{
                             //     [fechasFiltro[0]]: {startingDay: true, color: 'green'},
                             //     [fechasFiltro[1]]: {endingDay: true, color: 'green'} 
                             // }}
+                        />
+					</View>
+                    <View style={style.subContenedorFiltro}>
+						<Text style={style.titulo1}>Fecha solicitud</Text>
+                        <Calendar
+                            current={fechaSolicitudFiltro}
+                            markedDates={this.state.dates} 
+                            onDayPress={(day) => {console.log('selected day', day); this.actualizarFechaSolicitud(day.dateString)}}
+                            markedDates={{[fechaSolicitudFiltro]: {selected: true,  marked: true}}}
                         />
 					</View>
 				</ScrollView>
@@ -485,15 +558,32 @@ class Pedido extends Component{
         })
         this.setState({pedidos, textEstado:filtro})
     }
-    actualizarFecha(filtro){
+    actualizarFechaEntrega(filtro){
+        this.props.getZonasPedidos(filtro) 
+        this.props.getPedidos(filtro) 
+        this.setState({fechaEntregaFiltro:filtro})
+        // let {pedidos, pedidosFiltro, acceso} = this.state
+        // pedidos = pedidosFiltro.filter(e=>{
+        //   return e.fechaEntrega==filtro
+        // })
+        // acceso == "conductor" ?this.props.getPedidos(filtro) :this.setState({pedidos})  
+    }
+    actualizarFechaSolicitud(filtro){ 
+        axios.get(`zon/zona/pedidoSolicitud/${filtro}`)
+        .then(res => {
+            console.log(res.data)
+            this.setState({fechaSolicitudFiltro:filtro, zonaPedidos:res.data.zona})
+        })
         let {pedidos, pedidosFiltro, acceso} = this.state
         pedidos = pedidosFiltro.filter(e=>{
-          return e.fechaEntrega==filtro
+          return e.fechaSolicitud==filtro
         })
-        console.log({filtro})
-        this.setState({fechaEntregaFiltro:filtro})
-        acceso == "conductor" ?this.props.getPedidos(filtro) :this.setState({pedidos})
-        
+        this.setState({pedidos})  
+    }
+    limpiar(){
+        this.setState({pedidos:this.state.pedidosFiltro, textEstado:"todos"})
+        this.props.getPedidos() 
+        this.props.getZonasPedidos(moment().format("YYYY-MM-DD")) 
     }
     // onSelectDay(date){
     //     const { fechasFiltro } = this.state
@@ -574,18 +664,29 @@ class Pedido extends Component{
         const {terminoBuscador, elevation, acceso, fechaEntregaFiltro, pedidos} = this.state
         return(
             <View style={style.contenedorCabezera}>
-                <Text style={style.titulo}>Pedidos:{pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
-                <View style={style.subContenedorCabezera}>
-                    <TextInput
-                        placeholder="Buscar por: cliente, fecha, forma"
-                        autoCapitalize = 'none'
-                        onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador: terminoBuscador })}
-                        value={terminoBuscador}
-                        style={[style.inputCabezera, {elevation}]}
-                    />
-                    <TouchableOpacity style={style.btnFiltro} onPress={()=>this.showModal()}>
-                        <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />
+                <View style={{flexDirection:"row"}}>
+                    <Text style={style.titulo}>Pedidos:{pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
+                    <TouchableOpacity style={style.btnZonas} onPress={()=>this.setState({modalZona:true})}>
+                        <Text style={style.textZonas}>Zonas</Text>
                     </TouchableOpacity>
+                </View>
+                <View style={style.subContenedorCabezera}>
+                    {   
+                        acceso!=="conductor"
+                        &&<TextInput
+                            placeholder="Buscar por: cliente, fecha, forma"
+                            autoCapitalize = 'none'
+                            onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador: terminoBuscador })}
+                            value={terminoBuscador}
+                            style={[style.inputCabezera, {elevation}]}
+                        />
+                    }
+                    {   
+                        acceso!=="conductor"
+                        &&<TouchableOpacity style={style.btnFiltro} onPress={()=>this.showModal()}>
+                            <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />
+                        </TouchableOpacity>
+                    }
                 </View>
             </View>
         )
@@ -602,6 +703,7 @@ class Pedido extends Component{
                 <View style={style.container}>
                     {this.renderCabezera()}
                     {this.renderModalFiltro()}
+                    {this.modalZonas()}
                     <ScrollView style={style.subContenedor}>
                         {this.editarPedido()}
                         {
@@ -660,7 +762,7 @@ class Pedido extends Component{
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.get(`ped/pedido/asignarFechaEntrega/${id}/${moment(fechaEntrega).valueOf()}`)
+            axios.get(`ped/pedido/asignarFechaEntrega/${id}/${fechaEntrega}`)
             .then((res)=>{
                 if(res.data.status){
                     this.setState({modalFechaEntrega:false, novedad:""})
@@ -783,10 +885,11 @@ class Pedido extends Component{
 }
 
 const mapState = state => {
-    console.log(state)
+ 
 	return {
         pedidos: state.pedido.pedidos,
-        vehiculos:state.vehiculo.vehiculos
+        vehiculos:state.vehiculo.vehiculos,
+        zonaPedidos:state.pedido.zonaPedidos,
 	};
 };
   
@@ -794,6 +897,9 @@ const mapDispatch = dispatch => {
     return {
         getPedidos: (fechaEntrega) => {
             dispatch(getPedidos(fechaEntrega));
+        },
+        getZonasPedidos: (fechaEntrega) => {
+            dispatch(getZonasPedidos(fechaEntrega));
         },
         getVehiculos: () => {
             dispatch(getVehiculos());

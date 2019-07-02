@@ -3,6 +3,7 @@ let fs = require('fs');
 let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 let userServices       = require('./../services/userServices.js') 
+let puntoServices      = require('./../services/puntoServices.js') 
 const htmlTemplate     = require('../template-email.js')
 
 module.exports = function(app, passport){ 
@@ -12,7 +13,7 @@ module.exports = function(app, passport){
     */
     ///////////////////////////////////////////////////////////////////////////
     
-    app.post('/x/v1/user/sign_up', function(req, res){
+    app.post('/x/v1/user/sign_up', (req, res)=>{
         let token = Math.floor(1000 + Math.random() * 9000);
         let tokens = token
         userServices.getEmail(req.body, (err, users)=>{
@@ -20,8 +21,8 @@ module.exports = function(app, passport){
                         ?`<font size="5">Verificación de Email</font>`
                         :`<font size="5">Nueva cuenta creada</font>`;
             let text1  = req.body.acceso=="cliente" 
-                        ?`Hola Estimado/a: Usa el codigo: ${token} para verificar tu dirección de correo electrónico y completar el registro de tu cuenta en Codegas`
-                        :`Hola ${req.body.nombre} ya puedes ingresar a tu cuenta en la app de Codegas, tus datos de acceso son:`
+                        ?`Hola Estimado/a: este es el codigo: ${token} para verificar su dirección de correo electrónico y completar el registro de su cuenta en Codegas`
+                        :`Hola ${req.body.nombre} ya puede ingresar a su cuenta en la app de Codegas, sus datos de acceso son:`
             let text2  = req.body.acceso=="cliente" 
                         ?`Este vínculo caducará en 24 horas. Si ha caducado, pruebe a solicitar un nuevo correo electrónico de verificación.` 
                         :`usuario: ${req.body.email}<br/>Contraseña: ${tokens}`
@@ -38,7 +39,7 @@ module.exports = function(app, passport){
                     })       
                 }
             }else{
-                userServices.create(req.body, token, (err, user)=>{
+                userServices.create(req.body, token, null, (err, user)=>{
                     if(err){
                         return res.json({ err })
                     }else{
@@ -48,6 +49,29 @@ module.exports = function(app, passport){
                 })  
             }  
         })
+    })
+
+    app.post("/x/v1/user/crea_varios", (req, res)=>{
+        let token = Math.floor(1000 + Math.random() * 9000);
+        let titulo = `<font size="5">Nueva cuenta creada</font>`;
+       
+        let text2  = `Este vínculo caducará en 24 horas. Si ha caducado, pruebe a solicitar un nuevo correo electrónico de verificación.`                 
+        let asunto =  "Cuenta creada en Codegas"
+        
+        req.body.clientes.map(e=>{
+            let text1  = `Hola ${e.nombre}, ${req.body.nombrePadre} le ha creado  ya puede ingresar a tu cuenta en la app de Codegas para crear pedidos <br/> los datos de acceso son:<br/> usuario: ${e.email}<br/>Contraseña: ${token}`;
+            userServices.create(e, token, req.body.idPadre, (err, user)=>{
+                if(err){
+                    return res.json({ err })
+                }else{
+                    htmlTemplate(req, e, titulo, text1, text2, asunto)
+                    puntoServices.create(e, user._id, req.body.idPadre, (err2, punto)=>{
+
+                    })
+                }
+            }) 
+        })
+        res.json({ status:true, message: 'usuarios registrados', code:2 });   
     })
     
     ///////////////////////////////////////////////////////////////////////////

@@ -112,4 +112,10 @@ export const style = MediaQueryStyleSheet.create({
 	textOlvidar:{
 		color:"#00218b"
 	},
+
+	tituloRegresar:{
+		textAlign:"center",
+		fontSize:22,
+		marginTop:30,
+	}
 })

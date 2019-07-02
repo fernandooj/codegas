@@ -2,6 +2,7 @@ import {
     GET_PEDIDO,
     GET_PEDIDOS,
     GET_VEHICULOS_PEDIDOS,
+    GET_ZONA_PEDIDOS,
 } from "./constants/actionsTypes";
 import axios from "axios";
 
@@ -57,8 +58,28 @@ const getVehiculosConPedidos = (data) => {
   };
 };
 
+const getZonasPedidos = (fechaEntrega) => {
+  console.log({fechaEntrega})
+  return dispatch => {
+    return axios
+      .get(`zon/zona/pedido/${fechaEntrega}`)
+      .then(res => {
+        console.log(res.data)
+        dispatch({
+          type: GET_ZONA_PEDIDOS,
+          zonaPedidos: res.data.zona
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+};
+
+
 export {
     getPedido,
     getPedidos,
-    getVehiculosConPedidos
+    getVehiculosConPedidos,
+    getZonasPedidos,
 };

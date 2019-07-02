@@ -73,5 +73,30 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	textGuardar:{
 		color:"#ffffff"
-	},
+    },
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////            VER CALIFICACIONES
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    textCalificacion:{
+        width:"50%"
+    },
+    contenedorCalificacion:{
+		paddingVertical:10,
+        paddingLeft:10,
+        width:size.width-30,
+		backgroundColor:'#ffffff',
+		shadowColor: 'rgba(0,0,0, .7)', // IOS
+		borderColor:"rgba(0,0,0,0)",
+		shadowOffset: { height: 2, width: 2 }, // IOS
+		shadowOpacity: .5, // IOS
+		shadowRadius: 5, //IOS
+		backgroundColor: '#fff',
+		elevation: 7, // Android
+        marginLeft:15,
+        marginTop:7,
+		marginBottom:10,
+		borderRadius:5,
+		textAlignVertical:"center",
+    },
 })

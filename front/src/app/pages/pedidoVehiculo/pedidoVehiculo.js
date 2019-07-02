@@ -9,9 +9,7 @@ import axios from "axios";
 import { connect }     from "react-redux";
 import moment 			   from 'moment-timezone'
 import List from "./scrollPedidos" 
-import {getPedidos, getVehiculosConPedidos}  from '../../redux/actions/pedidoActions' 
-
-
+import {getPedidos, getVehiculosConPedidos, getZonasPedidos}  from '../../redux/actions/pedidoActions' 
 moment.locale('es');
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,19 +21,13 @@ const getDates=(startDate, endDate, interval)=> {
   return Array.from({length: steps+1}, (v,i) => new Date(startDate.valueOf() + (interval * i)));
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///  COMPONENTE QUE VUELVE DRAGABLE LA LISTA
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-var placeholder = document.createElement("li");
-placeholder.className = "placeholder";
-
-
-
 class Pedidos extends PureComponent {
   constructor(props){
     super(props)
     this.state={
-      vehiculosPedido:null
+      vehiculosPedido:null,
+      zonaPedidos:[],
+      zonaPedidosSolicitud:[],
       // fechaInicial : moment().format("YYYY,MM,DD"),               //// obtengo la fecha inicial que es el dia actual
       // fechaFinal : moment().add(5, 'days').format("YYYY,MM,DD")   //// obtengo la fecha final, que es dentro de 5 dias
     }
@@ -47,13 +39,20 @@ class Pedidos extends PureComponent {
   
     fechaInicial = fechaInicial.split(",")
     fechaInicial = fechaInicial.join("-")
-    fechaInicial = moment(fechaInicial).valueOf()
+    // fechaInicial = moment(fechaInicial).valueOf()
     
     this.props.getPedidos()
     this.props.getVehiculosConPedidos(fechaInicial)
+    this.props.getZonasPedidos(fechaInicial)
+    axios.get(`zon/zona/pedidoSolicitud/${fechaInicial}`)
+    .then(res => {
+        console.log(res.data)
+        this.setState({zonaPedidosSolicitud:res.data.zona})
+    })
+
   }
   componentWillReceiveProps(props){
-    this.setState({vehiculosPedido:props.vehiculosPedido})
+    this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos})   
   }
   renderFechas(){
       let {fechaInicial, fechaFinal, fechaSeleccionada} = this.state
@@ -75,17 +74,59 @@ class Pedidos extends PureComponent {
   redirect(e){
     window.location.href = `#/pedidoVehiculo/${moment(e).format("YYYY,MM,DD")}`;
     e = moment(e).format("YYYY-MM-DD")
-    e = moment(e).valueOf()
+    // e = moment(e).valueOf()
+    this.props.getZonasPedidos(e)
+    axios.get(`zon/zona/pedidoSolicitud/${e}`)
+    .then(res => {
+        console.log(res.data)
+        this.setState({zonaPedidosSolicitud:res.data.zona})
+    })
+
     this.setState({vehiculosPedidos:null, fechaSeleccionada:moment(e).format("YYYY,MM,DD")})
     setTimeout(()=>{ 
       this.props.getVehiculosConPedidos(e)
     }, 1000);
     
 	}
+  renderZonas(){
+    return this.state.zonaPedidos.map((e, key)=>{
+      return(
+          <div key={key}
+            className={style.btnZona}
+              style={
+                  (e.total>3 && e.total<=5) ?{backgroundColor:"#F59F24"}
+                  :e.total>5 ?{backgroundColor:"#F55024"}
+                  :{backgroundColor:"#42DF18"}
+              }
+          >
+              <p>{e._id}</p>
+              <p>{e.total}</p>
+          </div>
+      )
+    })
+  }
+  renderZonasSolicitud(){
+    return this.state.zonaPedidosSolicitud.map((e, key)=>{
+      return(
+          <div key={key}
+            className={style.btnZona}
+              style={
+                  (e.total>3 && e.total<=5) ?{backgroundColor:"#F59F24"}
+                  :e.total>5 ?{backgroundColor:"#F55024"}
+                  :{backgroundColor:"#42DF18"}
+              }
+          >
+              <p>{e._id}</p>
+              <p>{e.total}</p>
+          </div>
+      )
+    })
+  }
+
   renderVehiculos(){
     const {ordenPedidos, vehiculosPedido} = this.state
+    const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
     return vehiculosPedido.map((e, key)=>{
-      console.log(e.data)
       return(
         <div key={key}>
           <div className={style.columnaVehiculo}>
@@ -117,7 +158,7 @@ class Pedidos extends PureComponent {
     }
   }
   render() {
-    const {vehiculosPedido} = this.state
+    const {vehiculosPedido, zonaPedidos, zonaPedidosSolicitud} = this.state
     const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
     return (
       <div>
@@ -126,13 +167,33 @@ class Pedidos extends PureComponent {
           {this.renderFechas()}
           <i className="fa fa-chevron-right" aria-hidden="true" onClick={()=>this.actualizarFechasTabla("siguiente")}></i>
         </section>
+        <section>
+          <h4>Total Zonas fecha entrega</h4>
+          {
+            zonaPedidos.length==0
+            ?<p>no hay fechas de entrega encontradas</p>
+            :this.renderZonas()
+          }
+        </section>
+        <section>
+          <h4>Total Zonas fecha solcitud</h4>
+          {
+            zonaPedidosSolicitud.length==0
+            ?<p>no hay fechas de entrega encontradas</p>
+            :this.renderZonasSolicitud()
+          }
+        </section>
           {
             !vehiculosPedido
             ?<section className={style.contenedorSpin}>
               <Spin indicator={antIcon} size="large"/>
             </section>
             :<section className={style.contenedorVehiculosPedidos}>
-              {this.renderVehiculos()}
+              {
+                vehiculosPedido.length==0
+                ?<p>no hemos encontrado pedidos asignados</p> 	
+                :this.renderVehiculos()
+              }
             </section>
           }
       </div>
@@ -159,7 +220,9 @@ class Pedidos extends PureComponent {
   }
 }
 const mapState = state => {
+  console.log(state)
 	return {
+    zonaPedidos:state.pedido.zonaPedidos,
     pedidos: state.pedido.pedidos,
     vehiculosPedido:state.pedido.vehiculosPedidos
 	};
@@ -172,6 +235,9 @@ const mapDispatch = dispatch => {
         },
         getVehiculosConPedidos: (idPedido) => {
             dispatch(getVehiculosConPedidos(idPedido));
+        },
+        getZonasPedidos: (fechaEntrega) => {
+            dispatch(getZonasPedidos(fechaEntrega));
         },
     };
 };

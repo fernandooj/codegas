@@ -2,7 +2,11 @@ import React, { PureComponent } from "react";
 import style from "./style.scss"
 import { Popover } from 'antd'; 
 import 'antd/dist/antd.css';
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///  COMPONENTE QUE VUELVE DRAGABLE LA LISTA
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+var placeholder = document.createElement("li");
+placeholder.className = "placeholder";
 export default class List extends React.Component {
     constructor(props) {
       super(props);

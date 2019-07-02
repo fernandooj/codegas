@@ -1,6 +1,6 @@
 import {StyleSheet, Dimensions, Platform} from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
-let size = Dimensions.get('window').width;
+let size = Dimensions.get('window');
 
 export const style = MediaQueryStyleSheet.create({
     container:{
@@ -113,6 +113,71 @@ export const style = MediaQueryStyleSheet.create({
     },
     btnFrecuencia:{
         marginHorizontal:5,
-    }
+    },
+    inputNovedades:{
+        width:"88%",
+		paddingVertical:10,
+		height:80,
+		paddingLeft:10,
+		// fontFamily:"quicksand-medium",
+		backgroundColor:'#ffffff',
+		shadowColor: 'rgba(0,0,0, .4)', // IOS
+		borderColor:"rgba(0,0,0,0)",
+		shadowOffset: { height: 2, width: 2 }, // IOS
+		shadowOpacity: .5, // IOS
+		shadowRadius: 5, //IOS
+		backgroundColor: '#fff',
+		elevation: 7, // Android
+		marginLeft:10,
+		marginVertical:15,
+		borderRadius:5,
+		textAlignVertical:"center",
+    },
 
+    btnZona:{
+        flexDirection:"row",
+        borderColor:'rgba(0,0,0, .2)',
+        padding:10,
+        borderWidth:1,
+        marginBottom:2,
+        borderRadius:5
+    },
+    textZona:{
+        width:"70%"
+    },
+    iconZona:{
+        color:"#5cb85c",
+    },
+
+    //////////////////////////////////////////////////////////////////		
+    ///////////				MODAL
+    //////////////////////////////////////////////////////////////////
+	contenedorModal:{
+		position:Platform.OS=='android' ?null :"absolute",
+		alignItems:"center",
+		justifyContent: 'center',
+		backgroundColor:"rgba(0,0,0,.5)",
+		height:size.height,
+		zIndex:100,
+		width:"100%",
+		bottom:50,
+		top:0,
+		left:0,	
+	},
+	subContenedorModal:{
+		backgroundColor:"#ffffff",
+		borderRadius:7,
+		padding:10,
+		alignItems:"center"
+	},
+	btnModalClose:{
+		position:"absolute",
+		right:-8,
+		top:-8,
+		zIndex:100
+	},
+
+	// iconCerrar:{
+	// 	fontSize:22
+	// },
 })

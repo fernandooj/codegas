@@ -180,18 +180,18 @@ class Conversacion extends Component{
 				{mensajes.length<=6 ?<View style={style.contenedorMensajes}>{this.renderMensajes()}</View> :null}
 			{
 				Platform.OS=='android'
-					?<View style={{flex:1}}>
-						<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={0} >
-							<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
-								onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})} 
-							>
-							{ this.renderMensajes()}
-							</ScrollView> 
-						</KeyboardAvoidingView>
-						<View>
-							{activo &&this.renderFooter()}
-						</View>
+				?<View style={{flex:1}}>
+					<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={0} behavior={"position"} >
+						<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
+							onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})}
+						>
+						{mensajes.length>6 &&this.renderMensajes()}
+						</ScrollView>
+					</KeyboardAvoidingView>
+					<View style={mensajes.length<=6 ?style.contenedorFooter2 :null}>
+						{activo &&this.renderFooter()}
 					</View>
+				</View>
 				:<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={mensajes.length<=6 ?0 :32} behavior={"position"} >
 					<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
 						onContentSizeChange={(width,height) => {this.scrollView.scrollTo({y:height}); this.setState({height}) }} > 
@@ -276,13 +276,13 @@ class Conversacion extends Component{
 				data: data,
 		})
 		.then((res)=>{
-				console.log(res.data)
-				if(res.data.status){
-					this.setState({previewImagen:false})
-					this.setState({loadingImage:false})
-					this.props.getMensajes(this.state.id)
-					sendRemoteNotification(2, tokenPhone, "conversacion", "nuevo mensaje", `: ${imagen.uri}`, null, null )
-				}
+			console.log(res.data)
+			if(res.data.status){
+				this.setState({previewImagen:false})
+				this.setState({loadingImage:false})
+				this.props.getMensajes(this.state.id)
+				sendRemoteNotification(2, tokenPhone, "conversacion", "nuevo mensaje", `: ${imagen.uri}`, null, null )
+			}
 		})
 		.catch(err=>{
 				this.setState({cargando:false, loadingImage:false})

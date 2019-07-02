@@ -34,6 +34,10 @@
   margin-top: 25px;
   margin: 20px auto;
   width: 950px;
+  >p{
+    font-size:22px;
+    text-align: center;
+  }
   >div{
     // box-shadow: 0px 5px 3px rgba(128, 128, 128, 0.09);
     margin-bottom: 24px;
@@ -90,4 +94,17 @@
   cursor: pointer;
   padding: 10px;
   top: -26px;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////    COLUMNA VEHICULOS
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+.btnZona{
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+    margin: 0 2px;
+  p{
+    margin:0
+  }
 }

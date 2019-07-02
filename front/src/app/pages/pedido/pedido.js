@@ -74,10 +74,10 @@ class Home extends PureComponent {
     const columns = [
       {
         title: 'Cliente',
-        dataIndex: 'usuarioId.nombre',
-        onFilter: (value, record) => record.usuarioId.nombre.indexOf(value) === 0,
-        sorter: (a, b) => a.usuarioId.nombre.length - b.usuarioId.nombre.length,
-        sortDirections: ['descend'],
+        dataIndex: 'usuarioId.codt',
+        // onFilter: (value, record) => record.usuarioId.nombre.indexOf(value) === 0,
+        // sorter: (a, b) => a.usuarioId.nombre.length - b.usuarioId.nombre.length,
+        // sortDirections: ['descend'],
       },
       {
         title: 'Cedula',
@@ -89,7 +89,7 @@ class Home extends PureComponent {
         title: 'Fecha creación',
         dataIndex: 'creado',
         render:fecha=>(
-          moment(JSON.parse(fecha)).format("YYYY-MM-DD h:mm a")
+          fecha
         ),
         onFilter: (value, record) => record.creado.indexOf(value) === 0,
         sorter: (a, b) => a.creado.length - b.creado.length,
@@ -107,7 +107,7 @@ class Home extends PureComponent {
               :this.setState({modalFecha:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })}
             }
             >
-           {fecha ?moment(JSON.parse(fecha)).format("YYYY-MM-DD") :"Sin Asignar"}
+           {fecha ?fecha :"Sin Asignar"}
           </Button>
         ),
       },

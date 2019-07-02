@@ -11,13 +11,8 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent: 'center'
 	},	 
 	subContenedor:{
-		marginBottom:50,
+		marginBottom:70,
 		width:"95%",
-	},
-	titulo:{
-		fontSize:22,
-		marginVertical:10,
-		textAlign:"center"
 	},
 	pedidoBtn:{
 		borderColor:"rgba(255,255,255,.5)",
@@ -26,7 +21,6 @@ export const style = MediaQueryStyleSheet.create({
 		borderWidth:1,
 		padding:10
 	},
- 
 	icon:{
 		color:"#ffffff",
 	},
@@ -59,6 +53,51 @@ export const style = MediaQueryStyleSheet.create({
 	sinPedidos:{
 		textAlign:"center",
 		fontSize:22
+	},
+	//////////////////////////////////////////////////////////////////		
+	///////////				CABEZERA
+	//////////////////////////////////////////////////////////////////
+	contenedorCabezera:{
+		width:"90%",
+		marginTop:10,
+	},
+	subContenedorCabezera:{
+		flexDirection:"row"
+	},
+	inputCabezera:{
+		position:"relative",
+		zIndex:0,
+		width:"90%",
+		shadowColor: 'rgba(0,0,0, .4)', // IOS
+		borderColor:"rgba(0,0,0,0)",
+		shadowOffset: { height: 2, width: 2 }, // IOS
+		shadowOpacity: .5, // IOS
+		shadowRadius: 5, //IOS
+		backgroundColor: '#fff',
+		paddingLeft:10,
+		marginBottom:20,
+		borderRadius:5,
+		paddingVertical:2,
+		height:Platform.OS==="ios" ?30 :30
+	},
+	imgFiltro:{
+		width:28,
+		height:28,
+		marginLeft:10
+	},	
+	titulo:{
+		// textAlign:"center",
+		width:"80%",
+		fontSize:22,
+		marginVertical:10,
+	},
+	btnZonas:{
+		padding:5,
+		top:5,
+		// borderWidth:1
+	},
+	textZonas:{
+		fontSize:20
 	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				MODAL FILTRO
@@ -109,41 +148,43 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection:"row",
 		position:"absolute",
 		right:10,
-		top:35
+		top:Platform.OS=='android' ?10 :35
 	},
 	textoLimpiar:{
 		width:50
 	},
+
 	//////////////////////////////////////////////////////////////////		
-	///////////				CABEZERA
+	///////////				MODAL  ZONA
 	//////////////////////////////////////////////////////////////////
-	contenedorCabezera:{
-		width:"90%",
+	modalZona:{
+		position:Platform.OS=='android' ?null :"absolute",
+		alignItems:"center",
+		justifyContent: 'center',
+		backgroundColor:"rgba(0,0,0,.5)",
+		height:size.height,
+		zIndex:100,
+		width:"100%",
+		bottom:50,
+		top:0,
+		left:0,	
 	},
-	subContenedorCabezera:{
-		flexDirection:"row"
+	subModalZona:{
+		backgroundColor:"#ffffff",
+		borderRadius:7,
+		padding:10,
+		height:size.height-120,
+		alignItems:"center"
 	},
-	inputCabezera:{
-		position:"relative",
-		zIndex:0,
-		width:"90%",
-		shadowColor: 'rgba(0,0,0, .4)', // IOS
-		borderColor:"rgba(0,0,0,0)",
-		shadowOffset: { height: 2, width: 2 }, // IOS
-		shadowOpacity: .5, // IOS
-		shadowRadius: 5, //IOS
-		backgroundColor: '#fff',
-		paddingLeft:10,
-		marginBottom:20,
-		borderRadius:5,
-		paddingVertical:2,
-		height:Platform.OS==="ios" ?30 :30
+	btnZona:{
+		flexDirection:"row",
+		padding:10
 	},
-	imgFiltro:{
-		width:28,
-		height:28,
-		marginLeft:10
-	},	
+	textZona:{
+		textAlign:"center",
+		width:100
+	},
+
 	//////////////////////////////////////////////////////////////////		
 	///////////				MODAL
 	//////////////////////////////////////////////////////////////////

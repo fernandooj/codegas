@@ -7,7 +7,7 @@
 let mongoose = require('mongoose');
 let bcrypt   = require('bcrypt-nodejs');
 let moment   = require('moment');
-let fecha  =  moment().format('YYYY-MM-DD h:mm:ss')
+let Schema = mongoose.Schema
 /////////////////////////////////////////////////////////////////////////
 /********** genero la base la coleccion llamada users   ****************/
 /////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@ let UserSchema = mongoose.Schema({
 	created: 	 String,
 	razon_social:String,
 	cedula:    	 String,
-	direccion: 	 String,
+	direccion_factura:String,
 	email:       String,
 	nombre:      String,
 	password:    String,
@@ -24,10 +24,11 @@ let UserSchema = mongoose.Schema({
 	descuento: 	 String,
 	acceso:      String,
 	tokenPhone:  String,
-	token:       String,
-	avatar:      String,
-	codt:      	 String,
-	activo:      Boolean,   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
+	token	  :  String,
+	avatar	  : String,
+	codt	  : String,
+	activo    : Boolean,   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
+	idPadre   : {type: Schema.ObjectId, ref:'User'},
 });
 
  
@@ -38,7 +39,7 @@ UserSchema.methods.generateHash = function(password){
 	return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null)
 }
 UserSchema.methods.validPassword = function(password) {
-    if(this.password != null) {
+  if(this.password != null) {
 		return bcrypt.compareSync(password, this.password);
 	} else {
 		return false; 

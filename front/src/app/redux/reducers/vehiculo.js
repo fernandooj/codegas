@@ -21,7 +21,6 @@ const getVehiculos = (state = [], action) => {
   }
 };
  
- 
 export default function authServiceReducer(state = {}, action) {
   return {   
     vehiculo: getVehiculo(state.vehiculo, action),

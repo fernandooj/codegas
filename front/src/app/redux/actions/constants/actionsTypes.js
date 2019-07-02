@@ -40,3 +40,4 @@ export const GET_MENSAJES       = "GET_MENSAJES";
 export const GET_VEHICULO          = "GET_VEHICULO";
 export const GET_VEHICULOS         = "GET_VEHICULOS";
 export const GET_VEHICULOS_PEDIDOS = "GET_VEHICULOS_PEDIDOS";
+export const GET_ZONA_PEDIDOS      = "GET_ZONA_PEDIDOS";

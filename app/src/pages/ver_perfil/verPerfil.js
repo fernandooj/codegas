@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert, Modal} from 'react-native'
 import {style}   from './style'
 import {connect} from 'react-redux' 
 import axios from "axios"
+import Icon from 'react-native-fa-icons';
 import AsyncStorage from '@react-native-community/async-storage';
 import RNPickerSelect from 'react-native-picker-select';
 import Footer    from '../components/footer'
@@ -16,7 +17,7 @@ class verPerfil extends Component{
 	  this.state={
         razon_social:"",
         cedula:"",
-        direccion:"",
+        direccion_factura:"",
         email:"",
         nombre:"",
         password:"",
@@ -25,10 +26,19 @@ class verPerfil extends Component{
         acceso:"usuario",
         password:"",
         codt:"",
+        modalUbicacion:false,
+        modalZona:false,
+        zonas:[],
+        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, acceso:"cliente"}]
 	  }
     }
  
     componentWillMount(){
+        axios.get("zon/zona/activos")
+        .then(res=>{
+            console.log(res.data)
+            res.data.status &&this.setState({zonas:res.data.zona})
+        })
         const {params} = this.props.navigation.state
         if(params.tipoAcceso){
             this.setState({tipoAcceso:params.tipoAcceso})
@@ -42,7 +52,7 @@ class verPerfil extends Component{
             this.setState({
                 razon_social: user.razon_social ?user.razon_social :"",
                 cedula:       user.cedula       ?user.cedula       :"",
-                direccion:    user.direccion    ?user.direccion    :"",
+                direccion_factura:    user.direccion_factura    ?user.direccion_factura    :"",
                 email:        user.email        ?user.email        :"",
                 nombre:       user.nombre       ?user.nombre       :"",
                 password :    user.password     ?user.password     :"",
@@ -54,11 +64,8 @@ class verPerfil extends Component{
         })
         :null
     }
-     
-     
     renderPerfil(){
-        const {razon_social, cedula, direccion, email, nombre, celular,  codt, acceso, tipoAcceso, avatar, cargando} = this.state
-        console.log({acceso, tipoAcceso})
+        const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, avatar, cargando, ubicaciones, tipo} = this.state
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:50}}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -90,7 +97,16 @@ class verPerfil extends Component{
                         value={acceso}
                     />    
                 }
-                
+            {/* EMAIL */}	 
+            <TextInput
+                type='outlined'
+                placeholder="Email"
+                autoCapitalize = 'none'
+                keyboardType='email-address'
+                value={email}
+                onChangeText={email => this.setState({ email })}
+                style={email.length<3 ?[style.input, style.inputRequired] :style.input}
+            />    
 
             {/* RAZON SOCIAL */}	 
                 {
@@ -119,15 +135,22 @@ class verPerfil extends Component{
                     acceso=="cliente"
                     &&<TextInput
                         type='outlined'
-                        placeholder="Dirección"
+                        placeholder="Dirección factura"
                         autoCapitalize = 'none'
-                        value={direccion}
-                        onChangeText={direccion => this.setState({ direccion })}
-                        style={direccion.length<3 ?[style.input, style.inputRequired] :style.input}
+                        value={direccion_factura}
+                        onChangeText={direccion_factura => this.setState({ direccion_factura })}
+                        style={direccion_factura.length<3 ?[style.input, style.inputRequired] :style.input}
                     />
                 }
+            {/* UBICACION */}	
+                {
+                   acceso=="cliente"
+                   &&<TouchableOpacity  style={ubicaciones.length<1 ?[style.btnUbicacion, style.inputRequired] :style.btnUbicacion} onPress={()=>this.setState({modalUbicacion:true})}>
+                       <Text>Ubicación entrega</Text>
+                   </TouchableOpacity>
+               }
             {/* DIRECCION */}	
-            {
+                {
                     acceso=="cliente"
                     &&<TextInput
                         type='outlined'
@@ -138,16 +161,7 @@ class verPerfil extends Component{
                         style={codt.length<3 ?[style.input, style.inputRequired] :style.input}
                     />
                 }
-            {/* EMAIL */}	 
-                <TextInput
-                    type='outlined'
-                    placeholder="Email"
-                    autoCapitalize = 'none'
-					keyboardType='email-address'
-                    value={email}
-                    onChangeText={email => this.setState({ email })}
-                    style={email.length<3 ?[style.input, style.inputRequired] :style.input}
-                />
+           
             {/* NOMBRES */}	 
                 <TextInput
                     type='outlined'
@@ -183,12 +197,7 @@ class verPerfil extends Component{
                             {label: 'Industrial',value: 'industrial',key:   'industrial'}
                         ]}
                         onValueChange={tipo => { this.setState({tipo}); }}
-                        // onUpArrow={() => {
-                        //     this.inputRefs.firstTextInput.focus();
-                        // }}
-                        // onDownArrow={() => {
-                        //     this.inputRefs.favSport1.togglePicker();
-                        // }}
+                       
                         mode="dropdown"
                         style={{
                             ...style,
@@ -197,7 +206,7 @@ class verPerfil extends Component{
                             fontSize: 15,
                             },
                         }}
-                        value={this.state.tipo}
+                        value={tipo}
                     />
                 }
             {/* AVATAR */}	 
@@ -229,7 +238,127 @@ class verPerfil extends Component{
             
         )
     }
-
+    actualizaUbicacion(){
+        let {observacion, ubicaciones, direccion, emailUbicacion, nombreUbicacion, nombreZona} = this.state
+        let data = {direccion, email:emailUbicacion, nombre:nombreUbicacion, observacion, nombreZona, acceso:"cliente"}
+        ubicaciones.push(data)
+        this.setState({ubicaciones})
+    }
+    actualizaArrayUbicacion(type, value, key){
+        console.log({type, value, key})
+        let {ubicaciones} = this.state 
+        type == "direccion" ?ubicaciones[key].direccion = value :type=="observacion" ?ubicaciones[key].observacion = value :type=="emailUbicacion" ?ubicaciones[key].email = value :ubicaciones[key].nombre = value
+        this.setState({ubicaciones})
+    }
+    modalZonas(){
+        const {modalZona, zonas, idZona} = this.state
+        return(
+            <Modal transparent visible={modalZona} animationType="fade" >
+                <TouchableOpacity activeOpacity={1}  >   
+                    <View style={style.modalZona}>
+                        <View style={style.subModalZona}>
+                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalUbicacion:false})} style={style.btnModalClose}>
+                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                            </TouchableOpacity>
+                            <Text style={style.tituloModal}>Seleccione una Zona</Text>
+                            <ScrollView>
+                                {
+                                    zonas.map((e, key)=>{
+                                        return(
+                                            <TouchableOpacity style={style.btnZona} key={key} onPress={()=>this.actualizaZona(e._id, e.nombre)}>
+                                                <Text style={style.textZona}>{e.nombre}</Text>
+                                                {idZona==e._id &&<Icon name={'check'} style={style.iconZona} />}
+                                            </TouchableOpacity>
+                                        )
+                                    })
+                                }
+                            </ScrollView>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        )
+    }
+    actualizaZona(id, nombre){
+        const {key, ubicaciones} = this.state
+        ubicaciones[key].idZona = id
+        ubicaciones[key].nombreZona = nombre
+        this.setState({ubicaciones, modalZona:false}) 
+    }
+    modalUbicacion(){
+        let {modalUbicacion, ubicaciones} = this.state
+        return(
+            <Modal transparent visible={modalUbicacion} animationType="fade" >
+                {this.modalZonas()}
+                <TouchableOpacity activeOpacity={1}  >   
+                    <View style={style.modal}>
+                        <View style={style.subContenedorModal}>
+                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalUbicacion:false})} style={style.btnModalClose}>
+                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                            </TouchableOpacity>
+                            <ScrollView keyboardDismissMode="on-drag">
+                                <Text style={style.tituloModal}>Si el pedido lo realizara el encargado del punto por favor inserta su informacion, de lo contrario solo inserta la dirección y zona</Text>
+                                <View>
+                                    {
+                                        ubicaciones.map((e, key)=>{
+                                            return(
+                                                <View key={key}>
+                                                    <TextInput
+                                                        type='outlined'
+                                                        label='Dirección'
+                                                        placeholder="Dirección"
+                                                        value={e.direccion}
+                                                        onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
+                                                        style={style.input}
+                                                    />
+                                                    <TouchableOpacity style={style.btnUbicacion} onPress={()=>this.setState({modalZona:true, key})}>
+                                                        <Text style={style.textZona}>{e.nombreZona ?e.nombreZona :"Zona"}</Text>
+                                                    </TouchableOpacity>
+                                                    <TextInput
+                                                        type='outlined'
+                                                        label='observacion al momento de ingresar el vehiculo'
+                                                        placeholder="observaciones ingreso del vehiculo"
+                                                        value={e.observacion}
+                                                        onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
+                                                        style={style.input}
+                                                    />
+                                                    <TextInput
+                                                        type='outlined'
+                                                        label='Email'
+                                                        placeholder="Email"
+                                                        value={e.email}
+                                                        onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
+                                                        style={style.input}
+                                                    />
+                                                    <TextInput
+                                                        type='outlined'
+                                                        label='Nombre'
+                                                        placeholder="Nombre"
+                                                        value={e.nombre}
+                                                        onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
+                                                        style={style.input}
+                                                    />
+                                                    <Text style={style.separador}></Text>
+                                                </View>
+                                            )
+                                        })
+                                    }
+                                </View>
+                                <View style={style.contenedorAdd}>
+                                    <TouchableOpacity onPress={() => this.actualizaUbicacion()} style={style.btnAdd}>
+                                        <Icon name={'plus'} style={style.iconAdd} />
+                                    </TouchableOpacity>
+                                </View>
+                                <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.setState({modalUbicacion:false})}>
+                                    <Text style={style.textGuardar}>Guardar</Text>
+                                </TouchableOpacity>
+                            </ScrollView>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        )
+    }
     renderFormPass(){
         const {password, confirmar, showLoading, cargando} = this.state
         return <View>
@@ -271,10 +400,11 @@ class verPerfil extends Component{
                 </View>
     }
 	render(){
-        const {navigation} = this.props
-        
+        const {navigation} = this.props     
+        console.log(this.state.nombre)
         return (
             <View  style={style.container}>
+                {this.modalUbicacion()}
                 {
                     <KeyboardAvoidingView  behavior="padding" enabled>
                         {this.renderPerfil()}
@@ -332,11 +462,11 @@ class verPerfil extends Component{
     ///////////////////////////////////////////////////////////////
     //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
     ///////////////////////////////////////////////////////////////
-    handleSubmit(){
-        const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
-        console.log({razon_social, cedula, ubicacion, direccion, nombre, email,  tipo, celular, tipo, acceso, codt, imagen})
+    handleSubmit1(){
+        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
+        console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen})
         if(acceso=="cliente"){
-            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario" || codt==""){
+            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario" || codt==""){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
@@ -364,24 +494,64 @@ class verPerfil extends Component{
         }
 
     }
-    guardarUsuario(e){
-        this.setState({cargando:true})
-        const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
+    handleSubmit(e){
+        // this.setState({cargando:true})
+        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones} = this.state
+        let clientes = ubicaciones.filter(e=>{
+            return e.email
+        })
+        let puntos = ubicaciones.filter(e=>{
+            return !e.email 
+        })
+        puntos = puntos.map(e=>{
+            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion}
+        })
         
-        axios.post("user/sign_up", {razon_social, cedula, ubicacion, direccion, nombre, email, celular, tipo, acceso, codt})
+        axios.post("user/sign_up", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos})
         .then(e=>{
             console.log(e.data)
             if(e.data.status){
                 if(acceso=="cliente") {
-                    alert("Usuario guardado con exito")
-                    this.props.navigation.navigate("perfil")
+                    if(clientes.length>0){
+                        axios.post("user/crea_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
+                        .then(res=>{
+                            this.props.navigation.navigate("perfil")
+                            Toast.show("Usuario guardado con exito")
+                        })
+                        .catch(err2=>{
+                            console.log(err2)
+                            this.setState({cargando:false})
+                        })
+                    }else{
+                        axios.post("pun/punto/varios",{puntos, id:e.data.user._id})
+                        .then(res=>{
+                            console.log(res.data)
+                            this.props.navigation.navigate("perfil")
+                            Toast.show("Usuario guardado con exito")
+                        })
+                        .catch(err2=>{
+                            console.log(err2)
+                            this.setState({cargando:false})
+                        })
+                    }
                 }else{
                     this.avatar(imagen, e.data.user._id)
-                } 
+                }
             }else{
-                Toast.show("Este email ya existe")
                 this.setState({cargando:false})
+                Toast.show("Tenemos un problema, intentalo mas tarde")
             }
+            // if(e.data.status){
+            //     if(acceso=="cliente") {
+            //         alert("Usuario guardado con exito")
+            //         this.props.navigation.navigate("perfil")
+            //     }else{
+            //         this.avatar(imagen, e.data.user._id)
+            //     } 
+            // }else{
+            //     Toast.show("Este email ya existe")
+            //     this.setState({cargando:false})
+            // }
         })
         .catch(err=>{
             console.log(err)
@@ -390,9 +560,9 @@ class verPerfil extends Component{
     }	
     editarUsuario(e){
         this.setState({cargando:true})
-        const {razon_social, cedula, ubicacion, direccion, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
+        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
         
-        axios.put("user/update", {razon_social, cedula, ubicacion, direccion, nombre, email, celular, tipo, acceso, codt})
+        axios.put("user/update", {razon_social, cedula, ubicacion, direccion_factura, nombre, email, celular, tipo, acceso, codt})
         .then(e=>{
             console.log(imagen)
             console.log(e.data)

@@ -1,18 +1,20 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Dimensions, ActivityIndicator, ScrollView} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ScrollView} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import AsyncStorage        from '@react-native-community/async-storage';
-import Icon                from 'react-native-fa-icons';
-import moment 			   from 'moment-timezone'
-import axios               from 'axios'
-import ModalSelector       from 'react-native-modal-selector'
-import ModalFilterPicker   from 'react-native-modal-filter-picker'
-import { TextInputMask }   from 'react-native-masked-text'
-import { connect }         from "react-redux";
+import AsyncStorage             from '@react-native-community/async-storage';
+import Icon                     from 'react-native-fa-icons';
+import Toast                    from 'react-native-simple-toast';
+import axios                    from 'axios'
+import moment                   from 'moment'
+import ModalSelector            from 'react-native-modal-selector'
+import ModalFilterPicker        from 'react-native-modal-filter-picker'
+import {Calendar}               from 'react-native-calendars';
+import { TextInputMask }        from 'react-native-masked-text'
+import { connect }              from "react-redux";
 import {sendRemoteNotification} from '../push/envioNotificacion';
-import {getUsuariosAcceso} from '../../redux/actions/usuarioActions' 
-import Footer              from '../components/footer'
-import {style}             from './style'
+import {getUsuariosAcceso}      from '../../redux/actions/usuarioActions' 
+import Footer                   from '../components/footer'
+import {style}                  from './style'
  
  
 const frecuencias = [
@@ -76,21 +78,15 @@ class Nuevo_pedido extends Component{
 		final:7,
         categoriaUser:[],
         clientes:[],
-        modalCliente:false
+        puntos:[],
+        modalCliente:false,
+        modalFechaEntrega:true,
+        fechaSolicitud: moment().tz("America/Bogota").add(1, 'days').format('YYYY-MM-DD')
 	  }
 	}
 	 
 	async componentWillMount(){
-        axios
-        .get(`users/acceso/cliente`)
-        .then(res => {
-            if(res.data.status){
-                let clientes = res.data.usuarios.map(e=>{
-                    return {key:e._id, label:e.nombre+" -" +e.cedula, email:e.email}
-                }) 
-                this.setState({clientes})
-            }
-        })
+       
         axios
         .get(`users/by/adminsolucion`)
         .then(res => {
@@ -104,12 +100,34 @@ class Nuevo_pedido extends Component{
         const acceso   	= await AsyncStorage.getItem('acceso')
         const email   	= await AsyncStorage.getItem('email')
         idUsuario = idUsuario ?idUsuario : "FAIL"
+        axios.get(`pun/punto/byCliente/${idUsuario}`)
+        .then(e=>{
+            console.log(e.data.puntos[0]._id)
+            if(e.data.status){
+                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
+            }else{
+                Toast.show("Tuvimos un problema, intentele mas tarde")
+            }
+        })
+
         this.setState({idUsuario, acceso, email})
        
     }
-
+    getClientes(){
+        axios.get(`users/acceso/cliente`)
+        .then(res => {
+            console.log(res.data.usuarios)
+            if(res.data.status){
+                let clientes = res.data.usuarios.map(e=>{
+                    return {key:e._id, label:e.cedula ?e.nombre+" - "+e.cedula :e.nombre, email:e.email}
+                }) 
+                this.setState({clientes, modalCliente:true})
+            }
+        })
+       
+    }
 	renderPedido(){
-        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, franja, idCliente} = this.state
+        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos} = this.state
         return(
             <KeyboardAwareScrollView style={style.containerNuevo}>
                 <View style={style.subContainerNuevo}>
@@ -144,6 +162,7 @@ class Nuevo_pedido extends Component{
                             style={style.input}
                             placeholder="Monto"
                             onChangeText={cantidad => { this.setState({cantidad}) }}
+                            ref={(ref) => this.campoMonto = ref}
                         />
                         :forma=="cantidad"
                         &&<TextInputMask
@@ -237,10 +256,49 @@ class Nuevo_pedido extends Component{
                         ?this.renderCliente()
                         :null
                     }
+                     {
+                    puntos.length>1
+                    ?<View>
+                    <Text>Selecciona el punto de entrega</Text>
+                        {
+                            puntos.map((e, key)=>{
+                                return (
+                                    <TouchableOpacity key={key} style={style.btnZona} onPress={()=>this.setState({puntoId:e._id})}>
+                                        <Text style={style.textZona}>{e.direccion}</Text>
+                                        {(puntoId==e._id) &&<Icon name="check" style={style.iconZona} /> }
+                                    </TouchableOpacity>
+                                )
+                            })
+                        }
+                    </View>
+                    :puntos.map((e, key)=>{
+                        return (
+                            <View key={key} >
+                                <Text>Punto de entrega</Text>
+                                <Text>{e.direccion}</Text>
+                            </View>    
+                        )
+                    })
+                }
+                    <TouchableOpacity style={style.nuevaFrecuencia} 
+                        onPress={()=>{Toast.show("Esta fecha esta sujeta a verificación si nuestros vehiculos estan en la zona"); this.setState({showFechaEntrega:true})} }
+                    >
+                        <Icon name="plus" style={style.iconFrecuencia} />
+                        <Text style={style.textGuardar}>Fecha Entrega</Text>
+                    </TouchableOpacity>
+                    <TextInput
+                       placeholder="Observaciones"
+                       onChangeText={(novedad)=> this.setState({ novedad })}
+                       value={novedad}
+                       multiline = {true}
+                       style={[style.inputNovedades]}
+                   />
 
                     <TouchableOpacity style={!forma ?style.btnGuardarDisable :style.btnGuardar} onPress={()=>
                         (acceso=="admin" || acceso=="solucion") && !idCliente
-                        ?alert("selecciona un cliente")
+                        ?alert("Selecciona un cliente")
+                        :(acceso=="admin" || acceso=="solucion") && !puntoId
+                        ?alert("Selecciona una dirección")
                         :this.handleSubmit()
                     }>
                         <Text style={style.textGuardar}>Guardar pedido</Text>
@@ -252,11 +310,48 @@ class Nuevo_pedido extends Component{
     }
     filtroClientes(idCliente){
 		let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
-		this.setState({cliente:cliente[0].label, idCliente, emailCliente:cliente[0].email, modalCliente:false})
-	}
+        this.setState({cliente:cliente[0].label, idCliente, emailCliente:cliente[0].email, modalCliente:false})
+        axios.get(`pun/punto/byCliente/${idCliente}`)
+        .then(e=>{
+            console.log(e.data.puntos[0]._id)
+            if(e.data.status){
+                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
+            }else{
+                Toast.show("Tuvimos un problema, intentele mas tarde")
+            }
+        })
+    }
+    modalFechaEntrega(){
+        let {modalFechaEntrega, fechaSolicitud} = this.state
+        fechaSolicitud = moment(fechaSolicitud).format("YYYY-MM-DD")
+        let diaActual =  moment().tz("America/Bogota").add(1, 'days').format('YYYY-MM-DD')
+        console.log(diaActual)
+        return(
+            <Modal transparent visible={modalFechaEntrega} animationType="fade" >
+                <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  showFechaEntrega: false }) }} >   
+                    <View style={style.contenedorModal}>
+                        <View style={style.subContenedorModal}>
+                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({showFechaEntrega:false})} style={style.btnModalClose}>
+                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                            </TouchableOpacity>
+                            <Text style={style.tituloModal}>Fecha entrega</Text>
+                            <Calendar
+                                style={style.calendar}
+                                current={fechaSolicitud}
+                                minDate={diaActual}
+                                firstDay={1}
+                                onDayPress={(day) => { this.setState({showFechaEntrega:false, fechaSolicitud:day.dateString})}}
+                                markedDates={{[fechaSolicitud]: {selected: true,  marked: true}}}
+                            />
+                        </View>
+                        
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        )
+    }
     renderCliente(){
         const {idCliente, modalCliente, cliente, clientes} = this.state
-        console.log(clientes)
 		return (
 			<View>
 				<ModalFilterPicker
@@ -268,23 +363,22 @@ class Nuevo_pedido extends Component{
                 />
                 {
                     idCliente
-                    ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=>this.setState({idCliente:null, cliente:null})}>
+                    ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=>this.setState({idCliente:null, cliente:null, puntos:[]})}>
                         <Icon name="minus" style={style.iconFrecuencia} />
-                        <Text style={style.textGuardar}>Eliminar cliente</Text>
+                        <Text style={style.textGuardar}>{cliente}</Text>
                     </TouchableOpacity>
-                    :<TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.setState({modalCliente:true})}>
+                    :<TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.getClientes()}>
                         <Icon name="plus" style={style.iconFrecuencia} />
                         <Text style={style.textGuardar}>Asignar Cliente</Text>
                     </TouchableOpacity>
                 }
-                <Text>{cliente}</Text>
-               
             </View>
 		)
-	}	
+    }	
+     
 	render(){
         const {navigation} = this.props
-        const {idUsuario} = this.state
+        const {idUsuario, showFechaEntrega} = this.state
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
         }else if(idUsuario=="FAIL"){
@@ -292,9 +386,13 @@ class Nuevo_pedido extends Component{
         }else{
             return (
                 <View style={style.container}>
+                    {
+                        showFechaEntrega
+                        &&this.modalFechaEntrega()
+                        
+                    }
                     <ScrollView>
                         {this.renderPedido()}
-                
                     </ScrollView>
                     <Footer navigation={navigation} />
                 </View>
@@ -302,19 +400,25 @@ class Nuevo_pedido extends Component{
         }
 	}
     handleSubmit(){
-        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios} = this.state
+        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud} = this.state
         email = idCliente ?emailCliente :email
+        forma=="monto" ?cantidad = this.campoMonto.getRawValue() :null
         
-        console.log({forma, email, cantidad, dia1, dia2, frecuencia, idCliente})
-        axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente})
+        console.log({forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud})
+        axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud})
         .then(e=>{
-            console.log(usuarios)
+            console.log(e.data)
             if(e.data.status){
                 usuarios.filter(e=>{
                     sendRemoteNotification(2, e.tokenPhone, "pedidos", `Nuevo Pedido`, `${forma} ${cantidad ?cantidad :""}`, null, null )
                 })
-                alert("Su pedido ha sido guardado")    
-                this.props.navigation.navigate("pedido")
+                axios.post(`nov/novedad/`, {pedidoId:e.data.pedido._id, novedad})
+                .then((res2)=>{ 
+                    this.props.navigation.navigate("Home")
+                    Toast.show("Su pedido ha sido guardado")
+                })
+
+               
             }else{
                 alert("No pudimos procesar el pedido, intentelo mas tarde")    
             }
