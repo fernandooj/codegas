@@ -693,7 +693,8 @@ class Pedido extends Component{
     }
 	render(){
         const {navigation} = this.props
-        const {idUsuario, pedidos} = this.state
+        const {idUsuario, pedidos, fechaEntrega} = this.state
+        console.log(fechaEntrega)
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
         }else if(idUsuario=="FAIL"){

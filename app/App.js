@@ -17,8 +17,8 @@ YellowBox.ignoreWarnings(['Require cycle:']);
 //////////////////////////////////////////////////////////////////////////////////////////
 //////  RUTA GENERAL DE LA URL PARA EL API
 //////////////////////////////////////////////////////////////////////////////////////////
-// export const URL = 'http://104.248.181.79:8181';       //// URL WEB DEV
-export const URL = 'http://192.168.0.7:8181';   //// URL local
+export const URL = 'http://104.248.181.79:8181';       //// URL WEB DEV
+// export const URL = 'http://192.168.0.7:8181';   //// URL local
 export const VERSION = "1.0.0"
 axios.defaults.baseURL = URL+"/x/v1";
 

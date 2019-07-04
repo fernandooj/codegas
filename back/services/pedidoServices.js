@@ -21,21 +21,22 @@ class pedidoServices{
 	getByUser(usuarioId, callback){
 		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({_id: 'desc'}).exec(callback)
 	}
-	getByConductor(conductorId,  callback){
-		pedido.find({conductorId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
+	getByConductor(conductorId, fecha, callback){
+		// fechaEntrega = 	fechaEntrega!="undefined" ?moment().format("YYYY-MM-DD") :fechaEntrega
+		let fechaEntrega = fecha==="undefined" ?"2019-07-03" :fecha
+		console.log({fechaEntrega, conductorId})
+		pedido.find({conductorId, fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
 	}
 	getByFechaEntrega(fechaEntrega,  callback){
-	 
-		console.log({fechaEntrega})
 		fechaEntrega!="undefined"
 		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
 		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
-		pedido.findOne({conductorId, fechaEntrega:parseInt(fechaEntrega)}).sort({orden: 'desc'}).exec(callback)
+		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)
 	}
 	getLastRowConductorEntregados(conductorId, fechaEntrega, callback){
-		pedido.findOne({conductorId, fechaEntrega:parseInt(fechaEntrega), entregado:true}).sort({orden: 'desc'}).exec(callback)
+		pedido.findOne({conductorId, fechaEntrega:fechaEntrega, entregado:true}).sort({orden: 'desc'}).exec(callback)
 	}
 	create(data, usuarioId, usuarioCrea, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
@@ -126,7 +127,7 @@ class pedidoServices{
 			},
 			{
 				$match:{
-					fechaEntrega:parseInt(fecha)
+					fechaEntrega:fecha
 				},
 			},
 			{

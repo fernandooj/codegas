@@ -15,7 +15,7 @@ export const style = MediaQueryStyleSheet.create({
 		width:size.width-20,
 		marginBottom:20,
 		borderRadius:10,
-		paddingVertical:50
+		paddingVertical:Platform.OS=='android' ?20 :50
 	},
 	icon:{
 		color:"#ffffff",

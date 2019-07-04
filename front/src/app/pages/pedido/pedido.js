@@ -28,6 +28,7 @@ class Home extends PureComponent {
     this.props.getVehiculos()
   }
   componentWillReceiveProps(props){
+    console.log(props.pedidos)
     this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})
   }
   renderBotones(){
@@ -267,7 +268,7 @@ class Home extends PureComponent {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   asignarFecha(){
     let {fechaEntrega, id} = this.state
-    fechaEntrega = moment(fechaEntrega).valueOf()
+    // fechaEntrega = moment(fechaEntrega).valueOf()
     console.log({fechaEntrega})
     const openNotificationWithIcon = type => {
       notification[type]({

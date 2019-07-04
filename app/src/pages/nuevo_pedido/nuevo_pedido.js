@@ -127,7 +127,7 @@ class Nuevo_pedido extends Component{
        
     }
 	renderPedido(){
-        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos} = this.state
+        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud} = this.state
         return(
             <KeyboardAwareScrollView style={style.containerNuevo}>
                 <View style={style.subContainerNuevo}>
@@ -279,13 +279,21 @@ class Nuevo_pedido extends Component{
                             </View>    
                         )
                     })
-                }
-                    <TouchableOpacity style={style.nuevaFrecuencia} 
+                }   
+                {
+                    solicitud 
+                    ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=> this.setState({solicitud:null})}>
+                        <Icon name="minus" style={style.iconFrecuencia} />
+                        <Text style={style.textGuardar}>{fechaSolicitud}</Text>
+                    </TouchableOpacity>
+                    :<TouchableOpacity style={style.nuevaFrecuencia} 
                         onPress={()=>{Toast.show("Esta fecha esta sujeta a verificación si nuestros vehiculos estan en la zona"); this.setState({showFechaEntrega:true})} }
                     >
                         <Icon name="plus" style={style.iconFrecuencia} />
                         <Text style={style.textGuardar}>Fecha Entrega</Text>
                     </TouchableOpacity>
+                }
+                  
                     <TextInput
                        placeholder="Observaciones"
                        onChangeText={(novedad)=> this.setState({ novedad })}
@@ -340,7 +348,7 @@ class Nuevo_pedido extends Component{
                                 current={fechaSolicitud}
                                 minDate={diaActual}
                                 firstDay={1}
-                                onDayPress={(day) => { this.setState({showFechaEntrega:false, fechaSolicitud:day.dateString})}}
+                                onDayPress={(day) => { this.setState({solicitud:true, showFechaEntrega:false, fechaSolicitud:day.dateString})}}
                                 markedDates={{[fechaSolicitud]: {selected: true,  marked: true}}}
                             />
                         </View>
@@ -391,7 +399,7 @@ class Nuevo_pedido extends Component{
                         &&this.modalFechaEntrega()
                         
                     }
-                    <ScrollView>
+                    <ScrollView style={{marginBottom:62}}>
                         {this.renderPedido()}
                     </ScrollView>
                     <Footer navigation={navigation} />

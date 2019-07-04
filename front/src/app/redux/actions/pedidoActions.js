@@ -59,12 +59,10 @@ const getVehiculosConPedidos = (data) => {
 };
 
 const getZonasPedidos = (fechaEntrega) => {
-  console.log({fechaEntrega})
   return dispatch => {
     return axios
       .get(`zon/zona/pedido/${fechaEntrega}`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_ZONA_PEDIDOS,
           zonaPedidos: res.data.zona

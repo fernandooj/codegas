@@ -32,7 +32,7 @@ export const style = MediaQueryStyleSheet.create({
         backgroundColor:"#ffffff",
         width:280,
         fontSize:22,
-        top:-30
+        top:-29
     },
     btnFormaLlenar:{
         flexDirection:"row",
@@ -119,10 +119,11 @@ export const style = MediaQueryStyleSheet.create({
 		paddingVertical:10,
 		height:80,
 		paddingLeft:10,
+        borderWidth:1,
 		// fontFamily:"quicksand-medium",
 		backgroundColor:'#ffffff',
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
-		borderColor:"rgba(0,0,0,0)",
+		borderColor:"rgba(0,0,0,.5)",
 		shadowOffset: { height: 2, width: 2 }, // IOS
 		shadowOpacity: .5, // IOS
 		shadowRadius: 5, //IOS
@@ -172,12 +173,12 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnModalClose:{
 		position:"absolute",
-		right:-8,
-		top:-8,
+		right:Platform.OS=='android' ?0 :-8,
+		top:Platform.OS=='android' ?0 :-8,
 		zIndex:100
 	},
 
-	// iconCerrar:{
-	// 	fontSize:22
-	// },
+	iconCerrar:{
+		fontSize:22
+	},
 })

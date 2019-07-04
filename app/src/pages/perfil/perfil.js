@@ -36,6 +36,27 @@ class Home extends Component{
 			this.setState({ tokenPhone: token || "" });
 		});
     }
+    renderEmail(){
+        const {email} = this.state
+        return(
+            <ScrollView style={style.containerRegistro}>
+                <View style={style.subContainerRegistro}>
+                    <Text style={style.titulo}>Email</Text>
+                    <TextInput
+                        style={email.length<2 ?[style.input, style.inputInvalid] :style.input}
+                        placeholder="Email"
+                        onChangeText={(email) => this.setState({email})}
+                        value={email}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                     <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                        <Text style={style.textGuardar}>Registrarme</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        )
+    }
 	iniciarSesion(){
         const {email2, password2, cargando} = this.state
         return (
@@ -63,27 +84,6 @@ class Home extends Component{
                     </TouchableOpacity>
                     <TouchableOpacity style={style.btnOlvidar} onPress={()=>this.props.navigation.navigate("recuperar")}>
                         <Text style={style.textOlvidar}>Olvide mi contraseña</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        )
-    }
-    renderEmail(){
-        const {email} = this.state
-        return(
-            <ScrollView style={style.containerRegistro}>
-                <View style={style.subContainerRegistro}>
-                    <Text style={style.titulo}>Email</Text>
-                    <TextInput
-                        style={email.length<2 ?[style.input, style.inputInvalid] :style.input}
-                        placeholder="Email"
-                        onChangeText={(email) => this.setState({email})}
-                        value={email}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-                     <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
-                        <Text style={style.textGuardar}>Registrarme</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>

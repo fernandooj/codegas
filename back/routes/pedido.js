@@ -26,7 +26,7 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
             }
         })
         :req.session.usuario.acceso=="conductor"
-        ?pedidoServices.getByConductor(req.session.usuario._id, (err, pedido)=>{
+        ?pedidoServices.getByConductor(req.session.usuario._id, req.params.fechaEntrega, (err, pedido)=>{
             if (!err) {
                 pedido = pedido.filter(e=>{
                     return e.carroId
@@ -34,9 +34,6 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
                 pedido = pedido.filter(e=>{
                     return e.carroId.conductor==req.session.usuario._id
                 })
-                // pedido = pedido.filter(e=>{
-                //     return moment(e.fechaEntrega).format("YYYY-MM-DD")==req.params.fechaEntrega
-                // })
                 res.json({ status:true, pedido }); 
             }else{
                 res.json({ status:false, message: err, pedido:[] }); 
@@ -143,14 +140,12 @@ router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega', (req,res)=>{
                     if(err2){
                         res.json({ status:false, message: err }); 
                     }else{
-                        
+                       
                         orden = pedido ?pedido.orden+1 :1
                         pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden,  (err3, pedido)=>{
                             if (!err3) {
                                 let fechaHoy = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD')
-                                let fechaEntrega = moment.tz(moment(parseInt(req.params.fechaEntrega)), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD')
-                                
-                                fechaHoy===fechaEntrega 
+                                fechaHoy===req.params.fechaEntrega 
                                 ?notificacionPush(conductor.conductor.tokenPhone, "Nuevo pedido asignado", `el pedido ${req.params.pedidoId} le ha sido asignado`)
                                 :null
                                 res.json({ status:true, pedido }); 
@@ -225,9 +220,9 @@ router.post('/finalizar/:estado', (req,res)=>{
             if(err){
                 res.json({ status:false, message: err }); 
             }else{
-                let orden = pedido ?pedido.orden+1 :1
-                console.log({orden})
-                pedidoServices.finalizar(req.body, req.params.estado, ruta, orden, (err2, pedido)=>{
+               let orden_cerrado = pedido ?pedido.orden_cerrado+1 :1
+               
+                pedidoServices.finalizar(req.body, req.params.estado, ruta, orden_cerrado, (err2, pedido)=>{
                      
                     const {kilos, factura, valor_unitario} = req.body
                     if (!err2) {
@@ -254,8 +249,9 @@ router.post('/novedad/', (req,res)=>{
         if(err){
             res.json({ status:false, message: err }); 
         }else{
-            let orden = pedido ?pedido.orden+1 :1
-            pedidoServices.novedad(req.body._id, orden, (err, pedido)=>{
+            let orden_cerrado = pedido ?pedido.orden_cerrado+1 :1
+            
+            pedidoServices.novedad(req.body._id, orden_cerrado, (err, pedido)=>{
                 if (!err) {
                     enviaNotificacion(res, "admin", req.session.usuario.nombre, `Ha cerrado un nuevo pedido NO exitosamente, ${req.body.novedad}`)
                 }else{

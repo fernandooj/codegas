@@ -72,10 +72,11 @@ export const style = MediaQueryStyleSheet.create({
 		paddingVertical:10,
 		height:45,
 		paddingLeft:10,
+		borderWidth:1,
 		// fontFamily:"quicksand-medium",
 		backgroundColor:'#ffffff',
 		shadowColor: 'rgba(0,0,0, .7)', // IOS
-		borderColor:"rgba(0,0,0,0)",
+		borderColor:"rgba(0,0,0,.2)",
 		shadowOffset: { height: 2, width: 2 }, // IOS
 		shadowOpacity: .5, // IOS
 		shadowRadius: 5, //IOS

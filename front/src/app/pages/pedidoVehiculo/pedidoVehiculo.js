@@ -52,7 +52,7 @@ class Pedidos extends PureComponent {
 
   }
   componentWillReceiveProps(props){
-    this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos})   
+    this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos, vehiculosPedido:props.vehiculosPedido})   
   }
   renderFechas(){
       let {fechaInicial, fechaFinal, fechaSeleccionada} = this.state
@@ -160,6 +160,7 @@ class Pedidos extends PureComponent {
   render() {
     const {vehiculosPedido, zonaPedidos, zonaPedidosSolicitud} = this.state
     const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+    console.log(vehiculosPedido)
     return (
       <div>
         <section className={style.contenedorFechas}>
@@ -167,19 +168,19 @@ class Pedidos extends PureComponent {
           {this.renderFechas()}
           <i className="fa fa-chevron-right" aria-hidden="true" onClick={()=>this.actualizarFechasTabla("siguiente")}></i>
         </section>
-        <section>
+        <section className={style.contenedorVehiculosPedidos}>
           <h4>Total Zonas fecha entrega</h4>
           {
             zonaPedidos.length==0
-            ?<p>no hay fechas de entrega encontradas</p>
+            ?<div>no hay fechas de entrega encontradas</div>
             :this.renderZonas()
           }
         </section>
-        <section>
-          <h4>Total Zonas fecha solcitud</h4>
+        <section className={style.contenedorVehiculosPedidos}>
+          <h4>Total Zonas fecha solicitud</h4>
           {
             zonaPedidosSolicitud.length==0
-            ?<p>no hay fechas de entrega encontradas</p>
+            ?<div>no hay fechas de solicitud encontradas</div>
             :this.renderZonasSolicitud()
           }
         </section>
