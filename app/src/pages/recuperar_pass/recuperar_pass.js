@@ -170,9 +170,10 @@ class Home extends Component{
         .then(e=>{
             console.log(e.data)
             if(e.data.status) {
+
                 this.setState({showModulo:"code", code:e.data.token.toString()})
             }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde")
+                Toast.show("Este email no existe")
             }
         })
         .catch(err=>{

@@ -92,6 +92,7 @@ class Home extends Component{
     renderPerfil(){
         const {navigation} = this.props
         const {nombre, idUsuario, avatar, email, err, acceso} = this.state
+        console.log(idUsuario)
         return (
             <View style={style.containerRegistro}>
                 <View style={style.perfilContenedor}>
@@ -155,6 +156,15 @@ class Home extends Component{
                             <Icon name={'star'} style={style.icon} />
                         </TouchableOpacity>
                     }
+                     {
+                        acceso=="admin"
+                        &&<View style={style.btnLista}  >
+                            <TextInput style={style.txtLista} onChangeText={(idUsuario)=>this.setState({idUsuario})} /> 
+                            <TouchableOpacity  style={style.btnLista} onPress={()=>{this.searchUser()}}>
+                                <Icon name={'star'} style={style.icon} />
+                            </TouchableOpacity>
+                        </View>
+                    }
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
                         <Text style={style.txtLista}>Cerrar Sesion</Text> 
                         <Icon name={'sign-out'} style={style.icon} />
@@ -167,6 +177,35 @@ class Home extends Component{
             </View>  
             
         )
+    }
+ 
+    searchUser(){
+        const {idUsuario} = this.state
+        axios.get(`users/by/asefsfxf323-dxc/${idUsuario}`)
+        .then(res=>{
+            console.log(res.data)
+            if(res.data){
+                this.cambioPerfil(res.data.users)
+               
+            }else{
+                Toast.show("Tenemos un problema, intentelo mas tarde")
+            }
+        })
+        .catch(err=>{
+            console.log(err)
+            Toast.show("Tenemos un problema, intentelo mas tarde")
+        })
+    }
+    async cambioPerfil(user){
+        console.log(user)
+ 
+        AsyncStorage.setItem('userId', user._id)
+        AsyncStorage.setItem('nombre', user.nombre)
+        AsyncStorage.setItem('email',  user.email)
+        AsyncStorage.setItem('acceso', user.acceso)
+        AsyncStorage.setItem('avatar', user.avatar ?user.avatar :"null")
+        AsyncStorage.setItem('tokenPhone', this.state.tokenPhone)
+        this.props.navigation.navigate("Home")
     }
 	render(){
         const {navigation} = this.props
@@ -192,18 +231,21 @@ class Home extends Component{
         let acceso = "cliente";
         axios.post("user/sign_up", {email, acceso})
         .then(e=>{
-            e.data.status ?this.props.navigation.navigate("confirmar", {code:e.data.token, email}) :Toast.show("Tenemos un problema, intentelo mas tarde")
+            console.log(e.data)
+            e.data.status ?this.props.navigation.navigate("confirmar", {code:e.data.token, email}) :Toast.show("Este email ya existe en el sistema")
         })
         .catch(err=>{
             console.log(err)
+            Toast.show("Tenemos un problema, intentelo mas tarde")
         })
     }
     async login(){
         this.setState({cargando:true})
         const {email2, password2, tokenPhone} = this.state
-        console.log(tokenPhone)
+       
         axios.post("user/login", {email:email2, password:password2, tokenPhone})
         .then(res=>{
+            console.log(res.data)
             if(res.data.status){
                 this.loginExitoso(res.data.user)
             }else{

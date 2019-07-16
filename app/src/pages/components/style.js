@@ -36,6 +36,23 @@ export const style = MediaQueryStyleSheet.create({
 		color:"#ffffff",
 		fontSize:14
 	},
+	badge:{
+		backgroundColor:"red",
+		position:"absolute",
+		bottom:20,
+		right:10,
+		width:16,
+		height:16,
+		textAlign:"center",
+		justifyContent:"center",
+		borderRadius:8,
+		padding:0
+	},
+	textBadge:{
+		textAlign:"center",
+		color:"#ffffff",
+		fontSize:9
+	},
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////			LOGIN
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////

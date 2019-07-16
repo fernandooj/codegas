@@ -77,15 +77,11 @@ router.post('/', function(req,res){
 						
 					// userServices.getEmail(data, (err3, users)=>{
 					// 	if(!err3){
-					// 		let mensajeJson={
-					// 			userId:users._id, 
-					// 			badge:1
-					// 		}
-					// 		cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
-					// 		res.json({ status: 'SUCCESS', conversacion });	
-					// 	}
-					// })
-					// cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
+						// 		cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
+						// 		res.json({ status: 'SUCCESS', conversacion });	
+						// 	}
+						// })
+						// cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
 					if(req.body.tipo==2){
 						req.body["imagen"] = ruta
 						req.body["usuarioId"] = {
@@ -93,7 +89,12 @@ router.post('/', function(req,res){
 							tokenPhone:req.body.tokenPhone,
 						}
 					}
+					let mensajeJson={
+						userId:req.body.userId2, 
+						badge:1
+					}
 					cliente.publish('chatConversacion', JSON.stringify(req.body)) 
+					cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
 					res.json({ status: 'SUCCESS', conversacion });	
 				}
 			})

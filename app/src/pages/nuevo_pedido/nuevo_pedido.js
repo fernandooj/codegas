@@ -5,7 +5,7 @@ import AsyncStorage             from '@react-native-community/async-storage';
 import Icon                     from 'react-native-fa-icons';
 import Toast                    from 'react-native-simple-toast';
 import axios                    from 'axios'
-import moment                   from 'moment'
+import moment                   from 'moment-timezone'
 import ModalSelector            from 'react-native-modal-selector'
 import ModalFilterPicker        from 'react-native-modal-filter-picker'
 import {Calendar}               from 'react-native-calendars';

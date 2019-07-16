@@ -3,7 +3,8 @@ let router = express.Router();
 let fs = require('fs');
 let  moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
-
+let redis        	= require('redis')
+let cliente      	= redis.createClient()
 let pedidoServices     = require('../services/pedidoServices.js') 
 let userServices       = require('./../services/userServices.js') 
 let carroServices      = require('../services/carroServices.js') 
@@ -108,7 +109,7 @@ router.post('/', (req,res)=>{
 		res.json({ status: false, message: 'No hay un usuario logueado' }); 
 	}else{
         let id = req.session.usuario.acceso=="cliente" ?req.session.usuario._id : req.body.idCliente 
-        userServices.getById(id, (err, cliente)=>{
+        userServices.getById(id, (err, clientes)=>{
             if(!err){
                 pedidoServices.create(req.body, id, req.session.usuario._id, (err2, pedido)=>{
                     if (!err2) {
@@ -117,6 +118,10 @@ router.post('/', (req,res)=>{
                         let text2  = `Forma: <b>${req.body.forma}</b><br/>${req.body.cantidad &&"Cantidad: <b>"+req.body.cantidad+"</b>"}<br/>${req.body.frecuencia &&"Frecuencia: <b>"+req.body.frecuencia+"<b><br/> Dia:"+req.body.dia+"<b><br/>" + req.body.dia2 &&"Dia2:<b>"+req.body.dia+"</b>" } `
                                 
                         htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
+                        let mensajeJson={
+                            badge:1
+                        }
+                        cliente.publish('pedido', JSON.stringify(mensajeJson)) 
                         res.json({ status: true, pedido });	
                     }else{
                         console.log(err2)

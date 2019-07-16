@@ -345,7 +345,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:10
 	},
 	conductor:{
-		fontSize:22,
+		fontSize:18,
 		width:120,
 		top:5
 	},

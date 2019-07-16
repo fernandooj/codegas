@@ -93,11 +93,11 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
                         :null                               
                     }
                 >
-                     <Text>{e._id}</Text>
+                     {/* <Text>{e._id}</Text> */}
                    {/* <Text>{e.orden}</Text> */}
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>{e.usuarioId.nombre}</Text>
@@ -227,8 +227,8 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
         const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, 
-                keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen } = this.state
-       
+                keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido } = this.state
+        console.log(placaPedido)
         return <Modal transparent visible={openModal} animationType="fade" >
                 <KeyboardListener
                     onWillShow={() => { this.setState({ keyboard: true }); }}
@@ -272,11 +272,11 @@ class Pedido extends Component{
                             }
                             {/* ASIGNAR USUARIOS TIPO  */}
                             {
-                                (acceso=="admin" || acceso=="despacho") && estado=="activo"
+                                (acceso=="admin" || acceso=="despacho") && estadoEntrega=="asignado"
                                 ?<View>
                                     <View style={style.separador}></View>
                                     <Text style={style.tituloModal}>Asignar Vehiculo y fecha</Text>
-                                    {placaPedido &&<Text style={style.tituloModal}>{placaPedido}</Text>}
+                                    {placaPedido &&<Text style={style.tituloModal}>{placaPedido} - {conductorPedido}</Text>}
                                     <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row", left:45}]} onPress={()=>this.setState({modalConductor:true})}>
                                         <Text style={style.textGuardar}>Asignar</Text>
                                         <Icon name="user" style={style.iconBtnGuardar} />
@@ -494,7 +494,6 @@ class Pedido extends Component{
 							<Text style={style.textoFiltro}>Cantidad</Text>	
                             {textEstado=="cantidad" &&<Icon name={'check'} style={style.iconFiltro} />}
 						</TouchableOpacity>
-                       
 					</View> 
 					<View style={style.subContenedorFiltro}>
 						<Text style={style.titulo1}>Fecha entrega</Text>
@@ -562,11 +561,6 @@ class Pedido extends Component{
         this.props.getZonasPedidos(filtro) 
         this.props.getPedidos(filtro) 
         this.setState({fechaEntregaFiltro:filtro})
-        // let {pedidos, pedidosFiltro, acceso} = this.state
-        // pedidos = pedidosFiltro.filter(e=>{
-        //   return e.fechaEntrega==filtro
-        // })
-        // acceso == "conductor" ?this.props.getPedidos(filtro) :this.setState({pedidos})  
     }
     actualizarFechaSolicitud(filtro){ 
         axios.get(`zon/zona/pedidoSolicitud/${filtro}`)
@@ -641,7 +635,12 @@ class Pedido extends Component{
                                             return <TouchableOpacity
                                                     key={e._id}
                                                     style={idVehiculo == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
-                                                    onPress={()=>this.setState({idVehiculo:e._id, placa:e.placa})}
+                                                    onPress={()=>this.setState({
+                                                        idVehiculo:e._id, 
+                                                        placa:e.placa, 
+                                                        placaPedido:e.placa, 
+                                                        conductorPedido:e.conductor.nombre ?e.conductor.nombre :""
+                                                    })}
                                                 >
                                                 <Text style={style.conductor}>{e.placa}</Text>       
                                                 <Text style={style.conductor}>{e.conductor ? e.conductor.nombre :""}</Text>       
@@ -723,7 +722,7 @@ class Pedido extends Component{
     ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     asignarConductor(){
-        const {placa, idVehiculo, id} = this.state
+        const {placa, idVehiculo, id, fechaEntrega} = this.state
         Alert.alert(
             `Seguros deseas agregar a ${placa}`,
             'a este pedido',
@@ -735,7 +734,7 @@ class Pedido extends Component{
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}`)
+            axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}`)
             .then((res)=>{
                 if(res.data.status){
                     this.props.getPedidos()
@@ -873,7 +872,7 @@ class Pedido extends Component{
             console.log(res.data)
             if(res.data.status){
                 if(estado=="activo"){
-                    this.setState({modalFechaEntrega:true})
+                    this.setState({modalFechaEntrega:true, estadoEntrega:"asignado"})
                 }else{
                     alert("Pedido actualizado")
                     this.props.getPedidos()

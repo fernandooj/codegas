@@ -19,14 +19,12 @@ export default class FooterComponent extends Component{
 	}
 	componentWillMount = async () =>{
 		const status   = await AsyncStorage.getItem('status')
-		 
-		
-			const idUsuario = await AsyncStorage.getItem('userId')
-			const nombre    = await AsyncStorage.getItem('nombre')
-			const email 	= await AsyncStorage.getItem('email')
-			const avatar    = await AsyncStorage.getItem('avatar')
-			const acceso   	= await AsyncStorage.getItem('acceso')
-			this.setState({nombre, email, avatar, idUsuario, acceso})
+		const idUsuario = await AsyncStorage.getItem('userId')
+		const nombre    = await AsyncStorage.getItem('nombre')
+		const email 	= await AsyncStorage.getItem('email')
+		const avatar    = await AsyncStorage.getItem('avatar')
+		const acceso   	= await AsyncStorage.getItem('acceso')
+		this.setState({nombre, email, avatar, idUsuario, acceso})
 		
 		axios.get("user/perfil/").then(e=>{this.setState({status:e.data.status, user:e.data.user})})
 		this.socket = SocketIOClient(URL);
@@ -36,19 +34,30 @@ export default class FooterComponent extends Component{
 				// console.log("userId")
 				// console.log(userId)
 				this.socket.on(`badgeMensaje${userId}`, 	this.reciveMensanje.bind(this));
-				this.socket.on(`badgeCuenta${userId}`, 	this.reciveMensanjeCuenta.bind(this));
+				if(acceso=="admin" || acceso=="solucion"){
+					this.socket.on(`badgeConversacion`, 	this.reciveMensanjeConversacion.bind(this));
+					this.socket.on(`pedido`, 					    this.recivePedido.bind(this));
+				}
 			}
 		} catch(e) {
 			console.log(e)
 		}
 	}
 	reciveMensanje(messages) {
-		console.log(messages)
+		console.log("messages")
 		this.setState({badgeSocketMessage:this.state.badgeSocketMessage+1, badgeMessage:true })
 	}
 	reciveMensanjeCuenta(messages) {
 		console.log(messages)
 		this.setState({badgeSocketCuenta:this.state.badgeSocketCuenta+1, badgeCuenta:true })
+	}
+	reciveMensanjeConversacion(messages) {
+		console.log(messages)
+		this.setState({badgeSocketConversacion:1, badgeCuenta:true })
+	}
+	recivePedido(messages) {
+		console.log(messages)
+		this.setState({badgeSocketPedido:this.state.badgeSocketPedido+1, badgePedido:true })
 	}
 
 	///////////////////////////////////       redirecciono al usuario a la cuenta, pero primero elimino el badge
@@ -67,12 +76,21 @@ export default class FooterComponent extends Component{
 
 	renderFooter(){
 		const {home, titulo, navigation} = this.props
-		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, acceso, user} = this.state
+		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, badgeSocketPedido, badgePedido, badgeSocketConversacion} = this.state
 		return(
 			<View style={style.contenedorFooter}>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>
 					<Icon name="home" style={style.icon} />
 					<Text style={style.textFooter}>Inicio</Text>
+					{
+						badgeSocketConversacion>0  && badgeCuenta 
+						&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketConversacion}</Text></View>
+					}
+					{
+						badgeSocketMessage>0  && badgeMessage 
+						&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketMessage}</Text></View>
+					}
+					
 				</TouchableOpacity>
 			 		{/* <TouchableOpacity style={style.subContenedorFooter} onPress={()=>this.mensaje()}>
 						<Icon name="comment" style={style.icon} />
@@ -92,10 +110,9 @@ export default class FooterComponent extends Component{
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('pedido')}>
 					<Icon name="cloud-upload" style={style.icon} />
 					<Text style={style.textFooter}>Pedidos</Text>
-					{ 
-						badgeSocketCuenta>0  
-					?<View style={style.badge}><Text style={style.textBadge}>{badgeSocketCuenta+user.badge}</Text></View>
-					:user.badge>0 &&badgeCuenta ?<View style={style.badge}><Text style={style.textBadge}>{user.badge}</Text></View> :null
+					{
+						badgeSocketPedido>0  && badgePedido 
+						&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketPedido}</Text></View>
 					}
 				</TouchableOpacity>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('perfil')}>

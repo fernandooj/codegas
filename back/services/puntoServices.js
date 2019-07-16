@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 let punto = require('./../models/puntoModel.js');
 let moment 		 = require('moment-timezone');
-
+let mongoose = require('mongoose')
 //////////////////////////////////////////////////////////////////////////////
 ////////******     creo la clase que hace los servicios        ****//////////
 /////////////////////////////////////////////////////////////////////////////
@@ -80,6 +80,71 @@ class puntoServices{
 		], callback)
 	} 
 
+	getByUser(idCliente, callback){
+		idCliente = mongoose.Types.ObjectId(idCliente);	
+		punto.aggregate([
+			{
+				$lookup:{
+					from:"users",
+					localField:"idCliente",
+					foreignField:"_id",
+					as:"UserData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$UserData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			{
+				$lookup:{
+					from:"zonas",
+					localField:"idZona",
+					foreignField:"_id",
+					as:"ZonaData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$ZonaData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			 
+			{
+				$project:{
+					_id:1,
+					observacion:1,
+					direccion:1,
+					idZona:1,
+					idCliente:1,
+					idPadre:1,
+					nombre:'$UserData.nombre',
+					email:'$UserData.email',
+					nombreZona:'$ZonaData.nombre',
+				},
+			},
+			// {
+			// 	$match:{
+			// 		idCliente
+			// 	},
+			// },
+			{
+			$match: { $or: [
+						{ idCliente }, 
+						{ idPadre: idCliente }
+					] 
+				}
+			},
+			{
+			    $group:{
+						_id:'$_id',
+						data: { $addToSet: {_id:"$_id", observacion:"$observacion", direccion:"$direccion", idZona:'$idZona', idCliente:'$idCliente', nombre:'$nombre', email:'$email', nombreZona:'$nombreZona' }                  },
+			    }
+			},
+		], callback)
+	}
 	getZonasFechaSolicitud(fecha, callback){
 		punto.aggregate([
 			{
@@ -143,8 +208,8 @@ class puntoServices{
 	}  
 
 	create(data, idCliente, idPadre, callback){
-		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
-		let creado = moment(fecha).valueOf()
+		let creado = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD h:mm:ss a')
+	 
 		let newPunto = new punto({
 			direccion : data.direccion,
 			observacion : data.observacion,
@@ -154,6 +219,15 @@ class puntoServices{
 			creado     
 		})
 		newPunto.save(callback)	
+	}
+	editar(data, id, callback){
+		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD h:mm:ss a')
+		punto.findByIdAndUpdate(id, {$set: {
+			'direccion'  : data.direccion,
+			'observacion': data.observacion,
+			'idZona'		 : data.idZona,
+			'updated':   moment(fecha).valueOf()
+		}}, callback);
 	}
 }
 

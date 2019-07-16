@@ -41,7 +41,6 @@ class userServices {
 		newUsuario.tokenPhone	=  user.tokenPhone,
 		newUsuario.idPadre  	=  idPadre,
 		newUsuario.token  		=  token,
-		// newUsuario.activo 		=  user.acceso=="cliente" ?false :true,
 		newUsuario.activo 		=  true,
 		newUsuario.created  	= fecha2;
 		newUsuario.save(callback);	 
@@ -55,7 +54,6 @@ class userServices {
 		}}, callback);
 	}
 	edit(user, id, callback){
-		console.log(user.password)
 		let newUsuario = new User() 
 		User.findByIdAndUpdate(id, {$set: {
 			'razon_social': user.razon_social,
@@ -66,6 +64,14 @@ class userServices {
 			'celular':  	user.celular,
 			'password':  	newUsuario.generateHash(user.password),
 			'tipo':   	    user.tipo,
+			'updatedAt':    fecha
+		}}, callback);
+	}
+	editVarios(user, id, callback){
+		console.log({user, id})
+		User.findByIdAndUpdate(id, {$set: {
+			'nombre':     	user.nombre,
+			'email':     	user.email,
 			'updatedAt':     moment(fecha).valueOf()
 		}}, callback);
 	}

@@ -25,7 +25,7 @@ export const style = MediaQueryStyleSheet.create({
     btnCalificacion:{
         backgroundColor:"#d9e008",
         borderRadius:20,
-        // width:10,
+        width:10,
         paddingVertical:10,
         paddingHorizontal:15,
         marginHorizontal:7

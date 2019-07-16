@@ -140,7 +140,7 @@ export const style = MediaQueryStyleSheet.create({
         flexDirection:"row",
         position:"absolute",
         width:"100%",
-        bottom:Platform.OS=='android' ?5 :305
+        bottom:Platform.OS=='android' ?5 :-305
     },
     input:{
         width:"75%",

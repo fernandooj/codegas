@@ -27,7 +27,7 @@ class Mensaje extends Component{
 		try {
 			const acceso   = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
 			const tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
-			if(acceso){
+			if(acceso=="admin" || acceso=="solucion"){
 				this.props.getConversaciones()
 				this.setState({showSpin:false})
 			}else{			

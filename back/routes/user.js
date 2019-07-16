@@ -76,6 +76,24 @@ module.exports = function(app, passport){
     
     ///////////////////////////////////////////////////////////////////////////
     /*
+    modificar usuarios
+    */
+    ///////////////////////////////////////////////////////////////////////////
+    app.put('/x/v1/user/update_varios', (req, res)=>{
+        if(!req.session.usuario){
+            res.json({ status: false, message: 'Usuario Innactivo'}) 
+        } else{
+            req.body.clientes.map(e=>{
+                 
+                userServices.editVarios(e, e.idCliente, (err, user)=>{ 
+                    
+                })                 
+            })
+        }
+    })
+
+    ///////////////////////////////////////////////////////////////////////////
+    /*
     Verifica el token enviado
     */
     ///////////////////////////////////////////////////////////////////////////      
@@ -103,20 +121,25 @@ module.exports = function(app, passport){
         let token = Math.floor(1000 + Math.random() * 9000);
         userServices.getEmail(req.body, (err, user)=>{
             if (err) {
-                res.json({status:'FAIL', user: 'Usuario no existe', code:2 })
+                res.json({status:false, err, code:0 })
             }else{
-                userServices.modificaToken(user, token, (err2, user)=>{
-                    if(!err2){
-                        let titulo = `<font size="5">Recuperar Contraseña</font>`
-                         
-                        let text1  = `Hola ${user.nombre} si desea recuperar su contraseña este es el codigo de recuperación: ${token}`
-                        let text2  = `Este codigo tiene valides de 1 hora`
-                        let asunto =  "Nuevo codigo de verificación"  
-                            
-                        htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
-                        res.json({status: 'SUCCESS', token, code:1})  
-                    }
-                })   
+                if(!user){
+                    res.json({status:false, user: 'Usuario no existe', code:2 })
+                }else{
+                    console.log(user)
+                    userServices.modificaToken(user, token, (err2, user)=>{
+                        if(!err2){
+                            let titulo = `<font size="5">Recuperar Contraseña</font>`
+                             
+                            let text1  = `Hola ${user.nombre} si desea recuperar su contraseña este es el codigo de recuperación: ${token}`
+                            let text2  = `Este codigo tiene valides de 1 hora`
+                            let asunto =  "Nuevo codigo de verificación"  
+                                
+                            htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
+                            res.json({status: true, token, code:1})  
+                        }
+                    })   
+                }
             }
         })
     });
@@ -190,19 +213,55 @@ module.exports = function(app, passport){
     app.get('/x/v1/user/perfil', function(req, res){
         if(req.session.usuario){
             const {usuario} = req.session
-            let user = {
-                _id:          usuario._id, 
-                razon_social: usuario.razon_social,
-                cedula:       usuario.cedula, 
-                direccion:    usuario.direccion, 
-                email:        usuario.email, 
-                nombre:       usuario.nombre,
-                celular:      usuario.celular,
-                tipo:         usuario.tipo, 
-                acceso:       usuario.acceso, 
-                avatar:       usuario.avatar, 
-            }
-            res.json({status:true, user})
+            puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
+               
+                let nUbicaciones = ubicaciones.map(e=>{
+                    let data = e.data[0] 
+                    if(data.idCliente==usuario._id){
+                        return {
+                            direccion: data.direccion,
+                            email: undefined,
+                            idCliente: undefined,
+                            idZona: data.idZona,
+                            nombre: undefined,
+                            nombreZona: data.nombreZona,
+                            observacion: data.observacion,
+                            _id: data._id
+                        }
+                    }else{
+                        return {
+                            direccion: data.direccion,
+                            email: data.email,
+                            idCliente: data.idCliente,
+                            idZona: data.idZona,
+                            nombre: data.nombre,
+                            nombreZona: data.nombreZona,
+                            observacion: data.observacion,
+                            _id: data._id
+                        }
+                    }
+                })
+                 
+                if (!err2) {
+                    let user = {
+                        _id:          usuario._id, 
+                        razon_social: usuario.razon_social,
+                        cedula:       usuario.cedula, 
+                        direccion:    usuario.direccion, 
+                        email:        usuario.email, 
+                        nombre:       usuario.nombre,
+                        celular:      usuario.celular,
+                        tipo:         usuario.tipo, 
+                        acceso:       usuario.acceso, 
+                        avatar:       usuario.avatar, 
+                        ubicaciones:  nUbicaciones
+                    }
+                    res.json({status:true, user})
+                }else{
+                    res.json({ status: false });	    
+                }
+            })
+            
              
         }else{
             res.json({status:false, user: 'SIN SESION' }) 
@@ -349,16 +408,35 @@ module.exports = function(app, passport){
     //////////////////      lista usuario ADMIN Y SOLUCION
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/by/adminsolucion', (req,res)=>{
-        
         userServices.getAdminSolucion((err, usuarios)=>{
-            if(!err){
-            
+            if(!err){  
                 res.json({status:'SUCCESS', usuarios})
             }else{
                 res.json({ status: 'FAIL', usuarios:[], err}) 
             }
         })
-        
+    })
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////      lista usuario ADMIN Y SOLUCION
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/by/asefsfxf323-dxc/:kldfjlxkfe', (req,res)=>{
+        if(req.session.usuario){
+            if (req.session.usuario.acceso=='admin') {
+                userServices.getById(req.params.kldfjlxkfe, (err, users)=>{
+                    if(!err){
+                        console.log(users)
+                        req.session.usuario=users
+                        res.json({status:true, users})
+                    }else{
+                        res.json({ status:false, err}) 
+                    }
+                })
+            }else{
+                res.json({ status: false, message:'No tienes acceso'})
+            }
+        }else{
+            res.json({ status: false, message:'usuario no logueado'})  
+        }
     })
 
 

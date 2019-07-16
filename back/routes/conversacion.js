@@ -50,7 +50,11 @@ router.get('/byTokenPhone/:tokenPhone/:activo/:nombre/:email/:celular', (req,res
 				nombre:req.params.nombre,
 				celular:req.params.celular
 			}
+			let mensajeBadge={
+				badge:1
+			}
 			cliente.publish('nuevoChat', JSON.stringify(mensajeJson)) 
+			cliente.publish('badgeConversacion', JSON.stringify(mensajeBadge)) 
 			res.json({ status:false }); 
 		}
 	})
@@ -76,7 +80,7 @@ router.post('/', function(req,res){
 	if (!req.session.usuario) {
 		res.json({ status: 'FAIL', message: 'No hay un usuario logueado' }); 
 	}else{
-		userServices.create(req.body, 1010, (err, user)=>{
+		userServices.create(req.body, 1010, null, (err, user)=>{
 			if(err){
 				res.json({ err, status:false })
 			}else{

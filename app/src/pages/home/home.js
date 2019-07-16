@@ -53,6 +53,10 @@ class Home extends Component{
 				console.log(e)
 		}
 	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////		FUNCIONES PARA LAS NOTIFICACIONES
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	async componentDidMount() {
 		//FCM.createNotificationChannel is mandatory for Android targeting >=8. Otherwise you won't see any notification
 		FCM.createNotificationChannel({
@@ -127,7 +131,7 @@ class Home extends Component{
 					<Icon name="plus-square" style={style.icon} />
 					<Text style={style.text}>NUEVO PEDIDO</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={style.btn} onPress={()=>acceso ?navigation.navigate("conversacion", {tokenPhone, acceso}) :formularioChat ?navigation.navigate("conversacion", {tokenPhone, acceso}) :this.setState({modal:true})}>
+				<TouchableOpacity style={style.btn} onPress={()=>acceso=="admin" || acceso=="solucion" ?navigation.navigate("conversacion", {tokenPhone, acceso}) :formularioChat ?navigation.navigate("conversacion", {tokenPhone, acceso}) :this.setState({modal:true})}>
 					<Icon name="comments" style={style.icon} />
 					<Text style={style.text}>CHAT</Text>
 				</TouchableOpacity>
@@ -135,6 +139,7 @@ class Home extends Component{
 		)
 	}
 	renderBtnUsuarios(){ 
+		console.log(this.state.usuariosEntrando.length)
 		return(
 			<TouchableOpacity style={style.btnUsuariosOnline} onPress={this.state.usuariosEntrando.length==0?null :()=>this.crearConversacion()}>
 				<Text style={style.textUsuariosOnline}>Hay {this.state.usuariosEntrando.length} Usuarios en espera </Text>
@@ -213,6 +218,7 @@ class Home extends Component{
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	crearConversacion(){
 		const {usuariosEntrando, tokenPhone}  = this.state
+		console.log({usuariosEntrando, tokenPhone} )
 		axios.post(`con/conversacion/`, {...usuariosEntrando[0]})
 		.then(res=>{
 			console.log(res.data)

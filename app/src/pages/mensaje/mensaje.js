@@ -296,10 +296,12 @@ class Conversacion extends Component{
 		const {usuarioId1, usuarioId2, _id} = this.props.conversacion
 		const {id, acceso} = this.state
 		let userId 	   =  acceso=="admin" || acceso=="solucion" ?usuarioId1._id :usuarioId2._id
+		let userId2    =  acceso=="admin" || acceso=="solucion" ?usuarioId2._id :usuarioId1._id
 		let tokenPhone = acceso=="admin" || acceso=="solucion" ?usuarioId2.tokenPhone :usuarioId1.tokenPhone
 		const {mensaje} = this.state
 		const Fullmensaje = {
 			mensaje: mensaje, 
+			userId2: userId2, 
 			usuarioId:{
 				usuarioId:userId,
 				tokenPhone:this.state.tokenPhone,

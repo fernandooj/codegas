@@ -7,6 +7,10 @@ let cliente = redis.createClient()
 cliente.subscribe('nuevoChat')
 cliente.subscribe('chatConversacion')
 cliente.subscribe('cerrarConversacion')
+cliente.subscribe('badgeCuenta')
+cliente.subscribe('badgeMensaje')
+cliente.subscribe('badgeConversacion')
+cliente.subscribe('pedido')
  
 io.on('connection', (socket)=>{
 
@@ -31,5 +35,29 @@ io.on('connection', (socket)=>{
 			console.log(info)
 		   io.emit('chatConversacion', JSON.parse(info))
 	   }
+	   	if (canal=='badgeCuenta') {
+			let newInfo = JSON.parse(info)
+			console.log('_____________')
+			console.log(newInfo)
+			io.emit(`badgeCuenta${newInfo.userId}`, JSON.parse(newInfo.badge))
+		}
+		if (canal=='badgeMensaje') {
+			let newInfo = JSON.parse(info)
+			console.log('+++++++++++++++')
+			console.log(newInfo)
+			io.emit(`badgeMensaje${newInfo.userId}`, JSON.parse(newInfo.badge))
+		}	
+		if (canal=='badgeConversacion') {
+			let newInfo = JSON.parse(info)
+			console.log('+++++++++++++++')
+			console.log(newInfo)
+			io.emit(`badgeConversacion`, JSON.parse(newInfo.badge))
+		}	
+		if (canal=='pedido') {
+			let newInfo = JSON.parse(info)
+			console.log('***************')
+			console.log(newInfo)
+			io.emit(`pedido`, JSON.parse(newInfo.badge))
+		}		
 	})
 }

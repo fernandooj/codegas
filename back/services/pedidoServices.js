@@ -13,13 +13,13 @@ class pedidoServices{
 
 	}
 	get(callback){
-		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion').populate("carroId").populate("puntoId").sort({orden: 'desc'}).exec(callback)
+		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({orden: 'desc'}).exec(callback)
 	}
 	getByPedido(_id, callback){
-		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioId, callback){
-		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByConductor(conductorId, fecha, callback){
 		// fechaEntrega = 	fechaEntrega!="undefined" ?moment().format("YYYY-MM-DD") :fechaEntrega
@@ -30,7 +30,7 @@ class pedidoServices{
 	getByFechaEntrega(fechaEntrega,  callback){
 		fechaEntrega!="undefined"
 		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
-		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
+		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({orden: 'asc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)

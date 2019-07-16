@@ -54,7 +54,7 @@ router.post('/', (req,res)=>{
 router.post('/varios', (req,res)=>{
     req.body.puntos.map(e=>{
         puntoServices.create(e, req.body.id, req.body.id, (err2, puntos)=>{
-            console.log(puntos)
+            // console.log(puntos)
         })
     })
     res.json({ status: true });	
@@ -62,9 +62,9 @@ router.post('/varios', (req,res)=>{
 
 
 ///////////////////////////////////////////////////////////////
-////////////       EDITO UN PUNTO
+////////////       ELIMINO UN PUNTO
 //////////////////////////////////////////////////////////////
-router.put('/', (req,res)=>{
+router.delete('/', (req,res)=>{
     puntoServices.eliminar(req.body._id, (err2, puntos)=>{
         if (!err2) {
             res.json({ status: true, puntos });	
@@ -74,6 +74,18 @@ router.put('/', (req,res)=>{
     })
 })
  
+///////////////////////////////////////////////////////////////
+////////////       EDITO VARIOS PUNTOS
+//////////////////////////////////////////////////////////////
+router.put('/varios', (req,res)=>{
+    req.body.puntos.map(e=>{
+        puntoServices.editar(e, e._id, (err2, puntos)=>{
+            // console.log(puntos)
+        })
+    })
+    res.json({ status: true });	
+})
+
 
 
 module.exports = router;

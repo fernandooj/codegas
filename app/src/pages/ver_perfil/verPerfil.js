@@ -29,6 +29,7 @@ class verPerfil extends Component{
         modalUbicacion:false,
         modalZona:false,
         zonas:[],
+        puntos:[],
         ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, acceso:"cliente"}]
 	  }
     }
@@ -49,17 +50,20 @@ class verPerfil extends Component{
         !params.tipoAcceso
         ?axios.get("user/perfil").then(e=>{
             const {user} = e.data
+            console.log(e.data.user)
             this.setState({
-                razon_social: user.razon_social ?user.razon_social :"",
-                cedula:       user.cedula       ?user.cedula       :"",
-                direccion_factura:    user.direccion_factura    ?user.direccion_factura    :"",
-                email:        user.email        ?user.email        :"",
-                nombre:       user.nombre       ?user.nombre       :"",
-                password :    user.password     ?user.password     :"",
-                celular :     user.celular      ?user.celular      :"",
-                tipo :        user.tipo         ?user.tipo         :"",
-                acceso:       user.acceso       ?user.acceso       :"",
-                avatar:       user.avatar       ?user.avatar       :"",
+                razon_social:     user.razon_social ?user.razon_social :"",
+                cedula:           user.cedula       ?user.cedula       :"",
+                email:            user.email        ?user.email        :"",
+                nombre:           user.nombre       ?user.nombre       :"",
+                password :        user.password     ?user.password     :"",
+                celular :         user.celular      ?user.celular      :"",
+                tipo :            user.tipo         ?user.tipo         :"",
+                acceso:           user.acceso       ?user.acceso       :"",
+                avatar:           user.avatar       ?user.avatar       :"",
+                avatar:           user.avatar       ?user.avatar       :"",
+                ubicaciones:      user.ubicaciones  ?user.ubicaciones  :[],
+                direccion_factura:user.direccion_factura ?user.direccion_factura :"",
             })
         })
         :null
@@ -146,7 +150,7 @@ class verPerfil extends Component{
                 {
                    acceso=="cliente"
                    &&<TouchableOpacity  style={ubicaciones.length<1 ?[style.btnUbicacion, style.inputRequired] :style.btnUbicacion} onPress={()=>this.setState({modalUbicacion:true})}>
-                       <Text>Ubicación entrega</Text>
+                       <Text>{ubicaciones.length<1 ?"Ubicación entrega" :`Tienes ${ubicaciones.length} ubicaciones guardadas`}</Text>
                    </TouchableOpacity>
                }
             {/* DIRECCION */}	
@@ -240,12 +244,11 @@ class verPerfil extends Component{
     }
     actualizaUbicacion(){
         let {observacion, ubicaciones, direccion, emailUbicacion, nombreUbicacion, nombreZona} = this.state
-        let data = {direccion, email:emailUbicacion, nombre:nombreUbicacion, observacion, nombreZona, acceso:"cliente"}
+        let data = {direccion, email:emailUbicacion, nombre:nombreUbicacion, observacion, nombreZona, nuevo:true, acceso:"cliente"}
         ubicaciones.push(data)
         this.setState({ubicaciones})
     }
     actualizaArrayUbicacion(type, value, key){
-        console.log({type, value, key})
         let {ubicaciones} = this.state 
         type == "direccion" ?ubicaciones[key].direccion = value :type=="observacion" ?ubicaciones[key].observacion = value :type=="emailUbicacion" ?ubicaciones[key].email = value :ubicaciones[key].nombre = value
         this.setState({ubicaciones})
@@ -322,22 +325,29 @@ class verPerfil extends Component{
                                                         onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
                                                         style={style.input}
                                                     />
-                                                    <TextInput
-                                                        type='outlined'
-                                                        label='Email'
-                                                        placeholder="Email"
-                                                        value={e.email}
-                                                        onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
-                                                        style={style.input}
-                                                    />
-                                                    <TextInput
-                                                        type='outlined'
-                                                        label='Nombre'
-                                                        placeholder="Nombre"
-                                                        value={e.nombre}
-                                                        onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                        style={style.input}
-                                                    />
+                                                    {
+                                                        (e.nuevo || e.idCliente )
+                                                        &&<TextInput
+                                                            type='outlined'
+                                                            label='Email'
+                                                            placeholder="Email"
+                                                            value={e.email}
+                                                            onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
+                                                            style={style.input}
+                                                        />
+                                                    }
+                                                    {
+                                                        (e.nuevo || e.idCliente)
+                                                        &&<TextInput
+                                                            type='outlined'
+                                                            label='Nombre'
+                                                            placeholder="Nombre"
+                                                            value={e.nombre}
+                                                            onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
+                                                            style={style.input}
+                                                        />
+                                                    }
+                                                    
                                                     <Text style={style.separador}></Text>
                                                 </View>
                                             )
@@ -401,7 +411,7 @@ class verPerfil extends Component{
     }
 	render(){
         const {navigation} = this.props     
-        console.log(this.state.nombre)
+       
         return (
             <View  style={style.container}>
                 {this.modalUbicacion()}
@@ -459,14 +469,14 @@ class verPerfil extends Component{
         this.setState({passwordActivate:true})
     }
 
-    ///////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
     //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
-    ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
     handleSubmit1(){
-        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
-        console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen})
+        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones} = this.state
+        console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones})
         if(acceso=="cliente"){
-            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario" || codt==""){
+            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario" || codt=="" || ubicaciones.length<1){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
@@ -495,7 +505,7 @@ class verPerfil extends Component{
 
     }
     handleSubmit(e){
-        // this.setState({cargando:true})
+        this.setState({cargando:true})
         const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email
@@ -541,17 +551,6 @@ class verPerfil extends Component{
                 this.setState({cargando:false})
                 Toast.show("Tenemos un problema, intentalo mas tarde")
             }
-            // if(e.data.status){
-            //     if(acceso=="cliente") {
-            //         alert("Usuario guardado con exito")
-            //         this.props.navigation.navigate("perfil")
-            //     }else{
-            //         this.avatar(imagen, e.data.user._id)
-            //     } 
-            // }else{
-            //     Toast.show("Este email ya existe")
-            //     this.setState({cargando:false})
-            // }
         })
         .catch(err=>{
             console.log(err)
@@ -559,23 +558,87 @@ class verPerfil extends Component{
         })
     }	
     editarUsuario(e){
-        this.setState({cargando:true})
-        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
+        // this.setState({cargando:true})
+        const {razon_social, cedula, ubicaciones, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen} = this.state
+        let clientes = ubicaciones.filter(e=>{
+            return e.email && e.idCliente
+        })
         
-        axios.put("user/update", {razon_social, cedula, ubicacion, direccion_factura, nombre, email, celular, tipo, acceso, codt})
+        let clientesNuevos = ubicaciones.filter(e=>{
+            return e.email && !e.idCliente
+        })
+
+        let puntos = ubicaciones.filter(e=>{
+            return !e.email 
+        })
+        puntos = puntos.map(e=>{
+            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, _id:e._id}
+        })
+        let puntosNuevos = puntos.filter(e=>{
+            return !e._id
+        })
+        puntos = puntos.filter(e=>{
+            return e._id
+        })
+        console.log({clientes})
+        console.log({clientesNuevos})
+        console.log({puntos})
+        console.log({puntosNuevos})
+        axios.put("user/update", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt})
         .then(e=>{
-            console.log(imagen)
-            console.log(e.data)
-            if(e.data.status){
-                if(imagen) {
-                    this.avatar(imagen, e.data.user._id)
-                }else{
-                    this.loginExitoso(e.data.user)
-                    
+            if(acceso=="cliente") {
+                ////////////////////////////////////////////        EDITO LOS CLIENTES
+                if(clientes.length>0){
+                    axios.put("user/update_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
+                    .then(res=>{
+                        // this.props.navigation.navigate("perfil")
+                        Toast.show("Usuario guardado con exito")
+                    })
+                    .catch(err2=>{
+                        console.log(err2)
+                        this.setState({cargando:false})
+                    })
+                }
+                ////////////////////////////////////////////        INSERTO LOS CLIENTES
+                if(clientesNuevos.length>0){
+                    axios.post("user/crea_varios", {clientes:clientesNuevos, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
+                    .then(res=>{
+                        // this.props.navigation.navigate("perfil")
+                        Toast.show("Usuario guardado con exito")
+                    })
+                    .catch(err2=>{
+                        console.log(err2)
+                        this.setState({cargando:false})
+                    })
+                }
+                ////////////////////////////////////////////       EDITO LOS PUNTOS
+                if(puntos.length>0){
+                    axios.put("pun/punto/varios",{puntos, id:e.data.user._id})
+                    .then(res=>{
+                        console.log(res.data)
+                        // this.props.navigation.navigate("perfil")
+                        Toast.show("Usuario guardado con exito")
+                    })
+                    .catch(err2=>{
+                        console.log(err2)
+                        this.setState({cargando:false})
+                    })
+                }
+                ////////////////////////////////////////////       INSERTO LOS PUNTOS
+                if(puntosNuevos.length>0){
+                    axios.post("pun/punto/varios", {puntos:puntosNuevos, id:e.data.user._id})
+                    .then(res=>{
+                        console.log(res.data)
+                        // this.props.navigation.navigate("perfil")
+                        Toast.show("Usuario guardado con exito")
+                    })
+                    .catch(err2=>{
+                        console.log(err2)
+                        this.setState({cargando:false})
+                    })
                 }
             }else{
-                Toast.show("Tenemos problemas, intentalo nuevamente")
-                this.setState({cargando:false})
+                this.avatar(imagen, e.data.user._id)
             }
         })
         .catch(err=>{

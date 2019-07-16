@@ -195,7 +195,7 @@ class Home extends Component{
                     />
                    
                     <TouchableOpacity  style={!ubicaciones[0].idZona ?[style.btnUbicacion, style.inputInvalid] :style.btnUbicacion} onPress={()=>this.setState({modalUbicacion:true})}>
-                       <Text>Ubicación entrega</Text>
+                       <Text>{!ubicaciones[0].idZona ?"Ubicación entrega" :`Tienes ${ubicaciones.length} ubicaciones guardadas`}</Text>
                    </TouchableOpacity>
                     <TextInput
                         style={nombre.length<2 ?[style.input, style.inputInvalid] :style.input}
