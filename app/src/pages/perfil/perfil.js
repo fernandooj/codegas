@@ -169,6 +169,9 @@ class Home extends Component{
                         <Text style={style.txtLista}>Cerrar Sesion</Text> 
                         <Icon name={'sign-out'} style={style.icon} />
                     </TouchableOpacity> 
+                    <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.0</Text> 
+                    </TouchableOpacity> 
                     {
                         err
                         &&<Text>{err}</Text>

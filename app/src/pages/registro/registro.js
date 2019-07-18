@@ -247,7 +247,7 @@ class Home extends Component{
                         value={tipo}
                     />
                     <TouchableOpacity style={style.btnGuardar} 
-                        onPress={()=> razon_social.length<2 || cedula.length<2 || direccion_factura.length<2 || nombre.length<2 || password.length<2 || celular.length<2 || tipo.length<2 || ubicaciones.length<1
+                        onPress={()=> razon_social.length<2 || cedula.length<2 || direccion_factura.length<2 || nombre.length<2 || password.length<2 || celular.length<2 || tipo.length<2 || !ubicaciones[0].idZona
                         ?alert("Todos los campos son obligatorios") :this.handleSubmit()}>
                         <Text style={style.textGuardar}>Guardar</Text>
                     </TouchableOpacity>

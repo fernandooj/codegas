@@ -106,9 +106,12 @@ router.get('/vehiculosConPedidos/:fecha', (req,res)=>{
 //////////////////////////////////////////////////////////////
 router.post('/', (req,res)=>{
 	if (!req.session.usuario) {
+        console.log("sin sesion")
 		res.json({ status: false, message: 'No hay un usuario logueado' }); 
 	}else{
         let id = req.session.usuario.acceso=="cliente" ?req.session.usuario._id : req.body.idCliente 
+        console.log("id")
+        console.log(id)
         userServices.getById(id, (err, clientes)=>{
             if(!err){
                 pedidoServices.create(req.body, id, req.session.usuario._id, (err2, pedido)=>{
@@ -122,6 +125,7 @@ router.post('/', (req,res)=>{
                             badge:1
                         }
                         cliente.publish('pedido', JSON.stringify(mensajeJson)) 
+                        
                         res.json({ status: true, pedido });	
                     }else{
                         console.log(err2)
@@ -193,8 +197,7 @@ router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
 	}else{
         pedidoServices.cambiarEstado(req.params.idPedido, req.params.estado, (err, pedido)=>{
             if (!err) {
-                enviaNotificacion(res, "admin", "Nuevo pedido activado", `${pedido._id} se ha hactivado`)
-                // res.json({ status:true, pedido }); 
+                enviaNotificacion(res, "despacho", "Nuevo pedido activado", `${pedido._id} se ha hactivado`)
             }else{
                 res.json({ status:false, message: err }); 
             }
@@ -236,7 +239,7 @@ router.post('/finalizar/:estado', (req,res)=>{
                         let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/><img src="${ruta}" width="500"/>` 
                         let asunto = "Estado pedido Codegas, entregado"
                         htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
-                        enviaNotificacion(res, "admin", req.session.usuario.nombre, "Ha cerrado un nuevo pedido exitosamente")
+                        enviaNotificacion(res, "despacho", req.session.usuario.nombre, "Ha cerrado un nuevo pedido exitosamente")
                     }else{
                         res.json({ status:false, message: err2 }); 
                     }
@@ -258,7 +261,7 @@ router.post('/novedad/', (req,res)=>{
             
             pedidoServices.novedad(req.body._id, orden_cerrado, (err, pedido)=>{
                 if (!err) {
-                    enviaNotificacion(res, "admin", req.session.usuario.nombre, `Ha cerrado un nuevo pedido NO exitosamente, ${req.body.novedad}`)
+                    enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado un nuevo pedido NO exitosamente, ${req.body.novedad}`)
                 }else{
                     res.json({ status:false, message: err });
                 }
@@ -310,9 +313,115 @@ router.put('/editarOrden/', (req,res)=>{
                 
             })
         })
-        
         res.json({ status:true }); 
     }
 })
  
+
+///////////////////////////////////////////////////////////////////////////////////
+////////////////////////            CREAR PEDIDOS CON FRECUENCIAS 
+///////////////////////////////////////////////////////////////////////////////////
+router.get('/crear_frecuencia/todos', (req,res)=>{
+    let fechaFrecuencia = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
+    fechaFrecuencia = fechaFrecuencia.valueOf()
+   
+    pedidoServices.get((err, pedidos)=>{
+        if (!err) {
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            INSERT LAS FECHAS MENSUAL
+            let fechaMensual = moment(fechaFrecuencia).format("D")
+            let mensual = pedidos.filter(e=>{
+                return e.frecuencia=="mensual"
+            })
+            mensual = mensual.filter(e=>{
+                if((e.dia1-fechaMensual)==2) return e
+            })
+            mensual.map(e=>{
+                let data = {
+                    forma:e.forma, 
+                    cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
+                    puntoId:e.puntoId._id,
+                    pedidoPadre:e._id,
+                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+e.dia1),
+                }
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, (err2, pedido)=>{
+                })
+            })
+
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            INSERT LAS FECHAS QUINCENAL
+            let quincenal = pedidos.filter(e=>{
+                return e.frecuencia=="quincenal"
+            })
+            let fechaQuincenal = moment(fechaFrecuencia).format("D")
+            
+            quincenal = quincenal.filter(e=>{
+                if((e.dia1-fechaQuincenal)==2 || (e.dia2-fechaQuincenal)==2 ) return e
+            })
+            quincenal.map(e=>{
+                let data = {
+                    forma:e.forma, 
+                    cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
+                    puntoId:e.puntoId._id,
+                    pedidoPadre:e._id,
+                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal)+2)),
+                }
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, (err2, pedido)=>{
+                })
+            })
+
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            INSERT LAS FECHAS SEMANALES
+            let fechaSemanal = moment(fechaFrecuencia).lang("es").format("dddd")
+            fechaSemanal = fechaSemanal=="lunes"     ?1 
+                           :fechaSemanal=="martes"   ?2
+                           :fechaSemanal=="miercoles"?3
+                           :fechaSemanal=="jueves"   ?4
+                           :fechaSemanal=="viernes"  ?5
+                           :fechaSemanal=="sabado"   ?6
+                           :7
+            let semanal = pedidos.filter(e=>{
+                return e.frecuencia=="semanal"
+            })
+            semanal = semanal.filter(e=>{
+                let dia = e.dia1=="lunes"   ?1 
+                        :e.dia1=="martes"   ?2
+                        :e.dia1=="miercoles"?3
+                        :e.dia1=="jueves"   ?4
+                        :e.dia1=="viernes"  ?5
+                        :e.dia1=="sabado"   ?6
+                        :7
+                if((dia-fechaSemanal)==2) return e
+            })
+            semanal.map(e=>{
+                let data = {
+                    forma:e.forma, 
+                    cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
+                    puntoId:e.puntoId._id,
+                    pedidoPadre:e._id,
+                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal)+2)),
+                }
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, (err2, pedido)=>{
+                })
+            })
+
+            let mensajeJson={
+                badge:mensual.length+quincenal.length+semanal.length
+            }
+            cliente.publish('pedido', JSON.stringify(mensajeJson)) 
+            
+            let titulo = `<font size="5">Hoy se han creado los siguientes pedidos</font>`
+            let text1  = `Frecuencia Mensual: ${mensual.length}<br/>Frecuencia Quincenal: ${quincenal.length}<br/>Frecuencia Semanal: ${semanal.length}<br/>`
+            let text2  = `Total pedidos Dia:  ${mensajeJson.badge}` 
+            let asunto = "Nuevos pedidos por frecuencia"
+            let user   = {email:"fernandooj@ymail.com, gestioncalidad@codegascolombia.com"} 
+            htmlTemplate(req, user, titulo, text1, text2,  asunto)
+
+            enviaNotificacion(res, "admin", "Nuevos pedidos Frecuencia", `total ${mensajeJson.badge} `)
+        }else{
+            res.json({ status:false, messagess: err }); 
+        }
+    })
+})
+
 module.exports = router;

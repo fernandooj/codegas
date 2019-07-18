@@ -21,6 +21,7 @@ const Pedido = new Schema({
     valor_unitario:String,
     orden         :Number,
     orden_cerrado :Number,
+    pedidoPadre   :{type: Schema.ObjectId, ref:'Pedido'},
     puntoId       :{type: Schema.ObjectId, ref:'Punto'},
     conductorId   :{type: Schema.ObjectId, ref:'User'},
 	carroId       :{type: Schema.ObjectId, ref:'Carro'},
@@ -49,8 +50,11 @@ module.exports = mongoose.model('Pedido', Pedido)
 // lleno
 
 ///////////////////////////     ORDEN   ///////////////////
-//orden es el numero de orden para la entrega
+//orden es el numero de orden para la entrega de los pedidos por parte de los conductores por cada dia
 
 
 ///////////////////////////     ORDEN ENTREGADO   ///////////////////
 // orden_cerrado ES EL ORDEN EN EL QUE SE VAN TERMINANDO LOS PEDIDOS
+
+///////////////////////////     ORDEN ENTREGADO   ///////////////////
+// pedidoPadre, cuando el pedido se crea a partir de frecuencia, le guardo el pedido padre

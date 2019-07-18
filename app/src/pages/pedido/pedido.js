@@ -105,7 +105,7 @@ class Pedido extends Component{
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>Dirección</Text>
-                        <Text style={style.textPedido}>{e.puntoId.direccion}</Text>
+                        <Text style={style.textPedido}>{e.puntoId ?e.puntoId.direccion :"Sin dirección"}</Text>
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>CODT</Text>

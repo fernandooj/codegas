@@ -9,19 +9,19 @@ class userServices {
 	}
 	getEmail(user, callback){
 		let email = user.email.toLowerCase()
-		User.findOne({'email':email}).populate('categoria').exec(callback)
+		User.findOne({'email':email}).exec(callback)
 	}
 	getByAcceso(acceso, callback){
-		User.find({'acceso':acceso, activo:true}).populate('categoria').exec(callback)
+		User.find({'acceso':acceso, activo:true}).exec(callback)
 	}
 	sinVehiculo(acceso, callback){
-		User.find({'acceso':acceso, activo:true}).populate('categoria').exec(callback)
+		User.find({'acceso':acceso, activo:true}).exec(callback)
 	}
 	getAdminSolucion(callback){
 		User.find({ $or: [ {acceso: "admin"}, {acceso: "solucion"}]}).exec(callback)
 	}
 	getById(_id, callback){
-		User.findOne({_id}).populate('categoria').exec(callback)
+		User.findOne({_id}).exec(callback)
 	}
 	create(user, token, idPadre, callback){ 
 		console.log(user)

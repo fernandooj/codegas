@@ -92,7 +92,7 @@ app.use(allowCrossDomain);
 
 // variables que guardan la sesion
 app.use(cookieSession({ 
-  name: 'ipuc',
+  name: 'codegas',
   keys: ['key1', 'key2'],
 })); /// session secret
 

@@ -211,10 +211,10 @@ module.exports = function(app, passport){
     */
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/perfil', function(req, res){
+        console.log(req.session)
         if(req.session.usuario){
             const {usuario} = req.session
             puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
-               
                 let nUbicaciones = ubicaciones.map(e=>{
                     let data = e.data[0] 
                     if(data.idCliente==usuario._id){
@@ -266,6 +266,73 @@ module.exports = function(app, passport){
         }else{
             res.json({status:false, user: 'SIN SESION' }) 
         }    
+    })
+
+    ///////////////////////////////////////////////////////////////////////////
+    /*
+    si el login es exitoso
+    */
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/user/perfil/:idUser', function(req, res){
+	    userServices.getById(req.params.idUser, (err, usuario)=>{
+            if(err){
+                res.json({ status: false, err });	
+                console.log(err)
+            }else{
+                req.session.usuario=usuario
+                puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
+                    let nUbicaciones = ubicaciones.map(e=>{
+                        let data = e.data[0] 
+                        if(data.idCliente==usuario._id){
+                            return {
+                                direccion: data.direccion,
+                                email: undefined,
+                                idCliente: undefined,
+                                idZona: data.idZona,
+                                nombre: undefined,
+                                nombreZona: data.nombreZona,
+                                observacion: data.observacion,
+                                _id: data._id
+                            }
+                        }else{
+                            return {
+                                direccion: data.direccion,
+                                email: data.email,
+                                idCliente: data.idCliente,
+                                idZona: data.idZona,
+                                nombre: data.nombre,
+                                nombreZona: data.nombreZona,
+                                observacion: data.observacion,
+                                _id: data._id
+                            }
+                        }
+                    })  
+                    if (!err2) {
+                        let user = {
+                            _id:          usuario._id, 
+                            razon_social: usuario.razon_social,
+                            cedula:       usuario.cedula, 
+                            direccion:    usuario.direccion, 
+                            email:        usuario.email, 
+                            nombre:       usuario.nombre,
+                            celular:      usuario.celular,
+                            tipo:         usuario.tipo, 
+                            acceso:       usuario.acceso, 
+                            avatar:       usuario.avatar, 
+                            ubicaciones:  nUbicaciones
+                        }
+                        res.json({status:true, user})
+                    }else{
+                        res.json({ status: false, err2 });
+                        console.log(err2)	    
+                    }
+                })
+            }
+        })
+
+        
+
+       
     })
 
     ///////////////////////////////////////////////////////////////////////////
@@ -417,7 +484,7 @@ module.exports = function(app, passport){
         })
     })
     ///////////////////////////////////////////////////////////////////////////
-    //////////////////      lista usuario ADMIN Y SOLUCION
+    //////////////////      TOMATELA TE DIGO
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/by/asefsfxf323-dxc/:kldfjlxkfe', (req,res)=>{
         if(req.session.usuario){

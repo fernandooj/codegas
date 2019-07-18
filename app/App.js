@@ -23,20 +23,54 @@ export const VERSION = "1.0.0"
 axios.defaults.baseURL = URL+"/x/v1";
 
 
-
+// ObjectId("5d27b3d4f41a5b0ae138fce5")
+// $2a$08$7az00WD.kLveUJY5oOG2/eaej1ECcAbGNOizh76PcVtD.d59Y8hbW
+// $2a$08$59l1I05Hvd5J2qcNrCxQPefVVyOGRR8Sd4FKj8HrvzW8Hn/Zs8KOa
 //////////////////////////////////////////////////////////////////////////////////////////
 //////  CREO EL COMPONENTE 
 //////////////////////////////////////////////////////////////////////////////////////////
 export default class App extends Component<{}> {
-
-  componentWillMount(){
-    console.log("fer")
-    // FCM.getFCMToken().then(tokenPhone => {
-    //   // console.log("TOKEN (getFCMToken)", tokenPhone);
-    //   AsyncStorage.setItem('tokenPhone', tokenPhone || "123456")
-    //   this.setState({ tokenPhone: tokenPhone || "" });
-    // });
-
+  /// esto lo hago por que no mantiene la sesion, entonces dejo guardado el id y luego le inicio sesion
+  async componentWillMount(){
+    let userId = await AsyncStorage.getItem('userId');
+    if (userId===null || userId==='0') {
+      axios.get('user/perfil/')
+      .then((res)=>{
+        if(res.data.status){
+          AsyncStorage.setItem('userId', res.data.user._id)
+          AsyncStorage.setItem('acceso', res.data.user.acceso)
+          AsyncStorage.setItem('nombre', res.data.user.nombre)
+          AsyncStorage.setItem('email',  res.data.user.email)
+          AsyncStorage.setItem('avatar', res.data.user.avatar ?res.data.user.avatar :"null")
+        }else{
+          AsyncStorage.removeItem('userId')
+          AsyncStorage.removeItem('avatar')
+          AsyncStorage.removeItem('acceso')
+        }
+       })
+      .catch((err)=>{
+         console.log(err)
+      })
+   }else{
+      axios.get(`user/perfil/${userId}`)
+      .then((res)=>{
+        if(res.data.status){
+          AsyncStorage.setItem('userId', res.data.user._id)
+          AsyncStorage.setItem('acceso', res.data.user.acceso)
+          AsyncStorage.setItem('nombre', res.data.user.nombre)
+          AsyncStorage.setItem('email',  res.data.user.email)
+          AsyncStorage.setItem('avatar', res.data.user.avatar ?res.data.user.avatar :"null")
+        }else{
+          AsyncStorage.removeItem('userId')
+          AsyncStorage.removeItem('avatar')
+          AsyncStorage.removeItem('acceso')
+        }
+      })
+      .catch((err)=>{
+         console.log(err)
+      })
+    }
+    
     // axios.get(`user/perfil/`)
     // .then(res => {
     //   console.log(res.data.user)

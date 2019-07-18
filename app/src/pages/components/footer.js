@@ -14,7 +14,8 @@ export default class FooterComponent extends Component{
 		  badgeMessage:true,
 		  badgeCuenta:true,
 		  badgeSocketMessage:0,
-		  badgeSocketCuenta:0
+		  badgeSocketCuenta:0,
+		  badgeSocketPedido:0,
 	  }
 	}
 	componentWillMount = async () =>{
@@ -24,7 +25,9 @@ export default class FooterComponent extends Component{
 		const email 	= await AsyncStorage.getItem('email')
 		const avatar    = await AsyncStorage.getItem('avatar')
 		const acceso   	= await AsyncStorage.getItem('acceso')
-		this.setState({nombre, email, avatar, idUsuario, acceso})
+		let badgeSocketPedido   	= await AsyncStorage.getItem('badgeSocketPedido')
+		badgeSocketPedido ?badgeSocketPedido :0
+		this.setState({nombre, email, avatar, idUsuario, acceso, badgeSocketPedido:JSON.parse(badgeSocketPedido) })
 		
 		axios.get("user/perfil/").then(e=>{this.setState({status:e.data.status, user:e.data.user})})
 		this.socket = SocketIOClient(URL);
@@ -55,19 +58,23 @@ export default class FooterComponent extends Component{
 		console.log(messages)
 		this.setState({badgeSocketConversacion:1, badgeCuenta:true })
 	}
-	recivePedido(messages) {
-		console.log(messages)
-		this.setState({badgeSocketPedido:this.state.badgeSocketPedido+1, badgePedido:true })
+	async recivePedido(messages) {
+		let {badgeSocketPedido} = this.state   																						///// 1-saco el badge del state 
+		let suma = badgeSocketPedido+messages																						  ///// 2-lo sumo con los nuevos n de pedidos 
+		let badgePedido = JSON.stringify(suma)	  																				///// 3-convierto ese numero en string 
+		AsyncStorage.setItem('badgeSocketPedido', badgePedido)														///// 4- lo guardo en temporal
+		this.setState({badgeSocketPedido:badgeSocketPedido+messages, badgePedido:true })	///// 5- guardo en el state el nuevo resultado
 	}
 
 	///////////////////////////////////       redirecciono al usuario a la cuenta, pero primero elimino el badge
 	//////////////////////////////////////////////////////////////////////
-	cuenta(){
-		// this.setState({badgeCuenta:false, badgeSocketCuenta:0})
+	pedidos(){
+		this.setState({badgeCuenta:false, badgeSocketCuenta:0})
+		AsyncStorage.setItem('badgeSocketPedido', "0")
+		this.props.navigation.navigate('pedido')
 		// axios.put("/not/notificacion/budge")
 		// .then(e=>{this.props.navigation.navigate('notificacion')})
 		// .catch(e=>{console.log(e)})
-		
 	}
 	mensaje(){
 		this.setState({badgeMessage:false, badgeSocketMessage:0})
@@ -77,6 +84,7 @@ export default class FooterComponent extends Component{
 	renderFooter(){
 		const {home, titulo, navigation} = this.props
 		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, badgeSocketPedido, badgePedido, badgeSocketConversacion} = this.state
+		console.log({badgeSocketPedido, badgePedido})
 		return(
 			<View style={style.contenedorFooter}>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>
@@ -107,11 +115,11 @@ export default class FooterComponent extends Component{
 					</TouchableOpacity>
 				 
 				
-				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('pedido')}>
+				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>this.pedidos()}>
 					<Icon name="cloud-upload" style={style.icon} />
 					<Text style={style.textFooter}>Pedidos</Text>
 					{
-						badgeSocketPedido>0  && badgePedido 
+						badgeSocketPedido>0  
 						&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketPedido}</Text></View>
 					}
 				</TouchableOpacity>
