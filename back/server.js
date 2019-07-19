@@ -7,10 +7,9 @@ let app          = express();
 let bodyParser   = require('body-parser');
 let morgan       = require('morgan');
 let mongoose     = require('mongoose');
-let cookieParser = require('cookie-parser');
 let cookieSession= require('cookie-session');
 let formidable   = require('express-form-data');
-const fileUpload = require('express-fileupload');
+ 
 let fs = require('fs');
 
 // importo las rutas
@@ -22,6 +21,7 @@ let carroRutas        = require('./routes/carro.js');
 let calificacionRutas = require('./routes/calificacion.js');
 let zonaRutas         = require('./routes/zona.js');
 let puntoRutas        = require('./routes/punto.js');
+let informesRutas     = require('./routes/informes.js');
 
 let SocketIO = require('./socket.js')
 const path   = require('path');
@@ -114,7 +114,8 @@ app.use('/x/v1/nov/novedad',      novedadRutas)
 app.use('/x/v1/veh/vehiculo',     carroRutas) 
 app.use('/x/v1/cal/calificacion', calificacionRutas) 
 app.use('/x/v1/zon/zona',         zonaRutas) 
-app.use('/x/v1/pun/punto',         puntoRutas) 
+app.use('/x/v1/pun/punto',        puntoRutas) 
+app.use('/x/v1/inf/informe',      informesRutas) 
 require('./routes/user.js')(app, passport);
 
 server.listen(port)

@@ -21,6 +21,7 @@ const Pedido = new Schema({
     valor_unitario:String,
     orden         :Number,
     orden_cerrado :Number,
+    motivo_no_cierre:String,
     pedidoPadre   :{type: Schema.ObjectId, ref:'Pedido'},
     puntoId       :{type: Schema.ObjectId, ref:'Punto'},
     conductorId   :{type: Schema.ObjectId, ref:'User'},
@@ -58,3 +59,6 @@ module.exports = mongoose.model('Pedido', Pedido)
 
 ///////////////////////////     ORDEN ENTREGADO   ///////////////////
 // pedidoPadre, cuando el pedido se crea a partir de frecuencia, le guardo el pedido padre
+
+///////////////////////// motivo_no_cierre ///////////////////////////
+// SI NO LO PUDO CERRAR PONE ACA EL MOTIVO

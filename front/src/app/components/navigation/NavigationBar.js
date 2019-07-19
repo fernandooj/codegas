@@ -8,7 +8,7 @@ import { connect } from "react-redux";
  
 import style from "./NavigationBar.scss"
 import socket from '../../socket.js'
-import {URL} from "../../index"
+import axios from "axios"
 
 class NavigationBar extends PureComponent {
   constructor(props) {
@@ -37,7 +37,10 @@ class NavigationBar extends PureComponent {
    
   logout = e => {
     e.preventDefault();
-    
+    axios.get("/user/logout")
+    .then(e=>{
+      window.location.href ="/"
+    })
   };
   ///////////////////////////////////       redirecciono al usuario a la cuenta, pero primero elimino el badge
   //////////////////////////////////////////////////////////////////////
@@ -87,6 +90,11 @@ class NavigationBar extends PureComponent {
                 </Link>
               </li>
               <li>
+                <Link to="/informes">
+                  Informes
+                </Link>
+              </li>
+              <li>
                 <Link to="/ver_perfil" style={{background:"none"}}>
                   <img src={perfil.avatar} />
                 </Link>
@@ -97,7 +105,7 @@ class NavigationBar extends PureComponent {
                 </Link>
               </li>
               <li>
-                <a href="" onClick={this.logout}>
+                <a  onClick={this.logout}>
                   Salir
                 </a>
               </li>

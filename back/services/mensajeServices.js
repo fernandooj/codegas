@@ -24,6 +24,7 @@ class mensajeServices{
 	create(data, imagen, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		let creado = moment(fecha).valueOf()
+		creado 	   = moment(creado).format('YYYY-MM-DD h:mm:ss')
 		let newMensaje = new Mensaje({
 			mensaje    : data.mensaje,
 			usuarioId  : data.tipo==1 ?data.usuarioId.usuarioId :data.userId,
@@ -34,7 +35,6 @@ class mensajeServices{
 		})
 		newMensaje.save(callback)	
 	}
- 
 }
 
 module.exports = new mensajeServices();

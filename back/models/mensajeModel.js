@@ -13,7 +13,7 @@ let moment   = require('moment');
 //////////////////////////////////////////////////////////////////////////////
 let Mensaje = new Schema({
 	mensaje: String,
-	creado: Number,
+	creado: String,
 	tipo: Number,
 	imagen: String,
 	usuarioId: {type: Schema.ObjectId, ref:'User'},

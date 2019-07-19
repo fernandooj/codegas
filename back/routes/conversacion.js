@@ -104,14 +104,18 @@ router.post('/cerrar/:idConversacion', (req,res)=>{
 	if (!req.session.usuario) {
 		res.json({ status: 'FAIL', message: 'No hay un usuario logueado' }); 
 	}else{
-		conversacionServices.cerrar(req.params.idConversacion, (err2, conversacion)=>{
-			if(err2){
-				res.json({ err, status:false })
-			}else{
-				cliente.publish('cerrarConversacion', req.params.idConversacion) 
-				res.json({ status:true, conversacion })
+		conversacionServices.getById(req.params.idConversacion, (err, conversacion1)=>{
+			if(!err){
+				conversacionServices.cerrar(req.params.idConversacion, conversacion1.creado, (err2, conversacion)=>{
+					if(err2){
+						res.json({ err, status:false })
+					}else{
+						cliente.publish('cerrarConversacion', req.params.idConversacion) 
+						res.json({ status:true, conversacion })
+					}
+				})  
 			}
-		})  
+		})
 	}
 })
  

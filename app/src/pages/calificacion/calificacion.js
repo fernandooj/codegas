@@ -24,21 +24,21 @@ class Pedido extends Component{
             <View style={style.contenedorCabezera}>
                 <Text style={style.titulo}>Nos gustaria que nos dieras tu opinion en tu experiencia en la aplicación</Text>
                 <View style={style.subContenedorCabezera}>
-                    <View style={style.contenedorCalificacion}>
+                    <View style={style.contenedorCalificacion1}>
                         <TouchableOpacity onPress={()=>this.setState({calificacion:1})}  style={[style.btnCalificacion, calificacion==1 &&{backgroundColor:"#00218b"}]}>
-                            <Text style={style.textCalificacion}>1</Text>
+                            <Text style={style.textCalificacion1}>1</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({calificacion:2})}  style={[style.btnCalificacion, calificacion==2 &&{backgroundColor:"#00218b"}]}>
-                            <Text style={style.textCalificacion}>2</Text>
+                            <Text style={style.textCalificacion1}>2</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({calificacion:3})}  style={[style.btnCalificacion, calificacion==3 &&{backgroundColor:"#00218b"}]}>
-                            <Text style={style.textCalificacion}>3</Text>
+                            <Text style={style.textCalificacion1}>3</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({calificacion:4})}  style={[style.btnCalificacion, calificacion==4 &&{backgroundColor:"#00218b"}]}>
-                            <Text style={style.textCalificacion}>4</Text>
+                            <Text style={style.textCalificacion1}>4</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({calificacion:5})}  style={[style.btnCalificacion, calificacion==5 &&{backgroundColor:"#00218b"}]}>
-                            <Text style={style.textCalificacion}>5</Text>
+                            <Text style={style.textCalificacion1}>5</Text>
                         </TouchableOpacity>
                     </View>
                     <TextInput

@@ -8,7 +8,9 @@ let Schema   = mongoose.Schema;
 ////////***********     creo el esquema / ciudad        ****//////////////
 //////////////////////////////////////////////////////////////////////////////
 let Conversacion = new Schema({
-	creado: 	Number,
+	creado: 	String,
+	update: 	String,
+	duracion :  String, 
 	celular: 	String,
 	nombre: 	String,
 	email: 		String,

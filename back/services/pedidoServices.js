@@ -13,7 +13,7 @@ class pedidoServices{
 
 	}
 	get(callback){
-		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({orden: 'desc'}).exec(callback)
+		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion codt').populate("carroId").populate("puntoId").populate("conductorId").sort({orden: 'desc'}).exec(callback)
 	}
 	getByPedido(_id, callback){
 		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
@@ -166,11 +166,12 @@ class pedidoServices{
 			'orden_cerrado':orden_cerrado,
 		}}, callback);
 	}
-	novedad(_id, orden_cerrado, callback){
+	novedad(_id, orden_cerrado, motivo_no_cierre, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'entregado'		:true,
 			'estado'	   	:"noentregado",
 			'orden_cerrado':orden_cerrado,
+			'motivo_no_cierre':motivo_no_cierre,
 		}}, callback);
     }
   eliminar(_id, eliminado, callback){

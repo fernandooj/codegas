@@ -12,7 +12,7 @@ export const style = MediaQueryStyleSheet.create({
     subContenedor:{
         flex:1,
     },
-    contenedorCalificacion:{
+    contenedorCalificacion1:{
         flexDirection:"row",
         justifyContent:"center"
     },
@@ -24,13 +24,14 @@ export const style = MediaQueryStyleSheet.create({
     },
     btnCalificacion:{
         backgroundColor:"#d9e008",
+        alignItems:"center",
         borderRadius:20,
-        width:10,
+        width:36,
         paddingVertical:10,
-        paddingHorizontal:15,
+        
         marginHorizontal:7
     },
-    textCalificacion:{
+    textCalificacion1:{
         color:"#ffffff"
     },  
     inputCabezera:{

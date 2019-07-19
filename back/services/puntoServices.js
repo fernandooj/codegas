@@ -207,6 +207,56 @@ class puntoServices{
 		], callback)
 	}  
 
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////		OBTIENE EL PUNTO JUNTO CON LA UBICACION Y EL CLIENTE, ESTO PARA LA RUTA DE INFORMES
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	getUsers(callback){
+		punto.aggregate([
+			{
+				$lookup:{
+					from:"zonas",
+					localField:"idZona",
+					foreignField:"_id",
+					as:"ZonaData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$ZonaData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			{
+				$lookup:{
+					from:"users",
+					localField:"idCliente",
+					foreignField:"_id",
+					as:"UserData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$UserData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			{
+				$lookup:{
+					from:"users",
+					localField:"idCliente",
+					foreignField:"_id",
+					as:"PadreData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$PadreData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+		], callback)
+	}  
+
 	create(data, idCliente, idPadre, callback){
 		let creado = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD h:mm:ss a')
 	 

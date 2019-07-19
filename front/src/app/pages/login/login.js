@@ -87,7 +87,8 @@ class Home extends PureComponent {
         axios.post("/user/login", {email, password})
         .then(res=>{
           console.log(res.data)
-          res.data.code===2 ?noExiste() :res.data.code===0 ?datosErroneos() : window.location.href = "#/pedidos"
+          // res.data.code===2 ?noExiste() :res.data.code===0 ?datosErroneos() : window.location.href = "#/pedidos"
+          res.data.code===2 ?noExiste() :res.data.code===0 ?datosErroneos() : location.reload()
         })
         .catch(err=>{
           console.log(err)

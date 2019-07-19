@@ -10,6 +10,7 @@ let userServices       = require('./../services/userServices.js')
 let carroServices      = require('../services/carroServices.js') 
 const htmlTemplate     = require('../template-email.js')
 const notificacionPush = require('../notificacionPush.js')
+
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
 ////////////////////////////////////////////////////////////
@@ -259,7 +260,7 @@ router.post('/novedad/', (req,res)=>{
         }else{
             let orden_cerrado = pedido ?pedido.orden_cerrado+1 :1
             
-            pedidoServices.novedad(req.body._id, orden_cerrado, (err, pedido)=>{
+            pedidoServices.novedad(req.body._id, orden_cerrado, req.body.novedad, (err, pedido)=>{
                 if (!err) {
                     enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado un nuevo pedido NO exitosamente, ${req.body.novedad}`)
                 }else{
