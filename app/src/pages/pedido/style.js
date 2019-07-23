@@ -359,5 +359,31 @@ export const style = MediaQueryStyleSheet.create({
 		right:10,
 		top:-8,
 		zIndex:100
-	}
+	},
+	 /////////////////////////////////////////////////////////////////
+    ////////////////////        PICKER
+    /////////////////////////////////////////////////////////////////
+    inputIOS: {
+			borderColor:"rgba(0,0,0,.2)",
+			backgroundColor:"#ffffff",
+			color:"#000000",
+			// marginHorizontal:"6%",
+			width:"98.5%",
+			borderWidth:1,
+			height:30,
+			marginTop:5,
+			marginBottom:0,
+			borderRadius:5,
+			paddingLeft:10
+	},
+	inputAndroid: {
+			fontSize: 16,
+			paddingHorizontal: 10,
+			paddingVertical: 8,
+			borderWidth: 0.5,
+			borderColor:"rgba(0,0,0,.2)",
+			borderRadius: 8,
+			width:"98.5%",
+			paddingRight: 30, // to ensure the text is never behind the icon
+	},
 })

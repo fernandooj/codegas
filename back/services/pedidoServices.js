@@ -22,15 +22,15 @@ class pedidoServices{
 		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByConductor(conductorId, fecha, callback){
-		// fechaEntrega = 	fechaEntrega!="undefined" ?moment().format("YYYY-MM-DD") :fechaEntrega
-		let fechaEntrega = fecha==="undefined" ?"2019-07-03" :fecha
+		let fechaEntrega = 	fecha==="undefined" ?moment().format("YYYY-MM-DD") :fecha
+		// let fechaEntrega = fecha==="undefined" ?"2019-07-03" :fecha
 		console.log({fechaEntrega, conductorId})
 		pedido.find({conductorId, fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
 	}
 	getByFechaEntrega(fechaEntrega,  callback){
 		fechaEntrega!="undefined"
 		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
-		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({orden: 'asc'}).exec(callback)
+		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)
@@ -121,6 +121,7 @@ class pedidoServices{
 					placa:'$CarroData.placa',
 					idPlaca:'$CarroData._id',
 					conductor:'$ConductorData.nombre',
+					conductorId:'$ConductorData._id',
 					cliente:'$ClienteData.nombre',
 					direccion:"$ClienteData.direccion",
 					// monto:'$PagoData.monto'
@@ -143,7 +144,7 @@ class pedidoServices{
 							idPlaca:'$idPlaca',
 						},
 			      data: { $addToSet: {info:[{_id:"$_id", placa:"$placa", activo:"$activo", eliminado:'$eliminado', forma:'$forma', cantidadKl:'$cantidadKl', cantidadPrecio:'$cantidadPrecio', estado:'$estado',
-						entregado:'$entregado', eliminado:'$eliminado', fechaEntrega:'$fechaEntrega', conductor:'$conductor', cliente:'$cliente', orden:'$orden', orden_cerrado:'$orden_cerrado', direccion:'$direccion'}]}
+						entregado:'$entregado', eliminado:'$eliminado', fechaEntrega:'$fechaEntrega', conductor:'$conductor', cliente:'$cliente', orden:'$orden', orden_cerrado:'$orden_cerrado', direccion:'$direccion', conductorId:"$conductorId"}]}
                     },
 			    }
 			},
@@ -156,12 +157,13 @@ class pedidoServices{
 		}}, callback);
   }
   finalizar(data, activo, imagen, orden_cerrado, callback){
-		console.log({orden_cerrado})
+		 
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
 			'factura'  		:data.factura,
 			'valor_unitario':data.valor_unitario,
+			'forma_pago':data.forma_pago,
 			'imagen':imagen,
 			'orden_cerrado':orden_cerrado,
 		}}, callback);

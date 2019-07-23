@@ -23,9 +23,9 @@ export const style = MediaQueryStyleSheet.create({
 	subContenedorFooter:{
 		width:"25.0%"
 	},
-	// subContenedorFooter2:{
-	// 	width:"24.5%"
-	// },
+	subContenedorFooterConductor:{
+		width:"50.5%"
+	},
 	icon:{
 		color:"#ffffff",
 		textAlign:"center",

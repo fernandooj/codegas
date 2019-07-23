@@ -8,6 +8,7 @@ import 'antd/dist/antd.css';
 import axios from "axios";
 import { connect }     from "react-redux";
 import moment 			   from 'moment-timezone'
+import SocketIOClient      from 'socket.io-client';
 import List from "./scrollPedidos" 
 import {getPedidos, getVehiculosConPedidos, getZonasPedidos}  from '../../redux/actions/pedidoActions' 
 moment.locale('es');
@@ -28,8 +29,6 @@ class Pedidos extends PureComponent {
       vehiculosPedido:null,
       zonaPedidos:[],
       zonaPedidosSolicitud:[],
-      // fechaInicial : moment().format("YYYY,MM,DD"),               //// obtengo la fecha inicial que es el dia actual
-      // fechaFinal : moment().add(5, 'days').format("YYYY,MM,DD")   //// obtengo la fecha final, que es dentro de 5 dias
     }
   }
   componentWillMount(){
@@ -39,7 +38,9 @@ class Pedidos extends PureComponent {
   
     fechaInicial = fechaInicial.split(",")
     fechaInicial = fechaInicial.join("-")
-    // fechaInicial = moment(fechaInicial).valueOf()
+    
+    this.socket = SocketIOClient(window.location.origin);
+    this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this, fechaInicial));
     
     this.props.getPedidos()
     this.props.getVehiculosConPedidos(fechaInicial)
@@ -50,6 +51,10 @@ class Pedidos extends PureComponent {
         this.setState({zonaPedidosSolicitud:res.data.zona})
     })
 
+  }
+  reciveMensanje(fechaInicial) {
+    console.log({fechaInicial})
+    this.props.getVehiculosConPedidos(fechaInicial)
   }
   componentWillReceiveProps(props){
     this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos, vehiculosPedido:props.vehiculosPedido})   
@@ -136,7 +141,7 @@ class Pedidos extends PureComponent {
           <div className={style.filaPedido}>
             {e.data.length>0 ?<List pedidos={e.data} ordenPedidos={(ordenPedidos)=>this.setState({ordenPedidos})} /> :<Spin indicator={antIcon} size="large"/>	}
           </div>
-          <div className={style.btnGuardar} onClick={()=>this.guardarOrden(ordenPedidos ?ordenPedidos :e.data, e._id.idPlaca)}>
+          <div className={style.btnGuardar} onClick={()=>this.guardarOrden(ordenPedidos ?ordenPedidos :e.data, e._id.idPlaca, e.data[0].info[0].conductorId)}>
           <i className="fa fa-floppy-o" aria-hidden="true"></i>
           </div>
         </div>
@@ -200,7 +205,7 @@ class Pedidos extends PureComponent {
       </div>
     );
   }
-  guardarOrden(ordenPedidos, carroId){
+  guardarOrden(ordenPedidos, carroId, conductorId){
     const openNotificationWithIcon = type => {
       notification[type]({
         message: 'orden de Pedido editado',
@@ -210,7 +215,7 @@ class Pedidos extends PureComponent {
       });
     };
     console.log({ordenPedidos})
-    axios.put("ped/pedido/editarOrden",{pedidos: ordenPedidos})
+    axios.put("ped/pedido/editarOrden",{pedidos: ordenPedidos, conductorId})
     .then(e=>{
       console.log(e.data)
       e.data.status ?openNotificationWithIcon('success') :alert("Tenemos un problema intenta nuevamente")

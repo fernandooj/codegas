@@ -37,9 +37,10 @@ export default class FooterComponent extends Component{
 				// console.log("userId")
 				// console.log(userId)
 				this.socket.on(`badgeMensaje${userId}`, 	this.reciveMensanje.bind(this));
+				this.socket.on(`PedidoConductor${userId}`,this.recivePedidoConductor.bind(this));
 				if(acceso=="admin" || acceso=="solucion"){
-					this.socket.on(`badgeConversacion`, 	this.reciveMensanjeConversacion.bind(this));
-					this.socket.on(`pedido`, 					    this.recivePedido.bind(this));
+					this.socket.on(`badgeConversacion`, this.reciveMensanjeConversacion.bind(this));
+					this.socket.on(`pedido`, 					  this.recivePedido.bind(this));
 				}
 			}
 		} catch(e) {
@@ -47,7 +48,7 @@ export default class FooterComponent extends Component{
 		}
 	}
 	reciveMensanje(messages) {
-		console.log("messages")
+		
 		this.setState({badgeSocketMessage:this.state.badgeSocketMessage+1, badgeMessage:true })
 	}
 	reciveMensanjeCuenta(messages) {
@@ -55,10 +56,17 @@ export default class FooterComponent extends Component{
 		this.setState({badgeSocketCuenta:this.state.badgeSocketCuenta+1, badgeCuenta:true })
 	}
 	reciveMensanjeConversacion(messages) {
-		console.log(messages)
 		this.setState({badgeSocketConversacion:1, badgeCuenta:true })
 	}
 	async recivePedido(messages) {
+		let {badgeSocketPedido} = this.state   																						///// 1-saco el badge del state 
+		let suma = badgeSocketPedido+messages																						  ///// 2-lo sumo con los nuevos n de pedidos 
+		let badgePedido = JSON.stringify(suma)	  																				///// 3-convierto ese numero en string 
+		AsyncStorage.setItem('badgeSocketPedido', badgePedido)														///// 4- lo guardo en temporal
+		this.setState({badgeSocketPedido:badgeSocketPedido+messages, badgePedido:true })	///// 5- guardo en el state el nuevo resultado
+	}
+	async recivePedidoConductor(messages) {
+		console.log({messages})
 		let {badgeSocketPedido} = this.state   																						///// 1-saco el badge del state 
 		let suma = badgeSocketPedido+messages																						  ///// 2-lo sumo con los nuevos n de pedidos 
 		let badgePedido = JSON.stringify(suma)	  																				///// 3-convierto ese numero en string 
@@ -83,8 +91,9 @@ export default class FooterComponent extends Component{
 
 	renderFooter(){
 		const {home, titulo, navigation} = this.props
-		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, badgeSocketPedido, badgePedido, badgeSocketConversacion} = this.state
-		console.log({badgeSocketPedido, badgePedido})
+		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, badgeSocketPedido, badgePedido, badgeSocketConversacion, acceso} = this.state
+		console.log(acceso=="conductor")
+		console.log({acceso})
 		return(
 			<View style={style.contenedorFooter}>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>
@@ -108,14 +117,17 @@ export default class FooterComponent extends Component{
 							&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketMessage}</Text></View>
 						}
 					</TouchableOpacity> */}
-				 
-					 <TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('nuevo_pedido')}>
-						<Icon name="plus-square" style={style.icon} />
-						<Text style={style.textFooter}>Nuevo pedido</Text>
-					</TouchableOpacity>
+				 	{
+						acceso!=="conductor"
+						&&<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('nuevo_pedido')}>
+							<Icon name="plus-square" style={style.icon} />
+							<Text style={style.textFooter}>Nuevo pedido</Text>
+						</TouchableOpacity>
+					}
+					 
 				 
 				
-				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>this.pedidos()}>
+				<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter} onPress={()=>this.pedidos()}>
 					<Icon name="cloud-upload" style={style.icon} />
 					<Text style={style.textFooter}>Pedidos</Text>
 					{

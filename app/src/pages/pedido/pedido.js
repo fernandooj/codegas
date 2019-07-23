@@ -15,7 +15,10 @@ import {getPedidos, getZonasPedidos} from '../../redux/actions/pedidoActions'
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import {sendRemoteNotification} from '../push/envioNotificacion';
 import TomarFoto           from "../components/tomarFoto";
+import RNPickerSelect      from 'react-native-picker-select';
+import SocketIOClient      from 'socket.io-client';
 import {style}             from './style'
+import {URL} from "../../../App"
 LocaleConfig.locales['es'] = {
     monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
     monthNamesShort: ['Ener.','Febr.','Marzo.','Abril.','Mayo.','Jun.','Jul.','Agos','Sept.','Oct.','Nov.','Dic.'],
@@ -39,6 +42,7 @@ class Pedido extends Component{
         kilosTexto:"",
         facturaTexto:"",
         valor_unitarioTexto:"",
+        forma_pagoTexto:"",
         novedad:"",
         fechasFiltro:["0","1"],
         pedidos:[],
@@ -61,6 +65,8 @@ class Pedido extends Component{
         } catch (error) {
             console.log(error)
         }
+        this.socket = SocketIOClient(URL);
+        this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
     }
     componentDidMount(){
         NetInfo.isConnected.addEventListener('change', this.estadoRed);
@@ -68,7 +74,9 @@ class Pedido extends Component{
     componentWillReceiveProps(props){
         this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos})   
     }    
-   
+    reciveMensanje(messages) {
+        this.props.getPedidos()
+	}
     estadoRed(estadoRed){
         // console.log(estadoRed)
     }
@@ -93,7 +101,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
                         :null                               
                     }
                 >
@@ -226,9 +234,8 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
-        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, 
-                keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido } = this.state
-        console.log(placaPedido)
+        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido } = this.state
+        console.log({forma_pagoTexto})
         return <Modal transparent visible={openModal} animationType="fade" >
                 <KeyboardListener
                     onWillShow={() => { this.setState({ keyboard: true }); }}
@@ -317,7 +324,11 @@ class Pedido extends Component{
                                             </View>
                                             <View style={style.pedido}>
                                                 <Text>Valor unitario: </Text>
-                                                <Text>{valor_unitario}</Text>
+                                                <Text>{forma_pago}</Text>
+                                            </View>
+                                            <View style={style.pedido}>
+                                                <Text>Forma de pago: </Text>
+                                                <Text>{forma_pago}</Text>
                                             </View>
                                         </View>
                                         :<View style={style.contenedorCerrarPedido}>
@@ -352,6 +363,30 @@ class Pedido extends Component{
                                                 value={valor_unitarioTexto}
                                                 style={style.inputTerminarPedido}
                                             />
+                                            <RNPickerSelect
+                                                placeholder={{
+                                                    label: 'Forma de pago',
+                                                    value: null,
+                                                    color: '#00218b',
+                                                }}
+                                                items={[
+                                                    {label: 'Contado', value: 'Contado'},
+                                                    {label: 'Credito', value: 'Credito'},
+                                                    
+                                                ]}
+                                                onValueChange={forma_pagoTexto => {this.setState({ forma_pagoTexto })}}
+                                                mode="dropdown"
+                                                style={{
+                                                    ...style,
+                                                    placeholder: {
+                                                    color: 'rgba(0,0,0,.2)',
+                                                    fontSize: 15,
+                                                    },
+                                                }}
+                                                value={forma_pagoTexto}
+                                            />  
+
+                                             
                                             <TextInput
                                                 placeholder="Novedades"
                                                 autoCapitalize = 'none'
@@ -363,10 +398,10 @@ class Pedido extends Component{
                                             />
                                             <View style={style.contenedorConductor}>
                                                 <TouchableOpacity 
-                                                    style={kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1 || !imagen
+                                                    style={kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1 || !imagen
                                                     ?style.btnDisable3 :style.btnGuardar3} 
                                                     onPress={
-                                                        kilosTexto.length<1 || facturaTexto.length<1 || valor_unitarioTexto.length<1  || novedad.length<1 || !imagen
+                                                        kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_unitarioTexto.length<1  || novedad.length<1 || !imagen
                                                         ?()=>alert("llene todos los campos")
                                                         :()=>this.cerrarPedido()
                                                     }
@@ -579,18 +614,7 @@ class Pedido extends Component{
         this.props.getPedidos() 
         this.props.getZonasPedidos(moment().format("YYYY-MM-DD")) 
     }
-    // onSelectDay(date){
-    //     const { fechasFiltro } = this.state
-    //     if (fechasFiltro.length==2 ) {
-    //         fechasFiltro.length = 0
-    //         fechasFiltro.push(date)
-    //         this.setState( { fechasFiltro } )
-    //     } else {
-    //         fechasFiltro.push(date)
-    //         this.setState( { fechasFiltro } )
-    //     }
-        
-    // }
+ 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LOS CONDUCTORES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -806,7 +830,8 @@ class Pedido extends Component{
                         setTimeout(() => {
                             alert("Pedido cerrado")
                         }, 1000);
-                        this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+                        // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+                        this.props.getPedidos()
                     })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
@@ -818,7 +843,7 @@ class Pedido extends Component{
     ////////////////////////           CERRAR PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
-        let {novedad, kilosTexto, facturaTexto, valor_unitarioTexto, id, tokenPhone, imagen, email, fechaEntrega, fechaEntregaFiltro} = this.state
+        let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_unitarioTexto, id, tokenPhone, imagen, email, fechaEntrega, fechaEntregaFiltro} = this.state
         Alert.alert(
             `Seguros desea cerrar este pedido`,
             '',
@@ -837,6 +862,7 @@ class Pedido extends Component{
             data.append('kilos', kilosTexto);
             data.append('factura', facturaTexto);
             data.append('valor_unitario', valor_unitarioTexto);
+            data.append('forma_pago', forma_pagoTexto);
             data.append('fechaEntrega', fechaEntrega);
             
             axios({
@@ -854,7 +880,7 @@ class Pedido extends Component{
                         setTimeout(() => {
                             alert("Pedido cerrado")
                         }, 1000);
-                        this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+                        this.props.getPedidos()
                     })
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)

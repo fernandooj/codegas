@@ -126,6 +126,7 @@ router.post('/', (req,res)=>{
                             badge:1
                         }
                         cliente.publish('pedido', JSON.stringify(mensajeJson)) 
+                        cliente.publish('actualizaPedidos', true) 
                         
                         res.json({ status: true, pedido });	
                     }else{
@@ -158,6 +159,12 @@ router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega', (req,res)=>{
                                 fechaHoy===req.params.fechaEntrega 
                                 ?notificacionPush(conductor.conductor.tokenPhone, "Nuevo pedido asignado", `el pedido ${req.params.pedidoId} le ha sido asignado`)
                                 :null
+                                let mensajeJson={
+                                    badge:1,
+                                    idConductor:conductor.conductor._id
+                                }
+                                cliente.publish('actualizaPedidos', true) 
+                                cliente.publish('pedidoConductor', JSON.stringify(mensajeJson)) 
                                 res.json({ status:true, pedido }); 
                             }else{
                                 res.json({ status:false, message: err }); 
@@ -179,6 +186,7 @@ router.get('/asignarFechaEntrega/:idPedido/:fecha', (req,res)=>{
 	}else{
         pedidoServices.asignarFechaEntrega(req.params.idPedido, req.params.fecha, (err, pedido)=>{
             if (!err) {
+                cliente.publish('actualizaPedidos', true) 
                 res.json({ status:true, pedido }); 
             }else{
                 res.json({ status:false, message: err }); 
@@ -277,6 +285,7 @@ const enviaNotificacion=(res, acceso, titulo, body)=>{
             usuarios.map(e=>{
                 notificacionPush(e.tokenPhone, titulo, body)
             })
+            cliente.publish('actualizaPedidos', true) 
             res.json({status:true, usuarios})
         }else{
             res.json({ status:false, usuarios:[], err}) 
@@ -314,6 +323,13 @@ router.put('/editarOrden/', (req,res)=>{
                 
             })
         })
+        let mensajeJson={
+            badge:1,
+            idConductor:req.body.conductorId
+        }
+        
+        cliente.publish('pedidoConductor', JSON.stringify(mensajeJson)) 
+        cliente.publish('actualizaPedidos', true) 
         res.json({ status:true }); 
     }
 })

@@ -22,6 +22,7 @@ const Pedido = new Schema({
     orden         :Number,
     orden_cerrado :Number,
     motivo_no_cierre:String,
+    forma_pago:String,
     pedidoPadre   :{type: Schema.ObjectId, ref:'Pedido'},
     puntoId       :{type: Schema.ObjectId, ref:'Punto'},
     conductorId   :{type: Schema.ObjectId, ref:'User'},

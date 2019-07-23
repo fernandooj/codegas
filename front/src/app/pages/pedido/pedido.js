@@ -5,9 +5,10 @@ import React, { PureComponent } from "react";
 import style from "./style.scss"
 import { Table, Modal, Button, Avatar, notification, DatePicker } from 'antd'; 
 import 'antd/dist/antd.css';
-import locale from 'antd/lib/date-picker/locale/es_ES';
-import axios from "axios";
-import moment 			   from 'moment-timezone'
+import locale              from 'antd/lib/date-picker/locale/es_ES';
+import axios               from "axios";
+import moment 			       from 'moment-timezone'
+import SocketIOClient      from 'socket.io-client';
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import { connect }         from "react-redux";
@@ -26,10 +27,16 @@ class Home extends PureComponent {
   componentWillMount(){
     this.props.getPedidos()
     this.props.getVehiculos()
+    this.socket = SocketIOClient(window.location.origin);
+    this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
   }
   componentWillReceiveProps(props){
     console.log(props.pedidos)
     this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})
+  }
+  reciveMensanje(messages) {
+    this.props.getPedidos()
+    this.props.getVehiculos()
   }
   renderBotones(){
     return(
