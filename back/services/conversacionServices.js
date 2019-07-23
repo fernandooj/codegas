@@ -53,6 +53,11 @@ class mensajeServices{
 			'update':update,
 		}}, callback);
 	}
+	actualizaBagde(_id, badge, callback){
+		Conversacion.findByIdAndUpdate(_id, {$set: {
+			'badge':badge,
+		}}, callback);
+	}
 }
 
 module.exports = new mensajeServices();

@@ -92,8 +92,7 @@ export default class FooterComponent extends Component{
 	renderFooter(){
 		const {home, titulo, navigation} = this.props
 		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, badgeSocketPedido, badgePedido, badgeSocketConversacion, acceso} = this.state
-		console.log(acceso=="conductor")
-		console.log({acceso})
+		 
 		return(
 			<View style={style.contenedorFooter}>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>

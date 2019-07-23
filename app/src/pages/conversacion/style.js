@@ -46,5 +46,23 @@ export const style = MediaQueryStyleSheet.create({
     },
     iconRight:{
         fontSize:20
-    }
+    },
+    /////////   BADGE
+    badge:{
+		backgroundColor:"red",
+		position:"absolute",
+		bottom:15,
+		left:20,
+		width:20,
+		height:20,
+		textAlign:"center",
+		justifyContent:"center",
+		borderRadius:10,
+		padding:0
+	},
+	textBadge:{
+		textAlign:"center",
+		color:"#ffffff",
+		fontSize:12
+	},
 })

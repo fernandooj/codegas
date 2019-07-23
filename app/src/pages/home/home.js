@@ -3,6 +3,7 @@ import {View, Text, TouchableOpacity, Platform, Dimensions, Modal, TextInput} fr
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-fa-icons';
 import FCM, { NotificationActionType } from "react-native-fcm";
+import moment 			       from 'moment-timezone'
 import { registerAppListener } from "../push/Listeners";
 import Footer   from '../components/footer'
 import { connect } from "react-redux";
@@ -149,6 +150,15 @@ class Home extends Component{
 	renderFormulario(){
 		const {navigation} = this.props
 		const {modal, email, nombre, celular} = this.state
+		let dia = moment().format('dddd');
+		var today = new Date().getHours();
+		let horaLaboral;
+		if (today >= 8 && today <= 17) {
+			horaLaboral=true
+		} else {
+			horaLaboral=false
+		}
+	 
 		return(
 			<Modal transparent visible={modal} animationType="fade" >
 				<TouchableOpacity activeOpacity={1}>   
@@ -159,31 +169,38 @@ class Home extends Component{
 									</TouchableOpacity>
 									<Text style={style.tituloModal}>Bienvenido a nuestro chat </Text>
 									<Text>Horario de atención es lunes a viernes 8:00AM - 5:00PM. </Text>
-									<Text>Ingresa tus datos para iniciar </Text>
-									<TextInput
-										value={nombre}
-										onChangeText={nombre => this.setState({ nombre })}
-										style={style.input}
-										placeholder='Nombre' 
-									/>
-									<TextInput
-										value={email}
-										onChangeText={email => this.setState({ email })}
-										style={style.input}
-										placeholder='Email' 
-										keyboardType="email-address"
-									/>
-									<TextInput
-										value={celular}
-										onChangeText={celular => this.setState({ celular })}
-										style={style.input}
-										placeholder='celular' 
-										keyboardType="numeric"
-									/>
-									<TouchableOpacity style={nombre.length<3 || celular.length<2 || email.length<2 ?style.btnGuardarDisable :style.btnGuardar} 
-										onPress={()=>nombre.length<3 || celular.length<2 || email.length<2 ?alert("todos los campos son obligatorios") :this.redireccionarConversacion()}>
-											<Text style={style.textGuardar}>Iniciar</Text>
-									</TouchableOpacity>
+									{
+										(dia=="Saturday" || dia=="Sunday") || !horaLaboral
+										?null
+										:<View>
+										<Text>Ingresa tus datos para iniciar </Text>
+										<TextInput
+											value={nombre}
+											onChangeText={nombre => this.setState({ nombre })}
+											style={style.input}
+											placeholder='Nombre' 
+										/>
+										<TextInput
+											value={email}
+											onChangeText={email => this.setState({ email })}
+											style={style.input}
+											placeholder='Email' 
+											keyboardType="email-address"
+										/>
+										<TextInput
+											value={celular}
+											onChangeText={celular => this.setState({ celular })}
+											style={style.input}
+											placeholder='celular' 
+											keyboardType="numeric"
+										/>
+										<TouchableOpacity style={nombre.length<3 || celular.length<2 || email.length<2 ?style.btnGuardarDisable :style.btnGuardar} 
+											onPress={()=>nombre.length<3 || celular.length<2 || email.length<2 ?alert("todos los campos son obligatorios") :this.redireccionarConversacion()}>
+												<Text style={style.textGuardar}>Iniciar</Text>
+										</TouchableOpacity>
+									</View>
+									}
+									
 								</View>
 						</View>
 				</TouchableOpacity>
@@ -210,8 +227,10 @@ class Home extends Component{
 		const {navigation} = this.props
 		const {email, nombre, celular, acceso, tokenPhone} = this.state
 		this.setState({modal:false})
+		let minuto = moment().format('mm');
 		navigation.navigate("conversacion", {tokenPhone, acceso, nombre, email, celular})
 		AsyncStorage.setItem('formularioChat', "true")
+		AsyncStorage.setItem('minutoInicio',   minuto)
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////		CREA LA CONVERSACION, ESTO SOLO LO HACE EL ADMIN O SOLUCION,

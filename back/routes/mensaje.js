@@ -71,31 +71,36 @@ router.post('/', function(req,res){
 				if (err2) {
 					res.json({ status: 'FAIL', message: err }); 
 				}else{
-					
-					//////// envio el badge
-					let data={username:req.body.email}
-						
-					// userServices.getEmail(data, (err3, users)=>{
-					// 	if(!err3){
-						// 		cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
-						// 		res.json({ status: 'SUCCESS', conversacion });	
-						// 	}
-						// })
-						// cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
-					if(req.body.tipo==2){
-						req.body["imagen"] = ruta
-						req.body["usuarioId"] = {
-							usuarioId:req.body.userId,
-							tokenPhone:req.body.tokenPhone,
+					let badge = conversacion.badge ?conversacion.badge :0
+					badge = badge+1;
+					conversacionServices.actualizaBagde(req.body.conversacionId, badge, (err3, conversacion2)=>{
+						if(!err3){
+							//////// envio el badge
+							let data={username:req.body.email}
+								
+							// userServices.getEmail(data, (err3, users)=>{
+							// 	if(!err3){
+								// 		cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
+								// 		res.json({ status: 'SUCCESS', conversacion });	
+								// 	}
+								// })
+								// cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
+							if(req.body.tipo==2){
+								req.body["imagen"] = ruta
+								req.body["usuarioId"] = {
+									usuarioId:req.body.userId,
+									tokenPhone:req.body.tokenPhone,
+								}
+							}
+							let mensajeJson={
+								userId:req.body.userId2, 
+								badge:1
+							}
+							cliente.publish('chatConversacion', JSON.stringify(req.body)) 
+							cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
+							res.json({ status: 'SUCCESS', conversacion });	
 						}
-					}
-					let mensajeJson={
-						userId:req.body.userId2, 
-						badge:1
-					}
-					cliente.publish('chatConversacion', JSON.stringify(req.body)) 
-					cliente.publish('badgeMensaje', JSON.stringify(mensajeJson)) 
-					res.json({ status: 'SUCCESS', conversacion });	
+					})
 				}
 			})
 		}

@@ -36,9 +36,8 @@ class Conversacion extends Component{
 			tokenPhone = JSON.parse(tokenPhone)
 			idUsuario = idUsuario ?idUsuario :123
 			this.setState({idUsuario, acceso, tokenPhone})
-			// let tokenPhone ="dSX6avjLBQo:APA91bFhrGvki63yKSSKG3up0YxaDlX9U856ZKQb-c-ZAafiV6_uwk0Mr3kE-9cmlSfQhJ_YAytBhvYlBNvqn9ZU0E3Zc7gzbbmDkPVSFxW_C1dPjfRwZft7U46hBYa3DtT_XXrVf-Zm"
-			// let  id = "5cf0a17eeb2fa0220b12e38d"
-			console.log({tokenPhone})
+			 
+			 
 			
 		} catch (error) {
 			alert(error)

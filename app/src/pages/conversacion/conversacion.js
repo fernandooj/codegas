@@ -7,9 +7,10 @@ import moment 			   from 'moment-timezone'
 import Spinner   from 'react-native-spinkit' 
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-fa-icons';
+import SocketIOClient from 'socket.io-client';
 import { getConversaciones } from "../../redux/actions/mensajeActions";
 import Footer   from '../components/footer'
- 
+import {URL} from "../../../App"
 class Mensaje extends Component{
  
 	constructor(props) {
@@ -21,24 +22,31 @@ class Mensaje extends Component{
 	  }
 	  this.conversacion = this.conversacion.bind(this)
 	}
-	 
+	componentWillMount(){
+		this.socket = SocketIOClient(URL);
+		this.socket.on(`chatConversacion`, 	 this.reciveMensanje.bind(this));
+	}
 	async componentDidMount(){
 		const {nombre, email, celular} = this.props.navigation.state.params
 		try {
-			const acceso   = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
+			const acceso       = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
 			const tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
+			const minutoInicio = await AsyncStorage.getItem('minutoInicio') //// acceso del usuario si estas logueado
+			
 			if(acceso=="admin" || acceso=="solucion"){
 				this.props.getConversaciones()
 				this.setState({showSpin:false})
 			}else{			
-				axios.get(`con/conversacion/byTokenPhone/${JSON.parse(tokenPhone)}/true/${nombre}/${email}/${celular}`)
+				//el ultimo parametro avisa si le envia la notificacion a los admin de que hay un chat entrante
+				axios.get(`con/conversacion/byTokenPhone/${JSON.parse(tokenPhone)}/true/${nombre}/${email}/${celular}/true`)
 				.then(res=>{
  
 					if(res.data.status){
 						clearInterval(this.myInterval);
 						this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})
 					}else{
-						this.myInterval = setInterval(()=>this.conversacion(), 2000)
+
+						this.myInterval = setInterval(()=>this.conversacion(minutoInicio), 2000)
 					}
 				})
 			}
@@ -47,19 +55,35 @@ class Mensaje extends Component{
 			
 		}
 	}  
-	conversacion(){
+	reciveMensanje(messages) {
+		this.props.getConversaciones()
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////// Llama al servidor cada 2 segundos, a revisar si se creo la conversacion con el tokenPhone
+	///////// parametros: minutoInicio-->minuto en el que se requirio el chat, minutoFinal-->minuto actual, si se han pasado mas de 3 minutos devuelve al usuario al home
+	conversacion(minutoInicio){
+		let minutoActual = moment().format('mm');
+		let minutoFinal  = parseInt(minutoActual) - parseInt(minutoInicio)
+		console.log({minutoInicio, minutoActual, minutoFinal})
 		const {acceso, tokenPhone, nombre, email, celular} = this.props.navigation.state.params
-		console.log({acceso, tokenPhone})		 
-		axios.get(`con/conversacion/byTokenPhone/${tokenPhone}/true/${nombre}/${email}/${celular}`)
-		.then(res=>{
-			console.log(res.data)
-			if(res.data.status){
-				clearInterval(this.myInterval);
-				this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})
-			}else{
-				
-			}
-		})
+	 
+		if(minutoFinal>=0 && minutoFinal<3){
+			axios.get(`con/conversacion/byTokenPhone/${tokenPhone}/true/${nombre}/${email}/${celular}/false`)
+			.then(res=>{
+				console.log(res.data)
+				if(res.data.status){
+					clearInterval(this.myInterval);
+					this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})
+				}else{
+					
+				}
+			})
+		}else{
+			alert("En este momento nuestros agentes estan ocupados intentalo mas tarde")
+			AsyncStorage.removeItem('formularioChat')
+			this.props.navigation.navigate("Home") 
+		}
 	}
 	componentWillUnmount(){
 		console.log(`Unmounting... clearing interval`);
@@ -80,17 +104,24 @@ class Mensaje extends Component{
 						</View>
 						<View style={style.subContenedorConversacion}>
 							<Text>Fecha Creado: </Text>
-							<Text>{moment(e.creado).format("YYYY-MM-DD h:mm a")}</Text>
+							<Text>{e.creado}</Text>
 						</View>
 					</View>
-					<TouchableOpacity style={style.btnRight} onPress={()=>this.props.navigation.navigate("mensaje",{id:e._id})}>
+					<TouchableOpacity style={style.btnRight} onPress={()=>this.actualizaBadge(e._id)}>
 						<Icon name={'chevron-right'} style={style.iconRight} />
+						{e.badge>0 &&<View style={style.badge}><Text style={style.textBadge}>{e.badge}</Text></View>}
 					</TouchableOpacity>
 				</View>
 			) 
 		})
 	} 
-	  
+	actualizaBadge(id){
+		axios.get(`con/conversacion/actualizaBadge/${id}`)
+		.then(res=>{
+			res.data.status ?this.props.navigation.navigate("mensaje",{id}) :alert("tenemos problemas tecnicos, intentalo mas tarde")
+		})
+		
+	}
 	render(){
 		const {showSpin} = this.state
 		const {navigation} = this.props
