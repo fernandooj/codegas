@@ -279,54 +279,58 @@ module.exports = function(app, passport){
                 res.json({ status: false, err });	
                 console.log(err)
             }else{
-                req.session.usuario=usuario
-                puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
-                    let nUbicaciones = ubicaciones.map(e=>{
-                        let data = e.data[0] 
-                        if(data.idCliente==usuario._id){
-                            return {
-                                direccion: data.direccion,
-                                email: undefined,
-                                idCliente: undefined,
-                                idZona: data.idZona,
-                                nombre: undefined,
-                                nombreZona: data.nombreZona,
-                                observacion: data.observacion,
-                                _id: data._id
+                if(!usuario){
+                    res.json({ status: false, err:"no existe usuario" });	
+                }else{                
+                    req.session.usuario=usuario
+                    puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
+                        let nUbicaciones = ubicaciones.map(e=>{
+                            let data = e.data[0] 
+                            if(data.idCliente==usuario._id){
+                                return {
+                                    direccion: data.direccion,
+                                    email: undefined,
+                                    idCliente: undefined,
+                                    idZona: data.idZona,
+                                    nombre: undefined,
+                                    nombreZona: data.nombreZona,
+                                    observacion: data.observacion,
+                                    _id: data._id
+                                }
+                            }else{
+                                return {
+                                    direccion: data.direccion,
+                                    email: data.email,
+                                    idCliente: data.idCliente,
+                                    idZona: data.idZona,
+                                    nombre: data.nombre,
+                                    nombreZona: data.nombreZona,
+                                    observacion: data.observacion,
+                                    _id: data._id
+                                }
                             }
+                        })  
+                        if (!err2) {
+                            let user = {
+                                _id:          usuario._id, 
+                                razon_social: usuario.razon_social,
+                                cedula:       usuario.cedula, 
+                                direccion:    usuario.direccion, 
+                                email:        usuario.email, 
+                                nombre:       usuario.nombre,
+                                celular:      usuario.celular,
+                                tipo:         usuario.tipo, 
+                                acceso:       usuario.acceso, 
+                                avatar:       usuario.avatar, 
+                                ubicaciones:  nUbicaciones
+                            }
+                            res.json({status:true, user})
                         }else{
-                            return {
-                                direccion: data.direccion,
-                                email: data.email,
-                                idCliente: data.idCliente,
-                                idZona: data.idZona,
-                                nombre: data.nombre,
-                                nombreZona: data.nombreZona,
-                                observacion: data.observacion,
-                                _id: data._id
-                            }
+                            res.json({ status: false, err2 });
+                            console.log(err2)	    
                         }
-                    })  
-                    if (!err2) {
-                        let user = {
-                            _id:          usuario._id, 
-                            razon_social: usuario.razon_social,
-                            cedula:       usuario.cedula, 
-                            direccion:    usuario.direccion, 
-                            email:        usuario.email, 
-                            nombre:       usuario.nombre,
-                            celular:      usuario.celular,
-                            tipo:         usuario.tipo, 
-                            acceso:       usuario.acceso, 
-                            avatar:       usuario.avatar, 
-                            ubicaciones:  nUbicaciones
-                        }
-                        res.json({status:true, user})
-                    }else{
-                        res.json({ status: false, err2 });
-                        console.log(err2)	    
-                    }
-                })
+                    })
+                }
             }
         })
 

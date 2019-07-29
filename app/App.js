@@ -1,5 +1,5 @@
 import React, { Component }        from 'react'
-import { YellowBox } from 'react-native'
+import { YellowBox, Text, NetInfo, StyleSheet } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios                       from 'axios' 
 import {Provider}                  from 'react-redux';
@@ -18,19 +18,23 @@ YellowBox.ignoreWarnings(['Require cycle:']);
 //////////////////////////////////////////////////////////////////////////////////////////
 //////  RUTA GENERAL DE LA URL PARA EL API
 //////////////////////////////////////////////////////////////////////////////////////////
-export const URL = 'http://104.248.181.79:8181';   //// URL WEB DEV
+export const URL = 'http://165.227.196.225';   //// URL WEB DEV
 // export const URL = 'http://192.168.0.7:8181';   //// URL local
 export const VERSION = "1.0.0"
 axios.defaults.baseURL = URL+"/x/v1";
 
 
-// ObjectId("5d27b3d4f41a5b0ae138fce5")
-// $2a$08$7az00WD.kLveUJY5oOG2/eaej1ECcAbGNOizh76PcVtD.d59Y8hbW
-// $2a$08$59l1I05Hvd5J2qcNrCxQPefVVyOGRR8Sd4FKj8HrvzW8Hn/Zs8KOa
+ 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////  CREO EL COMPONENTE 
 //////////////////////////////////////////////////////////////////////////////////////////
 export default class App extends Component<{}> {
+  constructor(){
+    super();
+    this.state={
+      connection_Status : ""
+    }
+  }
   /// esto lo hago por que no mantiene la sesion, entonces dejo guardado el id y luego le inicio sesion
   async componentWillMount(){
     let userId = await AsyncStorage.getItem('userId');
@@ -71,31 +75,37 @@ export default class App extends Component<{}> {
          console.log(err)
       })
     }
-    
-    // axios.get(`user/perfil/`)
-    // .then(res => {
-    //   console.log(res.data.user)
-    //   if(res.data.status){
-    //     AsyncStorage.setItem('userId', res.data.user._id)
-    //     AsyncStorage.setItem('acceso', res.data.user.acceso)
-    //     AsyncStorage.setItem('nombre', res.data.user.nombre)
-    //     AsyncStorage.setItem('email',  res.data.user.email)
-    //     AsyncStorage.setItem('avatar', res.data.user.avatar ?res.data.user.avatar :"null")
-    //   }else{
-    //     AsyncStorage.removeItem('userId')
-    //     AsyncStorage.removeItem('avatar')
-    //     AsyncStorage.removeItem('acceso')
-    //   }
-    // })
-    // .catch(err => {
-    //   console.log(err);
-    // });
   }
+  componentDidMount() {
+    NetInfo.isConnected.addEventListener(
+        'connectionChange',
+        this.handleConnectivityChange
+    );
+    NetInfo.isConnected.fetch().done((isConnected) => {
+      console.log({isConnected})
+      isConnected ?this.setState({connection_Status :true}) : this.setState({connection_Status :false})
+    });
+  }
+  handleConnectivityChange = (isConnected) => {
+    isConnected ?this.setState({connection_Status :true}) : this.setState({connection_Status :false})
+  };
   render(){
     return (
       <Provider store={store}>
+        {
+          !this.state.connection_Status
+          ?<Text style={style.alert}>actualmente estas Offline</Text>
+          :null
+        }
+          
           <MainRoutes />
       </Provider> 
     )
   }
 }
+
+const style = StyleSheet.create({
+  alert: {
+    color:"red"
+  }
+}); 

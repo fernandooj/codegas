@@ -472,7 +472,7 @@ class verPerfil extends Component{
     /////////////////////////////////////////////////////////////////////////
     //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
     ///////////////////////////////////////////////////////////////////////
-    handleSubmit1(){
+    handleSubmit(){
         const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones} = this.state
         console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones})
         if(acceso=="cliente"){
@@ -504,9 +504,9 @@ class verPerfil extends Component{
         }
 
     }
-    handleSubmit(e){
+    guardarUsuario(e){
         this.setState({cargando:true})
-        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones} = this.state
+        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones, imagen} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email
         })
@@ -549,7 +549,7 @@ class verPerfil extends Component{
                 }
             }else{
                 this.setState({cargando:false})
-                Toast.show("Tenemos un problema, intentalo mas tarde")
+                Toast.show("Este email ya existe")
             }
         })
         .catch(err=>{

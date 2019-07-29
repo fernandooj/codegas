@@ -15,7 +15,7 @@ class Pedido extends Component{
 	}
 	 
     componentWillMount = async () =>{
-       
+        
     }
     
     renderCalificacion(){

@@ -126,7 +126,7 @@ export const style = MediaQueryStyleSheet.create({
     ///////////				MODAL UBICACION
     //////////////////////////////////////////////////////////////////
 	modal:{
-		position:"absolute",
+		position:Platform.OS==='android' ?"relative" :"absolute",
 		backgroundColor:"#ffffff",
 		zIndex:100,
 		width:size.width,

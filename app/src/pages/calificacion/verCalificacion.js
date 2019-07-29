@@ -18,6 +18,7 @@ class verCalificacion extends Component{
     componentWillMount(){
       axios.get("cal/calificacion/")
       .then(e=>{
+          console.log(e.data)
           e.data.status ?this.setState({calificacion:e.data.calificacion}) :Toast.show("Tenemos un problema intentalo mas tarde")
       })
     }
