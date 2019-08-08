@@ -153,7 +153,8 @@ export const style = MediaQueryStyleSheet.create({
 	subContenedorModal:{
 		backgroundColor:"#e3e3e3",
 		marginHorizontal:12,
-		marginTop:40,
+        marginTop:40,
+        marginBottom:125,
 		width:"90%"
     },
     tituloModal:{

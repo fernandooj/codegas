@@ -222,7 +222,7 @@ class Home extends Component{
                         placeholder="Celular"
                         onChangeText={(celular) => this.setState({celular})}
                         value={celular}
-                        keyboardType="numeric"
+                        // keyboardType="numeric"
                     />
                     <RNPickerSelect
                         placeholder={{

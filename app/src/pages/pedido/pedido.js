@@ -748,7 +748,7 @@ class Pedido extends Component{
     asignarConductor(){
         const {placa, idVehiculo, id, fechaEntrega} = this.state
         Alert.alert(
-            `Seguros deseas agregar a ${placa}`,
+            `Seguro desea agregar a ${placa}`,
             'a este pedido',
             [
               {text: 'Confirmar', onPress: () => confirmar()},
@@ -775,8 +775,9 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     asignarFecha(){
         const {fechaEntrega, id} = this.state
-        Alert.alert(
-            `Seguros deseas asignar el dia: ${fechaEntrega}`,
+        fechaEntrega
+        ?Alert.alert(
+            `Seguro desea asignar el dia: ${fechaEntrega}`,
             'a este pedido',
             [
               {text: 'Confirmar', onPress: () => confirmar()},
@@ -784,7 +785,8 @@ class Pedido extends Component{
               {text: 'Cancelar', onPress: () => this.setState({modalConductor:false, placa:null})},
             ],
             {cancelable: false},
-        );
+        )
+        :alert("Seleccione una fecha de asignación")
         const confirmar =()=>{
             axios.get(`ped/pedido/asignarFechaEntrega/${id}/${fechaEntrega}`)
             .then((res)=>{
@@ -845,7 +847,7 @@ class Pedido extends Component{
     cerrarPedido(){
         let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_unitarioTexto, id, tokenPhone, imagen, email, fechaEntrega, fechaEntregaFiltro} = this.state
         Alert.alert(
-            `Seguros desea cerrar este pedido`,
+            `Seguro desea cerrar este pedido`,
             '',
             [
               {text: 'Confirmar', onPress: () => confirmar()},

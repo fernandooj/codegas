@@ -9,6 +9,17 @@ export default class tomarPhoto extends Component{
     state={
         imagenes:[]
     }
+    componentWillReceiveProps(props){
+        console.log(props.source)
+        if(props.source){
+            if(props.source.length>1){
+                let imagenes=[
+                    {uri:props.source}
+                ]
+                this.setState({imagenes})
+            }
+        } 
+    }
     subirImagen(){
         let {imagenes} = this.state
         const options = {
@@ -65,15 +76,19 @@ export default class tomarPhoto extends Component{
 	renderImagenes(){
         return  this.state.imagenes.map((e, key)=>{
             return(
-                <View key={key}>
+                <TouchableOpacity key={key}  onPress={()=>this.eliminarImagen(key)}>
                     <Image source={{uri:e.uri}} style={style.imagenesFotos} />
-                    <Icon name={'trash'} style={style.iconTrash} onPress={()=>this.eliminarImagen(key)}/>
-                </View>
+                    
+                        <Icon name={'trash'} style={style.iconTrash}/>
+                     
+                </TouchableOpacity>
             )
         })
     }
     eliminarImagen(keyImagen){
-        let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
+        // let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
+        let imagenes = []
+       
         this.setState({imagenes})    
         this.props.imagenes(imagenes)
     }
@@ -110,7 +125,7 @@ export default class tomarPhoto extends Component{
     render(){
         const {imagenes, showModal} = this.state
         const {tipoMensaje, avatar} = this.props
- 
+        console.log(imagenes)
         return(
             <View style={style.contenedorPortada}>
                 {
@@ -120,14 +135,15 @@ export default class tomarPhoto extends Component{
                 {
                     tipoMensaje
                     ?this.renderModal()
-                    :<TouchableOpacity style={style.contenedorUploadPortada} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
+                    :imagenes.length<1
+                    &&<TouchableOpacity style={style.contenedorUploadPortada} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
                         <Icon name={'camera'} style={style.iconPortada} />
                         <Text style={style.textPortada}> {!avatar ?"Subir Factura" :"Subir Avatar"}</Text>
                         {!avatar &&<Text style={style.textPortada2}>Sube al menos 1 imagen</Text>}
                     </TouchableOpacity>
                 }
                 {
-                    !tipoMensaje
+                    !tipoMensaje && imagenes.length>0
                     &&<View style={{flexDirection:"row"}}>
                         {this.renderImagenes()}
                     </View>

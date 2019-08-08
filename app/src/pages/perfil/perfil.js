@@ -94,7 +94,7 @@ class Home extends Component{
         const {nombre, idUsuario, avatar, email, err, acceso} = this.state
         console.log(idUsuario)
         return (
-            <View style={style.containerRegistro}>
+            <ScrollView style={style.containerRegistro}>
                 <View style={style.perfilContenedor}>
                     <View style={style.columna1}>
                         {
@@ -177,8 +177,7 @@ class Home extends Component{
                         &&<Text>{err}</Text>
                     }
                 </View>
-            </View>  
-            
+            </ScrollView>  
         )
     }
  
@@ -277,10 +276,14 @@ class Home extends Component{
         .then(res => {
             AsyncStorage.removeItem('userId')
             AsyncStorage.removeItem('acceso')
+            AsyncStorage.removeItem('nombre')
+            AsyncStorage.removeItem('email')
+            AsyncStorage.removeItem('tokenPhone')
             AsyncStorage.removeItem('avatar')
             AsyncStorage.removeItem('formularioChat')
             AsyncStorage.removeItem('usuariosEntrando')
-            this.setState({userId:null, email:"", password:"", email2:"", password2:""})
+            // this.setState({userId:null, email:"", password:"", email2:"", password2:""})
+            this.props.navigation.navigate("Home")
         })
         .catch(err => {
             console.log(err)
