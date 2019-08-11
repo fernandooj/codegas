@@ -158,7 +158,7 @@ module.exports = function(app, passport){
                 userServices.editPassword(user._id, req.body.password, (err, users)=>{
                     if(!err){
                         req.session.usuario=users
-                        res.json({status:'SUCCESS', user, code:1})
+                        res.json({status:true, user, code:1})
                     }   
                 })
             }
@@ -226,6 +226,7 @@ module.exports = function(app, passport){
                             nombre: undefined,
                             nombreZona: data.nombreZona,
                             observacion: data.observacion,
+                            activo: data.activo,
                             _id: data._id
                         }
                     }else{
@@ -237,6 +238,7 @@ module.exports = function(app, passport){
                             nombre: data.nombre,
                             nombreZona: data.nombreZona,
                             observacion: data.observacion,
+                            activo: data.activo,
                             _id: data._id
                         }
                     }
@@ -244,16 +246,18 @@ module.exports = function(app, passport){
                  
                 if (!err2) {
                     let user = {
-                        _id:          usuario._id, 
-                        razon_social: usuario.razon_social,
-                        cedula:       usuario.cedula, 
-                        direccion:    usuario.direccion, 
-                        email:        usuario.email, 
-                        nombre:       usuario.nombre,
-                        celular:      usuario.celular,
-                        tipo:         usuario.tipo, 
-                        acceso:       usuario.acceso, 
-                        avatar:       usuario.avatar, 
+                        _id:               usuario._id, 
+                        razon_social:      usuario.razon_social,
+                        cedula:            usuario.cedula, 
+                        direccion:         usuario.direccion, 
+                        email:             usuario.email, 
+                        nombre:            usuario.nombre,
+                        celular:           usuario.celular,
+                        tipo:              usuario.tipo, 
+                        acceso:            usuario.acceso, 
+                        avatar:            usuario.avatar, 
+                        codt:              usuario.codt, 
+                        direccion_factura: usuario.direccion_factura, 
                         ubicaciones:  nUbicaciones
                     }
                     res.json({status:true, user})
@@ -322,6 +326,8 @@ module.exports = function(app, passport){
                                 tipo:         usuario.tipo, 
                                 acceso:       usuario.acceso, 
                                 avatar:       usuario.avatar, 
+                                codt:              usuario.codt, 
+                                direccion_factura: usuario.direccion_factura, 
                                 ubicaciones:  nUbicaciones
                             }
                             res.json({status:true, user})
@@ -349,7 +355,7 @@ module.exports = function(app, passport){
             if (req.session.usuario.acceso=='admin') {
                 userServices.tipo(req.body, function(err, usuarios){
                     if(!err){
-                        res.json({status:'SUCCESS', usuarios})
+                        res.json({status:true, usuarios})
                     }else{
                         res.json({ status: 'FAIL', err}) 
                     }
@@ -367,22 +373,39 @@ module.exports = function(app, passport){
     modificar usuarios
     */
     ///////////////////////////////////////////////////////////////////////////
-    app.put('/x/v1/user/update', (req, res)=>{
+    app.put('/x/v1/user/update/:idUsuario', (req, res)=>{
         if(!req.session.usuario){
             res.json({ status: false, message: 'Usuario Innactivo'}) 
         } else{
-            userServices.edit(req.body, req.session.usuario._id, (err, user)=>{ 
+            userServices.edit(req.body, req.params.idUsuario, (err, user)=>{ 
                 if(!err){
-                    userServices.getEmail(user, (err2, users)=>{    
+                    userServices.getEmail(req.session.usuario, (err2, users)=>{    
                         if(!err2){
+                            //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO
                             req.session.usuario=users
-                            res.json({ status: true, user: users, message: 'Usuario Editado'});
+
+                            //////////////////////////////  SI ENVIA PASSWORD LO EDITA
+                            req.body.password ?userServices.editPassword(req.params.idUsuario, req.body.password, (err, res)=>{}) :null
+                                
+                            //////////////////////////////  SI ENVIA UBICACIONES ELIMINADAS LAS DESACTIVA
+                            req.body.ubicacionesEliminadas.length>0
+                            ?eliminarUibicaciones(req, res) :res.json({ status: true, user: users, message: 'Usuario Editado'});
+                           
                         }
                     })   
                 }
             })                 
         }
     })
+    const eliminarUibicaciones=(req, res)=>{
+        req.body.ubicacionesEliminadas.map(e=>{
+            puntoServices.desactivar(e, (err, res)=>{
+                console.log(err)
+                console.log(res)
+            })
+            res.json({ status: true,   message: 'Usuario Editado'});
+        })
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     //////////      Actualizo el Avatar 
@@ -397,11 +420,11 @@ module.exports = function(app, passport){
             let fullUrl = '../front/docs/public/uploads/avatar/'+fecha+'_'+randonNumber+'.jpg'
 
             ////////////////////    ruta que se va a guardar en la base de datos
-            let ruta = req.protocol+'://'+req.get('Host') + '/uploads/avatar/'+fecha+'_'+randonNumber+'.jpg'
+            let ruta = req.protocol+'://'+req.get('Host') + '/public/uploads/avatar/'+fecha+'_'+randonNumber+'.jpg'
 
             ///////////////////     envio la imagen al nuevo path
             fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
-            
+            console.log({ruta})
             ///////////////////    guardo la imagen
             let id = req.body.imagenOtroUsuario ?req.body.idUser :req.session.usuario._id
             userServices.avatar(id, ruta, function(err, avatar){
@@ -428,16 +451,16 @@ module.exports = function(app, passport){
             if (req.session.usuario.acceso=='admin') {
                 userServices.get((err, usuarios)=>{
                     if(!err){
-                        res.json({status:'SUCCESS', usuarios})
+                        res.json({status:true, usuarios})
                     }else{
-                        res.json({ status: 'FAIL', err}) 
+                        res.json({ status: false, err}) 
                     }
                 })
             }else{
-                res.json({ status: 'FAIL', message:'No tienes acceso'})
+                res.json({ status: false, message:'No tienes acceso'})
             }
         }else{
-            res.json({ status: 'FAIL', message:'usuario no logueado'})  
+            res.json({ status: false, message:'usuario no logueado'})  
         }
     })
     
@@ -448,7 +471,7 @@ module.exports = function(app, passport){
         if(req.session.usuario){
             userServices.getByAcceso(req.params.acceso, (err, usuarios)=>{
                 if(!err){
-                    res.json({status:'SUCCESS', usuarios})
+                    res.json({status:true, usuarios})
                 }else{
                     res.json({ status: 'FAIL', usuarios:[], err}) 
                 }
@@ -465,7 +488,7 @@ module.exports = function(app, passport){
         if(req.session.usuario){
             userServices.sinVehiculo(req.params.acceso, (err, usuarios)=>{
                 if(!err){
-                    res.json({status:'SUCCESS', usuarios})
+                    res.json({status:true, usuarios})
                 }else{
                     res.json({ status: 'FAIL', usuarios:[], err}) 
                 }
@@ -481,12 +504,106 @@ module.exports = function(app, passport){
     app.get('/x/v1/users/by/adminsolucion', (req,res)=>{
         userServices.getAdminSolucion((err, usuarios)=>{
             if(!err){  
-                res.json({status:'SUCCESS', usuarios})
+                res.json({status:true, usuarios})
             }else{
                 res.json({ status: 'FAIL', usuarios:[], err}) 
             }
         })
     })
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////      TRAE SOLO UN USUARIO
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/user/byId/:idUsuario', (req,res)=>{
+        if(req.session.usuario){
+            if (req.session.usuario.acceso=='admin') {
+                userServices.getById(req.params.idUsuario, (err, usuario)=>{
+                    puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
+                        let nUbicaciones = ubicaciones.map(e=>{
+                            let data = e.data[0] 
+                            if(data.idCliente==usuario._id){
+                                return {
+                                    direccion: data.direccion,
+                                    email: undefined,
+                                    idCliente: undefined,
+                                    idZona: data.idZona,
+                                    nombre: undefined,
+                                    nombreZona: data.nombreZona,
+                                    observacion: data.observacion,
+                                    _id: data._id
+                                }
+                            }else{
+                                return {
+                                    direccion: data.direccion,
+                                    email: data.email,
+                                    idCliente: data.idCliente,
+                                    idZona: data.idZona,
+                                    nombre: data.nombre,
+                                    nombreZona: data.nombreZona,
+                                    observacion: data.observacion,
+                                    _id: data._id
+                                }
+                            }
+                        })  
+                        if (!err2) {
+                            let user = {
+                                _id:          usuario._id, 
+                                razon_social: usuario.razon_social,
+                                cedula:       usuario.cedula, 
+                                direccion:    usuario.direccion, 
+                                email:        usuario.email, 
+                                nombre:       usuario.nombre,
+                                celular:      usuario.celular,
+                                tipo:         usuario.tipo, 
+                                activo:       usuario.activo, 
+                                codt:         usuario.codt, 
+                                direccion_factura:usuario.direccion_factura, 
+                                acceso:       usuario.acceso, 
+                                avatar:       usuario.avatar, 
+                                ubicaciones:  nUbicaciones
+                            }
+                            res.json({status:true, user})
+                        }else{
+                            res.json({ status: false, err2 });
+                            console.log(err2)	    
+                        }
+                    })
+                })
+            }else{
+                res.json({ status: false, message:'No tienes acceso'})
+            }
+        }else{
+            res.json({ status: false, message:'usuario no logueado'})  
+        }
+    })
+
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////      CAMBIA ESTADO USUARIO
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/cambiarEstado/:idUsuario/:estado', (req,res)=>{
+        const {idUsuario, estado} = req.params
+        console.log({idUsuario, estado})
+        userServices.estadoUsuario(idUsuario, estado, (err, usuarios)=>{
+            if(!err){  
+                res.json({status:true, usuarios})
+            }else{
+                res.json({ status: false,  err}) 
+            }
+        })
+    })
+
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////     ELIMINA USUARIO
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/eliminar/:idUsuario', (req,res)=>{
+        userServices.eliminarUsuario(req.params.idUsuario, (err, usuarios)=>{
+            if(!err){  
+                res.json({status:true, usuarios})
+            }else{
+                res.json({ status: false, err}) 
+            }
+        })
+    })
+
     ///////////////////////////////////////////////////////////////////////////
     //////////////////      TOMATELA TE DIGO
     ///////////////////////////////////////////////////////////////////////////

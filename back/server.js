@@ -29,7 +29,7 @@ const path   = require('path');
 let https = require('http')
 var options = {
   // cert: fs.readFileSync('/home/certificados/bundle.crt', 'utf8'),
-  // key: fs.readFileSync('/home/certificados/releo.co.pem', 'utf8')
+  // key: fs.readFileSync('/home/certificados/appcodegas.com.pem', 'utf8')
 };
 let server = https.Server(options, app)
 SocketIO(server)

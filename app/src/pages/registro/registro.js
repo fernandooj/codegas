@@ -144,6 +144,12 @@ class Home extends Component{
                                                         onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
                                                         style={style.inputUbicacion}
                                                     />
+                                                     {
+                                                        key>0
+                                                        &&<TouchableOpacity style={style.btnEliminar} onPress={()=>this.eliminarUbicacion(key)}>
+                                                            <Icon name={'trash'} style={style.iconEliminar} />
+                                                        </TouchableOpacity>
+                                                    }
                                                     <Text style={style.separador}></Text>
                                                 </View>
                                             )
@@ -155,7 +161,7 @@ class Home extends Component{
                                         <Icon name={'plus'} style={style.iconAdd} />
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.setState({modalUbicacion:false})}>
+                                <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.guardarUbicacion() }>
                                     <Text style={style.textGuardar}>Guardar</Text>
                                 </TouchableOpacity>
                             </ScrollView>
@@ -165,6 +171,35 @@ class Home extends Component{
             </Modal>
         )
     }
+    guardarUbicacion(){
+        let {ubicaciones} = this.state
+        ubicaciones = ubicaciones.filter((e, index)=>{
+            return e.direccion!=undefined
+        })
+        ubicaciones = ubicaciones.filter((e, index)=>{
+            return e.direccion!="" 
+        })
+        const isEmpty = Object.values(ubicaciones).every(x => {
+            if(!x.idZona){ 
+              return false
+            }else{
+              return true
+            }
+          })
+        console.log(isEmpty)
+        console.log(ubicaciones)
+        !isEmpty ?alert("Zonas son obligatorios") :this.setState({ubicaciones, modalUbicacion:false})
+    }
+    eliminarUbicacion(key){
+        let {ubicaciones} = this.state
+        
+        ubicaciones = ubicaciones.filter((e, index)=>{
+            return index!=key
+        })
+        
+        this.setState({ubicaciones })
+    }
+
 	renderRegistro(){
         const {razon_social, cedula, showcontrasena, direccion_factura, nombre, password, celular, tipo, ubicaciones} = this.state
         return(

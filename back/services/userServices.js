@@ -5,7 +5,13 @@ let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
 class userServices {
 	get(callback){
-		User.find({}).sort({_id: 'desc'}).exec(callback)
+		User.find({$or:[
+			{acceso:"admin", eliminado:false}, 
+			{acceso:"solucion", eliminado:false}, 
+			{acceso:"despacho", eliminado:false}, 
+			{acceso:"conductor", eliminado:false}, 
+			{acceso:"cliente", eliminado:false} 
+		]}).sort({_id: 'desc'}).exec(callback)
 	}
 	getEmail(user, callback){
 		let email = user.email.toLowerCase()
@@ -54,16 +60,19 @@ class userServices {
 		}}, callback);
 	}
 	edit(user, id, callback){
+		console.log("padresito")
+		console.log(user)
 		let newUsuario = new User() 
 		User.findByIdAndUpdate(id, {$set: {
 			'razon_social': user.razon_social,
 			'cedula':       user.cedula,
-			'direccion_factura':   	user.direccion_factura,
+			'direccion_factura': user.direccion_factura,
 			'nombre':     	user.nombre,
 			'codt':     	user.codt,
 			'celular':  	user.celular,
-			'password':  	newUsuario.generateHash(user.password),
+			// 'password':  	newUsuario.generateHash(user.password),
 			'tipo':   	    user.tipo,
+			'codt':   	    user.codt,
 			'updatedAt':    fecha
 		}}, callback);
 	}
@@ -105,9 +114,14 @@ class userServices {
 		User.findOne({'email':data.email, 'token': data.token}, callback)
 	}
 
-	estadoUsuario(user, activo, callback){
-		User.findByIdAndUpdate(user._id, {$set: {
+	estadoUsuario(idUser, activo, callback){
+		User.findByIdAndUpdate(idUser, {$set: {
 			'activo':activo
+		}}, callback);
+	}
+	eliminarUsuario(idUser, callback){
+		User.findByIdAndUpdate(idUser, {$set: {
+			'eliminado':true
 		}}, callback);
 	}
 	modificaToken(user, token, callback){

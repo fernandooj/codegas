@@ -30,16 +30,19 @@ class verPerfil extends Component{
         modalZona:false,
         zonas:[],
         puntos:[],
+        ubicacionesEliminadas:[], //envio los id de las ubicaciones eliminados
         ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, acceso:"cliente"}]
 	  }
     }
  
     componentWillMount(){
-        axios.get("zon/zona/activos")
+        //////////////////////////////  DEVUELVE EL LISTADO DE LAS ZONAS
+        axios.get("zon/zona/activos")   
         .then(res=>{
             console.log(res.data)
             res.data.status &&this.setState({zonas:res.data.zona})
         })
+        ////////////////////////////////////////////////////////////////
         const {params} = this.props.navigation.state
         if(params.tipoAcceso){
             this.setState({tipoAcceso:params.tipoAcceso})
@@ -62,15 +65,37 @@ class verPerfil extends Component{
                 acceso:           user.acceso       ?user.acceso       :"",
                 imagen:           user.avatar       ?user.avatar       :"",
                 codt:             user.codt         ?user.codt         :"",
+                idUsuario:        user._id          ?user._id          :"",
                 ubicaciones:      user.ubicaciones  ?user.ubicaciones  :[],
+                direccion_factura:user.direccion_factura ?user.direccion_factura :"",
+            })
+        })
+        :params.tipoAcceso=="editar"
+        ?axios.get(`/user/byId/${params.idUsuario}`).then(e=>{
+            const {user} = e.data
+            console.log(e.data)
+            this.setState({
+                razon_social:     user.razon_social ?user.razon_social :"",
+                cedula:           user.cedula       ?user.cedula       :"",
+                email:            user.email        ?user.email        :"",
+                nombre:           user.nombre       ?user.nombre       :"",
+                password :        user.password     ?user.password     :"",
+                celular :         user.celular      ?user.celular      :"",
+                tipo :            user.tipo         ?user.tipo         :"",
+                acceso:           user.acceso       ?user.acceso       :"",
+                imagen:           user.avatar       ?user.avatar       :"",
+                codt:             user.codt         ?user.codt         :"",
+                ubicaciones:      user.ubicaciones  ?user.ubicaciones  :[],
+                activo:           user.activo       &&user.activo ,
+                idUsuario:        user._id          ?user._id          :"",
                 direccion_factura:user.direccion_factura ?user.direccion_factura :"",
             })
         })
         :null
     }
     renderPerfil(){
-        const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo} = this.state
-        console.log({imagen})
+        const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo} = this.state
+        console.log({activo})
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:50}}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -226,22 +251,89 @@ class verPerfil extends Component{
                         /> 
                     </View>
                 }
+            {/* BOTON CAMBIAR ESTADO */}
+                {
+                    tipoAcceso=="editar"
+                    &&<TouchableOpacity style={[style.btnGuardar, {backgroundColor:activo ?"green" :"orange", marginBottom:0} ]} onPress={()=>this.cambiarEstadoUsuario()}>
+                        <Text style={style.textGuardar}>{activo ?"Desactivar" :"Activar"}</Text>
+                    </TouchableOpacity> 
+                }
+
+            {/* BOTON ELIMINAR */}
+                {
+                    tipoAcceso=="editar"
+                    &&<TouchableOpacity style={[style.btnGuardar, {backgroundColor:"red", marginBottom:0} ]}  onPress={()=>this.eliminarUsuario()}>
+                        <Text style={style.textGuardar}>{"Eliminar"}</Text>
+                    </TouchableOpacity> 
+                }
+
             {/* BOTON GUARDAR */}
                 {
-                    tipoAcceso
-                    ?<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                    !tipoAcceso
+                    ?<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit("editar")}>
+                        {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
+                        <Text style={style.textGuardar}>{cargando ?"Editando" :"Editar"}</Text>
+                    </TouchableOpacity> 
+                    :tipoAcceso=="editar"
+                    ?<TouchableOpacity style={style.btnGuardar} onPress={()=>this.editarUsuario("editar")}>
+                    {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
+                        <Text style={style.textGuardar}>{cargando ?"Editando" :"Editar Usuario"}</Text>
+                    </TouchableOpacity>
+                    :<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
                         <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
-                    </TouchableOpacity> 
-                    :<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit("editar")}>
-                    {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
-                    <Text style={style.textGuardar}>{cargando ?"Editando" :"Editar"}</Text>
-                </TouchableOpacity> 
+                    </TouchableOpacity>   
                 }
                 
             </ScrollView>  
             
         )
+    }
+    eliminarUsuario(){
+        const {nombre, idUsuario} = this.state
+        Alert.alert(
+            'Seguro desea eliminar',
+            `al usuario ${nombre}`,
+            [
+                {text: 'Confirmar', onPress: () => confirmar()},
+               
+                {text: 'Cancelar', onPress: () =>  console.log("cancelado")},
+            ],
+            { cancelable: false }
+        )
+        const confirmar =() =>{
+            axios.get(`/users/eliminar/${idUsuario}`)
+            .then(res=>{
+                if(res.data.status){
+                    this.props.navigation.navigate("Home")
+                    Toast.show("Usuario eliminado con exito")
+                }
+            })
+        }
+    }
+    cambiarEstadoUsuario(){
+        const {nombre, idUsuario, activo} = this.state
+        console.log({nombre, idUsuario, activo})
+        Alert.alert(
+            `Seguro desea ${activo ?"Desactivar" :"Activar"}`,
+            `al usuario ${nombre}`,
+            [
+                {text: 'Confirmar', onPress: () => confirmar()},
+               
+                {text: 'Cancelar', onPress: () =>  console.log("cancelado")},
+            ],
+            { cancelable: false }
+        )
+        const confirmar =() =>{
+            axios.get(`/users/cambiarEstado/${idUsuario}/${!activo}`)
+            .then(res=>{
+                if(res.data.status){
+                    this.props.navigation.navigate("Home")
+                    Toast.show("Usuario guardado con exito")
+                }
+            })
+
+        }
     }
     actualizaUbicacion(){
         let {observacion, ubicaciones, direccion, emailUbicacion, nombreUbicacion, nombreZona} = this.state
@@ -289,6 +381,7 @@ class verPerfil extends Component{
         ubicaciones[key].nombreZona = nombre
         this.setState({ubicaciones, modalZona:false}) 
     }
+ 
     modalUbicacion(){
         let {modalUbicacion, ubicaciones} = this.state
         return(
@@ -307,24 +400,30 @@ class verPerfil extends Component{
                                         ubicaciones.map((e, key)=>{
                                             return(
                                                 <View key={key}>
-                                                    <TextInput
-                                                        type='outlined'
-                                                        label='Dirección'
-                                                        placeholder="Dirección"
-                                                        value={e.direccion}
-                                                        onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
-                                                        style={style.input}
-                                                    />
-                                                    <TouchableOpacity style={style.btnUbicacion} onPress={()=>this.setState({modalZona:true, key})}>
-                                                        <Text style={style.textZona}>{e.nombreZona ?e.nombreZona :"Zona"}</Text>
-                                                    </TouchableOpacity>
+                                                   <View>
+                                                        <TextInput
+                                                            type='outlined'
+                                                            label='Dirección'
+                                                            placeholder="Dirección"
+                                                            value={e.direccion}
+                                                            onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
+                                                            style={style.input}
+                                                        />
+                                                        <Text style={style.asterisco}>*</Text>
+                                                    </View>
+                                                    <View>
+                                                        <TouchableOpacity style={style.btnUbicacion} onPress={()=>this.setState({modalZona:true, key})}>
+                                                            <Text style={style.textZona}>{e.nombreZona ?e.nombreZona :"Zona"}</Text>
+                                                        </TouchableOpacity>
+                                                        <Text style={style.asterisco}>*</Text>
+                                                    </View>
                                                     <TextInput
                                                         type='outlined'
                                                         label='observacion al momento de ingresar el vehiculo'
                                                         placeholder="observaciones ingreso del vehiculo"
                                                         value={e.observacion}
                                                         onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
-                                                        style={style.input}
+                                                        style={[style.input, {marginBottom: (e.nuevo || !e.idCliente ) && key>0 ?40 :10}]}
                                                     />
                                                     {
                                                         (e.nuevo || e.idCliente )
@@ -345,8 +444,14 @@ class verPerfil extends Component{
                                                             placeholder="Nombre"
                                                             value={e.nombre}
                                                             onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                            style={style.input}
+                                                            style={[style.input, {marginBottom: key>0 ?40 :10}]}
                                                         />
+                                                    }
+                                                    {
+                                                        key>0
+                                                        &&<TouchableOpacity style={style.btnEliminar} onPress={()=>this.eliminarUbicacion(key)}>
+                                                            <Icon name={'trash'} style={style.iconEliminar} />
+                                                        </TouchableOpacity>
                                                     }
                                                     
                                                     <Text style={style.separador}></Text>
@@ -360,7 +465,7 @@ class verPerfil extends Component{
                                         <Icon name={'plus'} style={style.iconAdd} />
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.setState({modalUbicacion:false})}>
+                                <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.guardarUbicacion() }>
                                     <Text style={style.textGuardar}>Guardar</Text>
                                 </TouchableOpacity>
                             </ScrollView>
@@ -412,7 +517,6 @@ class verPerfil extends Component{
     }
 	render(){
         const {navigation} = this.props     
-       
         return (
             <View  style={style.container}>
                 {this.modalUbicacion()}
@@ -425,7 +529,25 @@ class verPerfil extends Component{
             </View>
         )
     }
-     
+    guardarUbicacion(){
+        let {ubicaciones} = this.state
+        ubicaciones = ubicaciones.filter((e, index)=>{
+            return e.direccion!=undefined
+        })
+        ubicaciones = ubicaciones.filter((e, index)=>{
+            return e.direccion!="" 
+        })
+        const isEmpty = Object.values(ubicaciones).every(x => {
+            if(!x.idZona){ 
+              return false
+            }else{
+              return true
+            }
+          })
+        console.log(isEmpty)
+        console.log(ubicaciones)
+        !isEmpty ?alert("Zonas son obligatorios") :this.setState({ubicaciones, modalUbicacion:false})
+    }
     ///////////////////////////////////////////////////////////////
     //////////////          ACTUALIZA EL AVATAR
     ///////////////////////////////////////////////////////////////
@@ -480,7 +602,7 @@ class verPerfil extends Component{
                     'Todos los campos son obligatorios',
                     '',
                     [
-                      {text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                    {text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
                     ],
                     { cancelable: false }
                 )
@@ -493,7 +615,7 @@ class verPerfil extends Component{
                     'Todos los campos son obligatorios',
                     "",
                     [
-                      {text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                    {text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
                     ],
                     { cancelable: false }
                 )
@@ -501,7 +623,23 @@ class verPerfil extends Component{
                 esEditar=="editar" ?this.editarUsuario() :this.guardarUsuario()
             }
         }
+    }
 
+    /////////////////////////////////////////////////////////////////////////
+    //////////////         ELIMINO LA UBICACION SELECCIONADA
+    ///////////////////////////////////////////////////////////////////////
+    eliminarUbicacion(key){
+        let {ubicaciones, ubicacionesEliminadas} = this.state
+        ubicaciones.filter((e, index)=>{
+            if(index==key){
+                ubicacionesEliminadas.push(e._id)
+            }
+        })
+        ubicaciones = ubicaciones.filter((e, index)=>{
+            return index!=key
+        })
+        
+        this.setState({ubicaciones, ubicacionesEliminadas })
     }
     guardarUsuario(e){
         this.setState({cargando:true})
@@ -557,8 +695,8 @@ class verPerfil extends Component{
         })
     }	
     editarUsuario(e){
-        // this.setState({cargando:true})
-        const {razon_social, cedula, ubicaciones, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, editaAvatar} = this.state
+        this.setState({cargando:true})
+        const {razon_social, cedula, ubicaciones, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email && e.idCliente
         })
@@ -583,7 +721,7 @@ class verPerfil extends Component{
         console.log({clientesNuevos})
         console.log({puntos})
         console.log({puntosNuevos})
-        axios.put("user/update", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt})
+        axios.put(`user/update/${idUsuario}`, {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas})
         .then(e=>{
             if(acceso=="cliente") {
                 console.log(e.data)
@@ -591,7 +729,7 @@ class verPerfil extends Component{
                 if(clientes.length>0){
                     axios.put("user/update_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
                     .then(res=>{
-                        this.props.navigation.navigate("perfil")
+                        this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
                     .catch(err2=>{
@@ -603,7 +741,7 @@ class verPerfil extends Component{
                 if(clientesNuevos.length>0){
                     axios.post("user/crea_varios", {clientes:clientesNuevos, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
                     .then(res=>{
-                        this.props.navigation.navigate("perfil")
+                        this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
                     .catch(err2=>{
@@ -616,7 +754,7 @@ class verPerfil extends Component{
                     axios.put("pun/punto/varios",{puntos, id:e.data.user._id})
                     .then(res=>{
                         console.log(res.data)
-                        this.props.navigation.navigate("perfil")
+                        this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
                     .catch(err2=>{
@@ -629,7 +767,7 @@ class verPerfil extends Component{
                     axios.post("pun/punto/varios", {puntos:puntosNuevos, id:e.data.user._id})
                     .then(res=>{
                         console.log(res.data)
-                        this.props.navigation.navigate("perfil")
+                        this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
                     .catch(err2=>{
@@ -637,7 +775,9 @@ class verPerfil extends Component{
                         this.setState({cargando:false})
                     })
                 }
+                this.props.navigation.navigate("Home")
                 Toast.show("Usuario guardado con exito")
+                this.setState({cargando:false})
             }else{
                 if(editaAvatar){
                     this.avatar(imagen, e.data.user._id)
@@ -669,7 +809,6 @@ class verPerfil extends Component{
     }
 }
 const mapState = state => {
-   
 	return {
         perfil:state.usuario.perfil.user,
         
@@ -683,7 +822,6 @@ const mapDispatch = dispatch => {
 		getPerfil: () => {
 			dispatch(getPerfil());
         },
-		 
         cambiarContrasena: (password, email) => {
             dispatch(cambiarContrasena(password, email));
         }

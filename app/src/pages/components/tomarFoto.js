@@ -125,7 +125,7 @@ export default class tomarPhoto extends Component{
     render(){
         const {imagenes, showModal} = this.state
         const {tipoMensaje, avatar} = this.props
-        console.log(imagenes)
+        
         return(
             <View style={style.contenedorPortada}>
                 {

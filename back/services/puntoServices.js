@@ -16,7 +16,7 @@ class puntoServices{
 		punto.find({}).exec(callback)
 	}
 	getCliente(idCliente, callback){
-		punto.find({ $or: [ {idCliente}, {idPadre:idCliente}]}).exec(callback)
+		punto.find({ $or: [ {idCliente, activo:true}, {idPadre:idCliente, activo:true}]}).exec(callback)
 	}
 	getZonas(fecha, callback){
 		punto.aggregate([
@@ -120,27 +120,24 @@ class puntoServices{
 					idZona:1,
 					idCliente:1,
 					idPadre:1,
+					activo:1,
 					nombre:'$UserData.nombre',
 					email:'$UserData.email',
 					nombreZona:'$ZonaData.nombre',
 				},
 			},
-			// {
-			// 	$match:{
-			// 		idCliente
-			// 	},
-			// },
+		 
 			{
 			$match: { $or: [
-						{ idCliente }, 
-						{ idPadre: idCliente }
+						{ idCliente, activo:true }, 
+						{ idPadre: idCliente,  activo:true	 }
 					] 
 				}
 			},
 			{
 			    $group:{
 						_id:'$_id',
-						data: { $addToSet: {_id:"$_id", observacion:"$observacion", direccion:"$direccion", idZona:'$idZona', idCliente:'$idCliente', nombre:'$nombre', email:'$email', nombreZona:'$nombreZona' }                  },
+						data: { $addToSet: {_id:"$_id", observacion:"$observacion", direccion:"$direccion", idZona:'$idZona',  activo:'$activo',  idCliente:'$idCliente', nombre:'$nombre', email:'$email', nombreZona:'$nombreZona' }                  },
 			    }
 			},
 		], callback)
@@ -276,6 +273,13 @@ class puntoServices{
 			'direccion'  : data.direccion,
 			'observacion': data.observacion,
 			'idZona'		 : data.idZona,
+			'updated':   moment(fecha).valueOf()
+		}}, callback);
+	}
+	desactivar(id, callback){
+		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD h:mm:ss a')
+		punto.findByIdAndUpdate(id, {$set: {
+			'activo'  	 : false,
 			'updated':   moment(fecha).valueOf()
 		}}, callback);
 	}

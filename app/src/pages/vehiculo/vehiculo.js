@@ -38,6 +38,7 @@ class Pedido extends Component{
  
     
     renderVehiculos(){
+        const {acceso} = this.state
         return this.props.vehiculos.map((e, key)=>{
             
             return (
@@ -49,9 +50,13 @@ class Pedido extends Component{
                     <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.setState({modalConductor:true, placaVehiculo:e.placa, conductor:e.conductor ?e.conductor._id :"", idVehiculo:e._id})}>
                         <Icon name={'pencil'} style={style.iconCerrar} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.eliminarVehiculo(e.placa, e._id )}>
-                        <Icon name={'trash'} style={style.iconCerrar} />
-                    </TouchableOpacity>
+                    
+                    {
+                        acceso=="admin"
+                        &&<TouchableOpacity style={style.btnVehiculo} onPress={()=>this.eliminarVehiculo(e.placa, e._id )}>
+                            <Icon name={'trash'} style={style.iconCerrar} />
+                        </TouchableOpacity>
+                    }
                 </View>
             )
         })

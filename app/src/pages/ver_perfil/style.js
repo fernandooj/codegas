@@ -210,6 +210,12 @@ export const style = MediaQueryStyleSheet.create({
         backgroundColor:"rgba(0,0,0,.05)",
         height:2,
     },
+    asterisco:{
+        color:"red",
+        position:"absolute",
+        right:10,
+        top:30
+    },  
     //////////////////////////////////////////////////////////////////		
 	///////////				MODAL  ZONA
 	//////////////////////////////////////////////////////////////////
@@ -264,5 +270,15 @@ export const style = MediaQueryStyleSheet.create({
         left:20,
         marginBottom:50,
         marginTop:20
+    },
+    btnEliminar:{
+        position:"absolute",
+        left:"44%",    
+        bottom:2,
+        padding:10
+    },
+    iconEliminar:{
+        fontSize:20,
+        color:"red"
     }
 })
