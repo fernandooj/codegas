@@ -13,7 +13,18 @@ class pedidoServices{
 
 	}
 	get(callback){
-		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion codt').populate("carroId").populate("puntoId").populate("conductorId").sort({orden: 'desc'}).exec(callback)
+		pedido.find({})
+		.populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion codt')
+		.populate("carroId")
+		.populate("puntoId")
+		.populate("conductorId")
+		.populate("usuarioAsigna")
+		.populate("usuarioAsignaVehiculo")
+		.populate("zonaId")
+		.sort({orden: 'desc'}).exec(callback)
+	}
+	totalPedidos(callback){
+		pedido.count({}, callback)
 	}
 	getByPedido(_id, callback){
 		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
@@ -38,10 +49,10 @@ class pedidoServices{
 	getLastRowConductorEntregados(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega, entregado:true}).sort({orden: 'desc'}).exec(callback)
 	}
-	create(data, usuarioId, usuarioCrea, callback){
+	create(data, usuarioId, usuarioCrea, nPedido, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		let creado = moment(fecha).valueOf()
-		creado = moment(creado).format("YYYY-MM-DD")
+		creado = moment(creado).format("YYYY-MM-DD h:mm")
 		let newPedido = new pedido({
 			forma      	   : data.forma,
 			cantidadKl     : data.forma=="cantidad" ?data.cantidad :0,
@@ -50,6 +61,7 @@ class pedidoServices{
 			dia1       		 : data.dia1,
 			dia2       		 : data.dia2,
 			puntoId    		 : data.puntoId,
+			zonaId    		 : data.idZona,
 			fechaSolicitud : data.fechaSolicitud,
 			pedidoPadre 	 : data.pedidoPadre,
 			estado     	   :"espera",
@@ -57,6 +69,7 @@ class pedidoServices{
 			eliminado  	   :false,
 			usuarioId,
 			usuarioCrea,
+			nPedido,
 			creado
 		})
 		newPedido.save(callback)	
@@ -151,13 +164,14 @@ class pedidoServices{
 		], callback)
 	}  
 
-  cambiarEstado(_id, estado, callback){
+  cambiarEstado(idUsuario, _id, estado, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
-			'estado':estado
+			'estado':estado,
+			'usuarioAsigna':idUsuario,
 		}}, callback);
   }
   finalizar(data, activo, imagen, orden_cerrado, callback){
-		 
+		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
@@ -166,14 +180,17 @@ class pedidoServices{
 			'forma_pago':data.forma_pago,
 			'imagen':imagen,
 			'orden_cerrado':orden_cerrado,
+			'fechaEntregado':fecha
 		}}, callback);
 	}
 	novedad(_id, orden_cerrado, motivo_no_cierre, callback){
+		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'entregado'		:true,
 			'estado'	   	:"noentregado",
 			'orden_cerrado':orden_cerrado,
 			'motivo_no_cierre':motivo_no_cierre,
+			'fechaEntregado':fecha
 		}}, callback);
     }
   eliminar(_id, eliminado, callback){
@@ -181,11 +198,12 @@ class pedidoServices{
 			'eliminado':eliminado
 		}}, callback);
 	}
-	asignarVehiculo(_id, carroId, conductorId, orden, callback){
+	asignarVehiculo(idUsuario, _id, carroId, conductorId, orden, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'carroId':carroId,
 			"conductorId":conductorId,
-			"orden":orden
+			"orden":orden,
+			"usuarioAsignaVehiculo":idUsuario,
 		}}, callback);
 	}
 	asignarFechaEntrega(_id, fechaEntrega, callback){

@@ -63,7 +63,8 @@ router.post('/', function(req,res){
 		fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
 		resizeImagenes(rutaJim, randonNumber, "jpg")
 	}
-	mensajeServices.create(req.body, ruta, (err, titulo)=>{
+	console.log("ferdilando")
+	mensajeServices.create(req.body, ruta, req.body.nombre,  (err, titulo)=>{
 		if (err) {
 			res.json({ status: 'FAIL', message: err }); 
 		}else{

@@ -56,6 +56,7 @@ class NavigationBar extends PureComponent {
   render() {
     const { perfil, status } = this.props;
     const { badgeSocketMessage, badgeSocketCuenta, badgeCuenta, badgeMessage } = this.state;
+    console.log(perfil)
     return (
       <nav className={style.nav}>
         
@@ -89,11 +90,15 @@ class NavigationBar extends PureComponent {
                   Fechas
                 </Link>
               </li>
-              <li>
-                <Link to="/informes">
-                  Informes
-                </Link>
-              </li>
+              {
+                perfil.acceso=="admin"
+                && <li>
+                  <Link to="/informes">
+                    Informes
+                  </Link>
+                </li>
+              }
+             
               <li>
                 <Link to="/ver_perfil" style={{background:"none"}}>
                   <img src={perfil.avatar} />

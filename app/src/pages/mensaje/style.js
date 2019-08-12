@@ -14,7 +14,8 @@ export const style = MediaQueryStyleSheet.create({
     },
     conMensaje1:{
         alignSelf:"flex-start",
-        paddingVertical:2
+        paddingVertical:2,
+        maxWidth:size.width/1.4
     },
     mensaje1:{
         backgroundColor:"rgba(56,164,264,.5)",
@@ -32,7 +33,8 @@ export const style = MediaQueryStyleSheet.create({
     conMensaje2:{
         alignSelf:"flex-end",
         marginRight:5,
-        paddingVertical:2
+        paddingVertical:2,
+        maxWidth:size.width/1.4
     },
     mensaje2:{
         backgroundColor:"rgba(233,120,5,.5)",

@@ -40,7 +40,81 @@ class mensajeServices{
 		})
 		newConversacion.save(callback)	
 	}
-	 
+	groupoByConversacion(callback){
+		Conversacion.aggregate([
+			{
+				$lookup:{
+					from:"mensajes",
+					localField:"_id",
+					foreignField:"conversacionId",
+					as:"MensajeData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$MensajeData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			{
+				$lookup:{
+					from:"users",
+					localField:"usuarioId1",
+					foreignField:"_id",
+					as:"UserData1"
+				}
+			},
+			{
+				$unwind:{
+					path:'$UserData1',
+					preserveNullAndEmptyArrays: true
+				}
+			}, 
+			{
+				$lookup:{
+					from:"users",
+					localField:"usuarioId2",
+					foreignField:"_id",
+					as:"UserData2"
+				}
+			},
+			{
+				$unwind:{
+					path:'$UserData2',
+					preserveNullAndEmptyArrays: true
+				}
+			}, 
+
+			{
+				$project:{
+					_id:1,
+					creado:1,
+					update:1,
+					mensaje:'$MensajeData.mensaje',
+					mensajeCreado:'$MensajeData.creado',
+					tipo:'$MensajeData.tipo',
+					imagen:'$MensajeData.imagen',
+					idMensaje:'$MensajeData._id',
+					nombreMensaje:'$MensajeData.nombre',
+					nombre1:'$UserData1.nombre',
+					nombre2:'$UserData2.nombre',
+				},
+			},
+			{
+			    $group:{
+					_id:{
+						_id:'$_id',
+						nombre1:'$nombre1',
+						nombre2:'$nombre2',
+						creado:'$creado',
+						update:'$update',
+					},
+					 
+			    	data: { $addToSet: {_id:"$idMensaje", mensaje:"$mensaje", creado:"$creado",  tipo:"$tipo", imagen:'$imagen',  mensajeCreado:'$mensajeCreado', nombreMensaje:'$nombreMensaje'}},
+			    }
+			},
+		], callback)
+	}
 	cerrar(_id, creado, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		let update = moment(fecha).valueOf()

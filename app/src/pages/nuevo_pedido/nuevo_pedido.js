@@ -102,9 +102,9 @@ class Nuevo_pedido extends Component{
         idUsuario = idUsuario ?idUsuario : "FAIL"
         axios.get(`pun/punto/byCliente/${idUsuario}`)
         .then(e=>{
-            console.log(e.data.puntos[0]._id)
+            console.log(e.data.puntos[0].idZona)
             if(e.data.status){
-                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
+                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, idZona:e.data.puntos[0].idZona, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
             }else{
                 Toast.show("Tuvimos un problema, intentele mas tarde")
             }
@@ -263,7 +263,7 @@ class Nuevo_pedido extends Component{
                         {
                             puntos.map((e, key)=>{
                                 return (
-                                    <TouchableOpacity key={key} style={style.btnZona} onPress={()=>this.setState({puntoId:e._id})}>
+                                    <TouchableOpacity key={key} style={style.btnZona} onPress={()=>this.setState({puntoId:e._id, idZona:e.idZona})}>
                                         <Text style={style.textZona}>{e.direccion}</Text>
                                         {(puntoId==e._id) &&<Icon name="check" style={style.iconZona} /> }
                                     </TouchableOpacity>
@@ -321,9 +321,9 @@ class Nuevo_pedido extends Component{
         this.setState({cliente:cliente[0].label, idCliente, emailCliente:cliente[0].email, modalCliente:false})
         axios.get(`pun/punto/byCliente/${idCliente}`)
         .then(e=>{
-            console.log(e.data.puntos[0]._id)
+            console.log(e.data.puntos[0])
             if(e.data.status){
-                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
+                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id, idZona:e.data.puntos[0].idZona}) :this.setState({puntos:e.data.puntos})
             }else{
                 Toast.show("Tuvimos un problema, intentele mas tarde")
             }
@@ -387,6 +387,7 @@ class Nuevo_pedido extends Component{
 	render(){
         const {navigation} = this.props
         const {idUsuario, showFechaEntrega} = this.state
+        console.log(this.state.idZona)
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
         }else if(idUsuario=="FAIL"){
@@ -408,12 +409,12 @@ class Nuevo_pedido extends Component{
         }
 	}
     handleSubmit(){
-        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud} = this.state
+        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud, idZona} = this.state
         email = idCliente ?emailCliente :email
         forma=="monto" ?cantidad = this.campoMonto.getRawValue() :null
         
-        console.log({forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud})
-        axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud})
+        console.log({forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
+        axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
         .then(e=>{
             console.log(e.data)
             if(e.data.status){

@@ -1,12 +1,14 @@
 let express = require('express')
 let router = express.Router();
 const {Parser} = require('json2csv');
+const PDFDocument = require('pdfkit');
 let pedidoServices     = require('../services/pedidoServices.js') 
 let userServices       = require('./../services/userServices.js') 
 let conversacionServices = require('../services/conversacionServices.js')
 let puntoServices = require('../services/puntoServices.js') 
 let carroServices = require('../services/carroServices.js') 
 
+let fs = require('fs');
 ///////////////////////////////////////////////////   1.    CONVERSACIONES
 router.get('/conversacion/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     conversacionServices.get((err, pedidos)=>{
@@ -171,6 +173,78 @@ router.get('/vehiculos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
+////////////////////////////////////////////  4.	PEDIDOS TRAZABILIDAD DE PEDIDO
+router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    pedidoServices.get((err, pedido)=>{
+        if(!err){
+            pedido = pedido.filter(e=>{
+                return e.estado!=="noentregado"  
+            })
+            // res.json({pedido})
+            const fields = [{   
+                label: 'N Pedido',
+                value: 'nPedido'
+            },{
+                label: 'CODT',
+                value: 'usuarioId.codt'
+            },{
+                label: 'Cedula ',
+                value: 'usuarioId.cedula'
+            },{
+                label: 'Razon Social',
+                value: 'usuarioId.razon_social'
+            },{
+                label: 'Punto Consumo',
+                value: 'puntoId.direccion'
+            },{
+                label: 'Zona',   // aun no esta
+                value: 'zonaId.nombre'
+            },{
+                label: 'Fecha Ingreso',
+                value: 'creado'
+            },{
+                label: 'Fecha Solicitud',
+                value: 'fechaSolicitud'
+            },{
+                label: 'Estado Pedido',
+                value: 'estado'
+            },{
+                label: 'Fecha asignación',
+                value: 'fechaEntrega'
+            },{
+                label: 'Usuario Asigna',
+                value: 'usuarioAsigna.nombre'
+            },{
+                label: 'Usuario Asigna Vehiculo',
+                value: 'usuarioAsignaVehiculo.nombre'
+            },{
+                label: 'Vehiculo asignado', // aun no esta
+                value: 'carroId.placa'
+            },{
+                label: 'Conductor asignado',
+                value: 'conductorId.nombre'
+            },{
+                label: 'Fecha Entrega',
+                value: 'fechaEntregado'
+            },{
+                label: 'Imagen',
+                value: 'imagen'
+            }];
+            const opts = {fields};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(pedido);
+                res.attachment('trazabilidadPedidos.csv');
+                res.status(200).send(csv);
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
+
+
 ////////////////////////////////////////////  5.	PEDIDOS NO ENTREGADOS
 router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     pedidoServices.get((err, pedido)=>{
@@ -199,7 +273,7 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
                 value: 'factura'
             },{
                 label: 'Fecha asignación',
-                value: 'carroId.placa'
+                value: 'fechaEntrega'
             },{
                 label: 'Vehiculo asignado', // aun no esta
                 value: 'carroId.placa'
@@ -286,6 +360,47 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
         }
     })
 })
+
+////////////////////////////////////////////  6.	PEDIDOS ENTREGADOS
+router.get('/pdf/chats/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    conversacionServices.groupoByConversacion((err, mensajes)=>{
+        if(!err){
+            // res.json({mensajes})
+            
+            let doc = new PDFDocument;
+            doc.pipe(fs.createWriteStream('chats.pdf'));
+             
+            mensajes = mensajes.map(e=>{
+                doc.moveDown()
+                doc.moveDown()
+                doc.text(`conversacion entre el corporativo: ${e._id.nombre1} y el cliente: ${e._id.nombre2}, inicio el: ${e._id.creado}, Finalizo: ${e._id.update}`, {
+                    stroke:1
+                })
+                doc.moveDown()
+                doc.moveDown()
+                return e.data.map(data=>{
+                    let imagen = data.tipo===2 &&data.imagen.split("-")
+                    doc.moveDown()
+                    data.tipo==1
+                    ?doc.text(`Mensaje: ${data.mensaje}`, {
+                       
+                    })
+                    :doc.image(`../front/docs/public/uploads/mensaje/${imagen[2]}`,  {width: 100})
+                    
+                   
+                    doc.text(`Usuario: ${data.nombreMensaje}`)
+                    doc.text(`Creado: ${data.creado}`)
+                })
+            })
+
+            
+            doc.pipe(res)
+            doc.end();
+
+        }
+    })
+})
+
 
 
 

@@ -4,6 +4,7 @@ let Schema   = mongoose.Schema;
 const Pedido = new Schema({
 	forma         :String,
 	cantidadKl    :Number,
+	nPedido       :Number,
 	cantidadPrecio:Number,
 	frecuencia    :String,
 	imagen        :String,
@@ -16,6 +17,7 @@ const Pedido = new Schema({
     novedades     :Boolean,
     fechaEntrega  :String,
     fechaSolicitud:String,
+    fechaEntregado:String,
     kilos         :Number,
     factura       :String,
     valor_unitario:String,
@@ -25,10 +27,13 @@ const Pedido = new Schema({
     forma_pago:String,
     pedidoPadre   :{type: Schema.ObjectId, ref:'Pedido'},
     puntoId       :{type: Schema.ObjectId, ref:'Punto'},
+    zonaId        :{type: Schema.ObjectId, ref:'Zona'},
     conductorId   :{type: Schema.ObjectId, ref:'User'},
 	carroId       :{type: Schema.ObjectId, ref:'Carro'},
 	usuarioId     :{type: Schema.ObjectId, ref:'User'},
 	usuarioCrea   :{type: Schema.ObjectId, ref:'User'},
+	usuarioAsigna         :{type: Schema.ObjectId, ref:'User'},
+	usuarioAsignaVehiculo :{type: Schema.ObjectId, ref:'User'},
 })
 
 

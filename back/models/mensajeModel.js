@@ -16,6 +16,7 @@ let Mensaje = new Schema({
 	creado: String,
 	tipo: Number,
 	imagen: String,
+	nombre: String,
 	usuarioId: {type: Schema.ObjectId, ref:'User'},
 	conversacionId: {type: Schema.ObjectId, ref:'Conversacion'},
 })

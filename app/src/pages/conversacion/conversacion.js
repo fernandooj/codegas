@@ -32,15 +32,16 @@ class Mensaje extends Component{
 			const acceso       = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
 			const tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
 			const minutoInicio = await AsyncStorage.getItem('minutoInicio') //// acceso del usuario si estas logueado
-			
+			console.log("otro negrito")
 			if(acceso=="admin" || acceso=="solucion"){
 				this.props.getConversaciones()
 				this.setState({showSpin:false})
 			}else{			
 				//el ultimo parametro avisa si le envia la notificacion a los admin de que hay un chat entrante
+				console.log("negrito")
 				axios.get(`con/conversacion/byTokenPhone/${JSON.parse(tokenPhone)}/true/${nombre}/${email}/${celular}/true`)
 				.then(res=>{
- 
+					console.log({status:res.data})
 					if(res.data.status){
 						clearInterval(this.myInterval);
 						this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})

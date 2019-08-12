@@ -62,8 +62,8 @@ class Home extends PureComponent {
         </Col>
         <Col span={6}>
           <Card>
-            <a href="/" type="primary" htmlType="submit" className="login-form-button">
-               5.	Pedidos trazabilidad pedido
+            <a href="x/v1/inf/informe/pedidos/trazabilidad/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+               5.	Pedidos trazabilidad
             </a>
           </Card>
         </Col>
@@ -78,6 +78,13 @@ class Home extends PureComponent {
           <Card>
             <a href="x/v1/inf/informe/pedidos/cerrados/true/null/null" type="primary" htmlType="submit" className="login-form-button">
                 7.  Generar Facturación
+            </a>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <a href="x/v1/inf/informe/pdf/chats/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+                7.  Generar PDF chats
             </a>
           </Card>
         </Col>

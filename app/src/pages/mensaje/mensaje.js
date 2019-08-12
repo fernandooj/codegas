@@ -53,6 +53,10 @@ class Conversacion extends Component{
 	componentWillReceiveProps(props){
 		this.setState({mensajes:props.mensajes})
 	}
+	componentWillUnmount(){
+		console.log(`Unmounting... clearing interval`);
+    	clearInterval(this.myInterval);
+	}
 	cerrarConversacionSocket(navigation){
 		const {acceso, id}=this.state
 		Alert.alert(
@@ -94,7 +98,7 @@ class Conversacion extends Component{
 							<Lightbox 
 								renderContent={() => (
 									<ImageEscalable 
-										source={{ uri: imagen[0]+"Resize"+imagen[2] }}
+										source={{ uri: imagen[0]+imagen[2] }}
 										width={size.width}
 									/>
 								)}
@@ -162,6 +166,7 @@ class Conversacion extends Component{
 					onChangeText={mensaje => this.setState({ mensaje })}
 					style={style.input}
 					ref='username' 
+					multiline
 				/>
 				<TouchableOpacity onPress={mensaje.length==0 ?null :()=>this.handleSubmit()} style={style.btnEnviar}>
 					<Icon name={'paper-plane'} style={style.icon} />
@@ -253,9 +258,11 @@ class Conversacion extends Component{
 		const {usuarioId1, usuarioId2, _id} = this.props.conversacion
 		const {acceso} = this.state
 		let data = new FormData();
-		let userId 		=  acceso=="admin" || acceso=="solucion" ?usuarioId2._id :usuarioId1._id
+		let userId 		=  acceso=="admin" || acceso=="solucion" ?usuarioId1._id :usuarioId2._id
 		let tokenPhone  = acceso=="admin" || acceso=="solucion" ?usuarioId2.tokenPhone :usuarioId1.tokenPhone
+		let nombre     = acceso=="admin" || acceso=="solucion" ?usuarioId1.nombre :usuarioId2.nombre
 		const Fullmensaje = {
+			
 			usuarioId:userId,
 			conversacionId:_id,
 			tokenPhone:this.state.tokenPhone,
@@ -265,6 +272,7 @@ class Conversacion extends Component{
 		this.socket.emit('chatConversacion', JSON.stringify(Fullmensaje))
 		//////////////////////////////////////////////////////////////////////
 		data.append('imagen', imagen);
+		data.append('nombre', nombre);
 		data.append('userId', userId);
 		data.append('tokenPhone', tokenPhone);
 		data.append('conversacionId', _id);
@@ -294,12 +302,14 @@ class Conversacion extends Component{
 		this.setState({showSpin:true})
 		const {usuarioId1, usuarioId2, _id} = this.props.conversacion
 		const {id, acceso} = this.state
-		let userId 	   =  acceso=="admin" || acceso=="solucion" ?usuarioId1._id :usuarioId2._id
-		let userId2    =  acceso=="admin" || acceso=="solucion" ?usuarioId2._id :usuarioId1._id
+		let userId 	   = acceso=="admin" || acceso=="solucion" ?usuarioId1._id :usuarioId2._id
+		let userId2    = acceso=="admin" || acceso=="solucion" ?usuarioId2._id :usuarioId1._id
+		let nombre     = acceso=="admin" || acceso=="solucion" ?usuarioId1.nombre :usuarioId2.nombre
 		let tokenPhone = acceso=="admin" || acceso=="solucion" ?usuarioId2.tokenPhone :usuarioId1.tokenPhone
 		const {mensaje} = this.state
 		const Fullmensaje = {
 			mensaje: mensaje, 
+			nombre: nombre, 
 			userId2: userId2, 
 			usuarioId:{
 				usuarioId:userId,

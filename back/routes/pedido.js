@@ -115,23 +115,25 @@ router.post('/', (req,res)=>{
         console.log(id)
         userServices.getById(id, (err, clientes)=>{
             if(!err){
-                pedidoServices.create(req.body, id, req.session.usuario._id, (err2, pedido)=>{
-                    if (!err2) {
-                        let titulo = `<font size="5">Pedido guardado con exito</font>`;
-                        let text1  = `Hola Estimado/a: el pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
-                        let text2  = `Forma: <b>${req.body.forma}</b><br/>${req.body.cantidad &&"Cantidad: <b>"+req.body.cantidad+"</b>"}<br/>${req.body.frecuencia &&"Frecuencia: <b>"+req.body.frecuencia+"<b><br/> Dia:"+req.body.dia+"<b><br/>" + req.body.dia2 &&"Dia2:<b>"+req.body.dia+"</b>" } `
-                                
-                        htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
-                        let mensajeJson={
-                            badge:1
+                pedidoServices.totalPedidos((err3, totalPedidos)=>{
+                    pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, (err2, pedido)=>{
+                        if (!err2) {
+                            let titulo = `<font size="5">Pedido guardado con exito</font>`;
+                            let text1  = `Hola Estimado/a: el pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
+                            let text2  = `Forma: <b>${req.body.forma}</b><br/>${req.body.cantidad &&"Cantidad: <b>"+req.body.cantidad+"</b>"}<br/>${req.body.frecuencia &&"Frecuencia: <b>"+req.body.frecuencia+"<b><br/> Dia:"+req.body.dia+"<b><br/>" + req.body.dia2 &&"Dia2:<b>"+req.body.dia+"</b>" } `
+                                    
+                            htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
+                            let mensajeJson={
+                                badge:1
+                            }
+                            cliente.publish('pedido', JSON.stringify(mensajeJson)) 
+                            cliente.publish('actualizaPedidos', true) 
+                            
+                            res.json({ status: true, pedido });	
+                        }else{
+                            console.log(err2)
                         }
-                        cliente.publish('pedido', JSON.stringify(mensajeJson)) 
-                        cliente.publish('actualizaPedidos', true) 
-                        
-                        res.json({ status: true, pedido });	
-                    }else{
-                        console.log(err2)
-                    }
+                    })
                 })
             }
         })
@@ -153,7 +155,7 @@ router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega', (req,res)=>{
                     }else{
                        
                         orden = pedido ?pedido.orden+1 :1
-                        pedidoServices.asignarVehiculo(req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden,  (err3, pedido)=>{
+                        pedidoServices.asignarVehiculo(req.session.usuario._id, req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden,  (err3, pedido)=>{
                             if (!err3) {
                                 let fechaHoy = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD')
                                 fechaHoy===req.params.fechaEntrega 
@@ -204,7 +206,7 @@ router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        pedidoServices.cambiarEstado(req.params.idPedido, req.params.estado, (err, pedido)=>{
+        pedidoServices.cambiarEstado(req.session.usuario._id, req.params.idPedido, req.params.estado, (err, pedido)=>{
             if (!err) {
                 enviaNotificacion(res, "despacho", "Nuevo pedido activado", `${pedido._id} se ha hactivado`)
             }else{

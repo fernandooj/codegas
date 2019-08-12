@@ -30,7 +30,9 @@ const AppNavigator = createStackNavigator({
 	verPerfil    : {screen: verPerfilComponent},
 	confirmar    : {screen: confirmarComponent},
 	registro     : {screen: registroComponent},
-	mensaje      : {screen: mensajeComponent},
+	mensaje      : {screen: mensajeComponent, navigationOptions: {
+        gesturesEnabled: false,
+    },},
 	pedido       : {screen: pedidoComponent},
 	vehiculo     : {screen: vehiculoComponent},
 	zona		 : {screen: zonaComponent},

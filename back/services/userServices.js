@@ -18,7 +18,7 @@ class userServices {
 		User.findOne({'email':email}).exec(callback)
 	}
 	getByAcceso(acceso, callback){
-		User.find({'acceso':acceso, activo:true}).exec(callback)
+		User.find({'acceso':acceso, activo:true, eliminado:false}).exec(callback)
 	}
 	sinVehiculo(acceso, callback){
 		User.find({'acceso':acceso, activo:true}).exec(callback)
@@ -85,15 +85,7 @@ class userServices {
 		}}, callback);
 	}
 
-	////// cada vez ue el usuario hace login edito la informacion que me devuelve facebook o google
-	modificaUsuarioRedes(_id, data, callback){
-		User.findByIdAndUpdate(_id, {$set:{
-			'tokenPhone':data.tokenPhone,
-			'nombre':data.nombre,
-			'avatar':data.avatar,
-			'token':data.token,
-		}}, callback );	
-	}
+	 
 	modificaTokenPhone(idUser, tokenPhone, callback){
 		User.findByIdAndUpdate(idUser, {$set:{
 			'tokenPhone':tokenPhone,
@@ -107,7 +99,7 @@ class userServices {
 		}}, callback);
 	}
 	login(user, callback){
-		User.findOne({ 'email' :  user.email.toLowerCase() }).populate('categoria').exec(callback)
+		User.findOne({ activo:true, eliminado:false, 'email' :  user.email.toLowerCase() }).populate('categoria').exec(callback)
 	}
 	verificaToken(data, callback){
 		console.log(data)
