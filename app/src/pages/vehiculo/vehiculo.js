@@ -71,24 +71,25 @@ class Pedido extends Component{
                 <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({modalConductor:false, nombreConductor:null, idConductor:null})}} > 
                     <View style={style.contenedorModal}>
                         <View style={style.subContenedorModal}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => {this.setState({modalConductor:false})}} style={style.btnModalClose} >
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
-                            </TouchableOpacity>
-                            <Text style={style.titulo}>Selecciona un conductor</Text>
-                            {
-                                this.props.conductores.map(e=>{
-                                    return <TouchableOpacity
-                                            key={e._id}
-                                            style={conductor == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
-                                            onPress={conductor == e._id ?()=>this.desvincularConductor(e.nombre, e._id) :()=>this.asignarConductor(e.nombre, e._id)}
-                                        >
-                                        <Text style={style.conductor}>{e.nombre}</Text>       
-                                        <Image source={{uri:e.avatar}} style={style.avatar} />
-                                    </TouchableOpacity>
-                                })
-                            }
-                             
-                        </View>
+                            <ScrollView>
+                                <TouchableOpacity activeOpacity={1} onPress={() => {this.setState({modalConductor:false})}} style={style.btnModalClose} >
+                                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                                </TouchableOpacity>
+                                <Text style={style.titulo}>Selecciona un conductor</Text>
+                                {
+                                    this.props.conductores.map(e=>{
+                                        return <TouchableOpacity
+                                                key={e._id}
+                                                style={conductor == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
+                                                onPress={conductor == e._id ?()=>this.desvincularConductor(e.nombre, e._id) :()=>this.asignarConductor(e.nombre, e._id)}
+                                            >
+                                            <Text style={style.conductor}>{e.nombre}</Text>       
+                                            <Image source={{uri:e.avatar}} style={style.avatar} />
+                                        </TouchableOpacity>
+                                    })
+                                }
+                            </ScrollView>
+                        </View>        
                     </View>
                 </TouchableOpacity>
             </Modal>
@@ -197,7 +198,7 @@ class Pedido extends Component{
                     this.setState({placa:""})
                     this.props.getVehiculos()
                 }else{
-                    Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                    Toast.show("Esta placa ya existe", Toast.LONG)
                 }
             })
         }else{

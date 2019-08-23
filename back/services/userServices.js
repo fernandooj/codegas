@@ -20,6 +20,9 @@ class userServices {
 	getByAcceso(acceso, callback){
 		User.find({'acceso':acceso, activo:true, eliminado:false}).exec(callback)
 	}
+	getByCliente(callback){
+		User.find({'acceso':"cliente", activo:true, eliminado:false}).exec(callback)
+	}
 	sinVehiculo(acceso, callback){
 		User.find({'acceso':acceso, activo:true}).exec(callback)
 	}
@@ -99,7 +102,7 @@ class userServices {
 		}}, callback);
 	}
 	login(user, callback){
-		User.findOne({ activo:true, eliminado:false, 'email' :  user.email.toLowerCase() }).populate('categoria').exec(callback)
+		User.findOne({ activo:true, eliminado:false, 'email' :  user.email.toLowerCase() }).populate('categoria').populate('idPadre').exec(callback)
 	}
 	verificaToken(data, callback){
 		console.log(data)

@@ -73,6 +73,7 @@ export const style = MediaQueryStyleSheet.create({
         fontSize:22
     },
     btnGuardar:{
+        flexDirection:"row",
 		backgroundColor:"#00218b",
 		padding:10,
         borderRadius:5,

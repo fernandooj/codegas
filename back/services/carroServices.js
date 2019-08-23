@@ -21,6 +21,9 @@ class carroServices{
 	getByCarro(_id, callback){
 		carro.findOne({_id}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").exec(callback)
 	}
+	getByPlaca(placa, callback){
+		carro.findOne({placa}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").exec(callback)
+	}
 	getByConductor(conductor, callback){
 		carro.findOne({conductor}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").exec(callback)
 	}

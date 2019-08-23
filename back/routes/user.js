@@ -247,7 +247,7 @@ module.exports = function(app, passport){
                 if (!err2) {
                     let user = {
                         _id:               usuario._id, 
-                        razon_social:      usuario.razon_social,
+                        razon_social:      usuario.idPadre==null ?usuario.razon_social :usuario.idPadre.razon_social,
                         cedula:            usuario.cedula, 
                         direccion:         usuario.direccion, 
                         email:             usuario.email, 
@@ -471,6 +471,27 @@ module.exports = function(app, passport){
         if(req.session.usuario){
             userServices.getByAcceso(req.params.acceso, (err, usuarios)=>{
                 if(!err){
+                    res.json({status:true, usuarios})
+                }else{
+                    res.json({ status: 'FAIL', usuarios:[], err}) 
+                }
+            })
+        }else{
+            res.json({ status: 'FAIL', message:'usuario no logueado', usuarios:[]})  
+        }
+    })
+
+    ///////////////////////////////////////////////////////////////////////////
+    //////////////////      lista clientes padres
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/clientes', (req,res)=>{
+        if(req.session.usuario){
+            userServices.getByCliente((err, usuarios)=>{
+                if(!err){
+                    usuarios = usuarios.filter(e=>{
+                        return e.idPadre==null
+                    })
+                    console.log(usuarios)
                     res.json({status:true, usuarios})
                 }else{
                     res.json({ status: 'FAIL', usuarios:[], err}) 

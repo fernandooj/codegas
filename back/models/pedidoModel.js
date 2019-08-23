@@ -25,6 +25,7 @@ const Pedido = new Schema({
     orden_cerrado :Number,
     motivo_no_cierre:String,
     forma_pago:String,
+    imagen         : [{ type : String }],
     pedidoPadre   :{type: Schema.ObjectId, ref:'Pedido'},
     puntoId       :{type: Schema.ObjectId, ref:'Punto'},
     zonaId        :{type: Schema.ObjectId, ref:'Zona'},

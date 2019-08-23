@@ -9,16 +9,17 @@ import axios from 'axios'
 //////////////	tipo 4 ==> activaron tu titulo
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export const sendRemoteNotification = (tipo, token, targetScreen, titulo, mensaje, imagen, parameter)=> {
+export const sendRemoteNotification = (tipo, token, targetScreen, titulo, mensaje, imagen, parameter, nombre)=> {
 	
 	axios.get('user/perfil') 
 	.then((res)=>{
 		console.log(res.data)
+		let name = res.data.user.acceso=="cliente" ?res.data.user.razon_social :res.data.user.nombre
 	    let bodyIos;
-	    let nombre = tipo==4 ?'' :res.data.user.nombre
+	    let nombre = tipo==4 ?'' :nombre ?nombre :name
 	    let avatar = res.data.user.avatar
 	    imagen 	   = imagen==null ? avatar :imagen
-	   	
+		console.log({nombre})
 	    if(Platform.OS === 'android'){
 	    	console.log("android")
 	    	bodyIos = {

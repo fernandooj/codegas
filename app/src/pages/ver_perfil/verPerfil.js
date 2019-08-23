@@ -244,6 +244,7 @@ class verPerfil extends Component{
                     acceso!=="cliente"    
                     &&<View>
                         <TomarFoto 
+                            width={110}
                             source={imagen}
                             avatar
                             limiteImagenes={1}

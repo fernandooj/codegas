@@ -1,8 +1,11 @@
 let express = require('express')
 let router = express.Router();
-let fs = require('fs');
+let fs 		   = require('fs');
+let Jimp       = require("jimp");
+let {promisify} = require('util');
 let  moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
+let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
 let redis        	= require('redis')
 let cliente      	= redis.createClient()
 let pedidoServices     = require('../services/pedidoServices.js') 
@@ -10,7 +13,7 @@ let userServices       = require('./../services/userServices.js')
 let carroServices      = require('../services/carroServices.js') 
 const htmlTemplate     = require('../template-email.js')
 const notificacionPush = require('../notificacionPush.js')
-
+let sizeOf    	   = promisify(require('image-size'));
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
 ////////////////////////////////////////////////////////////
@@ -101,7 +104,7 @@ router.get('/vehiculosConPedidos/:fecha', (req,res)=>{
     }
 })
 
-
+const ubicacionJimp =  '../front/docs/public/uploads/pedido/'
 ///////////////////////////////////////////////////////////////
 ////////////       GUARDO UN PEDIDO
 //////////////////////////////////////////////////////////////
@@ -116,11 +119,36 @@ router.post('/', (req,res)=>{
         userServices.getById(id, (err, clientes)=>{
             if(!err){
                 pedidoServices.totalPedidos((err3, totalPedidos)=>{
-                    pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, (err2, pedido)=>{
+                    let ruta;
+                    if(req.files.imagen){
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                        
+                        ////////////////////    ruta que se va a guardar en el folder
+                        let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+                        
+                        ////////////////////    ruta que se va a guardar en la base de datos
+                        ruta  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                        
+                        ///////////////////     envio la imagen al nuevo path
+                        let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+                        fs.rename(req.files.imagen.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                        resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    }
+        
+                    pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, ruta, (err2, pedido)=>{
                         if (!err2) {
+                            console.log({dia1:req.body.dia2})
+                            const dia1       = req.body.dia1!=="undefined" ?`Dia 1: ${req.body.dia1}<br/>` :"" 
+                            const dia2       = req.body.dia2=="undefined" || req.body.dia2=="null" ?"" :`Dia 2: ${req.body.dia2}<br/>` 
+                            const cantidad   = req.body.cantidad!=="" ?`Cantidad: ${req.body.cantidad}<br/>` :"" 
+                            const frecuencia = req.body.frecuencia!=="undefined" ?`Frecuencia: ${req.body.frecuencia}<br/>` :"" 
                             let titulo = `<font size="5">Pedido guardado con exito</font>`;
                             let text1  = `Hola Estimado/a: el pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
-                            let text2  = `Forma: <b>${req.body.forma}</b><br/>${req.body.cantidad &&"Cantidad: <b>"+req.body.cantidad+"</b>"}<br/>${req.body.frecuencia &&"Frecuencia: <b>"+req.body.frecuencia+"<b><br/> Dia:"+req.body.dia+"<b><br/>" + req.body.dia2 &&"Dia2:<b>"+req.body.dia+"</b>" } `
+                            let text2  = `Forma: <b>${req.body.forma}</b><br/> ${cantidad} ${frecuencia} ${dia1} ${dia2} `
                                     
                             htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
                             let mensajeJson={
@@ -215,6 +243,7 @@ router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
         })
     }
 })
+
 
 ///////////////////////////////////////////////////////////////
 ////////////       FINALIZAR
@@ -442,5 +471,57 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
         }
     })
 })
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////// CAMBIO LOS TAMAÑOS DE LAS IMAGENES
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const resizeImagenes = (ruta, randonNumber, extension, res) =>{
+	Jimp.read(ruta, (err, imagen)=> {
+		if(err){
+			return err
+		}else{
+			imagen.resize(800, Jimp.AUTO)             
+			.quality(90)                          
+			.write(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`);
+			// res.json({status:true,  code:1})    
+		}
+	});	
+
+	setTimeout(function(){
+		sizeOf(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`)
+	    .then(dimensions => { 
+		  	let width  = dimensions.width
+		  	let height = dimensions.height
+		  	let x; 
+		  	let y; 
+		  	let w; 
+		  	let h; 
+
+		  	if (width>height) {
+		  		console.log(1)
+		  		x = (width*10)/100
+			  	y = (width*10)/100
+			  	w = (((height*100)/100)-y)
+			  	h = (((height*100)/100)-y)
+		  	}else{
+				x = (height*10)/100
+			  	y = (height*10)/100
+			  	w = (width*90)/100
+			  	h = (width*90)/100
+		  	}
+		  	
+			Jimp.read(ruta, function (err, imagen) {
+			    if (err) throw err;
+			    imagen.resize(800, Jimp.AUTO)             
+				.quality(90)                 
+				.crop(x,y,w,h)                
+				.write(`${ubicacionJimp}Miniatura${fechaImagen}_${randonNumber}.${extension}`);
+			});	
+		})
+	.catch(err => console.error(err));
+	},2000)
+}
+
 
 module.exports = router;

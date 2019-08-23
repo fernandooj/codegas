@@ -52,6 +52,8 @@ router.get(':carroId', (req,res)=>{
 	})
 })
 
+
+
 ///////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN CARRO POR UN CONDUCTOR
 //////////////////////////////////////////////////////////////
@@ -143,13 +145,20 @@ router.get('/eliminar/:idVehiculo/:estado', (req,res)=>{
 //////////////////////////////////////////////////////////////
 router.post('/', (req,res)=>{
 	if (!req.session.usuario) {
-		res.json({ status: false, message: 'No hay un usuario logueado' }); 
+		res.json({ status: false, message: 'No hay un usuario logueado', code:0 }); 
 	}else{
-		carroServices.create(req.body, req.session.usuario._id, (err, pedido)=>{
-			if (!err) {
-                res.json({ status: true, pedido });	
-            } 
-		})
+        carroServices.getByPlaca(req.body.placa, (err, carro)=>{
+         console.log(carro)   
+         if(!carro){
+             carroServices.create(req.body, req.session.usuario._id, (err, pedido)=>{
+                 if (!err) {
+                     res.json({ status: true, pedido });	
+                 } 
+             })
+         }else{
+            res.json({ status: false, message: 'ya existe esta placa', code:1 }); 
+         }
+        })
 	}
 })
 

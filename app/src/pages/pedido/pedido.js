@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, NetInfo, KeyboardAvoidingView} from 'react-native'
+import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, NetInfo} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import AsyncStorage        from '@react-native-community/async-storage';
 import moment 			   from 'moment-timezone'
@@ -101,7 +101,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
                         :null                               
                     }
                 >
@@ -234,8 +234,10 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
-        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido } = this.state
-        console.log({forma_pagoTexto})
+        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido, rutaImagen } = this.state
+        let nuevaRuta = rutaImagen ?rutaImagen.split("-") :""
+        let nuevaRuta2 = `${nuevaRuta[0]}Miniatura${nuevaRuta[2]}`
+        console.log({nuevaRuta})
         return <Modal transparent visible={openModal} animationType="fade" >
                 <KeyboardListener
                     onWillShow={() => { this.setState({ keyboard: true }); }}
@@ -252,6 +254,7 @@ class Pedido extends Component{
                                 <Text>Cedula: {cedula}</Text>
                                 <Text>Forma:  {forma}</Text>
                                 <Text>{cantidad &&`cantidad ${cantidad}`}</Text>
+                                {nuevaRuta!=="" &&<Image source={{uri:nuevaRuta2}} style={style.imagen} />}
                             
                             {/* CAMBIAR ESTADO */}
                             {
@@ -653,7 +656,7 @@ class Pedido extends Component{
                                         <Text style={style.textGuardar}>Guardar fecha</Text>
                                     </TouchableOpacity>
                                 </View>    
-                                :<View>
+                                :<ScrollView>
                                     {
                                         this.props.vehiculos.map(e=>{
                                             return <TouchableOpacity
@@ -668,14 +671,14 @@ class Pedido extends Component{
                                                 >
                                                 <Text style={style.conductor}>{e.placa}</Text>       
                                                 <Text style={style.conductor}>{e.conductor ? e.conductor.nombre :""}</Text>       
-                                                <Image source={{uri:e.avatar}} style={style.avatar} />
+                                                {e.conductor &&<Image source={{uri:e.conductor.avatar}} style={style.avatar} /> }
                                             </TouchableOpacity>
                                         })
                                     }
                                     <TouchableOpacity style={style.btnGuardar} onPress={()=>placa ?this.asignarConductor() :alert("selecciona un Vehiculo")}>
                                         <Text style={style.textGuardar}>Asignar Vehiculo</Text>
                                     </TouchableOpacity>  
-                                </View>
+                                </ScrollView>
                             }    
                         </View>
                     </View>
@@ -913,10 +916,13 @@ class Pedido extends Component{
 }
 
 const mapState = state => {
- 
+    let vehiculos = state.vehiculo.vehiculos.filter(e=>{
+        return e.conductor!=null
+    })
+    console.log(state.pedido.pedidos)
 	return {
         pedidos: state.pedido.pedidos,
-        vehiculos:state.vehiculo.vehiculos,
+        vehiculos:vehiculos,
         zonaPedidos:state.pedido.zonaPedidos,
 	};
 };

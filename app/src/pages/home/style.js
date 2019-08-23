@@ -60,8 +60,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnModalClose:{
 		position:"absolute",
-		right:-8,
-		top:-8,
+		right:Platform.OS=='android' ?-8 :3,
+		top:Platform.OS=='android' ?-8 :2,
 		zIndex:100
     },
     iconCerrar:{

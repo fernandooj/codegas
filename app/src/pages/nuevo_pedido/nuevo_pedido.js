@@ -10,12 +10,12 @@ import ModalSelector            from 'react-native-modal-selector'
 import ModalFilterPicker        from 'react-native-modal-filter-picker'
 import {Calendar}               from 'react-native-calendars';
 import { TextInputMask }        from 'react-native-masked-text'
+import TomarFoto           from "../components/tomarFoto";
 import { connect }              from "react-redux";
 import {sendRemoteNotification} from '../push/envioNotificacion';
 import {getUsuariosAcceso}      from '../../redux/actions/usuarioActions' 
 import Footer                   from '../components/footer'
 import {style}                  from './style'
- 
  
 const frecuencias = [
     { key: "semanal",   label: 'Semanal' },
@@ -73,6 +73,7 @@ class Nuevo_pedido extends Component{
 	constructor(props) {
 	  super(props);
 	  this.state={
+        imagen:[],
 		terminoBuscador:"",
 		inicio:0,
 		final:7,
@@ -81,6 +82,7 @@ class Nuevo_pedido extends Component{
         puntos:[],
         modalCliente:false,
         modalFechaEntrega:true,
+        // guardando:true,
         fechaSolicitud: moment().tz("America/Bogota").add(1, 'days').format('YYYY-MM-DD')
 	  }
 	}
@@ -114,12 +116,12 @@ class Nuevo_pedido extends Component{
        
     }
     getClientes(){
-        axios.get(`users/acceso/cliente`)
+        axios.get(`users/clientes`)
         .then(res => {
             console.log(res.data.usuarios)
             if(res.data.status){
                 let clientes = res.data.usuarios.map(e=>{
-                    return {key:e._id, label:e.cedula ?e.nombre+" - "+e.cedula :e.nombre, email:e.email}
+                    return {key:e._id, label:e.cedula ?e.razon_social+" - "+e.cedula :e.razon_social, email:e.email}
                 }) 
                 this.setState({clientes, modalCliente:true})
             }
@@ -127,7 +129,7 @@ class Nuevo_pedido extends Component{
        
     }
 	renderPedido(){
-        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud} = this.state
+        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud, guardando} = this.state
         return(
             <KeyboardAwareScrollView style={style.containerNuevo}>
                 <View style={style.subContainerNuevo}>
@@ -301,15 +303,21 @@ class Nuevo_pedido extends Component{
                        multiline = {true}
                        style={[style.inputNovedades]}
                    />
-
+                    <TomarFoto 
+                        width={110}
+                        
+                        limiteImagenes={3}
+                        imagenes={(imagen) => {  this.setState({imagen, showLoading:false}) }}
+                    /> 
                     <TouchableOpacity style={!forma ?style.btnGuardarDisable :style.btnGuardar} onPress={()=>
                         (acceso=="admin" || acceso=="solucion") && !idCliente
                         ?alert("Selecciona un cliente")
                         :(acceso=="admin" || acceso=="solucion") && !puntoId
                         ?alert("Selecciona una dirección")
-                        :this.handleSubmit()
+                        :!guardando &&this.handleSubmit()
                     }>
-                        <Text style={style.textGuardar}>Guardar pedido</Text>
+                        <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text>
+                        {guardando &&<ActivityIndicator color="#ffffff" />}
                     </TouchableOpacity>
                 </View>
             </KeyboardAwareScrollView>
@@ -409,31 +417,57 @@ class Nuevo_pedido extends Component{
         }
 	}
     handleSubmit(){
-        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud, idZona} = this.state
+        this.setState({guardando:true})
+        let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud, idZona, imagen, cliente} = this.state
         email = idCliente ?emailCliente :email
         forma=="monto" ?cantidad = this.campoMonto.getRawValue() :null
-        
-        console.log({forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
-        axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
+        let creado = moment().tz("America/Bogota").add(1, 'days').format('YYYY-MM-DD h:mm')
+        console.log({creado, forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
+        let data = new FormData();
+        imagen.forEach(e=>{
+            data.append('imagen', e);
+        })
+        data.append('forma', forma);
+        data.append('email', email);
+        data.append('cantidad', cantidad);
+        data.append('dia1', dia1);
+        data.append('dia2', dia2);
+        data.append('frecuencia', frecuencia);
+        data.append('idCliente', idCliente);
+        data.append('puntoId', puntoId);
+        data.append('fechaSolicitud', fechaSolicitud);
+        data.append('idZona', idZona);
+        data.append('creado', creado);
+        // axios.post("ped/pedido", {forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
+        axios({
+			method: 'post',  
+			url: 'ped/pedido',
+			data: data,
+			headers: {
+			'Accept': 'application/json',
+			'Content-Type': 'multipart/form-data'
+			}
+		})
         .then(e=>{
-            console.log(e.data)
+            let data = new FormData();
             if(e.data.status){
                 usuarios.filter(e=>{
-                    sendRemoteNotification(2, e.tokenPhone, "pedidos", `Nuevo Pedido`, `${forma} ${cantidad ?cantidad :""}`, null, null )
+                    sendRemoteNotification(2, e.tokenPhone, "pedidos", `Nuevo Pedido`, `${forma} ${cantidad ?cantidad :""}`, null, null, cliente )
                 })
                 axios.post(`nov/novedad/`, {pedidoId:e.data.pedido._id, novedad})
                 .then((res2)=>{ 
+                    this.setState({guardando:false})
                     this.props.navigation.navigate("Home")
                     Toast.show("Su pedido ha sido guardado")
                 })
-
-               
             }else{
+                this.setState({guardando:false})
                 alert("No pudimos procesar el pedido, intentelo mas tarde")    
             }
         })
         .catch(err=>{
-            console.log(err)
+            this.setState({guardando:false})
+            alert("No pudimos procesar el pedido, intentelo mas tarde")   
         })
     }
 }

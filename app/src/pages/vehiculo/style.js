@@ -95,12 +95,13 @@ export const style = MediaQueryStyleSheet.create({
 		backgroundColor:"#ffffff",
 		borderRadius:7,
 		padding:10,
-		alignItems:"center"
+		alignItems:"center",
+		height:size.height-50
 	},
 	btnModalClose:{
 		position:"absolute",
-		right:-8,
-		top:-8,
+		right:Platform.OS=='android' ?-8 :0,
+		top:Platform.OS=='android' ?-8 :0,
 		zIndex:100
     },
     iconCerrar:{

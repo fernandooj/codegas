@@ -7,7 +7,7 @@ import axios    from 'axios'
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
 import Icon from 'react-native-fa-icons';
- 
+import AsyncStorage             from '@react-native-community/async-storage';
 import {style} from './style'
 
  
@@ -33,11 +33,14 @@ class Home extends Component{
         modalUbicacion:false,
         modalZona:false,
         zonas:[],
+        ubicacionesEliminadas:[],
         ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, acceso:"cliente"}]
 	  }
 	}
 	 
 	async componentWillMount(){
+        let idUsuario = await AsyncStorage.getItem('userId')
+        this.setState({idUsuario})
         axios.get("zon/zona/activos")
         .then(res=>{
             console.log(res.data)
@@ -306,7 +309,7 @@ class Home extends Component{
 	}
     handleSubmit(e){
         this.setState({cargando:true})
-        const {razon_social, cedula, direccion_factura, nombre,  email, celular, password, tipo, acceso, codt, ubicaciones} = this.state
+        const {razon_social, cedula, direccion_factura, nombre,  email, celular, password, tipo, acceso, codt, ubicaciones, idUsuario, ubicacionesEliminadas} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email
         })
@@ -316,8 +319,8 @@ class Home extends Component{
         puntos = puntos.map(e=>{
             return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion}
         })
-        
-        axios.put("user/update", {razon_social, cedula, direccion_factura, nombre, email, password, celular, tipo, acceso, codt, puntos})
+        console.log({ubicacionesEliminadas})
+        axios.put(`user/update/${idUsuario}`, {razon_social, cedula, direccion_factura, nombre, email, password, celular, tipo, acceso, codt, puntos, idUsuario, ubicacionesEliminadas})
         .then(e=>{
             console.log(e.data)
             if(e.data.status){

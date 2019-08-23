@@ -49,8 +49,9 @@ class pedidoServices{
 	getLastRowConductorEntregados(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega, entregado:true}).sort({orden: 'desc'}).exec(callback)
 	}
-	create(data, usuarioId, usuarioCrea, nPedido, callback){
-		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
+	create(data, usuarioId, usuarioCrea, nPedido, imagen, callback){
+		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss')
+		console.log({fecha})
 		let creado = moment(fecha).valueOf()
 		creado = moment(creado).format("YYYY-MM-DD h:mm")
 		let newPedido = new pedido({
@@ -62,15 +63,16 @@ class pedidoServices{
 			dia2       		 : data.dia2,
 			puntoId    		 : data.puntoId,
 			zonaId    		 : data.idZona,
+			creado			 : data.creado,
 			fechaSolicitud : data.fechaSolicitud,
-			pedidoPadre 	 : data.pedidoPadre,
+			pedidoPadre    : data.pedidoPadre,
 			estado     	   :"espera",
 			entregado  	   :false,
 			eliminado  	   :false,
 			usuarioId,
 			usuarioCrea,
 			nPedido,
-			creado
+			imagen
 		})
 		newPedido.save(callback)	
 	}

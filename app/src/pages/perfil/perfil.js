@@ -233,13 +233,18 @@ class Home extends Component{
         let acceso = "cliente";
         axios.post("user/sign_up", {email, acceso})
         .then(e=>{
-            console.log(e.data)
-            e.data.status ?this.props.navigation.navigate("confirmar", {code:e.data.token, email}) :Toast.show("Este email ya existe en el sistema")
+            console.log(e.data.user)
+            e.data.status ?this.registroExitoso(email, e.data.token, e.data.user._id) :Toast.show("Este email ya existe en el sistema")
         })
         .catch(err=>{
             console.log(err)
             Toast.show("Tenemos un problema, intentelo mas tarde")
         })
+    }
+    async registroExitoso(email, code, id){
+        console.log({email, code, id})
+        AsyncStorage.setItem('userId', id)
+        this.props.navigation.navigate("confirmar", {code, email})
     }
     async login(){
         this.setState({cargando:true})

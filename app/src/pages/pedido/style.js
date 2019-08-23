@@ -214,6 +214,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	subContenedorModal:{
 		backgroundColor:"#ffffff",
+		height:size.height-50,
 		borderRadius:7,
 		padding:10,
 		alignItems:"center"
@@ -347,7 +348,8 @@ export const style = MediaQueryStyleSheet.create({
 	conductor:{
 		fontSize:18,
 		width:120,
-		top:5
+		top:5,
+		 
 	},
 	avatar:{
 		width:38,
@@ -356,8 +358,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnModalConductorClose:{
 		position:"absolute",
-		right:10,
-		top:-8,
+		right:Platform.OS=='android' ?-10 :6,
+		top:Platform.OS=='android' ?-8 :2,
 		zIndex:100
 	},
 	 /////////////////////////////////////////////////////////////////
