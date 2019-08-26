@@ -28,7 +28,7 @@ LocaleConfig.locales['es'] = {
   };
 LocaleConfig.defaultLocale = 'es';
 
-const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidad', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
+const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
 let size  = Dimensions.get('window');
 class Pedido extends Component{
 	constructor(props) {
@@ -93,6 +93,8 @@ class Pedido extends Component{
                         ?[style.pedidoBtn, {backgroundColor:"#ffffff"}] 
                         :e.estado=="innactivo" 
                         ?[style.pedidoBtn, {backgroundColor:"#d9534f"}] 
+                        :e.estado=="activo" &&!e.carroId && !e.entregado 
+                        ?[style.pedidoBtn, {backgroundColor:"#ffeb00"}]
                         :e.estado=="activo" && !e.entregado 
                         ?[style.pedidoBtn, {backgroundColor:"#f0ad4e"}]
                         :[style.pedidoBtn, {backgroundColor:"#5cb85c"}]
@@ -101,14 +103,14 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
                         :null                               
                     }
                 >
                      {/* <Text>{e._id}</Text> */}
                    {/* <Text>{e.orden}</Text> */}
                     <View style={style.containerPedidos}>
-                        <Text style={style.textPedido}>{e.usuarioId.nombre}</Text>
+                        <Text style={style.textPedido}>{e.usuarioId.razon_social}</Text>
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
                     </View>
                     <View style={style.containerPedidos}>
@@ -207,7 +209,7 @@ class Pedido extends Component{
             <Modal transparent visible={modalFechaEntrega} animationType="fade" >
                 <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  modalFechaEntrega: false }) }} >   
                     <View style={style.contenedorModal}>
-                        <View style={style.subContenedorModal}>
+                        <View style={[style.subContenedorModal, {height:size.height-180}]}>
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalFechaEntrega:false})} style={style.btnModalClose}>
                                 <Icon name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
@@ -232,204 +234,202 @@ class Pedido extends Component{
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
-        const {openModal, estado, nombre, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido, rutaImagen } = this.state
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido, rutaImagen } = this.state
         let nuevaRuta = rutaImagen ?rutaImagen.split("-") :""
         let nuevaRuta2 = `${nuevaRuta[0]}Miniatura${nuevaRuta[2]}`
         console.log({nuevaRuta})
-        return <Modal transparent visible={openModal} animationType="fade" >
+        return (
+            <View style={style.contenedorModal}>
                 <KeyboardListener
                     onWillShow={() => { this.setState({ keyboard: true }); }}
                     onWillHide={() => { this.setState({ keyboard: false }); }}
                 />
-            <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({   }) }} >   
-                <View style={size.height<height ?style.contenedorModal :style.contenedorModal2}>
-                    <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-500: -180}]}>
-                        <ScrollView onContentSizeChange={(height) => { this.setState({height}) }}  keyboardDismissMode="on-drag">
-                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
-                            </TouchableOpacity>
-                                <Text>Nombre: {nombre}</Text>
-                                <Text>Cedula: {cedula}</Text>
-                                <Text>Forma:  {forma}</Text>
-                                <Text>{cantidad &&`cantidad ${cantidad}`}</Text>
-                                {nuevaRuta!=="" &&<Image source={{uri:nuevaRuta2}} style={style.imagen} />}
-                            
-                            {/* CAMBIAR ESTADO */}
-                            {
-                                acceso=="admin" || acceso=="solucion"
-                                ?<View style={style.contenedorEspera}>
-                                    <View style={style.separador}></View>
-                                    <Text style={style.tituloModal}>Estado</Text>
-                                    <TouchableOpacity style={estado=="activo" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"activo"})}>
-                                        <Text style={style.textoEspera}>Activo</Text>
-                                        {estado=="activo" &&<Icon name="check" style={style.iconEditar} />}
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={estado=="innactivo" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"innactivo"})}>
-                                        <Text style={style.textoEspera}>In activo</Text>
-                                        {estado=="innactivo" &&<Icon name="check" style={style.iconEditar} />}
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={estado=="espera" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"espera"})}>
-                                        <Text style={style.textoEspera}>Espera</Text>
-                                        {estado=="espera" &&<Icon name="check" style={style.iconEditar} />}
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={style.btnGuardar2} onPress={()=>this.handleSubmit()}>
-                                        <Text style={style.textGuardar}>Cambiar Estado</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                :null
-                            }
-                            {/* ASIGNAR USUARIOS TIPO  */}
-                            {
-                                (acceso=="admin" || acceso=="despacho") && estadoEntrega=="asignado"
-                                ?<View>
-                                    <View style={style.separador}></View>
-                                    <Text style={style.tituloModal}>Asignar Vehiculo y fecha</Text>
-                                    {placaPedido &&<Text style={style.tituloModal}>{placaPedido} - {conductorPedido}</Text>}
-                                    <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row", left:45}]} onPress={()=>this.setState({modalConductor:true})}>
-                                        <Text style={style.textGuardar}>Asignar</Text>
-                                        <Icon name="user" style={style.iconBtnGuardar} />
-                                    </TouchableOpacity>   
-                                </View>
-                                :null
-                            }
-                            {/* CERRAR PEDIDO  */}
-                            {
-                                (acceso=="admin" || acceso=="conductor") && fechaEntrega
-                                ?<View>
-                                    {
-                                        entregado
-                                        ?<View>
-                                            <View style={style.separador}></View>
-                                            <Text style={style.tituloModal}>Pedido Cerrado</Text>
-                                            <View style={style.pedido}>
-                                            <ImageProgress 
-                                                resizeMode="cover" 
-                                                renderError={ (err) => { return (<ImageProgress source={require('../../assets/img/filtro.png')} imageStyle={{height: 40, width: 40, borderRadius: 10, left:-30, top:5}}  />) }} 
-                                                source={{ uri:  imagenPedido}} 
-                                                indicator={{
-                                                    size: 20, 
-                                                    borderWidth: 0,
-                                                    color: '#ffffff',
-                                                    unfilledColor: '#ffffff'
-                                                    }} 
-                                                style={style.imagen}
-                                            />
-                                            </View>
-                                            <View style={style.pedido}>
-                                                <Text>Kilos: </Text>
-                                                <Text>{kilos}</Text>
-                                            </View>
-                                            <View style={style.pedido}>
-                                                <Text>Factura: </Text>
-                                                <Text>{factura}</Text>
-                                            </View>
-                                            <View style={style.pedido}>
-                                                <Text>Valor unitario: </Text>
-                                                <Text>{forma_pago}</Text>
-                                            </View>
-                                            <View style={style.pedido}>
-                                                <Text>Forma de pago: </Text>
-                                                <Text>{forma_pago}</Text>
-                                            </View>
+                <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-500: -180}]}>
+                    <ScrollView onContentSizeChange={(height) => { this.setState({height}) }}  keyboardDismissMode="on-drag">
+                        <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
+                            <Icon name={'times-circle'} style={style.iconCerrar} />
+                        </TouchableOpacity>
+                            <Text>Razón Social: {razon_social}</Text>
+                            <Text>Cedula: {cedula}</Text>
+                            <Text>Forma:  {forma}</Text>
+                            <Text>{cantidad &&`cantidad ${cantidad}`}</Text>
+                            {nuevaRuta!=="" &&<Image source={{uri:nuevaRuta2}} style={style.imagen} />}
+                        
+                        {/* CAMBIAR ESTADO */}
+                        {
+                            acceso=="admin" || acceso=="solucion"
+                            ?<View style={style.contenedorEspera}>
+                                <View style={style.separador}></View>
+                                <Text style={style.tituloModal}>Estado</Text>
+                                <TouchableOpacity style={estado=="activo" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"activo"})}>
+                                    <Text style={style.textoEspera}>Activo</Text>
+                                    {estado=="activo" &&<Icon name="check" style={style.iconEditar} />}
+                                </TouchableOpacity>
+                                <TouchableOpacity style={estado=="innactivo" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"innactivo"})}>
+                                    <Text style={style.textoEspera}>In activo</Text>
+                                    {estado=="innactivo" &&<Icon name="check" style={style.iconEditar} />}
+                                </TouchableOpacity>
+                                <TouchableOpacity style={estado=="espera" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"espera"})}>
+                                    <Text style={style.textoEspera}>Espera</Text>
+                                    {estado=="espera" &&<Icon name="check" style={style.iconEditar} />}
+                                </TouchableOpacity>
+                                <TouchableOpacity style={style.btnGuardar2} onPress={()=>this.handleSubmit()}>
+                                    <Text style={style.textGuardar}>Cambiar Estado</Text>
+                                </TouchableOpacity>
+                            </View>
+                            :null
+                        }
+                        {/* ASIGNAR USUARIOS TIPO  */}
+                        {
+                            (acceso=="admin" || acceso=="despacho") && estadoEntrega=="asignado"
+                            ?<View>
+                                <View style={style.separador}></View>
+                                <Text style={style.tituloModal}>Asignar Vehiculo y fecha</Text>
+                                {placaPedido &&<Text style={style.tituloModal}>{placaPedido} - {conductorPedido}</Text>}
+                                <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row", left:45}]} onPress={()=>this.setState({modalConductor:true})}>
+                                    <Text style={style.textGuardar}>Asignar</Text>
+                                    <Icon name="user" style={style.iconBtnGuardar} />
+                                </TouchableOpacity>   
+                            </View>
+                            :null
+                        }
+                        {/* CERRAR PEDIDO  */}
+                        {
+                            (acceso=="admin" || acceso=="conductor") && fechaEntrega
+                            ?<View>
+                                {
+                                    entregado
+                                    ?<View>
+                                        <View style={style.separador}></View>
+                                        <Text style={style.tituloModal}>Pedido Cerrado</Text>
+                                        <View style={style.pedido}>
+                                        <ImageProgress 
+                                            resizeMode="cover" 
+                                            renderError={ (err) => { return (<ImageProgress source={require('../../assets/img/filtro.png')} imageStyle={{height: 40, width: 40, borderRadius: 10, left:-30, top:5}}  />) }} 
+                                            source={{ uri:  imagenPedido}} 
+                                            indicator={{
+                                                size: 20, 
+                                                borderWidth: 0,
+                                                color: '#ffffff',
+                                                unfilledColor: '#ffffff'
+                                                }} 
+                                            style={style.imagen}
+                                        />
                                         </View>
-                                        :<View style={style.contenedorCerrarPedido}>
-                                            <View style={style.separador}></View>
-                                            <Text style={style.tituloModal}>Cerrar Pedido</Text>
-                                            <TomarFoto 
-                                                source={avatar}
+                                        <View style={style.pedido}>
+                                            <Text>Kilos: </Text>
+                                            <Text>{kilos}</Text>
+                                        </View>
+                                        <View style={style.pedido}>
+                                            <Text>Factura: </Text>
+                                            <Text>{factura}</Text>
+                                        </View>
+                                        <View style={style.pedido}>
+                                            <Text>Valor unitario: </Text>
+                                            <Text>{forma_pago}</Text>
+                                        </View>
+                                        <View style={style.pedido}>
+                                            <Text>Forma de pago: </Text>
+                                            <Text>{forma_pago}</Text>
+                                        </View>
+                                    </View>
+                                    :<View style={style.contenedorCerrarPedido}>
+                                        <View style={style.separador}></View>
+                                        <Text style={style.tituloModal}>Cerrar Pedido</Text>
+                                        <TomarFoto 
+                                            source={avatar}
+                                            width={100}
+                                            limiteImagenes={3}
+                                            imagenes={(imagen) => {  this.setState({imagen}) }}
+                                        /> 
+                                        <TextInput
+                                            placeholder="N Kilos"
+                                            autoCapitalize = 'none'
+                                            onChangeText={(kilosTexto)=> this.setState({ kilosTexto })}
+                                            value={kilosTexto}
+                                            keyboardType='numeric'
+                                            style={[style.inputTerminarPedido, {marginTop:20}]}
+                                        />
+                                        <TextInput
+                                            placeholder="N Factura"
+                                            autoCapitalize = 'none'
+                                            onChangeText={(facturaTexto)=> this.setState({ facturaTexto })}
+                                            value={facturaTexto}
+                                            style={style.inputTerminarPedido}
+                                        />
+                                        <TextInput
+                                            placeholder="Valor Unitario"
+                                            autoCapitalize = 'none'
+                                            keyboardType='numeric'
+                                            onChangeText={(valor_unitarioTexto)=> this.setState({ valor_unitarioTexto })}
+                                            value={valor_unitarioTexto}
+                                            style={style.inputTerminarPedido}
+                                        />
+                                        <RNPickerSelect
+                                            placeholder={{
+                                                label: 'Forma de pago',
+                                                value: null,
+                                                color: '#00218b',
+                                            }}
+                                            items={[
+                                                {label: 'Contado', value: 'Contado'},
+                                                {label: 'Credito', value: 'Credito'},
                                                 
-                                                limiteImagenes={1}
-                                                imagenes={(imagen) => {  this.setState({imagen}) }}
-                                            /> 
-                                            <TextInput
-                                                placeholder="N Kilos"
-                                                autoCapitalize = 'none'
-                                                onChangeText={(kilosTexto)=> this.setState({ kilosTexto })}
-                                                value={kilosTexto}
-                                                keyboardType='numeric'
-                                                style={[style.inputTerminarPedido, {marginTop:20}]}
-                                            />
-                                            <TextInput
-                                                placeholder="N Factura"
-                                                autoCapitalize = 'none'
-                                                onChangeText={(facturaTexto)=> this.setState({ facturaTexto })}
-                                                value={facturaTexto}
-                                                style={style.inputTerminarPedido}
-                                            />
-                                            <TextInput
-                                                placeholder="Valor Unitario"
-                                                autoCapitalize = 'none'
-                                                keyboardType='numeric'
-                                                onChangeText={(valor_unitarioTexto)=> this.setState({ valor_unitarioTexto })}
-                                                value={valor_unitarioTexto}
-                                                style={style.inputTerminarPedido}
-                                            />
-                                            <RNPickerSelect
-                                                placeholder={{
-                                                    label: 'Forma de pago',
-                                                    value: null,
-                                                    color: '#00218b',
-                                                }}
-                                                items={[
-                                                    {label: 'Contado', value: 'Contado'},
-                                                    {label: 'Credito', value: 'Credito'},
-                                                    
-                                                ]}
-                                                onValueChange={forma_pagoTexto => {this.setState({ forma_pagoTexto })}}
-                                                mode="dropdown"
-                                                style={{
-                                                    ...style,
-                                                    placeholder: {
-                                                    color: 'rgba(0,0,0,.2)',
-                                                    fontSize: 15,
-                                                    },
-                                                }}
-                                                value={forma_pagoTexto}
-                                            />  
+                                            ]}
+                                            onValueChange={forma_pagoTexto => {this.setState({ forma_pagoTexto })}}
+                                            mode="dropdown"
+                                            style={{
+                                                ...style,
+                                                placeholder: {
+                                                color: 'rgba(0,0,0,.2)',
+                                                fontSize: 15,
+                                                },
+                                            }}
+                                            value={forma_pagoTexto}
+                                        />  
 
-                                             
-                                            <TextInput
-                                                placeholder="Novedades"
-                                                autoCapitalize = 'none'
-                                                onChangeText={(novedad)=> this.setState({novedad})}
-                                                value={novedad}
-                                                multiline={true}
-                                                numberOfLines={4}
-                                                style={style.inputNovedad}
-                                            />
-                                            <View style={style.contenedorConductor}>
-                                                <TouchableOpacity 
-                                                    style={kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1 || !imagen
-                                                    ?style.btnDisable3 :style.btnGuardar3} 
-                                                    onPress={
-                                                        kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_unitarioTexto.length<1  || novedad.length<1 || !imagen
-                                                        ?()=>alert("llene todos los campos")
-                                                        :()=>this.cerrarPedido()
-                                                    }
-                                                >
-                                                    <Text style={style.textGuardar}>Cerrar Pedido</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity 
-                                                    style={ novedad.length<4 ?style.btnDisable3 :style.btnGuardar3} 
-                                                    onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.guardarNovedad()}>
-                                                    <Text style={style.textGuardar}>Guardar novedad, sin cerrar</Text>
-                                                </TouchableOpacity>
-                                            </View>
+                                            
+                                        <TextInput
+                                            placeholder="Novedades"
+                                            autoCapitalize = 'none'
+                                            onChangeText={(novedad)=> this.setState({novedad})}
+                                            value={novedad}
+                                            multiline={true}
+                                            numberOfLines={4}
+                                            style={style.inputNovedad}
+                                        />
+                                        <View style={style.contenedorConductor}>
+                                            <TouchableOpacity 
+                                                style={kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1 || !imagen
+                                                ?style.btnDisable3 :style.btnGuardar3} 
+                                                onPress={
+                                                    kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_unitarioTexto.length<1  || novedad.length<1 || !imagen
+                                                    ?()=>alert("llene todos los campos")
+                                                    :()=>this.cerrarPedido()
+                                                }
+                                            >
+                                                <Text style={style.textGuardar}>Cerrar Pedido</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity 
+                                                style={ novedad.length<4 ?style.btnDisable3 :style.btnGuardar3} 
+                                                onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.guardarNovedad()}>
+                                                <Text style={style.textGuardar}>Guardar novedad, sin cerrar</Text>
+                                            </TouchableOpacity>
                                         </View>
-                                    }
-                                    
-                                </View>
-                                :null
-                            }
-                            {this.modalFechaEntrega()}
-                            {this.modalVehiculos()}
-                        </ScrollView>
-                    </View>                   
-                </View>
-            </TouchableOpacity>
-        </Modal>
+                                    </View>
+                                }
+                                
+                            </View>
+                            :null
+                        }
+                        {this.modalFechaEntrega()}
+                        {this.modalVehiculos()}
+                    </ScrollView>
+                </View>                   
+            </View>
+        )
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -719,7 +719,7 @@ class Pedido extends Component{
     }
 	render(){
         const {navigation} = this.props
-        const {idUsuario, pedidos, fechaEntrega} = this.state
+        const {idUsuario, pedidos, fechaEntrega, openModal} = this.state
         console.log(fechaEntrega)
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
@@ -731,8 +731,8 @@ class Pedido extends Component{
                     {this.renderCabezera()}
                     {this.renderModalFiltro()}
                     {this.modalZonas()}
+                    {openModal &&this.editarPedido()}
                     <ScrollView style={style.subContenedor}>
-                        {this.editarPedido()}
                         {
                             pedidos.length==0
                             ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
@@ -860,8 +860,11 @@ class Pedido extends Component{
         );
         const confirmar =()=>{
             let data = new FormData();
-            imagen = imagen[0]
-            data.append('imagen', imagen);
+            imagen.forEach(e=>{
+                data.append('imagen', e);
+            })
+            // imagen = imagen[0]
+            // data.append('imagen', imagen);
             data.append('email', email);
             data.append('_id', id);
             data.append('kilos', kilosTexto);

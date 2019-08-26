@@ -199,22 +199,12 @@ export const style = MediaQueryStyleSheet.create({
 		bottom:50,
 		top:0,
 		left:0,	
+		flex:1
 	},
-	contenedorModal2:{
-		position:Platform.OS=='android' ?null :"absolute",
-		alignItems:"center",
-		backgroundColor:"rgba(0,0,0,.5)",
-		height:size.height,
-		zIndex:100,
-		width:"100%",
-		bottom:50,
-		top:0,
-		left:0,	
-		paddingTop:40,
-	},
+	 
 	subContenedorModal:{
 		backgroundColor:"#ffffff",
-		height:size.height-50,
+		height:size.height-100,
 		borderRadius:7,
 		padding:10,
 		alignItems:"center"
@@ -295,8 +285,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnGuardar3:{
 		backgroundColor: "#00218b",
-		paddingVertical:8,
-		width:size.width/2.6,
+		paddingVertical:4,
+		width:120,
 		marginVertical:20,
 		left:0,
 		marginHorizontal:10,
@@ -304,8 +294,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnDisable3:{
 		backgroundColor:"grey",
-		paddingVertical:8,
-		width:size.width/2.6,
+		paddingVertical:4,
+		width:120,
 		marginVertical:20,
 		left:0,
 		marginHorizontal:10,
@@ -362,6 +352,9 @@ export const style = MediaQueryStyleSheet.create({
 		top:Platform.OS=='android' ?-8 :2,
 		zIndex:100
 	},
+	calendar:{
+		height:100
+	},
 	 /////////////////////////////////////////////////////////////////
     ////////////////////        PICKER
     /////////////////////////////////////////////////////////////////
@@ -370,7 +363,7 @@ export const style = MediaQueryStyleSheet.create({
 			backgroundColor:"#ffffff",
 			color:"#000000",
 			// marginHorizontal:"6%",
-			width:"98.5%",
+			width:"95.5%",
 			borderWidth:1,
 			height:30,
 			marginTop:5,
@@ -385,7 +378,7 @@ export const style = MediaQueryStyleSheet.create({
 			borderWidth: 0.5,
 			borderColor:"rgba(0,0,0,.2)",
 			borderRadius: 8,
-			width:"98.5%",
+			width:"95.5%",
 			paddingRight: 30, // to ensure the text is never behind the icon
 	},
 })

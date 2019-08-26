@@ -8,12 +8,13 @@ import 'antd/dist/antd.css';
 import locale              from 'antd/lib/date-picker/locale/es_ES';
 import axios               from "axios";
 import moment 			       from 'moment-timezone'
+import {createFilter} from 'react-search-input'
 import SocketIOClient      from 'socket.io-client';
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import { connect }         from "react-redux";
 const confirm = Modal.confirm;
- 
+const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', , "zonaId.nombre", 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
 
 class Home extends PureComponent {
   constructor(props){
@@ -22,6 +23,8 @@ class Home extends PureComponent {
       modal:false,
       modalFecha:false,
       loading: false,
+      terminoBuscador:"",
+      pedidos:[]
     }
   }
   componentWillMount(){
@@ -81,17 +84,26 @@ class Home extends PureComponent {
   renderTable(){
     const columns = [
       {
-        title: 'Cliente',
+        title: 'CODT',
         dataIndex: 'usuarioId.codt',
-        // onFilter: (value, record) => record.usuarioId.nombre.indexOf(value) === 0,
-        // sorter: (a, b) => a.usuarioId.nombre.length - b.usuarioId.nombre.length,
-        // sortDirections: ['descend'],
+      },
+      {
+        title: 'Razón social',
+        dataIndex: 'usuarioId.razon_social',
       },
       {
         title: 'Cedula',
         dataIndex: 'usuarioId.cedula',
         defaultSortOrder: 'descend',
         sorter: (a, b) => a.age - b.age,
+      },
+      {
+        title: 'Dirección',
+        dataIndex: 'puntoId.direccion',
+      },
+      {
+        title: 'Zona',
+        dataIndex: 'zonaId.nombre',
       },
       {
         title: 'Fecha creación',
@@ -189,8 +201,10 @@ class Home extends PureComponent {
         sortDirections: ['descend', 'ascend'],
       },
     ];
-    const {pedidos} = this.state
-    return (<Table columns={columns} dataSource={pedidos} onChange={()=>this.onChange()} />)
+    const {pedidos, terminoBuscador} = this.state
+    let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+    
+    return (<Table columns={columns} dataSource={pedidosFiltro} onChange={()=>this.onChange()} />)
   }
 
 
@@ -356,7 +370,12 @@ class Home extends PureComponent {
     return (
       <div className={style.container}> 
         <section className={style.containerBotones}>
-          {this.renderBotones()}
+          <section>
+            {this.renderBotones()}
+          </section>
+          <section>
+            <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} />
+          </section>
         </section>
         {this.renderTable()}
         {this.renderModalVehiculo()}
@@ -370,6 +389,7 @@ class Home extends PureComponent {
 
 }
 const mapState = state => {
+  console.log(state.pedido.pedidos)
 	return {
         pedidos: state.pedido.pedidos,
         vehiculos:state.vehiculo.vehiculos

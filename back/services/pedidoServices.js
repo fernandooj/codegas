@@ -41,7 +41,7 @@ class pedidoServices{
 	getByFechaEntrega(fechaEntrega,  callback){
 		fechaEntrega!="undefined"
 		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
-		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
+		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("zonaId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)
@@ -172,16 +172,16 @@ class pedidoServices{
 			'usuarioAsigna':idUsuario,
 		}}, callback);
   }
-  finalizar(data, activo, imagen, orden_cerrado, callback){
+  finalizar(data, activo, imagenCerrar, orden_cerrado, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
 			'factura'  		:data.factura,
 			'valor_unitario':data.valor_unitario,
-			'forma_pago':data.forma_pago,
-			'imagen':imagen,
-			'orden_cerrado':orden_cerrado,
+			'forma_pago'	:data.forma_pago,
+			'imagen'		:imagenCerrar,
+			'orden_cerrado' :orden_cerrado,
 			'fechaEntregado':fecha
 		}}, callback);
 	}
@@ -195,7 +195,7 @@ class pedidoServices{
 			'fechaEntregado':fecha
 		}}, callback);
     }
-  eliminar(_id, eliminado, callback){
+	eliminar(_id, eliminado, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'eliminado':eliminado
 		}}, callback);

@@ -1,11 +1,17 @@
 
 .container{
   margin:30px auto;
-  max-width: 1300px;
+  max-width: 1450px;
 }
 
 
 .containerBotones{
+  section{
+    >div{
+      float: left
+    }
+    display: inline;
+  }
   button{
     color:white;
     margin-right:10px;
@@ -33,4 +39,10 @@
     display: inline-block;
     width: 33%;
   }
+}
+.inputSearch{
+  width: 400px;
+  padding: 5px;
+  box-shadow: 1px 1px 3px 3px rgba(128, 128, 128, 0.15);
+  border: none;
 }
