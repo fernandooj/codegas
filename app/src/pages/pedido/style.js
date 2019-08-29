@@ -189,7 +189,7 @@ export const style = MediaQueryStyleSheet.create({
 	///////////				MODAL
 	//////////////////////////////////////////////////////////////////
 	contenedorModal:{
-		position:Platform.OS=='android' ?null :"absolute",
+		position:Platform.OS=='android' ?"absolute" :"absolute",
 		alignItems:"center",
 		justifyContent: 'center',
 		backgroundColor:"rgba(0,0,0,.5)",
@@ -200,6 +200,20 @@ export const style = MediaQueryStyleSheet.create({
 		top:0,
 		left:0,	
 		flex:1
+	},
+
+	contenedorModal2:{
+		position:Platform.OS=='android' ?"absolute" :"absolute",
+		alignItems:"center",
+		justifyContent: 'center',
+		backgroundColor:"rgba(0,0,0,.5)",
+		height:size.height,
+		zIndex:200,
+		width:"100%",
+		// bottom:50,
+		top:0,
+		left:0,	
+		// flex:1
 	},
 	 
 	subContenedorModal:{
@@ -353,7 +367,7 @@ export const style = MediaQueryStyleSheet.create({
 		zIndex:100
 	},
 	calendar:{
-		height:100
+		// height:100
 	},
 	 /////////////////////////////////////////////////////////////////
     ////////////////////        PICKER

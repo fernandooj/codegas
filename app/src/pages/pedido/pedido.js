@@ -103,7 +103,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
                         :null                               
                     }
                 >
@@ -206,9 +206,8 @@ class Pedido extends Component{
         fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
         return(
-            <Modal transparent visible={modalFechaEntrega} animationType="fade" >
-                <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  modalFechaEntrega: false }) }} >   
-                    <View style={style.contenedorModal}>
+             
+                    <View style={style.contenedorModal2}>
                         <View style={[style.subContenedorModal, {height:size.height-180}]}>
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalFechaEntrega:false})} style={style.btnModalClose}>
                                 <Icon name={'times-circle'} style={style.iconCerrar} />
@@ -227,8 +226,7 @@ class Pedido extends Component{
                             <Text style={style.textGuardar}>Guardar fecha</Text>
                         </TouchableOpacity>
                     </View>
-                </TouchableOpacity>
-            </Modal>
+                
         )
     }
 
@@ -248,7 +246,7 @@ class Pedido extends Component{
                 />
                 <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-500: -180}]}>
                     <ScrollView onContentSizeChange={(height) => { this.setState({height}) }}  keyboardDismissMode="on-drag">
-                        <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
+                        <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false, elevation:7})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
                             <Icon name={'times-circle'} style={style.iconCerrar} />
                         </TouchableOpacity>
                             <Text>Razón Social: {razon_social}</Text>
@@ -424,10 +422,10 @@ class Pedido extends Component{
                             </View>
                             :null
                         }
-                        {this.modalFechaEntrega()}
-                        {this.modalVehiculos()}
+                        
                     </ScrollView>
                 </View>                   
+                        
             </View>
         )
     }
@@ -626,8 +624,7 @@ class Pedido extends Component{
         fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
         return(
-            <Modal transparent visible={modalConductor} animationType="fade" >
-                <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({placa:null, idVehiculo:null})}} > 
+            
                     <View style={style.contenedorModal}>
                         <View style={style.subContenedorModal}>
                             <TouchableOpacity
@@ -682,8 +679,7 @@ class Pedido extends Component{
                             }    
                         </View>
                     </View>
-                </TouchableOpacity>
-            </Modal>
+              
         )
     }
     renderCabezera(){
@@ -719,7 +715,7 @@ class Pedido extends Component{
     }
 	render(){
         const {navigation} = this.props
-        const {idUsuario, pedidos, fechaEntrega, openModal} = this.state
+        const {idUsuario, pedidos, fechaEntrega, openModal, modalFechaEntrega, modalConductor} = this.state
         console.log(fechaEntrega)
         if(!idUsuario){
             return <ActivityIndicator color="#00218b" />
@@ -728,6 +724,8 @@ class Pedido extends Component{
         }else{
             return (
                 <View style={style.container}>
+                    {this.modalVehiculos()}
+                    {modalFechaEntrega &&this.modalFechaEntrega()}
                     {this.renderCabezera()}
                     {this.renderModalFiltro()}
                     {this.modalZonas()}
