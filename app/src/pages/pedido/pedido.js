@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, NetInfo} from 'react-native'
+import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, NetInfo, Keyboard} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import AsyncStorage        from '@react-native-community/async-storage';
 import moment 			   from 'moment-timezone'
@@ -45,7 +45,8 @@ class Pedido extends Component{
         forma_pagoTexto:"",
         novedad:"",
         fechasFiltro:["0","1"],
-        pedidos:[],
+        inicio:0,
+        final:3,
         zonaPedidos:[],
         top:new Animated.Value(size.height),
         elevation:7,     ////// en Android sale un error al abrir el filtro debido a la elevation
@@ -67,6 +68,8 @@ class Pedido extends Component{
         }
         this.socket = SocketIOClient(URL);
         this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
+        this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
+        this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
     }
     componentDidMount(){
         NetInfo.isConnected.addEventListener('change', this.estadoRed);
@@ -74,6 +77,10 @@ class Pedido extends Component{
     componentWillReceiveProps(props){
         this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos})   
     }    
+    componentWillUnmount () {
+        this.keyboardDidShowListener.remove();
+        this.keyboardDidHideListener.remove();
+    }
     reciveMensanje(messages) {
         this.props.getPedidos()
 	}
@@ -81,9 +88,10 @@ class Pedido extends Component{
         // console.log(estadoRed)
     }
     renderPedidos(){
-        const {acceso, terminoBuscador, pedidos} = this.state
+        const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-        return pedidosFiltro.map((e, key)=>{
+        let newPedidos = pedidosFiltro.slice(inicio, final)
+        return newPedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
                     key={key}
@@ -103,7 +111,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>
                         acceso!=="cliente"
-                        ?this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario })
+                        ?this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido })
                         :null                               
                     }
                 >
@@ -114,8 +122,16 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
                     </View>
                     <View style={style.containerPedidos}>
+                        <Text style={style.textPedido}>N pedido</Text>
+                        <Text style={style.textPedido}>{e.nPedido}</Text>
+                    </View>
+                    <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>Dirección</Text>
                         <Text style={style.textPedido}>{e.puntoId ?e.puntoId.direccion :"Sin dirección"}</Text>
+                    </View>
+                    <View style={style.containerPedidos}>
+                        <Text style={style.textPedido}>Zona</Text>
+                        <Text style={style.textPedido}>{e.zonaId ?e.zonaId.nombre :"Sin zona"}</Text>
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>CODT</Text>
@@ -229,28 +245,36 @@ class Pedido extends Component{
                 
         )
     }
-
+    _keyboardDidShow = () => {
+        this.setState({
+            keyboard: true
+        });
+    }
+    
+    _keyboardDidHide = () => {
+        this.setState({
+            keyboard: false
+        });
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     editarPedido(){
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido, rutaImagen } = this.state
+        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido, rutaImagen,nPedido } = this.state
         let nuevaRuta = rutaImagen ?rutaImagen.split("-") :""
         let nuevaRuta2 = `${nuevaRuta[0]}Miniatura${nuevaRuta[2]}`
-        console.log({nuevaRuta})
+        console.log({keyboard})
         return (
             <View style={style.contenedorModal}>
-                <KeyboardListener
-                    onWillShow={() => { this.setState({ keyboard: true }); }}
-                    onWillHide={() => { this.setState({ keyboard: false }); }}
-                />
-                <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-500: -180}]}>
+               
+                <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-610: -370}]}>
                     <ScrollView onContentSizeChange={(height) => { this.setState({height}) }}  keyboardDismissMode="on-drag">
                         <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false, elevation:7})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
                             <Icon name={'times-circle'} style={style.iconCerrar} />
                         </TouchableOpacity>
                             <Text>Razón Social: {razon_social}</Text>
                             <Text>Cedula: {cedula}</Text>
+                            <Text>N Pedido: {nPedido}</Text>
                             <Text>Forma:  {forma}</Text>
                             <Text>{cantidad &&`cantidad ${cantidad}`}</Text>
                             {nuevaRuta!=="" &&<Image source={{uri:nuevaRuta2}} style={style.imagen} />}
@@ -365,30 +389,31 @@ class Pedido extends Component{
                                             value={valor_unitarioTexto}
                                             style={style.inputTerminarPedido}
                                         />
-                                        <RNPickerSelect
-                                            placeholder={{
-                                                label: 'Forma de pago',
-                                                value: null,
-                                                color: '#00218b',
-                                            }}
-                                            items={[
-                                                {label: 'Contado', value: 'Contado'},
-                                                {label: 'Credito', value: 'Credito'},
+                                        <View style={style.contenedorSelect}>
+                                            <RNPickerSelect
+                                                placeholder={{
+                                                    label: 'Forma de pago',
+                                                    value: null,
+                                                    color: '#00218b',
+                                                }}
+                                                items={[
+                                                    {label: 'Contado', value: 'Contado'},
+                                                    {label: 'Credito', value: 'Credito'},
+                                                    
+                                                ]}
+                                                onValueChange={forma_pagoTexto => {this.setState({ forma_pagoTexto })}}
+                                                mode="dropdown"
+                                                style={{
+                                                    // ...style,
+                                                    placeholder: {
+                                                    color: 'rgba(0,0,0,.4)',
+                                                    fontSize: 14,
+                                                    },
+                                                }}
+                                                value={forma_pagoTexto}
+                                            />  
+                                        </View>
                                                 
-                                            ]}
-                                            onValueChange={forma_pagoTexto => {this.setState({ forma_pagoTexto })}}
-                                            mode="dropdown"
-                                            style={{
-                                                ...style,
-                                                placeholder: {
-                                                color: 'rgba(0,0,0,.2)',
-                                                fontSize: 15,
-                                                },
-                                            }}
-                                            value={forma_pagoTexto}
-                                        />  
-
-                                            
                                         <TextInput
                                             placeholder="Novedades"
                                             autoCapitalize = 'none'
@@ -397,6 +422,7 @@ class Pedido extends Component{
                                             multiline={true}
                                             numberOfLines={4}
                                             style={style.inputNovedad}
+                                            onSubmitEditing={Keyboard.dismiss}
                                         />
                                         <View style={style.contenedorConductor}>
                                             <TouchableOpacity 
@@ -412,7 +438,7 @@ class Pedido extends Component{
                                             </TouchableOpacity>
                                             <TouchableOpacity 
                                                 style={ novedad.length<4 ?style.btnDisable3 :style.btnGuardar3} 
-                                                onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.guardarNovedad()}>
+                                                onPress={()=>novedad.length<4 ?alert("Inserte alguna novedad") :this.setState({modalPerfiles:true})}>
                                                 <Text style={style.textGuardar}>Guardar novedad, sin cerrar</Text>
                                             </TouchableOpacity>
                                         </View>
@@ -615,7 +641,16 @@ class Pedido extends Component{
         this.props.getPedidos() 
         this.props.getZonasPedidos(moment().format("YYYY-MM-DD")) 
     }
- 
+    onScroll(e) {
+		const {final} =  this.state
+		let paddingToBottom = 10;
+        paddingToBottom += e.nativeEvent.layoutMeasurement.height;
+        if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
+            this.setState({final:final+5, showSpin:true})
+            this.myInterval = setInterval(()=>this.setState({showSpin:false}), 2000)
+            // clearInterval(this.myInterval);
+        }
+	}
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LOS CONDUCTORES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -624,61 +659,60 @@ class Pedido extends Component{
         fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
         return(
-            
-                    <View style={style.contenedorModal}>
-                        <View style={style.subContenedorModal}>
-                            <TouchableOpacity
-                                activeOpacity={1}
-                                onPress={() => {this.setState({modalConductor:false, placa:null, idVehiculo:null})}}
-                                style={style.btnModalConductorClose}
-                            >
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
-                            </TouchableOpacity>
-                            <View style={style.contenedorConductor}>
-                                <Button title="Asignar Vehiculo" disabled={!showCalendar ? true :false} onPress={()=>this.setState({showCalendar:false})} />
-                                <Button title="Fecha entrega" disabled={showCalendar ? true :false}  onPress={()=>this.setState({showCalendar:true})} />
-                            </View>
-                            {
-                                showCalendar
-                                ?<View>
-                                    <Calendar
-                                        style={style.calendar}
-                                        current={fechaEntrega ?fechaEntrega :diaActual}
-                                        minDate={diaActual}
-                                        firstDay={1}
-                                        onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
-                                        markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
-                                    />
-                                    <TouchableOpacity style={style.btnGuardar} onPress={()=>this.asignarFecha()}>
-                                        <Text style={style.textGuardar}>Guardar fecha</Text>
-                                    </TouchableOpacity>
-                                </View>    
-                                :<ScrollView>
-                                    {
-                                        this.props.vehiculos.map(e=>{
-                                            return <TouchableOpacity
-                                                    key={e._id}
-                                                    style={idVehiculo == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
-                                                    onPress={()=>this.setState({
-                                                        idVehiculo:e._id, 
-                                                        placa:e.placa, 
-                                                        placaPedido:e.placa, 
-                                                        conductorPedido:e.conductor.nombre ?e.conductor.nombre :""
-                                                    })}
-                                                >
-                                                <Text style={style.conductor}>{e.placa}</Text>       
-                                                <Text style={style.conductor}>{e.conductor ? e.conductor.nombre :""}</Text>       
-                                                {e.conductor &&<Image source={{uri:e.conductor.avatar}} style={style.avatar} /> }
-                                            </TouchableOpacity>
-                                        })
-                                    }
-                                    <TouchableOpacity style={style.btnGuardar} onPress={()=>placa ?this.asignarConductor() :alert("selecciona un Vehiculo")}>
-                                        <Text style={style.textGuardar}>Asignar Vehiculo</Text>
-                                    </TouchableOpacity>  
-                                </ScrollView>
-                            }    
-                        </View>
+            <View style={style.contenedorModal2}>
+                <View style={style.subContenedorModal}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {this.setState({modalConductor:false, placa:null, idVehiculo:null})}}
+                        style={style.btnModalConductorClose}
+                    >
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                    </TouchableOpacity>
+                    <View style={style.contenedorConductor}>
+                        <Button title="Asignar Vehiculo" disabled={!showCalendar ? true :false} onPress={()=>this.setState({showCalendar:false})} />
+                        <Button title="Fecha entrega" disabled={showCalendar ? true :false}  onPress={()=>this.setState({showCalendar:true})} />
                     </View>
+                    {
+                        showCalendar
+                        ?<View>
+                            <Calendar
+                                style={style.calendar}
+                                current={fechaEntrega ?fechaEntrega :diaActual}
+                                minDate={diaActual}
+                                firstDay={1}
+                                onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
+                                markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
+                            />
+                            <TouchableOpacity style={style.btnGuardar} onPress={()=>this.asignarFecha()}>
+                                <Text style={style.textGuardar}>Guardar fecha</Text>
+                            </TouchableOpacity>
+                        </View>    
+                        :<ScrollView>
+                            {
+                                this.props.vehiculos.map(e=>{
+                                    return <TouchableOpacity
+                                            key={e._id}
+                                            style={idVehiculo == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
+                                            onPress={()=>this.setState({
+                                                idVehiculo:e._id, 
+                                                placa:e.placa, 
+                                                placaPedido:e.placa, 
+                                                conductorPedido:e.conductor.nombre ?e.conductor.nombre :""
+                                            })}
+                                        >
+                                        <Text style={style.conductor}>{e.placa}</Text>       
+                                        <Text style={style.conductor}>{e.conductor ? e.conductor.nombre :""}</Text>       
+                                        {e.conductor &&<Image source={{uri:e.conductor.avatar}} style={style.avatar} /> }
+                                    </TouchableOpacity>
+                                })
+                            }
+                            <TouchableOpacity style={style.btnGuardar} onPress={()=>placa ?this.asignarConductor() :alert("selecciona un Vehiculo")}>
+                                <Text style={style.textGuardar}>Asignar Vehiculo</Text>
+                            </TouchableOpacity>  
+                        </ScrollView>
+                    }    
+                </View>
+            </View>
               
         )
     }
@@ -687,7 +721,9 @@ class Pedido extends Component{
         return(
             <View style={style.contenedorCabezera}>
                 <View style={{flexDirection:"row"}}>
-                    <Text style={style.titulo}>Pedidos:{pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
+                    {
+                        pedidos &&<Text style={style.titulo}>Pedidos:{pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
+                    }
                     <TouchableOpacity style={style.btnZonas} onPress={()=>this.setState({modalZona:true})}>
                         <Text style={style.textZonas}>Zonas</Text>
                     </TouchableOpacity>
@@ -713,41 +749,117 @@ class Pedido extends Component{
             </View>
         )
     }
-	render(){
-        const {navigation} = this.props
-        const {idUsuario, pedidos, fechaEntrega, openModal, modalFechaEntrega, modalConductor} = this.state
-        console.log(fechaEntrega)
-        if(!idUsuario){
-            return <ActivityIndicator color="#00218b" />
-        }else if(idUsuario=="FAIL"){
-            return (navigation.navigate("perfil"))
-        }else{
-            return (
-                <View style={style.container}>
-                    {this.modalVehiculos()}
-                    {modalFechaEntrega &&this.modalFechaEntrega()}
-                    {this.renderCabezera()}
-                    {this.renderModalFiltro()}
-                    {this.modalZonas()}
-                    {openModal &&this.editarPedido()}
-                    <ScrollView style={style.subContenedor}>
-                        {
-                            pedidos.length==0
-                            ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
-                            :this.renderPedidos()
-                        }
-                    </ScrollView>
-                    <Footer navigation={navigation} />
-                </View>
-            )    
-        }
+    modalNovedad(){
+        const {novedad} = this.state
+        return(<View style={style.contenedorModal2}>
+            <View style={style.subContenedorModal}>
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {this.setState({modalNovedad:false, placa:null, idVehiculo:null})}}
+                    style={style.btnModalConductorClose}
+                >
+                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                </TouchableOpacity>
+                <Text>Novedad Innactividad</Text>
+                <TextInput
+                    placeholder="Novedades"
+                    autoCapitalize = 'none'
+                    onChangeText={(novedad)=> this.setState({novedad})}
+                    value={novedad}
+                    multiline={true}
+                    numberOfLines={5}
+                    style={style.inputNovedad}
+                />
+                 <TouchableOpacity style={style.btnGuardar} onPress={()=>novedad.length<5 ?alert("Inserta alguna novedad") :this.guardarNovedadInnactivo()}>
+                    <Text style={style.textGuardar}>Guardar Novedad</Text>
+                </TouchableOpacity>  
+            </View>
+        </View>)
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////            MODAL QUE MUESTRA LOS PERFILES CUANDO NO SE CIERRA UN PEDIDO
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    modalPerfiles(){
+        const {novedad, perfil} = this.state
+        return(<View style={style.contenedorModal2}>
+            <View style={style.subContenedorModal2}>
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {this.setState({modalPerfiles:false, placa:null, idVehiculo:null})}}
+                    style={style.btnModalConductorClose}
+                >
+                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                </TouchableOpacity>
+                <Text>Asignar novedad</Text>
+                <TouchableOpacity style={perfil=="logistica" ?style.listadoPerfil :style.listadoPerfil2} onPress={()=>this.setState({perfil:"logistica"})}>
+                   <Text>Logistica</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={perfil=="comercial" ?style.listadoPerfil :style.listadoPerfil2} onPress={()=>this.setState({perfil:"comercial"})}>
+                   <Text>Comercial</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={perfil=="cliente" ?style.listadoPerfil :style.listadoPerfil2} onPress={()=>this.setState({perfil:"cliente"})}>
+                   <Text>Cliente</Text>
+                </TouchableOpacity>
+                 <TouchableOpacity style={style.btnGuardar} onPress={()=>novedad.length<5 ?alert("Seleccione algun perfil") :this.guardarNovedad()}>
+                    <Text style={style.textGuardar}>Cerrar Pedido</Text>
+                </TouchableOpacity>  
+            </View>
+        </View>)
     }
 
+	render(){
+        const {navigation} = this.props
+        const {idUsuario, pedidos, fechaEntrega, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, modalPerfiles} = this.state
+        
+        return (
+            <View style={style.container}>
+                {modalPerfiles &&this.modalPerfiles()}
+                {modalConductor &&this.modalVehiculos()}
+                {modalFechaEntrega &&this.modalFechaEntrega()}
+                {modalNovedad &&this.modalNovedad()}
+                {this.renderCabezera()}
+                {this.renderModalFiltro()}
+                {this.modalZonas()}
+                {openModal &&this.editarPedido()}
+                <ScrollView style={style.subContenedor} onScroll={(e)=>this.onScroll(e)} >
+                    {/* {
+                        pedidos.length==0
+                        ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
+                        :this.renderPedidos()
+                    } */}
+                    {
+                        !pedidos
+                        ?<ActivityIndicator color="#00218b" />
+                        :pedidos.length==0
+                        ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
+                        :this.renderPedidos()
+                    }
+                </ScrollView>
+                    {showSpin &&<ActivityIndicator color="#0071bb" style={style.preload}/> }
+                <Footer navigation={navigation} />
+            </View>
+        )    
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           GUARDAR NOVEDAD CUANDO ES INNACTIVO
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    guardarNovedadInnactivo(){
+        let {novedad, id} = this.state
+        axios.post(`nov/novedad/`, {pedidoId:id, novedad})
+        .then((res2)=>{
+            this.setState({modalNovedad:false, estadoEntrega:"noentregado", novedad:""})
+            setTimeout(() => {
+                alert("Pedido actualizado")
+            }, 1000);
+            // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+            this.props.getPedidos()
+        })
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     asignarConductor(){
-        const {placa, idVehiculo, id, fechaEntrega} = this.state
+        const {placa, idVehiculo, id, fechaEntrega, nPedido} = this.state
         Alert.alert(
             `Seguro desea agregar a ${placa}`,
             'a este pedido',
@@ -759,7 +871,7 @@ class Pedido extends Component{
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}`)
+            axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${nPedido}`)
             .then((res)=>{
                 if(res.data.status){
                     this.props.getPedidos()
@@ -808,10 +920,10 @@ class Pedido extends Component{
         }
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////           GUARDAR NOVEDAD 
+    ////////////////////////           GUARDAR NOVEDAD AL CERRAR EL PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     guardarNovedad(){
-        let {novedad, id, tokenPhone, fechaEntrega, fechaEntregaFiltro} = this.state
+        let {novedad, id, tokenPhone, fechaEntrega, perfil} = this.state
         Alert.alert(
             `Va a finalizar este pedido`,
             'sin exito en la entrega',
@@ -822,13 +934,13 @@ class Pedido extends Component{
             {cancelable: false},
         );
         const confirmar =()=>{
-            axios.post('ped/pedido/novedad', {_id:id, fechaEntrega, novedad})
+            axios.post('ped/pedido/novedad', {_id:id, fechaEntrega, novedad, perfil_novedad:perfil})
             .then((res)=>{
                 console.log(res.data)
                 if(res.data.status){
                     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
                     .then((res2)=>{
-                        this.setState({openModal:false, novedad:""})
+                        this.setState({openModal:false, novedad:"", modalPerfiles:false})
                         sendRemoteNotification(2, tokenPhone, "pedido no entregado", `${novedad}`, null, null, null )
                         setTimeout(() => {
                             alert("Pedido cerrado")
@@ -905,10 +1017,12 @@ class Pedido extends Component{
             if(res.data.status){
                 if(estado=="activo"){
                     this.setState({modalFechaEntrega:true, estadoEntrega:"asignado"})
-                }else{
+                }else if(estado=="innactivo"){
+                    this.setState({modalNovedad:true})
+                } else{
                     alert("Pedido actualizado")
                     this.props.getPedidos()
-                } 
+                }
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }

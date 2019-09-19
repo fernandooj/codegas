@@ -24,30 +24,23 @@ export const style = MediaQueryStyleSheet.create({
 	btnIconPassLogin:{
 		padding:22,
 		position:"absolute",
-		right:-10,
-		top:-12
+		right:10,
+		top:2
 	},
 	iconPass:{
 		fontSize:25
 	},
     input:{
-        width:"90%",
-		paddingVertical:10,
-		height:45,
-		paddingLeft:10,
-		// fontFamily:"quicksand-medium",
-		backgroundColor:'#ffffff',
-		shadowColor: 'rgba(0,0,0, .2)', // IOS
-		borderColor:"rgba(0,0,0,0)",
-		shadowOffset: { height: 2, width: 2 }, // IOS
-		shadowOpacity: .5, // IOS
-		shadowRadius: 5, //IOS
-		backgroundColor: '#fff',
-		elevation: 7, // Android
-		marginLeft:0,
-		marginBottom:15,
-		borderRadius:5,
-		textAlignVertical:"center",
+        borderColor:"rgba(0,0,0,.2)",
+        backgroundColor:"#ffffff",
+        borderWidth:1,
+        marginHorizontal:"6%",
+        width:"88%",
+        height:50,
+        marginTop:10,
+        marginBottom:10,
+        borderRadius:5,
+        paddingLeft:10
 	},
 	inputInvalid:{
 		borderWidth:1,
@@ -66,63 +59,35 @@ export const style = MediaQueryStyleSheet.create({
 		color:"#ffffff"
 	},
 	btnUbicacion:{
-        width:"90%",
-		paddingVertical:15,
-		paddingLeft:10,
-		// fontFamily:"quicksand-medium",
-		backgroundColor:'#ffffff',
-		shadowColor: 'rgba(0,0,0, .2)', // IOS
-		borderColor:"rgba(0,0,0,0)",
-		shadowOffset: { height: 2, width: 2 }, // IOS
-		shadowOpacity: .5, // IOS
-		shadowRadius: 5, //IOS
-		backgroundColor: '#fff',
-		elevation: 7, // Android
-		
-		marginBottom:15,
-		borderRadius:5,
-		textAlignVertical:"center",
+		justifyContent:"center",
+        borderColor:"rgba(0,0,0,.2)",
+        backgroundColor:"#ffffff",
+        borderWidth:1,
+        marginHorizontal:"6%",
+        width:"88%",
+        height:50,
+        marginTop:10,
+        marginBottom:10,
+        borderRadius:5,
+        paddingLeft:10
 	},
 	/////////////////////////////////////////////////////////////////
 	////////////////////        PICKER
 	/////////////////////////////////////////////////////////////////
-    inputIOS: {
-        width:"90%",
-		paddingVertical:12,
-		
-		paddingLeft:10,
-		// fontFamily:"quicksand-medium",
-		backgroundColor:'#ffffff',
-		shadowColor: 'rgba(0,0,0, .2)', // IOS
-		borderColor:"rgba(0,0,0,0)",
-		shadowOffset: { height: 2, width: 2 }, // IOS
-		shadowOpacity: .5, // IOS
-		shadowRadius: 5, //IOS
-		backgroundColor: '#fff',
-		elevation: 7, // Android
-		marginLeft:"5%",
-		marginBottom:15,
-		borderRadius:5,
-		textAlignVertical:"center",
+    tipo: {
+        borderColor:"rgba(0,0,0,.2)",
+        backgroundColor:"#ffffff",
+        color:"#000000",
+        marginHorizontal:"6%",
+        borderWidth:1,
+        width:"88%",
+        height:50,
+        marginTop:10,
+        marginBottom:10,
+        borderRadius:5,
+        paddingLeft:10
     },
-    inputAndroid: {
-        width:"85%",
-		paddingVertical:12,
-		paddingLeft:10,
-		// fontFamily:"quicksand-medium",
-		backgroundColor:'#ffffff',
-		shadowColor: 'rgba(0,0,0, .2)', // IOS
-		borderColor:"rgba(0,0,0,0)",
-		shadowOffset: { height: 2, width: 2 }, // IOS
-		shadowOpacity: .5, // IOS
-		shadowRadius: 5, //IOS
-		backgroundColor: '#fff',
-		elevation: 7, // Android
-		marginLeft:"5%",
-		marginBottom:15,
-		borderRadius:5,
-		textAlignVertical:"center",
-	},
+     
 	//////////////////////////////////////////////////////////////////		
     ///////////				MODAL UBICACION
     //////////////////////////////////////////////////////////////////
@@ -136,7 +101,9 @@ export const style = MediaQueryStyleSheet.create({
 	subContenedorModal:{
 		backgroundColor:"#e3e3e3",
 		marginHorizontal:12,
-		marginTop:40,
+        marginTop:40,
+		marginBottom:5,
+		paddingBottom:150,
 		width:"90%"
     },
     tituloModal:{
@@ -191,32 +158,49 @@ export const style = MediaQueryStyleSheet.create({
         width:"100%",
         backgroundColor:"rgba(0,0,0,.05)",
         height:2,
-	},
+    },
+    asterisco:{
+        color:"red",
+        position:"absolute",
+        right:10,
+        top:30
+    },  
+	
 	inputUbicacion:{
-        borderColor:"rgba(0,0,0,.2)",
-        backgroundColor:"#ffffff",
-        borderWidth:1,
-        marginHorizontal:"6%",
-        width:"88%",
-        height:50,
-        marginTop:10,
-        marginBottom:10,
-        borderRadius:5,
-        paddingLeft:10
+		borderColor:"rgba(0,0,0,.2)",
+		backgroundColor:"#ffffff",
+		borderWidth:1,
+		marginHorizontal:"6%",
+		width:"88%",
+		height:50,
+		marginTop:10,
+		marginBottom:10,
+		borderRadius:5,
+		paddingLeft:10
 	},
 	btnOpenZona:{
 		justifyContent:"center",
-        borderColor:"rgba(0,0,0,.2)",
-        backgroundColor:"#ffffff",
-        borderWidth:1,
-        marginHorizontal:"6%",
-        width:"88%",
-        height:50,
-        marginTop:10,
-        marginBottom:10,
-        borderRadius:5,
-        paddingLeft:10
+		borderColor:"rgba(0,0,0,.2)",
+		backgroundColor:"#ffffff",
+		borderWidth:1,
+		marginHorizontal:"6%",
+		width:"88%",
+		height:50,
+		marginTop:10,
+		marginBottom:10,
+		borderRadius:5,
+		paddingLeft:10
 	},
+	btnEliminar:{
+        position:"absolute",
+        left:"44%",    
+        bottom:2,
+        padding:10
+    },
+    iconEliminar:{
+        fontSize:20,
+        color:"red"
+    },
     //////////////////////////////////////////////////////////////////		
 	///////////				MODAL  ZONA
 	//////////////////////////////////////////////////////////////////

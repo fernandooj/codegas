@@ -35,7 +35,8 @@ export default class FooterComponent extends Component{
 			const userId = await AsyncStorage.getItem('userId')
 			if(userId !== null) {
 				// console.log("userId")
-				// console.log(userId)
+				console.log(userId)
+				this.setState({userId})
 				this.socket.on(`badgeMensaje${userId}`, 	this.reciveMensanje.bind(this));
 				this.socket.on(`PedidoConductor${userId}`,this.recivePedidoConductor.bind(this));
 				if(acceso=="admin" || acceso=="solucion"){
@@ -91,8 +92,8 @@ export default class FooterComponent extends Component{
 
 	renderFooter(){
 		const {home, titulo, navigation} = this.props
-		const {badgeSocketMessage, badgeMessage, badgeSocketCuenta, badgeCuenta, badgeSocketPedido, badgePedido, badgeSocketConversacion, acceso} = this.state
-		 
+		const {badgeSocketMessage, badgeMessage, userId, badgeCuenta, badgeSocketPedido, badgePedido, badgeSocketConversacion, acceso} = this.state
+		
 		return(
 			<View style={style.contenedorFooter}>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>
@@ -118,7 +119,7 @@ export default class FooterComponent extends Component{
 					</TouchableOpacity> */}
 				 	{
 						acceso!=="conductor"
-						&&<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('nuevo_pedido')}>
+						&&<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
 							<Icon name="plus-square" style={style.icon} />
 							<Text style={style.textFooter}>Nuevo pedido</Text>
 						</TouchableOpacity>
@@ -126,7 +127,7 @@ export default class FooterComponent extends Component{
 					 
 				 
 				
-				<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter} onPress={()=>this.pedidos()}>
+				<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter} onPress={()=>{userId ?this.pedidos() :navigation.navigate('perfil')} }>
 					<Icon name="cloud-upload" style={style.icon} />
 					<Text style={style.textFooter}>Pedidos</Text>
 					{

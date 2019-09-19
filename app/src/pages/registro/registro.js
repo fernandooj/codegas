@@ -39,7 +39,7 @@ class Home extends Component{
 	}
 	 
 	async componentWillMount(){
-        let idUsuario = await AsyncStorage.getItem('userId')
+        let idUsuario = await AsyncStorage.getItem('idPerfilregistro')
         this.setState({idUsuario})
         axios.get("zon/zona/activos")
         .then(res=>{
@@ -112,17 +112,23 @@ class Home extends Component{
                                         ubicaciones.map((e, key)=>{
                                             return(
                                                 <View key={key}>
-                                                    <TextInput
-                                                        type='outlined'
-                                                        label='Dirección'
-                                                        placeholder="Dirección"
-                                                        value={e.direccion}
-                                                        onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
-                                                        style={style.inputUbicacion}
-                                                    />
-                                                    <TouchableOpacity style={style.btnOpenZona} onPress={()=>this.setState({modalZona:true, key})}>
-                                                        <Text style={style.textZona}>{e.nombreZona ?e.nombreZona :"Zona"}</Text>
-                                                    </TouchableOpacity>
+                                                    <View>
+                                                        <TextInput
+                                                            type='outlined'
+                                                            label='Dirección'
+                                                            placeholder="Dirección"
+                                                            value={e.direccion}
+                                                            onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
+                                                            style={style.inputUbicacion}
+                                                        />
+                                                        <Text style={style.asterisco}>*</Text>
+                                                    </View>
+                                                    <View>
+                                                        <TouchableOpacity style={style.btnOpenZona} onPress={()=>this.setState({modalZona:true, key})}>
+                                                            <Text style={style.textZona}>{e.nombreZona ?e.nombreZona :"Zona"}</Text>
+                                                        </TouchableOpacity>
+                                                        <Text style={style.asterisco}>*</Text>
+                                                    </View>
                                                     <TextInput
                                                         type='outlined'
                                                         label='observacion al momento de ingresar el vehiculo'
@@ -145,7 +151,7 @@ class Home extends Component{
                                                         placeholder="Nombre"
                                                         value={e.nombre}
                                                         onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                        style={style.inputUbicacion}
+                                                        style={[style.input, {marginBottom: key>0 ?40 :10}]}
                                                     />
                                                      {
                                                         key>0
@@ -262,28 +268,29 @@ class Home extends Component{
                         value={celular}
                         // keyboardType="numeric"
                     />
-                    <RNPickerSelect
-                        placeholder={{
-                            label: 'Tipo',
-                            value: null,
-                            color: '#00218b',
-                        }}
-                        items={[
-                            {label: 'Residencial', value: 'residencial',key: 'residencial'},
-                            {label: 'Comercial', value: 'comercial',key:   'comercial'},
-                            {label: 'Industrial',value: 'industrial',key:   'industrial'}
-                        ]}
-                        onValueChange={tipo => { this.setState({tipo}); }}
-                        mode="dropdown"
-                        style={{
-                            ...style,
-                            placeholder: {
-                            color: 'rgba(0,0,0,.2)',
-                            fontSize: 15,
-                            },
-                        }}
-                        value={tipo}
-                    />
+                    <View   style={tipo.length<2 ?[style.tipo, style.inputInvalid] :style.tipo}>
+                        <RNPickerSelect
+                            placeholder={{
+                                label: 'Tipo',
+                                value: null,
+                                color: '#00218b',
+                            }}
+                            items={[
+                                {label: 'Residencial', value: 'residencial',key: 'residencial'},
+                                {label: 'Comercial', value: 'comercial',key:   'comercial'},
+                                {label: 'Industrial',value: 'industrial',key:   'industrial'}
+                            ]}
+                            onValueChange={tipo => { this.setState({tipo}); }}
+                            mode="dropdown"
+                            style={{
+                                placeholder: {
+                                color: 'rgba(0,0,0,.2)',
+                                fontSize: 15,
+                                },
+                            }}
+                            value={tipo}
+                        />
+                    </View>
                     <TouchableOpacity style={style.btnGuardar} 
                         onPress={()=> razon_social.length<2 || cedula.length<2 || direccion_factura.length<2 || nombre.length<2 || password.length<2 || celular.length<2 || tipo.length<2 || !ubicaciones[0].idZona
                         ?alert("Todos los campos son obligatorios") :this.handleSubmit()}>
@@ -319,17 +326,18 @@ class Home extends Component{
         puntos = puntos.map(e=>{
             return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion}
         })
-        console.log({ubicacionesEliminadas})
-        axios.put(`user/update/${idUsuario}`, {razon_social, cedula, direccion_factura, nombre, email, password, celular, tipo, acceso, codt, puntos, idUsuario, ubicacionesEliminadas})
+ 
+        axios.put(`user/update/${idUsuario}`, {razon_social, cedula, direccion_factura, nombre, email, password, celular, tipo, acceso, codt, puntos, idUsuario, ubicacionesEliminadas, registro:true})
         .then(e=>{
-            console.log(e.data)
+           
             if(e.data.status){
                 
                     if(clientes.length>0){
                         axios.post("user/crea_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
                         .then(res=>{
-                            this.props.navigation.navigate("perfil")
-                            Toast.show("Ya puedes iniciar sesión")
+                            // this.loginExitoso(idUsuario, nombre, email, "cliente", "null")
+                            // this.props.navigation.navigate("Home")
+                            // Toast.show("Usuario editado")
                         })
                         .catch(err2=>{
                             console.log(err2)
@@ -338,16 +346,15 @@ class Home extends Component{
                     }else{
                         axios.post("pun/punto/varios",{puntos, id:e.data.user._id})
                         .then(res=>{
-                            console.log(res.data)
-                            this.props.navigation.navigate("perfil")
-                            Toast.show("Ya puedes iniciar sesión")
+                             
+                           
                         })
                         .catch(err2=>{
                             console.log(err2)
                             this.setState({cargando:false})
                         })
                     }
-                
+                    this.loginExitoso(idUsuario, nombre, email, "cliente", "null")
             }else{
                 this.setState({cargando:false})
                 Toast.show("Tenemos un problema, intentalo mas tarde")
@@ -369,6 +376,17 @@ class Home extends Component{
             this.setState({cargando:false})
         })
     }	
+    async loginExitoso(_id, nombre, email, acceso, avatar){
+        console.log({_id, nombre, email, acceso, avatar})
+        AsyncStorage.setItem('userId', _id)
+        AsyncStorage.setItem('nombre', nombre)
+        AsyncStorage.setItem('email',  email)
+        AsyncStorage.setItem('acceso', acceso)
+        AsyncStorage.setItem('avatar', avatar)
+        // AsyncStorage.setItem('tokenPhone', this.state.tokenPhone)
+        this.props.navigation.navigate("Home")
+    }
+
 }
 
 const mapState = state => {

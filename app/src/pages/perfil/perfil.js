@@ -25,7 +25,7 @@ class Home extends Component{
             const email 	= await AsyncStorage.getItem('email')
             const avatar    = await AsyncStorage.getItem('avatar')
             const acceso    = await AsyncStorage.getItem('acceso')
-            console.log(nombre)
+            console.log({userId})
             userId ?this.setState({userId, nombre, email, avatar, acceso}) :null
         }catch(e){
             console.log(e)
@@ -136,7 +136,7 @@ class Home extends Component{
                         </TouchableOpacity>
                     }
                     {
-                        acceso=="admin"
+                         (acceso=="admin" || acceso=="solucion")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios")} >
                             <Text style={style.txtLista}>Usuarios</Text> 
                             <Icon name={'users'} style={style.icon} />
@@ -170,7 +170,7 @@ class Home extends Component{
                         <Icon name={'sign-out'} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.1</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.3</Text> 
                     </TouchableOpacity> 
                     {
                         err
@@ -243,7 +243,7 @@ class Home extends Component{
     }
     async registroExitoso(email, code, id){
         console.log({email, code, id})
-        AsyncStorage.setItem('userId', id)
+        AsyncStorage.setItem('idPerfilregistro', id) //// por que pongo este codigo aca?=>se coloca para que al editar el perfil, tenga el id Guardado, y se pueda editar, para nada mas sirve
         this.props.navigation.navigate("confirmar", {code, email})
     }
     async login(){
@@ -274,12 +274,13 @@ class Home extends Component{
         AsyncStorage.setItem('avatar', user.avatar ?user.avatar :"null")
         AsyncStorage.setItem('tokenPhone', this.state.tokenPhone)
         this.setState({userId:user._id, cargando:false, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
-        // this.props.navigation.navigate("Home")
+        user.nombre ?this.props.navigation.navigate("inicio") :this.props.navigation.navigate("verPerfil", {tipoAcceso:null}) 
     }
     cerrarSesion(){
         axios.get(`user/logout`)
         .then(res => {
             AsyncStorage.removeItem('userId')
+            AsyncStorage.removeItem('idPerfilregistro')
             AsyncStorage.removeItem('acceso')
             AsyncStorage.removeItem('nombre')
             AsyncStorage.removeItem('email')

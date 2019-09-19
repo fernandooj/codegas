@@ -7,6 +7,7 @@ const Pedido = new Schema({
 	nPedido       :Number,
 	cantidadPrecio:Number,
 	frecuencia    :String,
+	imagen        :String,
 	dia1          :String,
     dia2          :String,
     creado        :String,
@@ -23,9 +24,9 @@ const Pedido = new Schema({
     orden         :Number,
     orden_cerrado :Number,
     motivo_no_cierre:String,
+    perfil_novedad:String,
     forma_pago:String,
-    imagenCerrar  :[{ type : String }],
-	imagen        :[{ type : String }],
+    imagen         : [{ type : String }],
     pedidoPadre   :{type: Schema.ObjectId, ref:'Pedido'},
     puntoId       :{type: Schema.ObjectId, ref:'Punto'},
     zonaId        :{type: Schema.ObjectId, ref:'Zona'},
@@ -69,3 +70,7 @@ module.exports = mongoose.model('Pedido', Pedido)
 
 ///////////////////////// motivo_no_cierre ///////////////////////////
 // SI NO LO PUDO CERRAR PONE ACA EL MOTIVO
+
+
+///////////////////////// PERFIL NOVEDAD ///////////////////////////
+// muestra el perfil del usuario que tiene la culpa por la novedad

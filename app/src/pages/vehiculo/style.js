@@ -100,12 +100,12 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnModalClose:{
 		position:"absolute",
-		right:Platform.OS=='android' ?-8 :0,
-		top:Platform.OS=='android' ?-8 :0,
+		right:Platform.OS=='android' ?-0 :0,
+		top:Platform.OS=='android' ?-0 :0,
 		zIndex:100
     },
     iconCerrar:{
-        fontSize:22
+        fontSize:25
     },
 	avatar:{
         width:40,

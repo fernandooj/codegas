@@ -4,7 +4,8 @@ let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 let userServices       = require('./../services/userServices.js') 
 let puntoServices      = require('./../services/puntoServices.js') 
-const htmlTemplate     = require('../template-email.js')
+const htmlTemplate     = require('../notificaciones/template-email.js')
+const notificacionPush = require('../notificaciones/notificacionPush.js')
 
 module.exports = function(app, passport){ 
     ///////////////////////////////////////////////////////////////////////////
@@ -24,7 +25,7 @@ module.exports = function(app, passport){
                         ?`Hola Estimado/a: este es el codigo: ${token} para verificar su dirección de correo electrónico y completar el registro de su cuenta en Codegas`
                         :`Hola ${req.body.nombre} ya puede ingresar a su cuenta en la app de Codegas, sus datos de acceso son:`
             let text2  = req.body.acceso=="cliente" 
-                        ?`Este vínculo caducará en 24 horas. Si ha caducado, pruebe a solicitar un nuevo correo electrónico de verificación.` 
+                        ?`` 
                         :`usuario: ${req.body.email}<br/>Contraseña: ${tokens}`
             let asunto = req.body.acceso=="cliente" ?"Nuevo codigo de verificación" :"Cuenta creada en Codegas"
             if (users) {
@@ -55,7 +56,7 @@ module.exports = function(app, passport){
         let token = Math.floor(1000 + Math.random() * 9000);
         let titulo = `<font size="5">Nueva cuenta creada</font>`;
        
-        let text2  = `Este vínculo caducará en 24 horas. Si ha caducado, pruebe a solicitar un nuevo correo electrónico de verificación.`                 
+        let text2  = ``                 
         let asunto =  "Cuenta creada en Codegas"
         
         req.body.clientes.map(e=>{
@@ -381,6 +382,17 @@ module.exports = function(app, passport){
                 if(!err){
                     userServices.getEmail(req.session.usuario, (err2, users)=>{    
                         if(!err2){
+                            req.body.registro
+                            &&userServices.getByAcceso("solucion", (err, usuarios)=>{
+                               usuarios.map(e=>{
+                                   let titulo = `<font size="5">el usuario: ${req.body.razon_social} se ha registrado</font>`
+                                   let text1  = `ya puede editarlo en la app de codegas`
+                                   let text2  = ``
+                                   let asunto =  "Nuevo cliente creado"  
+                                   htmlTemplate(req, e, titulo, text1, text2,  asunto)
+                               })
+                            })
+
                             //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO
                             req.session.usuario=users
 
@@ -448,16 +460,24 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/', (req,res)=>{
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion') {
                 userServices.get((err, usuarios)=>{
                     if(!err){
-                        res.json({status:true, usuarios})
+                        let usuarios2 = usuarios.filter(e=>{
+                            return e.acceso="cliente"
+                        })
+                        usuarios2 = usuarios2.filter(e=>{
+                            return e.idPadre==null
+                        })
+                        req.session.usuario.acceso=='admin' 
+                        ?res.json({status:true, usuarios})
+                        :res.json({status:true, usuarios:usuarios2})
                     }else{
                         res.json({ status: false, err}) 
                     }
                 })
             }else{
-                res.json({ status: false, message:'No tienes acceso'})
+                res.json({ status: false, message:'No tienes acceso', usuarios:[]})
             }
         }else{
             res.json({ status: false, message:'usuario no logueado'})  
@@ -490,6 +510,21 @@ module.exports = function(app, passport){
                 if(!err){
                     usuarios = usuarios.filter(e=>{
                         return e.idPadre==null
+                    })
+                    usuarios = usuarios.filter(e=>{
+                        return e.razon_social!==null
+                    })
+                    usuarios = usuarios.filter(e=>{
+                        return e.razon_social!=="null"
+                    })
+                    usuarios = usuarios.filter(e=>{
+                        return e.razon_social!=="undefined"
+                    })
+                    usuarios = usuarios.filter(e=>{
+                        return e.razon_social!==""
+                    })
+                    usuarios = usuarios.filter(e=>{
+                        return e.razon_social
                     })
                     console.log(usuarios)
                     res.json({status:true, usuarios})
@@ -536,7 +571,7 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/byId/:idUsuario', (req,res)=>{
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion') {
                 userServices.getById(req.params.idUsuario, (err, usuario)=>{
                     puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
                         let nUbicaciones = ubicaciones.map(e=>{

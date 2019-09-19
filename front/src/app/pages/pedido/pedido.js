@@ -13,6 +13,7 @@ import SocketIOClient      from 'socket.io-client';
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import { connect }         from "react-redux";
+ 
 const confirm = Modal.confirm;
 const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', , "zonaId.nombre", 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
 
@@ -24,7 +25,8 @@ class Home extends PureComponent {
       modalFecha:false,
       loading: false,
       terminoBuscador:"",
-      pedidos:[]
+      pedidos:[],
+      fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
     }
   }
   componentWillMount(){
@@ -41,7 +43,10 @@ class Home extends PureComponent {
     this.props.getPedidos()
     this.props.getVehiculos()
   }
+
   renderBotones(){
+    const {fechaEntregaFiltro} = this.state
+    const dateFormat = 'YYYY-MM-DD';
     return(
       <div>
          <Button style={{backgroundColor:"#d9534f"}} onClick={()=>this.actualizarTabla("innactivo")}>Innactivo</Button>
@@ -50,7 +55,20 @@ class Home extends PureComponent {
          <Button style={{backgroundColor:"#5cb85c"}} onClick={()=>this.actualizarTabla2("activo", true)}>Asignado</Button>
          <Button style={{backgroundColor:"#00218b"}} onClick={()=>this.actualizarTabla3("activo")}>Entregado</Button>
          <Button style={{color:"#000000"}}           onClick={()=>this.actualizarTabla("noentregado")}>No Entregado</Button>
-         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=>this.setState({pedidos:this.state.pedidosFiltro})}>Todos</Button>
+         <Button style={{color:"#000000"}}           onClick={()=>this.actualizarTabla("noentregado")}>No Entregado</Button>
+         
+         <DatePicker 
+          onChange={(data, fechaEntregaFiltro)=>this.actualizaFecha({data, fechaEntregaFiltro})} 
+          locale={locale} 
+          placeholder="Fecha creación"
+        />
+        <DatePicker 
+           onChange={(data, fechaEntregaFiltro)=>this.actualizaFechaEntrega({data, fechaEntregaFiltro})} 
+          locale={locale} 
+          placeholder="Fecha entrega"
+          style={{margin:"0 8px"}}
+        />
+         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=>this.setState({pedidos:this.state.pedidosFiltro})}>Limpiar</Button>
       </div>
     )
   }
@@ -221,9 +239,9 @@ class Home extends PureComponent {
           onOk={this.handleOk}
           onCancel={()=>this.setState({modal:false})}
           footer={[
-            <Button key="back" onCancel={()=>this.setState({modal:false})}>
-              Cancelar
-            </Button>,
+            // <Button key="back" onCancel={()=>this.setState({modal:false})}>
+            //   Cancelar
+            // </Button>,
             <Button key="submit" type="primary" loading={loading} onClick={()=>this.asignarConductor()}>
               Asignar
             </Button>,
@@ -256,20 +274,24 @@ class Home extends PureComponent {
         </Modal>
     )
   }
+  disabledDate(current) {
+    // Can not select days before today and today
+    return current && current < moment().endOf('day');
+  }
   modalFecha(){
     let {modalFecha, fechaEntrega, loading} = this.state
     fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
     const dateFormat = 'YYYY-MM-DD';
     return(
       <Modal
-          title="Asignar Usuario"
+          title="Asignar Fecha"
           visible={modalFecha}
           onOk={this.handleOk}
           onCancel={()=>this.setState({modalFecha:false})}
           footer={[
-            <Button key="regresar" onCancel={()=>alert({modalFecha:false})}>
-              Cancelar
-            </Button>,
+            // <Button key="regresar" onCancel={()=>alert({modalFecha:false})}>
+            //   Cancelar
+            // </Button>,
             <Button key="submit" type="primary" loading={loading} onClick={()=>this.asignarFecha()}>
               Asignar
             </Button>,
@@ -279,6 +301,7 @@ class Home extends PureComponent {
           defaultValue={moment(fechaEntrega, dateFormat)} format={dateFormat}
           onChange={(data, fechaEntrega)=>this.setState({data, fechaEntrega})} 
           locale={locale} 
+          disabledDate={this.disabledDate}
         />
         </Modal>
     )
@@ -365,11 +388,13 @@ class Home extends PureComponent {
         })
     }
   }
-
+ 
   render() {
     return (
       <div className={style.container}> 
+       
         <section className={style.containerBotones}>
+          
           <section>
             {this.renderBotones()}
           </section>
@@ -383,10 +408,26 @@ class Home extends PureComponent {
       </div>
     );
   }
-  onChange(pagination, filters, sorter) {
-    console.log('params', pagination, filters, sorter);
+  actualizaFecha = fechaEntregaFiltro => {
+    let {pedidos, pedidosFiltro} = this.state
+    let pedidosSlice = pedidosFiltro.filter(item=>{
+      item.creado = item.creado.slice(0,10);
+      return item;
+    })
+    console.log(pedidosSlice) 
+    pedidos = pedidosSlice.filter(e=>{
+      return e.creado==fechaEntregaFiltro.fechaEntregaFiltro 
+    })
+    this.setState({pedidos})
   }
-
+  actualizaFechaEntrega = fechaEntregaFiltro => {
+    let {pedidos, pedidosFiltro} = this.state
+   
+    pedidos = pedidosFiltro.filter(e=>{
+      return e.fechaEntrega==fechaEntregaFiltro.fechaEntregaFiltro 
+    })
+    this.setState({pedidos})
+  }
 }
 const mapState = state => {
   console.log(state.pedido.pedidos)

@@ -11,8 +11,8 @@ let cliente      	= redis.createClient()
 let pedidoServices     = require('../services/pedidoServices.js') 
 let userServices       = require('./../services/userServices.js') 
 let carroServices      = require('../services/carroServices.js') 
-const htmlTemplate     = require('../template-email.js')
-const notificacionPush = require('../notificacionPush.js')
+const htmlTemplate     = require('../notificaciones/template-email.js')
+const notificacionPush = require('../notificaciones/notificacionPush.js')
 let sizeOf    	   = promisify(require('image-size'));
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
@@ -119,24 +119,50 @@ router.post('/', (req,res)=>{
         userServices.getById(id, (err, clientes)=>{
             if(!err){
                 pedidoServices.totalPedidos((err3, totalPedidos)=>{
-                    let ruta;
+                    let ruta = [];
                     if(req.files.imagen){
-                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
-                        
-                        ////////////////////    ruta que se va a guardar en el folder
-                        let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
-                        
-                        ////////////////////    ruta que se va a guardar en la base de datos
-                        ruta  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
-                        
-                        ///////////////////     envio la imagen al nuevo path
-                        let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
-                        fs.rename(req.files.imagen.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
-                        resizeImagenes(rutaJim, randonNumber, "jpg", res) 
-                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        console.log(req.files.imagen)
+                        let esArray = Array.isArray(req.files.imagen)
+                        if(esArray){
+                            req.files.imagen.map(e=>{
+                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                                
+                                ////////////////////    ruta que se va a guardar en el folder
+                                let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+                                
+                                ////////////////////    ruta que se va a guardar en la base de datos
+                                let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                                ruta.push(rutas)
+                                ///////////////////     envio la imagen al nuevo path
+                                
+                                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+                                fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                            })
+                        }else{
+                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                            let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                            
+                            ////////////////////    ruta que se va a guardar en el folder
+                            let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+                            
+                            ////////////////////    ruta que se va a guardar en la base de datos
+                            ruta  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                            
+                            ///////////////////     envio la imagen al nuevo path
+                            
+                            let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+                            fs.rename(req.files.imagen.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                            resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        }
+                       
                     }
         
                     pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, ruta, (err2, pedido)=>{
@@ -171,7 +197,7 @@ router.post('/', (req,res)=>{
 ///////////////////////////////////////////////////////////////
 ////////////      ASIGNA UN VEHICULO
 //////////////////////////////////////////////////////////////
-router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega', (req,res)=>{
+router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega/:nPedido', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
@@ -185,9 +211,11 @@ router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega', (req,res)=>{
                         orden = pedido ?pedido.orden+1 :1
                         pedidoServices.asignarVehiculo(req.session.usuario._id, req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden,  (err3, pedido)=>{
                             if (!err3) {
-                                let fechaHoy = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD')
+                                let fechaHoy = moment().subtract(1, 'hours');
+                                fechaHoy     = moment(fechaHoy).add(1, 'hours').format('YYYY-MM-DD');
+                                console.log({fechaHoy,fechaEntrega:req.params.fechaEntrega })
                                 fechaHoy===req.params.fechaEntrega 
-                                ?notificacionPush(conductor.conductor.tokenPhone, "Nuevo pedido asignado", `el pedido ${req.params.pedidoId} le ha sido asignado`)
+                                ?notificacionPush(conductor.conductor.tokenPhone, "Nuevo pedido asignado", `el pedido ${req.params.nPedido} le ha sido asignado`)
                                 :null
                                 let mensajeJson={
                                     badge:1,
@@ -235,8 +263,12 @@ router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
         pedidoServices.cambiarEstado(req.session.usuario._id, req.params.idPedido, req.params.estado, (err, pedido)=>{
+            console.log({estado:req.params.estado})
             if (!err) {
-                enviaNotificacion(res, "despacho", "Nuevo pedido activado", `${pedido._id} se ha hactivado`)
+                
+                req.params.estado=="activo" 
+                ?enviaNotificacion(res, "despacho", "Nuevo pedido activado", `${pedido.nPedido} se ha hactivado`)
+                :enviaNotificacion(res, "admin",    "Nuevo pedido Innactivo", `${pedido.nPedido} se desactivo`)
             }else{
                 res.json({ status:false, message: err }); 
             }
@@ -279,7 +311,7 @@ router.post('/finalizar/:estado', (req,res)=>{
                         let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/><img src="${ruta}" width="500"/>` 
                         let asunto = "Estado pedido Codegas, entregado"
                         htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
-                        enviaNotificacion(res, "despacho", req.session.usuario.nombre, "Ha cerrado un nuevo pedido exitosamente")
+                        enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado el pedido: ${pedido.nPedido}`)
                     }else{
                         res.json({ status:false, message: err2 }); 
                     }
@@ -299,9 +331,9 @@ router.post('/novedad/', (req,res)=>{
         }else{
             let orden_cerrado = pedido ?pedido.orden_cerrado+1 :1
             
-            pedidoServices.novedad(req.body._id, orden_cerrado, req.body.novedad, (err, pedido)=>{
+            pedidoServices.novedad(req.body._id, orden_cerrado, req.body.novedad, req.body.perfil_novedad, (err, pedido)=>{
                 if (!err) {
-                    enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado un nuevo pedido NO exitosamente, ${req.body.novedad}`)
+                    enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado el pedido ${pedido.nPedido} NO exitosamente, ${req.body.novedad}`)
                 }else{
                     res.json({ status:false, message: err });
                 }

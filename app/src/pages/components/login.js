@@ -171,18 +171,7 @@ const {
 					disabled={emailVerify ?false :true} loading={showLoading} onPress={() => this.olvidoContrasena()}>
 					
 				</Button>
-				{/* <Snackbar
-					visible={tokenEnviado}
-					onDismiss={() => this.setState({ tokenEnviado: false })}
-					action={{
-						label: 'Cerrar',
-						onPress: () => {
-							this.setState({ tokenEnviado: false })
-						},
-					}}
-					>
-				  hemos enviado un codigo a este email
-        		</Snackbar> */}
+				 
 			</View>
 		)
 	}
@@ -293,17 +282,16 @@ const {
 	login(){
 		const { email, password, tokenPhone } = this.state;
 		axios.post("user/login", { username:email, password, tokenPhone })
-        .then(e => {
-			console.log(e.data)
-        	e.data.code==1 ?this.props.login() :e.data.code==0 ?this.setState({alertErrorLogin:true}) :this.setState({usuarioNoExiste:true})
+    .then(e => {
+      e.data.code==1 ?this.props.login() :e.data.code==0 ?this.setState({alertErrorLogin:true}) :this.setState({usuarioNoExiste:true})
 		})
 	}
 	olvidoContrasena(){
 		const { email, password } = this.state;
 		axios.post("user/recover/", { username:email })
-        .then(e => {
+			.then(e => {
 			console.log(e.data)
-        	e.data.code==1 ?this.setState({tokenEnviado:true, showInsertarCodigo:true, recuperarContrasena:false, showCrearCuenta:true, token:e.data.token.toString() }) :this.setState({usuarioNoExiste:true})
+			e.data.code==1 ?this.setState({tokenEnviado:true, showInsertarCodigo:true, recuperarContrasena:false, showCrearCuenta:true, token:e.data.token.toString() }) :this.setState({usuarioNoExiste:true})
 		})
 	}
 	handleSubmit(e){
@@ -334,6 +322,6 @@ const mapDispatch = dispatch => {
 		dispatch(loginRequest(email, password));
 	  }
 	};
-  };
+};
 	   
 export default connect(mapStatetoPros, mapDispatch)(Login) 

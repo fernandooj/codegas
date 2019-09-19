@@ -97,35 +97,37 @@ class verPerfil extends Component{
         const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo} = this.state
         console.log({activo})
         return (
-            <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:50}}>
+            <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:0}}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
             {/* ACCESO */}	 
                 {
                     tipoAcceso=="admin"
-                    &&<RNPickerSelect
-                        placeholder={{
-                            label: 'Acceso',
-                            value: null,
-                            color: '#00218b',
-                        }}
-                        items={[
-                            {label: 'Administrador',    value: 'admin',     key: 'administrador'},
-                            {label: 'Solución Cliente', value: 'solucion',  key: 'solucion'},
-                            {label: 'Despachos',        value: 'despacho',  key: 'despacho'},
-                            {label: 'Conductor',        value: 'conductor', key: 'conductor'},
-                            {label: 'Cliente',          value: 'cliente',   key: 'cliente'}
-                        ]}
-                        onValueChange={acceso => {this.setState({ acceso })}}
-                        mode="dropdown"
-                        style={{
-                            ...style,
-                            placeholder: {
-                            color: 'rgba(0,0,0,.2)',
-                            fontSize: 15,
-                            },
-                        }}
-                        value={acceso}
-                    />    
+                    &&<View style={style.tipo}>
+                        <RNPickerSelect
+                            placeholder={{
+                                label: 'Acceso',
+                                value: null,
+                                color: '#00218b',
+                            }}
+                            items={[
+                                {label: 'Administrador',    value: 'admin',     key: 'administrador'},
+                                {label: 'Solución Cliente', value: 'solucion',  key: 'solucion'},
+                                {label: 'Despachos',        value: 'despacho',  key: 'despacho'},
+                                {label: 'Conductor',        value: 'conductor', key: 'conductor'},
+                                {label: 'Cliente',          value: 'cliente',   key: 'cliente'}
+                            ]}
+                            onValueChange={acceso => {this.setState({ acceso })}}
+                            mode="dropdown"
+                            style={{
+                                ...style,
+                                placeholder: {
+                                color: 'rgba(0,0,0,.2)',
+                                fontSize: 15,
+                                },
+                            }}
+                            value={acceso}
+                        />    
+                    </View>
                 }
             {/* EMAIL */}	 
             <TextInput
@@ -179,7 +181,7 @@ class verPerfil extends Component{
                        <Text>{ubicaciones.length<1 ?"Ubicación entrega" :`Tienes ${ubicaciones.length} ubicaciones guardadas`}</Text>
                    </TouchableOpacity>
                }
-            {/* DIRECCION */}	
+            {/* CODT */}	
                 {
                     acceso=="cliente"
                     &&<TextInput
@@ -188,7 +190,7 @@ class verPerfil extends Component{
                         autoCapitalize = 'none'
                         value={codt}
                         onChangeText={codt => this.setState({ codt })}
-                        style={codt.length<3 ?[style.input, style.inputRequired] :style.input}
+                        style={style.input}
                     />
                 }
            
@@ -215,29 +217,30 @@ class verPerfil extends Component{
             {/* TIPO */}	 
                 {
                     acceso=="cliente"
-                    &&<RNPickerSelect
-                        placeholder={{
-                            label: 'Tipo',
-                            value: null,
-                            color: '#00218b',
-                        }}
-                        items={[
-                            {label: 'Residencial', value: 'residencial',key: 'residencial'},
-                            {label: 'Comercial', value: 'comercial',key:   'comercial'},
-                            {label: 'Industrial',value: 'industrial',key:   'industrial'}
-                        ]}
-                        onValueChange={tipo => { this.setState({tipo}); }}
-                       
-                        mode="dropdown"
-                        style={{
-                            ...style,
-                            placeholder: {
-                            color: 'rgba(0,0,0,.2)',
-                            fontSize: 15,
-                            },
-                        }}
-                        value={tipo}
-                    />
+                    &&<View style={style.tipo}>
+                        <RNPickerSelect
+                            placeholder={{
+                                label: 'Tipo',
+                                value: null,
+                                color: '#00218b',
+                            }}
+                            items={[
+                                {label: 'Residencial', value: 'residencial',key: 'residencial'},
+                                {label: 'Comercial', value: 'comercial',key:   'comercial'},
+                                {label: 'Industrial',value: 'industrial',key:   'industrial'}
+                            ]}
+                            onValueChange={tipo => { this.setState({tipo}); }}
+                        
+                            mode="dropdown"
+                            style={{
+                                placeholder: {
+                                color: 'rgba(0,0,0,.2)',
+                                fontSize: 15,
+                                },
+                            }}
+                            value={tipo}
+                        />
+                    </View>
                 }
             {/* AVATAR */}	 
                 {
@@ -521,11 +524,10 @@ class verPerfil extends Component{
         return (
             <View  style={style.container}>
                 {this.modalUbicacion()}
-                {
-                    <KeyboardAvoidingView  behavior="padding" enabled>
+                  
                         {this.renderPerfil()}
-                    </KeyboardAvoidingView>
-                }
+                    
+                
                 <Footer navigation={navigation} />
             </View>
         )
@@ -598,7 +600,7 @@ class verPerfil extends Component{
         const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones} = this.state
         console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones})
         if(acceso=="cliente"){
-            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario" || codt=="" || ubicaciones.length<1){
+            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario"  || ubicaciones.length<1){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
@@ -730,6 +732,7 @@ class verPerfil extends Component{
                 if(clientes.length>0){
                     axios.put("user/update_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
                     .then(res=>{
+                        AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
@@ -742,6 +745,7 @@ class verPerfil extends Component{
                 if(clientesNuevos.length>0){
                     axios.post("user/crea_varios", {clientes:clientesNuevos, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
                     .then(res=>{
+                        AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
@@ -754,7 +758,7 @@ class verPerfil extends Component{
                 if(puntos.length>0){
                     axios.put("pun/punto/varios",{puntos, id:e.data.user._id})
                     .then(res=>{
-                        console.log(res.data)
+                        AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
@@ -767,7 +771,7 @@ class verPerfil extends Component{
                 if(puntosNuevos.length>0){
                     axios.post("pun/punto/varios", {puntos:puntosNuevos, id:e.data.user._id})
                     .then(res=>{
-                        console.log(res.data)
+                        AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
                         Toast.show("Usuario guardado con exito")
                     })
@@ -776,6 +780,7 @@ class verPerfil extends Component{
                         this.setState({cargando:false})
                     })
                 }
+                AsyncStorage.setItem('nombre', e.data.user.nombre)
                 this.props.navigation.navigate("Home")
                 Toast.show("Usuario guardado con exito")
                 this.setState({cargando:false})
@@ -797,7 +802,7 @@ class verPerfil extends Component{
     async edicionExitosa(nombre){
         AsyncStorage.setItem('nombre', nombre)
         Toast.show("Usuario guardado con exito")
-        this.props.navigation.navigate("perfil")
+        this.props.navigation.navigate("Home")
     }
     async loginExitoso(user){
         console.log(user)

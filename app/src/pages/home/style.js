@@ -56,16 +56,17 @@ export const style = MediaQueryStyleSheet.create({
 		borderRadius:7,
 		padding:10,
 		top:100,
+		width:size.width-80,
 		alignItems:"center"
 	},
 	btnModalClose:{
 		position:"absolute",
-		right:Platform.OS=='android' ?-8 :3,
-		top:Platform.OS=='android' ?-8 :2,
+		right:Platform.OS=='android' ?1 :3,
+		top:Platform.OS=='android' ?-1 :2,
 		zIndex:100
     },
-    iconCerrar:{
-        fontSize:22
+	iconCerrar:{
+		fontSize:30
 	},
 	tituloModal:{
 		textAlign:"center",

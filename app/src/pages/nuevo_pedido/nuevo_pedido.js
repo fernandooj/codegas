@@ -10,7 +10,7 @@ import ModalSelector            from 'react-native-modal-selector'
 import ModalFilterPicker        from 'react-native-modal-filter-picker'
 import {Calendar}               from 'react-native-calendars';
 import { TextInputMask }        from 'react-native-masked-text'
-import TomarFoto           from "../components/tomarFoto";
+import TomarFoto                from "../components/tomarFoto";
 import { connect }              from "react-redux";
 import {sendRemoteNotification} from '../push/envioNotificacion';
 import {getUsuariosAcceso}      from '../../redux/actions/usuarioActions' 
@@ -68,7 +68,13 @@ const diasN  = [
 	{label:30, key:30},
 	{label:31, key:31}
 ]
-
+const horaActual = new Date().getHours();
+if (horaActual < 16 ) {
+    hora=1
+} else {
+    hora=2
+}
+console.log({hora, horaActual})
 class Nuevo_pedido extends Component{
 	constructor(props) {
 	  super(props);
@@ -83,12 +89,11 @@ class Nuevo_pedido extends Component{
         modalCliente:false,
         modalFechaEntrega:true,
         // guardando:true,
-        fechaSolicitud: moment().tz("America/Bogota").add(1, 'days').format('YYYY-MM-DD')
+        fechaSolicitud: moment().tz("America/Bogota").add(hora, 'days').format('YYYY-MM-DD')
 	  }
 	}
 	 
 	async componentWillMount(){
-       
         axios
         .get(`users/by/adminsolucion`)
         .then(res => {
@@ -101,10 +106,12 @@ class Nuevo_pedido extends Component{
         let idUsuario = await AsyncStorage.getItem('userId')
         const acceso   	= await AsyncStorage.getItem('acceso')
         const email   	= await AsyncStorage.getItem('email')
+        const nombre   	= await AsyncStorage.getItem('nombre')
+        !nombre &&idUsuario ?this.props.navigation.navigate("verPerfil", {tipoAcceso:null}) :null //// si no ha editado el nombre lo mando para editar perfil
         idUsuario = idUsuario ?idUsuario : "FAIL"
         axios.get(`pun/punto/byCliente/${idUsuario}`)
         .then(e=>{
-            console.log(e.data.puntos[0].idZona)
+            
             if(e.data.status){
                 e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, idZona:e.data.puntos[0].idZona, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
             }else{
@@ -314,6 +321,16 @@ class Nuevo_pedido extends Component{
                         ?alert("Selecciona un cliente")
                         :(acceso=="admin" || acceso=="solucion") && !puntoId
                         ?alert("Selecciona una dirección")
+                        :!forma
+                        ?alert("selecciona una forma")
+                        :(forma=="monto"&&cantidad<10)
+                        ?alert("Inserta una cantidad")
+                        :(forma=="cantidad"&&cantidad<10)
+                        ?alert("Inserta una cantidad")
+                        :(frecuencia=="semanal" || frecuencia=="mensual") &&!dia1
+                        ?alert("Inserta un dia de frecuencia")
+                        :frecuencia=="quincenal"  &&(!dia1 ||!dia2)
+                        ?alert("Inserta los dias de frecuencia")
                         :!guardando &&this.handleSubmit()
                     }>
                         <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text>
@@ -396,25 +413,19 @@ class Nuevo_pedido extends Component{
         const {navigation} = this.props
         const {idUsuario, showFechaEntrega} = this.state
         console.log(this.state.idZona)
-        if(!idUsuario){
-            return <ActivityIndicator color="#00218b" />
-        }else if(idUsuario=="FAIL"){
-            return (navigation.navigate("perfil"))
-        }else{
-            return (
-                <View style={style.container}>
-                    {
-                        showFechaEntrega
-                        &&this.modalFechaEntrega()
-                        
-                    }
-                    <ScrollView style={{marginBottom:62}}>
-                        {this.renderPedido()}
-                    </ScrollView>
-                    <Footer navigation={navigation} />
-                </View>
-            )
-        }
+        return (
+            <View style={style.container}>
+                {
+                    showFechaEntrega
+                    &&this.modalFechaEntrega()
+                    
+                }
+                <ScrollView style={{marginBottom:62}}>
+                    {this.renderPedido()}
+                </ScrollView>
+                <Footer navigation={navigation} />
+            </View>
+        )
 	}
     handleSubmit(){
         this.setState({guardando:true})
@@ -462,12 +473,14 @@ class Nuevo_pedido extends Component{
                 })
             }else{
                 this.setState({guardando:false})
-                alert("No pudimos procesar el pedido, intentelo mas tarde")    
+                alert("No pudimos procesar el pedido, intentelo mas tarde", JSON.stringify(res.data))
+                    
             }
         })
         .catch(err=>{
+            console.log(err)
             this.setState({guardando:false})
-            alert("No pudimos procesar el pedido, intentelo mas tarde")   
+            alert("No pudimos procesar el pedido, intentelo mas tarde", JSON.stringify(err))   
         })
     }
 }

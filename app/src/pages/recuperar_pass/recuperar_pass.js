@@ -51,7 +51,9 @@ class Home extends Component{
     }
     renderCode(){
         return (
-            <CodeInput
+            <View>
+                <Text style={style.tituloRegresar}>Hemos enviado un correo con un codigo de verificación</Text>
+                <CodeInput
                 ref="codeInputRef2"
                 keyboardType="numeric"
                 codeLength={4}
@@ -63,6 +65,8 @@ class Home extends Component{
                 codeInputStyle={{ fontWeight: '800' }}
                 onFulfill={(isValid, code) => this.onFinish(isValid, code)}
             />
+            </View>
+            
         )
     }
     onFinish(isValid){

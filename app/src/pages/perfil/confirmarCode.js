@@ -20,7 +20,6 @@ export default class ConfirmarComponent extends Component{
     }
     componentWillMount(){
         const {params} = this.props.navigation.state
-        Toast.show('Hemos enviado un correo con un codigo de verificación')
         console.log(params)
 		this.setState({
 			code:params.code.toString(), 
@@ -32,10 +31,10 @@ export default class ConfirmarComponent extends Component{
  
 		return(
 			<View style={style.regresarContenedor}>
-                <TouchableOpacity onPress={()=>this.props.navigation.navigate("perfil")} style={style.btnRegresar}>
+                {/* <TouchableOpacity onPress={()=>this.props.navigation.navigate("perfil")} style={style.btnRegresar}>
                     <Icon name={'arrow-left'} allowFontScaling style={style.iconRegresar} />
-                </TouchableOpacity>
-                <Text style={style.tituloRegresar}>Inserta tu codigo</Text>
+                </TouchableOpacity> */}
+                <Text style={style.tituloRegresar}>Hemos enviado un correo con un codigo de verificación</Text>
             </View>
 		)
     }
@@ -59,6 +58,7 @@ export default class ConfirmarComponent extends Component{
 	    return <ScrollView style={style.container}>
                 {this.cabezera()}
                 {this.renderContenido()}
+                <Text></Text>
             </ScrollView>
     }
     onFinish(isValid){

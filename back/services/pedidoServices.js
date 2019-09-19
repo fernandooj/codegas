@@ -172,30 +172,31 @@ class pedidoServices{
 			'usuarioAsigna':idUsuario,
 		}}, callback);
   }
-  finalizar(data, activo, imagenCerrar, orden_cerrado, callback){
+  finalizar(data, activo, imagen, orden_cerrado, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'		:activo,
 			'kilos'	   		:data.kilos,
 			'factura'  		:data.factura,
 			'valor_unitario':data.valor_unitario,
-			'forma_pago'	:data.forma_pago,
-			'imagen'		:imagenCerrar,
-			'orden_cerrado' :orden_cerrado,
+			'forma_pago':data.forma_pago,
+			'imagen':imagen,
+			'orden_cerrado':orden_cerrado,
 			'fechaEntregado':fecha
 		}}, callback);
 	}
-	novedad(_id, orden_cerrado, motivo_no_cierre, callback){
+	novedad(_id, orden_cerrado, motivo_no_cierre, perfil_novedad, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'entregado'		:true,
 			'estado'	   	:"noentregado",
 			'orden_cerrado':orden_cerrado,
 			'motivo_no_cierre':motivo_no_cierre,
+			'perfil_novedad':perfil_novedad,
 			'fechaEntregado':fecha
 		}}, callback);
-    }
-	eliminar(_id, eliminado, callback){
+  }
+  eliminar(_id, eliminado, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'eliminado':eliminado
 		}}, callback);

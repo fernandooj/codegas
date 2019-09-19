@@ -117,7 +117,7 @@ export const style = MediaQueryStyleSheet.create({
     /////////////////////////////////////////////////////////////////
     ////////////////////        PICKER
     /////////////////////////////////////////////////////////////////
-    inputIOS: {
+    tipo: {
         borderColor:"rgba(0,0,0,.2)",
         backgroundColor:"#ffffff",
         color:"#000000",
@@ -130,16 +130,7 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5,
         paddingLeft:10
     },
-    inputAndroid: {
-        fontSize: 16,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        borderWidth: 0.5,
-        borderColor:"rgba(0,0,0,.2)",
-        borderRadius: 8,
-        width:"88%",
-        paddingRight: 30, // to ensure the text is never behind the icon
-    },
+ 
     //////////////////////////////////////////////////////////////////		
     ///////////				MODAL UBICACION
     //////////////////////////////////////////////////////////////////
@@ -216,6 +207,16 @@ export const style = MediaQueryStyleSheet.create({
         right:10,
         top:30
     },  
+    btnEliminar:{
+        position:"absolute",
+        left:"44%",    
+        bottom:2,
+        padding:10
+    },
+    iconEliminar:{
+        fontSize:20,
+        color:"red"
+    },
     //////////////////////////////////////////////////////////////////		
 	///////////				MODAL  ZONA
 	//////////////////////////////////////////////////////////////////
@@ -271,14 +272,5 @@ export const style = MediaQueryStyleSheet.create({
         marginBottom:50,
         marginTop:20
     },
-    btnEliminar:{
-        position:"absolute",
-        left:"44%",    
-        bottom:2,
-        padding:10
-    },
-    iconEliminar:{
-        fontSize:20,
-        color:"red"
-    }
+
 })

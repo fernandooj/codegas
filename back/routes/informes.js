@@ -32,7 +32,7 @@ router.get('/conversacion/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                     label: 'Funcionario',
                     value: 'usuarioId1.nombre'
                 }];
-            const opts = {fields};
+                const opts = {fields, withBOM:true};
             try {
                 const parser = new Parser(opts);
                 const csv = parser.parse(pedidos);
@@ -71,7 +71,7 @@ router.get('/users/corporativos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Avatar',
                 value: 'avatar'
             }];
-            const opts = {fields};
+            const opts = {fields, withBOM:true};
              
             try {
                 const parser = new Parser(opts);
@@ -159,7 +159,7 @@ router.get('/vehiculos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Creado',
                 value: 'creado'
             }];
-            const opts = {fields};
+            const opts = {fields, withBOM:true};
              
             try {
                 const parser = new Parser(opts);
@@ -230,7 +230,7 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Imagen',
                 value: 'imagen'
             }];
-            const opts = {fields};
+            const opts = {fields, withBOM:true};
              
             try {
                 const parser = new Parser(opts);
@@ -283,8 +283,11 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
             },{
                 label: 'Motivo no entrega',
                 value: 'motivo_no_cierre'
+            },{
+                label: 'Imagen', /// aun no esta
+                value: 'imagen'
             }];
-            const opts = {fields};
+            const opts = {fields, withBOM:true};
              
             try {
                 const parser = new Parser(opts);
@@ -309,7 +312,7 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             // res.json({carro})
             const fields = [{   
                 label: 'N Pedido',
-                value: '_id'
+                value: 'nPedido'
             },{
                 label: 'CODT',
                 value: 'usuarioId.codt'
@@ -346,8 +349,11 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Forma de pago', /// aun no esta
                 value: 'forma_pago'
+            },{
+                label: 'Imagen', /// aun no esta
+                value: 'imagen'
             }];
-            const opts = {fields};
+            const opts = {fields, withBOM:true};
              
             try {
                 const parser = new Parser(opts);

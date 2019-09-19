@@ -11,7 +11,7 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent: 'center'
 	},	 
 	subContenedor:{
-		marginBottom:70,
+		marginBottom:Platform.OS==='android' ?50 :70,
 		width:"95%",
 	},
 	pedidoBtn:{
@@ -59,7 +59,7 @@ export const style = MediaQueryStyleSheet.create({
 	//////////////////////////////////////////////////////////////////
 	contenedorCabezera:{
 		width:"90%",
-		marginTop:10,
+		marginTop:Platform.OS==='android' ?0 :10,
 	},
 	subContenedorCabezera:{
 		flexDirection:"row"
@@ -210,10 +210,8 @@ export const style = MediaQueryStyleSheet.create({
 		height:size.height,
 		zIndex:200,
 		width:"100%",
-		// bottom:50,
 		top:0,
 		left:0,	
-		// flex:1
 	},
 	 
 	subContenedorModal:{
@@ -222,6 +220,21 @@ export const style = MediaQueryStyleSheet.create({
 		borderRadius:7,
 		padding:10,
 		alignItems:"center"
+	},
+	subContenedorModal2:{
+		backgroundColor:"#ffffff",
+		height:220,
+		borderRadius:7,
+		padding:10,
+		alignItems:"center"
+	},
+	listadoPerfil:{
+		padding:10,
+		borderWidth:1,
+		borderColor:"rgba(0,0,0,.5)"
+	},
+	listadoPerfil2:{
+		padding:10,
 	},
 	btnModalClose:{
 		position:"absolute",
@@ -237,7 +250,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 
 	iconCerrar:{
-		fontSize:22
+		fontSize:31
 	},
 	separador:{
 		width:size.width-50,
@@ -327,11 +340,12 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	inputNovedad:{
 		borderColor:"#rgba(0,0,0,.2)",
+		alignItems:"flex-start",
 		borderRadius:5,
 		marginTop:15,
 		borderWidth:1,
-		height:120,
-		padding:10,
+		height:100,
+		paddingHorizontal:10,
 		width:size.width-30
 	},
 	inputTerminarPedido:{
@@ -340,7 +354,8 @@ export const style = MediaQueryStyleSheet.create({
 		borderRadius:5,
 		borderWidth:1,
 		marginBottom:10,
-		padding:5
+		paddingVertical:8,
+		paddingHorizontal:5,
 	},
 	////////////////////////////////////////////////////////////
 	//////////////////		MODAL CONDUCTOR
@@ -369,30 +384,38 @@ export const style = MediaQueryStyleSheet.create({
 	calendar:{
 		// height:100
 	},
-	 /////////////////////////////////////////////////////////////////
-    ////////////////////        PICKER
-    /////////////////////////////////////////////////////////////////
-    inputIOS: {
-			borderColor:"rgba(0,0,0,.2)",
-			backgroundColor:"#ffffff",
-			color:"#000000",
-			// marginHorizontal:"6%",
-			width:"95.5%",
-			borderWidth:1,
-			height:30,
-			marginTop:5,
-			marginBottom:0,
-			borderRadius:5,
-			paddingLeft:10
+	preload:{
+		position:"absolute",
+		zIndex:100,
+		bottom:55,
+		left:(size.width/2)-5
 	},
-	inputAndroid: {
-			fontSize: 16,
-			paddingHorizontal: 10,
-			paddingVertical: 8,
-			borderWidth: 0.5,
-			borderColor:"rgba(0,0,0,.2)",
-			borderRadius: 8,
-			width:"95.5%",
-			paddingRight: 30, // to ensure the text is never behind the icon
+
+	/////////////////////////////////////////////////////////////////
+	////////////////////        PICKER
+	/////////////////////////////////////////////////////////////////
+	contenedorSelect:{
+		borderColor:"rgba(0,0,0,.2)",
+		backgroundColor:"#ffffff",
+		color:"#000000",
+		width:"99.5%",
+		borderWidth:1,
+		height:50,
+		marginTop:5,
+		marginBottom:0,
+		borderRadius:5,
+		paddingLeft:0
 	},
+  // inputIOS: {
+	// },
+	// inputAndroid: {
+	// 	fontSize: 16,
+	// 	paddingHorizontal: 10,
+	// 	paddingVertical: 8,
+	// 	borderWidth: 1,
+	// 	borderColor:"red",
+	// 	borderRadius: 8,
+	// 	width:"95.5%",
+	// 	// paddingRight: 30, // to ensure the text is never behind the icon
+	// },
 })

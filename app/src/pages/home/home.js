@@ -7,7 +7,6 @@ import moment 			       from 'moment-timezone'
 import { registerAppListener } from "../push/Listeners";
 import Footer   from '../components/footer'
 import { connect } from "react-redux";
-import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import SocketIOClient from 'socket.io-client';
 import {URL} from "../../../App" 
 import {style} from './style'
@@ -42,14 +41,19 @@ class Home extends Component{
 			usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"
 			usuariosEntrando = JSON.parse(usuariosEntrando)
 			this.setState({formularioChat})
-			console.log({formularioChat})
-			if(acceso=="solucion" || acceso=="admin"){
-				this.socket = SocketIOClient(URL);
-				this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
+			if(!nombre &&userId){
+				this.props.navigation.navigate("verPerfil", {tipoAcceso:null})
 			}else{
-				this.setState({formularioChat, nombre:"", email:"", celular:""})
+				if(acceso=="solucion" || acceso=="admin"){
+					this.socket = SocketIOClient(URL);
+					this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
+				}else{
+					this.setState({formularioChat, nombre:"", email:"", celular:""})
+				}
+				userId ?this.setState({userId, nombre, email, avatar, acceso, usuariosEntrando}) :null
 			}
-			userId ?this.setState({userId, nombre, email, avatar, acceso, usuariosEntrando}) :null
+	 
+	
 		}catch(e){
 				console.log(e)
 		}
@@ -60,6 +64,7 @@ class Home extends Component{
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	async componentDidMount() {
 		//FCM.createNotificationChannel is mandatory for Android targeting >=8. Otherwise you won't see any notification
+		console.log({nav:this.props.navigation})
 		FCM.createNotificationChannel({
 		  id: 'default',
 		  name: 'Default',
@@ -209,8 +214,8 @@ class Home extends Component{
 	}
 	render(){
 		const {navigation} = this.props
-		const {acceso, usuariosEntrando} = this.state
-	 
+		const {acceso, userId, nombre} = this.state
+		console.log({userId, nombre})
 	    return (
 				<View style={style.container}>
 					{this.renderFormulario()}

@@ -51,8 +51,7 @@ export const sendRemoteNotification = (tipo, token, targetScreen, titulo, mensaj
 		    };
 		    firebaseClient.send(JSON.stringify(bodyIos), "notification");
 	    }else{
-			console.log("ios")
-			console.log(token)
+			
 			bodyIos = {
 		        to: token,
 		        notification: {
@@ -77,7 +76,9 @@ export const sendRemoteNotification = (tipo, token, targetScreen, titulo, mensaj
 		        },
 		        priority: 10
 		    };
-		    firebaseClient.send(JSON.stringify(bodyIos), "notification");
+			firebaseClient.send(JSON.stringify(bodyIos), "notification");
+			console.log("ios")
+			console.log(bodyIos)
 	    }
     })
 }

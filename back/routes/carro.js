@@ -27,7 +27,7 @@ router.get('/', (req,res)=>{
 ////////////////////////////////////////////////////////////
 router.get('/no_eliminados', (req,res)=>{
     if (!req.session.usuario) {
-        res.json({ status:false, message: 'No hay un usuario logueado' }); 
+        res.json({ status:false, message: 'No hay un usuario logueado',  carro:[] }); 
     }else{
         carroServices.getNoEliminados((err, carro)=>{
             if (!err) {
@@ -45,7 +45,7 @@ router.get('/no_eliminados', (req,res)=>{
 router.get(':carroId', (req,res)=>{
 	carroServices.getByCarro(req.params.carroId, (err, carro)=>{
 		if (err) {
-			res.json({ status:false, message: err }); 
+			res.json({ status:false, message: err, carro:[] }); 
 		}else{
 			res.json({ status:true, carro });
 		}
@@ -65,7 +65,7 @@ router.get('/byConductor/:idConductor', (req,res)=>{
             if (!err) {
                 res.json({ status:true, carro }); 
             }else{
-                res.json({ status:false, message: err }); 
+                res.json({ status:false, message: err, carro:[] }); 
             }
         })
     }
@@ -82,7 +82,7 @@ router.get('/asignarConductor/:idCarro/:idConductor', (req,res)=>{
             if (!err) {
                 res.json({ status:true, carro }); 
             }else{
-                res.json({ status:false, message: err }); 
+                res.json({ status:false, message: err,  carro:[] }); 
             }
         })
     }

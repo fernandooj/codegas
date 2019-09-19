@@ -20,6 +20,8 @@ const htmlTemplate=(titulo, text1, text2)=>{
 };
 
 const mailOptions = (req, user, titulo, text1, text2, asunto)=>{
+    console.log("-------")
+    console.log(user.email)
     let options = {
         from: '<releoapp@gmail.com>',         
         to: user.email,                       

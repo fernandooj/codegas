@@ -6,8 +6,8 @@ let cliente      = redis.createClient()
 let mensajeServices = require('../services/mensajeServices.js') 
 let conversacionServices = require('../services/conversacionServices.js')
 let userServices = require('../services/userServices.js') 
-const htmlTemplate = require('../template-email.js')
-const notificacionPush = require('../notificacionPush.js')
+const htmlTemplate     = require('../notificaciones/template-email.js')
+const notificacionPush = require('../notificaciones/notificacionPush.js')
  
 router.get('/', (req,res)=>{
 	mensajeServices.get((err, titulo)=>{
