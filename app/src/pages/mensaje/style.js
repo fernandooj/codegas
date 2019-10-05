@@ -67,12 +67,12 @@ export const style = MediaQueryStyleSheet.create({
     subContenedorMensajes:{
         flex:1,
         marginBottom:8,
-        minHeight:size.height-161, 
+        minHeight:size.height-149, 
     },
     textoUnirse:{
         textAlign:"center",
         fontSize:11,
-        marginVertical:10
+        marginVertical:Platform.OS==='android' ?5 :10
     },
 
     /////////////////////////////////////////////
@@ -82,9 +82,9 @@ export const style = MediaQueryStyleSheet.create({
         backgroundColor:"rgba(255,255,255,1)",
         borderBottomWidth:1,
         borderBottomColor:"rgba(90,90,90,.3)",
-        paddingTop:Platform.OS=='android' ?5 :25,
+        paddingTop:Platform.OS=='android' ?0 :25,
         flexDirection:"row",
-        paddingBottom:7,
+        paddingBottom:Platform.OS=='android' ?0 :7,
         position:"relative",
         zIndex:100
     },
@@ -99,11 +99,15 @@ export const style = MediaQueryStyleSheet.create({
     titulo:{
         fontSize:22
     },
+    btnCabezera:{
+        padding:10,
+        // borderWidth:1
+        // left:5,
+        // top:15
+    },
     iconCabezera:{
         color:"#0071bb",
-        fontSize:21,
-        left:5,
-        top:15
+        fontSize:25,
     },
     nombre:{
         width:"55%",
@@ -126,7 +130,7 @@ export const style = MediaQueryStyleSheet.create({
         paddingVertical:5,
         paddingHorizontal:8,
         height:30,
-        top:12,
+        top:Platform.OS=='android' ?9 :12,
         borderRadius:5
     },
     textCerrar:{
@@ -137,6 +141,7 @@ export const style = MediaQueryStyleSheet.create({
     /////////////////////////////////////////////
     contenedorFooter:{
         flexDirection:"row",
+        backgroundColor:"#fff"
     },
     contenedorFooter2:{
         flexDirection:"row",

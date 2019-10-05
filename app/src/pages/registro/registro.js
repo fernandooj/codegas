@@ -212,7 +212,7 @@ class Home extends Component{
 	renderRegistro(){
         const {razon_social, cedula, showcontrasena, direccion_factura, nombre, password, celular, tipo, ubicaciones} = this.state
         return(
-            <ScrollView style={style.containerRegistro}>
+            <ScrollView style={style.containerRegistro}  keyboardDismissMode="on-drag">
                 <View style={style.subContainerRegistro}>
                     <Text style={style.titulo}>Editar Perfil</Text>
                     <TextInput

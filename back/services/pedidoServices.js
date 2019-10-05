@@ -33,9 +33,12 @@ class pedidoServices{
 		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByConductor(conductorId, fecha, callback){
-		let fechaEntrega = 	fecha==="undefined" ?moment().format("YYYY-MM-DD") :fecha
+		let fechaHoy = moment().subtract(5, 'hours');
+		let fechaEntrega = 	fecha==="undefined" ?moment(fechaHoy).format('YYYY-MM-DD') :fecha
+	
+	 
 		// let fechaEntrega = fecha==="undefined" ?"2019-07-03" :fecha
-		console.log({fechaEntrega, conductorId})
+		console.log({fechaEntrega, conductorId, fecha})
 		pedido.find({conductorId, fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
 	}
 	getByFechaEntrega(fechaEntrega,  callback){

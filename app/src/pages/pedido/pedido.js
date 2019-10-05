@@ -46,7 +46,7 @@ class Pedido extends Component{
         novedad:"",
         fechasFiltro:["0","1"],
         inicio:0,
-        final:3,
+        final:4,
         zonaPedidos:[],
         top:new Animated.Value(size.height),
         elevation:7,     ////// en Android sale un error al abrir el filtro debido a la elevation

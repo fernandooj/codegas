@@ -111,7 +111,7 @@ export default class tomarPhoto extends Component{
     */
     render(){
         const {imagenes, showModal} = this.state
-        const {width, avatar, limiteImagenes} = this.props
+        const {width, avatar, limiteImagenes, tipoMensaje} = this.props
  
         return(
             <View style={style.contenedorPortada}>
@@ -120,7 +120,9 @@ export default class tomarPhoto extends Component{
                     &&this.renderModal()
                 }
                 {
-                    imagenes.length<limiteImagenes
+                    tipoMensaje
+                    ?this.renderModal()
+                    :imagenes.length<limiteImagenes
                     &&<TouchableOpacity style={[style.contenedorUploadPortada, {width}]} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
                         <Icon name={'camera'} style={style.iconPortada} />
                         <Text style={style.textPortada}> {!avatar ?"Imagen" :"Avatar"}</Text>
@@ -128,7 +130,8 @@ export default class tomarPhoto extends Component{
                     </TouchableOpacity>
                 }
                 {
-                    <View style={{flexDirection:"row", top:15}}>
+                    !tipoMensaje
+                    &&<View style={{flexDirection:"row"}}>
                         {this.renderImagenes()}
                     </View>
                 }

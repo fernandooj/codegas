@@ -75,12 +75,14 @@ export const style = MediaQueryStyleSheet.create({
 	},	
 	btnGuardar:{
 		backgroundColor:"#00218b",
+		alignItems:"center",
 		padding:10,
-			borderRadius:5,
-			marginTop:25
+		borderRadius:5,
+		marginTop:25
   },
   btnGuardarDisable:{
 		backgroundColor:"grey",
+		alignItems:"center",	
 		padding:10,
 		borderRadius:5,
 		marginTop:25
@@ -89,14 +91,14 @@ export const style = MediaQueryStyleSheet.create({
 		color:"#ffffff"
 	},
 	input:{
-        width:size.width-100,
-        backgroundColor:"#ffffff",
-        borderColor:"rgba(90,90,90,.3)",
-        borderWidth:1,
-        height:40,
-        borderRadius:5,
-        borderTopLeftRadius:5,
-        borderTopRightRadius:5,
+		width:size.width-100,
+		backgroundColor:"#ffffff",
+		borderColor:"rgba(90,90,90,.3)",
+		borderWidth:1,
+		height:40,
+		borderRadius:5,
+		borderTopLeftRadius:5,
+		borderTopRightRadius:5,
 		padding:10,
 		margin:8
     },

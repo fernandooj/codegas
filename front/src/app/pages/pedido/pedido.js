@@ -102,6 +102,10 @@ class Home extends PureComponent {
   renderTable(){
     const columns = [
       {
+        title: 'N Pedido',
+        dataIndex: 'nPedido',
+      },
+      {
         title: 'CODT',
         dataIndex: 'usuarioId.codt',
       },
@@ -142,7 +146,7 @@ class Home extends PureComponent {
             {
               e.estado=="espera" || e.estado=="innactivo" 
               ?alert("No puedes editar aun el pedido")
-              :this.setState({modalFecha:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })}
+              :this.setState({modalFecha:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, nPedido:e.nPedido, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })}
             }
             >
            {fecha ?fecha :"Sin Asignar"}
@@ -190,7 +194,7 @@ class Home extends PureComponent {
             {
               e.estado=="espera" || e.estado=="innactivo" 
               ?alert("no puedes editar aun el pedido")
-              :this.setState({modal:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone,  cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })}
+              :this.setState({modal:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, nPedido:e.nPedido, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })}
             }
             >
             {carro ?carro :"Sin asignar"}
@@ -230,19 +234,19 @@ class Home extends PureComponent {
   ////////////////////////            RENDER MODAL VEHICULO
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   renderModalVehiculo(){
-    const {modal, idVehiculo, loading} = this.state
-  
+    const {modal, idVehiculo, loading, placa} = this.state
+    console.log({placa})
     return(
       <Modal
           title="Asignar Vehiculo"
           visible={modal}
           onOk={this.handleOk}
-          onCancel={()=>this.setState({modal:false})}
+          onCancel={()=>this.setState({modal:false, idVehiculo:null, placa:null })}
           footer={[
             // <Button key="back" onCancel={()=>this.setState({modal:false})}>
             //   Cancelar
             // </Button>,
-            <Button key="submit" type="primary" loading={loading} onClick={()=>this.asignarConductor()}>
+            <Button key="submit" type="primary" loading={loading} onClick={()=>{!placa ?alert("Selecciona un vehiculo") :this.asignarConductor()} }>
               Asignar
             </Button>,
           ]}
@@ -311,7 +315,7 @@ class Home extends PureComponent {
   ////////////////////////          GUARDAR FECHA
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   asignarFecha(){
-    let {fechaEntrega, id} = this.state
+    let {fechaEntrega, id, nPedido} = this.state
     // fechaEntrega = moment(fechaEntrega).valueOf()
     console.log({fechaEntrega})
     const openNotificationWithIcon = type => {
@@ -319,7 +323,7 @@ class Home extends PureComponent {
         message: 'Fecha editada',
         duration: 8,
         description:
-          `Se edito la fecha: ${fechaEntrega} al pedido: ${id}`,
+          `Se edito la fecha: ${fechaEntrega} al pedido: ${nPedido}`,
       });
     };
     confirm({
@@ -352,18 +356,18 @@ class Home extends PureComponent {
   ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   asignarConductor(){
-    const {placa, idVehiculo, id, fechaEntrega} = this.state
+    const {placa, idVehiculo, id, fechaEntrega, nPedido} = this.state
     const openNotificationWithIcon = type => {
       notification[type]({
         message: 'Vehiculo agregado',
         duration: 8,
         description:
-          `Se agrego el vehiculo: ${placa} al pedido: ${id}`,
+          `Se agrego el vehiculo: ${placa} al pedido: ${nPedido}`,
       });
     };
     confirm({
       title: `Seguros deseas agregar a ${placa}`,
-      content: 'a este pedido',
+      content: `al pedido ${nPedido}`,
       okText: 'Si',
       okType: 'danger',
       cancelText: 'No',
@@ -376,7 +380,7 @@ class Home extends PureComponent {
     });
     const confirmar =()=>{
         console.log("confirmar")
-        axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}`)
+        axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${nPedido}`)
         .then((res)=>{
             if(res.data.status){
                 this.props.getPedidos()

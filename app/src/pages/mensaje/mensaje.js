@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TextInput, KeyboardAvoidingView, ScrollView, TouchableOpacity, Platform, Image, Dimensions, Modal, ActivityIndicator, Alert} from 'react-native'
+import {View, Text, TextInput, KeyboardAvoidingView, ScrollView, TouchableOpacity, Platform, Image, Dimensions, Modal, ActivityIndicator, Alert, BackHandler} from 'react-native'
 import AsyncStorage   from '@react-native-community/async-storage';
 import {style}   	    from './style'
 import {connect} 	    from 'react-redux' 
@@ -53,9 +53,17 @@ class Conversacion extends Component{
 	componentWillReceiveProps(props){
 		this.setState({mensajes:props.mensajes})
 	}
+	componentDidMount() {
+		BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+	  }
+	  
 	componentWillUnmount(){
 		console.log(`Unmounting... clearing interval`);
-    	clearInterval(this.myInterval);
+		BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
+		clearInterval(this.myInterval);
+	}
+	handleBackButton() {
+		return true;
 	}
 	cerrarConversacionSocket(navigation){
 		const {acceso, id}=this.state
@@ -121,7 +129,7 @@ class Conversacion extends Component{
 		let nombre = acceso=="admin" || acceso=="solucion" ?usuarioId2.nombre :usuarioId1.nombre
 		return(
 			<View style={style.contenedorCabezera}>
-				<TouchableOpacity onPress={()=>this.props.navigation.navigate("Home")}>
+				<TouchableOpacity style={style.btnCabezera}  onPress={()=>this.props.navigation.navigate((acceso=="admin" || acceso=="solucion") ?"conversacion" :"inicio")}>
 					<Icon name={'chevron-left'} style={style.iconCabezera} />
 				</TouchableOpacity>
 				<TouchableOpacity style={style.contenedorAvatar} >
@@ -143,7 +151,7 @@ class Conversacion extends Component{
 		)
 	}
 	renderFooter(){
-		const {mensaje, subirImagen, previewImagen, height} = this.state
+		const {mensaje, subirImagen, previewImagen, showSpin} = this.state
 		return(
 			<View style={style.contenedorFooter}>
 				{
@@ -168,7 +176,7 @@ class Conversacion extends Component{
 					ref='username' 
 					multiline
 				/>
-				<TouchableOpacity onPress={mensaje.length==0 ?null :()=>this.handleSubmit()} style={style.btnEnviar}>
+				<TouchableOpacity onPress={(mensaje.length==0 || showSpin)?null :()=>this.handleSubmit()} style={style.btnEnviar}>
 					<Icon name={'paper-plane'} style={style.icon} />
 				</TouchableOpacity>
 			</View>
@@ -185,7 +193,7 @@ class Conversacion extends Component{
 			{
 				Platform.OS=='android'
 				?<View style={{flex:1}}>
-					<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={0} behavior={"position"} >
+					<KeyboardAvoidingView style={style.contenedorMensajes} keyboardVerticalOffset={140} behavior={"position"}  >
 						<ScrollView  ref={(view) => { this.scrollView = view }} style={style.subContenedorMensajes}
 							onContentSizeChange={(width,height) => this.scrollView.scrollTo({y:height})}
 						>

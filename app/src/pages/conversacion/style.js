@@ -42,7 +42,8 @@ export const style = MediaQueryStyleSheet.create({
         width:"90%"
     },
     btnRight:{
-        justifyContent:"center"
+        justifyContent:"center",
+        padding:8,
     },
     iconRight:{
         fontSize:20

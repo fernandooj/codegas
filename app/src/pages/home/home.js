@@ -129,11 +129,11 @@ class Home extends Component{
 
 	renderBotones(){
 		const {navigation} = this.props
-		const {acceso, tokenPhone, formularioChat} = this.state
+		const {acceso, tokenPhone, formularioChat, userId} = this.state
 		console.log({formularioChat, acceso})
 		return(
 			<View>
-				<TouchableOpacity style={style.btn} onPress={()=>navigation.navigate("nuevo_pedido")}>
+				<TouchableOpacity style={style.btn} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
 					<Icon name="plus-square" style={style.icon} />
 					<Text style={style.text}>NUEVO PEDIDO</Text>
 				</TouchableOpacity>
@@ -175,7 +175,7 @@ class Home extends Component{
 									<Text style={style.tituloModal}>Bienvenido a nuestro chat </Text>
 									<Text>Horario de atención es lunes a viernes 8:00AM - 5:00PM. </Text>
 									{
-										(dia=="Saturday" || dia=="Sunday") || !horaLaboral
+										(dia=="Saturday" || dia=="Sunday")  
 										?null
 										:<View>
 										<Text>Ingresa tus datos para iniciar </Text>
