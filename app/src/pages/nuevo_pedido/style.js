@@ -21,18 +21,21 @@ export const style = MediaQueryStyleSheet.create({
     //////////////////////////////////////////////////////////////////
     contenedorMonto:{
         borderColor:"#00218b",
-        borderWidth:1,
+        borderWidth:3,
+        borderColor:"#ffcc00",
+        borderTopWidth:0,
         width:"90%",
-        borderRadius:5,
+        borderRadius:30,
         padding:20,
-        marginTop:25
+        marginTop:125
     },
     tituloForm:{
         textAlign:"center",
-        backgroundColor:"#ffffff",
+        color:"#00218b",
+        backgroundColor:"rgba(255,255,255,0)",
         width:280,
         fontSize:22,
-        top:-29
+        top:-32
     },
     btnFormaLlenar:{
         flexDirection:"row",
@@ -40,12 +43,17 @@ export const style = MediaQueryStyleSheet.create({
     },
     textForma:{
         fontSize:19,
-        width:"80%"
+        width:"70%",
+        color:"#00218b",
     },
     icon:{
-        color:"#5cb85c",
-        fontSize:19,
-        top:2,
+       width:50,
+       height:28,
+       marginRight:25
+    },
+    iconCheck:{
+        color:"#00218b",
+        fontSize:22
     },
     input:{
         width:"90%",
@@ -72,28 +80,33 @@ export const style = MediaQueryStyleSheet.create({
     titulo:{
         fontSize:22
     },
+    btnEnviar:{
+        marginVertical:25,
+        width:80,
+        height:80    
+    },
     btnGuardar:{
-        flexDirection:"row",
-		backgroundColor:"#00218b",
-		padding:10,
-        borderRadius:5,
-        marginTop:25
+        // flexDirection:"row",
+		// backgroundColor:"#00218b",
+		// padding:10,
+        // borderRadius:5,
+        // marginTop:25
     },
     btnGuardarDisable:{
-		backgroundColor:"grey",
-		padding:10,
-        borderRadius:5,
-        marginTop:25
+		// backgroundColor:"grey",
+		// padding:10,
+        // borderRadius:5,
+        // marginTop:25
     },
     textGuardar:{
-		color:"#ffffff"
+		color:"#00218b"
     },
     //////////////////////////////////////////////////////////////////
     //////////////////////      FRECUENCIA
     ////////////////////////////////////////////////////////////////// 
     nuevaFrecuencia:{
         flexDirection:"row",
-        backgroundColor:"#5cb85c",
+        backgroundColor:"#ffcc00",
 		padding:10,
         borderRadius:5,
         marginVertical:10
@@ -106,7 +119,7 @@ export const style = MediaQueryStyleSheet.create({
         marginVertical:10
     },
     iconFrecuencia:{
-        color:"#ffffff",
+        color:"#00218b",
         marginHorizontal:10,
     },
     contenedorFrecuencia:{
@@ -145,11 +158,9 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5
     },
     textZona:{
-        width:"70%"
+        width:"50%"
     },
-    iconZona:{
-        color:"#5cb85c",
-    },
+
 
     //////////////////////////////////////////////////////////////////		
     ///////////				MODAL

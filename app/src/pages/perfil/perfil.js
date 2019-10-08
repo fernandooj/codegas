@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image, ImageBackground} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage from '@react-native-community/async-storage';
 import Footer   from '../components/footer'
@@ -8,6 +8,7 @@ import Icon from 'react-native-fa-icons';
 import FCM from "react-native-fcm";
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
+import {URL} from "../../../App" 
 import {style} from './style'
 
 class Home extends Component{
@@ -39,9 +40,9 @@ class Home extends Component{
     renderEmail(){
         const {email} = this.state
         return(
-            <ScrollView style={style.containerRegistro}>
+            <ScrollView style={style.containerRegistro2}>
                 <View style={style.subContainerRegistro}>
-                    <Text style={style.titulo}>Email</Text>
+                    <Text style={style.titulo}>Crear Nueva Cuenta</Text>
                     <TextInput
                         style={email.length<2 ?[style.input, style.inputInvalid] :style.input}
                         placeholder="Email"
@@ -60,7 +61,7 @@ class Home extends Component{
 	iniciarSesion(){
         const {email2, password2, cargando} = this.state
         return (
-            <ScrollView style={style.containerRegistro}>
+            <ScrollView style={style.containerRegistro2}>
                 <View style={style.subContainerRegistro}>
                     <Text style={style.titulo}>Iniciar sesión</Text>
                     <TextInput
@@ -111,55 +112,55 @@ class Home extends Component{
                 <View>
                     <TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:null})} >
                         <Text style={style.txtLista}>Editar perfil</Text> 
-                        <Icon name={'user-o'} style={style.icon} />
+                        <Image source={require('../../assets/img/pg1/icon2.png')} style={style.icon} />
                     </TouchableOpacity>
                     
                     {
                         acceso=="admin"
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"admin"})} >
                             <Text style={style.txtLista}>Crear Usuario</Text> 
-                            <Icon name={'plus'} style={style.icon} />
+                            <Image source={require('../../assets/img/pg1/icon1.png')} style={style.icon} />
+                        </TouchableOpacity>
+                    }
+                    {
+                            (acceso=="admin" || acceso=="solucion")
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios")} >
+                            <Text style={style.txtLista}>Usuarios</Text> 
+                            <Image source={require('../../assets/img/pg1/icon3.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
                     {
                         acceso=="solucion"
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"solucion"})} >
                             <Text style={style.txtLista}>Crear Cliente</Text> 
-                            <Icon name={'plus'} style={style.icon} />
+                            <Image source={require('../../assets/img/pg1/icon1.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
                     {
                         (acceso=="admin" || acceso=="despacho")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("vehiculo", {tipoAcceso:"admin"})} >
                             <Text style={style.txtLista}>Vehiculos</Text> 
-                            <Icon name={'car'} style={style.icon} />
-                        </TouchableOpacity>
-                    }
-                    {
-                         (acceso=="admin" || acceso=="solucion")
-                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios")} >
-                            <Text style={style.txtLista}>Usuarios</Text> 
-                            <Icon name={'users'} style={style.icon} />
+                            <Image source={require('../../assets/img/pg1/icon4.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
                     {
                         acceso=="admin"
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("zona")} >
                             <Text style={style.txtLista}>Zonas</Text> 
-                            <Icon name={'globe'} style={style.icon} />
+                            <Image source={require('../../assets/img/pg1/icon5.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
                     {
                         acceso=="admin"
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("verCalificacion")} >
                             <Text style={style.txtLista}>Calificaciones</Text> 
-                            <Icon name={'star'} style={style.icon} />
+                            <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
                      {
-                        acceso=="admin"
+                        (acceso=="admin" && email=="fernandooj@ymail.com")
                         &&<View style={style.btnLista}  >
-                            <TextInput style={style.txtLista} onChangeText={(idUsuario)=>this.setState({idUsuario})} /> 
+                            <TextInput style={style.txtLista} onChangeText={(idUsuario)=>this.setState({idUsuario})} placeholder="id" /> 
                             <TouchableOpacity  style={style.btnLista} onPress={()=>{this.searchUser()}}>
                                 <Icon name={'star'} style={style.icon} />
                             </TouchableOpacity>
@@ -167,7 +168,7 @@ class Home extends Component{
                     }
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
                         <Text style={style.txtLista}>Cerrar Sesion</Text> 
-                        <Icon name={'sign-out'} style={style.icon} />
+                        <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
                         <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.4</Text> 
@@ -213,19 +214,19 @@ class Home extends Component{
         const {navigation} = this.props
         const {userId} = this.state
 	    return (
-				<View style={style.container}>
-                    {
-                        userId
-                        ?this.renderPerfil()
-                        :<KeyboardAwareScrollView style={style.containerRegistro}>
-                            {this.renderEmail()}
-                            <View style={style.separador}></View>
-                            {this.iniciarSesion()}
-                        </KeyboardAwareScrollView>
-                    }
-					
-					<Footer navigation={navigation} />
-				</View>
+            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
+                {
+                    userId
+                    ?this.renderPerfil()
+                    :<KeyboardAwareScrollView style={style.containerRegistro}>
+                        {this.renderEmail()}
+                        <View style={style.separador}></View>
+                        {this.iniciarSesion()}
+                    </KeyboardAwareScrollView>
+                }
+                
+                <Footer navigation={navigation} />
+            </ImageBackground>
 		)
 	}
     handleSubmit(){

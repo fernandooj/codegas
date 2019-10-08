@@ -11,8 +11,8 @@ export const style = MediaQueryStyleSheet.create({
 	containerRegistro:{
 		flex:1,
 		width:"100%",
-		marginTop:Platform.OS==='android' ?10 :20,
-		marginBottom:55
+		marginTop:Platform.OS==='android' ?100 :120,
+		marginBottom:65
 	},
 	subContainerRegistro:{
 		flex:1,
@@ -22,22 +22,28 @@ export const style = MediaQueryStyleSheet.create({
 		height:1,
 		width:"80%",
 		left:"10%",
-		marginTop:20,
+		marginTop:0,
 		backgroundColor:"rgba(0,0,0,.1)"
 	},
 	iconAvatar:{
 		fontSize:50,
 		color:"#00218b"
 	},
+	containerRegistro2:{
+		flex:1,
+		width:"100%",
+		marginTop:30,
+		marginBottom:30
+	},
+	 
 	//////////////////////////////////////////////////////////////////
     //////////////////////      CABEZERA
     //////////////////////////////////////////////////////////////////
 	perfilContenedor:{
 		flexDirection:"row",
-		borderBottomColor:"rgba(0,0,0,.5)",
+		borderBottomColor:"rgba(0,0,0,.2)",
 		borderBottomWidth:1,
 		paddingVertical:15,
-		marginBottom:10
 	},
 	columna1:{
 		alignItems:"center",
@@ -46,13 +52,16 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnLista:{
 		flexDirection:"row",
+		justifyContent:"center",
+		alignItems:"center",
 		borderBottomColor:"rgba(0,0,0,.2)",
 		borderBottomWidth:1,
-		padding:15
+		padding:0
 	},
 	txtLista:{
-		width:"90%",
-		fontSize:20
+		width:"77%",
+		fontSize:20,
+		left:20
 	},
 	avatar:{
 		width:60,
@@ -63,7 +72,8 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:17
 	},
 	icon:{
-		fontSize:20
+		width:90,
+		height:90
 	},
     //////////////////////////////////////////////////////////////////
     //////////////////////      INPUTS
@@ -93,14 +103,16 @@ export const style = MediaQueryStyleSheet.create({
         borderColor:"rgba(255, 0, 0, 0.42)"
     },
     titulo:{
+		color:"#002587",
 		fontSize:22,
-		marginBottom:20
+		marginBottom:20,
 	},
 	btnGuardar:{
 		flexDirection:"row",
 		backgroundColor:"#00218b",
 		padding:10,
-		borderRadius:5
+		paddingHorizontal:20,
+		borderRadius:20
 	},
 	textGuardar:{
 		color:"#ffffff"

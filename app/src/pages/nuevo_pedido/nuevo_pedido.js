@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ScrollView} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ScrollView, ImageBackground, Image} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage             from '@react-native-community/async-storage';
 import Icon                     from 'react-native-fa-icons';
@@ -16,7 +16,7 @@ import {sendRemoteNotification} from '../push/envioNotificacion';
 import {getUsuariosAcceso}      from '../../redux/actions/usuarioActions' 
 import Footer                   from '../components/footer'
 import {style}                  from './style'
- 
+import {URL} from "../../../App" 
 const frecuencias = [
     { key: "semanal",   label: 'Semanal' },
     { key: "quincenal", label: 'Quincenal' },
@@ -140,20 +140,22 @@ class Nuevo_pedido extends Component{
         return(
             <KeyboardAwareScrollView style={style.containerNuevo}>
                 <View style={style.subContainerNuevo}>
-                    <Text style={style.titulo}>Realice su pedido</Text>
                     <View style={style.contenedorMonto}>
-                        <Text style={style.tituloForm}>De que forma desea llenarlo</Text>
+                        <Text style={style.tituloForm}>Realice su pedido</Text>
                         <TouchableOpacity onPress={()=>this.setState({forma:"monto", cantidad:""})} style={style.btnFormaLlenar}>
+                            <Image source={require('../../assets/img/pg3/btn2.png')} style={style.icon}  resizeMode={'contain'} />	
                             <Text style={style.textForma}>Monto $</Text>
-                            {forma=="monto" &&<Icon name="check" style={style.icon} />}
+                            {forma=="monto" &&<Icon name="check" style={style.iconCheck} />}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({forma:"cantidad", cantidad:""})} style={style.btnFormaLlenar}>
+                            <Image source={require('../../assets/img/pg3/btn3.png')} style={style.icon}  resizeMode={'contain'} />
                             <Text style={style.textForma}>Cantidad KL</Text>
-                            {forma=="cantidad" &&<Icon name="check" style={style.icon} />}
+                            {forma=="cantidad" &&<Icon name="check" style={style.iconCheck} />}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({forma:"lleno", cantidad:""})} style={style.btnFormaLlenar}>
+                            <Image source={require('../../assets/img/pg3/btn4.png')} style={style.icon}  resizeMode={'contain'} />
                             <Text style={style.textForma}>Lleno total</Text>
-                            {forma=="lleno" &&<Icon name="check" style={style.icon} />}
+                            {forma=="lleno" &&<Icon name="check" style={style.iconCheck} />}
                         </TouchableOpacity>
                     </View>
                     {
@@ -273,8 +275,9 @@ class Nuevo_pedido extends Component{
                             puntos.map((e, key)=>{
                                 return (
                                     <TouchableOpacity key={key} style={style.btnZona} onPress={()=>this.setState({puntoId:e._id, idZona:e.idZona})}>
+                                        <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
                                         <Text style={style.textZona}>{e.direccion}</Text>
-                                        {(puntoId==e._id) &&<Icon name="check" style={style.iconZona} /> }
+                                        {(puntoId==e._id) &&<Icon name="check" style={style.iconCheck} /> }
                                     </TouchableOpacity>
                                 )
                             })
@@ -333,7 +336,9 @@ class Nuevo_pedido extends Component{
                         ?alert("Inserta los dias de frecuencia")
                         :!guardando &&this.handleSubmit()
                     }>
-                        <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text>
+                        {/* <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text> */}
+                        <Image source={require('../../assets/img/pg3/btnEnviar.png')} style={style.btnEnviar}  resizeMode={'contain'} />
+
                         {guardando &&<ActivityIndicator color="#ffffff" />}
                     </TouchableOpacity>
                 </View>
@@ -414,7 +419,7 @@ class Nuevo_pedido extends Component{
         const {idUsuario, showFechaEntrega} = this.state
         console.log(this.state.idZona)
         return (
-            <View style={style.container}>
+            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
                 {
                     showFechaEntrega
                     &&this.modalFechaEntrega()
@@ -424,7 +429,7 @@ class Nuevo_pedido extends Component{
                     {this.renderPedido()}
                 </ScrollView>
                 <Footer navigation={navigation} />
-            </View>
+            </ImageBackground>
         )
 	}
     handleSubmit(){

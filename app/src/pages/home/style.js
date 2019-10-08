@@ -10,31 +10,37 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent:"center"
 	},
 	btn:{
-		backgroundColor: "#00218b",
+		flexDirection:"row",
 		alignItems: 'center',
 		width:size.width-20,
-		marginBottom:20,
+	
 		borderRadius:10,
 		paddingVertical:Platform.OS=='android' ?20 :50
 	},
 	icon:{
-		color:"#ffffff",
-		fontSize:45,
-		paddingVertical:25
+		width:80,
+		height:80,
+		marginRight:20,
+		marginLeft:30
 	},
 	text:{
-		color:"#ffffff",
+		color:"#002587",
 		fontSize:30
 	},
+	fondoOnline:{
+		width:340,
+		paddingLeft:70
+	},
 	btnUsuariosOnline:{
-		backgroundColor:"#5cb85c",
 		padding:20,
 		borderRadius:10,
-		marginBottom:20
+		marginBottom:20,
 	},
 	textUsuariosOnline:{
 		color:"#ffffff",
-		fontSize:22
+		fontSize:18,
+		top:8,
+		left:10
 	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				MODAL

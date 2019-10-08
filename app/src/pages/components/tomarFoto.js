@@ -125,8 +125,8 @@ export default class tomarPhoto extends Component{
                     :imagenes.length<limiteImagenes
                     &&<TouchableOpacity style={[style.contenedorUploadPortada, {width}]} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
                         <Icon name={'camera'} style={style.iconPortada} />
-                        <Text style={style.textPortada}> {!avatar ?"Imagen" :"Avatar"}</Text>
-                        {!avatar &&<Text style={style.textPortada2}>Subir Imagen</Text>}
+                        {/* <Text style={style.textPortada}> {!avatar ?"Imagen" :"Avatar"}</Text> */}
+                        {!avatar &&<Text style={style.textPortada2}>Subir {!avatar ?"Imagen" :"Avatar"}</Text>}
                     </TouchableOpacity>
                 }
                 {

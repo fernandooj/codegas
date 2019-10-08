@@ -10,31 +10,33 @@ export const style = MediaQueryStyleSheet.create({
 	///////////////////////////			FOOTER
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	contenedorFooter:{
-		backgroundColor: "#00218b",
+		backgroundColor: "rgba(255, 204, 0, 0.48)",
 		alignItems:"center",
 		flexDirection:"row",
 		position:"absolute",
 		bottom:0,
 		width:"100%",
 		left:0,
-		height:50,
-		paddingVertical:10,
+		height:65,
+		paddingBottom:3,
 	},
 	subContenedorFooter:{
-		width:"25.0%"
+		width:"25.0%",
+		alignItems:"center"
 	},
 	subContenedorFooterConductor:{
 		width:"50.5%"
 	},
 	icon:{
-		color:"#ffffff",
-		textAlign:"center",
-		fontSize:22,
+		width:70,
+		height:34,
+		borderWidth:1
 	},
 	textFooter:{
 		textAlign:"center",
-		color:"#ffffff",
-		fontSize:14
+		color:"#002587",
+		fontSize:14,
+		top:4
 	},
 	badge:{
 		backgroundColor:"red",
@@ -65,15 +67,16 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems:"center"
 	},
 	contenedorUploadPortada:{
-		backgroundColor:"#0071bb",
 		alignItems:"center",
-		paddingVertical:15,
-		borderRadius:10,
 		marginTop:10,
 		width:"80%"
 	},
 	iconPortada:{
+		backgroundColor:"#00218b",
 		color:"#ffffff",
+		paddingVertical:25,
+		paddingHorizontal:25,
+		borderRadius:50,
 		fontSize:40,
 	},
 	textPortada:{
@@ -82,8 +85,8 @@ export const style = MediaQueryStyleSheet.create({
 		marginVertical:5
 	},
 	textPortada2:{
-		color:"#ffffff",
-		fontSize:12,
+		color:"#00218b",
+		fontSize:15,
 		marginVertical:0
 	},
 	imagenesFotos:{

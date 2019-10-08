@@ -97,7 +97,7 @@ export default class FooterComponent extends Component{
 		return(
 			<View style={style.contenedorFooter}>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('inicio')}>
-					<Icon name="home" style={style.icon} />
+					<Image source={require('../../assets/img/footer/img1.png')} style={style.icon}  resizeMode={'contain'} />	
 					<Text style={style.textFooter}>Inicio</Text>
 					{
 						badgeSocketConversacion>0  && badgeCuenta 
@@ -120,7 +120,7 @@ export default class FooterComponent extends Component{
 				 	{
 						acceso!=="conductor"
 						&&<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
-							<Icon name="plus-square" style={style.icon} />
+							<Image source={require('../../assets/img/footer/img2.png')} style={style.icon}  resizeMode={'contain'} />	
 							<Text style={style.textFooter}>Nuevo pedido</Text>
 						</TouchableOpacity>
 					}
@@ -128,7 +128,7 @@ export default class FooterComponent extends Component{
 				 
 				
 				<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter} onPress={()=>{userId ?this.pedidos() :navigation.navigate('perfil')} }>
-					<Icon name="cloud-upload" style={style.icon} />
+					<Image source={require('../../assets/img/footer/img3.png')} style={style.icon}  resizeMode={'contain'} />	
 					<Text style={style.textFooter}>Pedidos</Text>
 					{
 						badgeSocketPedido>0  
@@ -136,7 +136,7 @@ export default class FooterComponent extends Component{
 					}
 				</TouchableOpacity>
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('perfil')}>
-					<Icon name="user" style={style.icon} />
+				<Image source={require('../../assets/img/footer/img4.png')} style={style.icon}  resizeMode={'contain'} />	
 					<Text style={style.textFooter}>Perfil</Text>
 				</TouchableOpacity>
 			</View>

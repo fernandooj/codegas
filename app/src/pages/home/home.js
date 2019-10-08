@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Platform, Dimensions, Modal, TextInput} from 'react-native'
+import {View, Text, TouchableOpacity, Platform, Dimensions, Modal, TextInput, ImageBackground, Image} from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-fa-icons';
 import FCM, { NotificationActionType } from "react-native-fcm";
@@ -12,7 +12,7 @@ import {URL} from "../../../App"
 import {style} from './style'
 import axios from 'axios';
 import Toast from 'react-native-simple-toast';
-
+ 
  
 let screenWidth = Dimensions.get('window').width;
  
@@ -133,23 +133,24 @@ class Home extends Component{
 		console.log({formularioChat, acceso})
 		return(
 			<View>
-				<TouchableOpacity style={style.btn} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
-					<Icon name="plus-square" style={style.icon} />
+				<TouchableOpacity style={[style.btn, {marginTop:50}]} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
+					<Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon}/>
 					<Text style={style.text}>NUEVO PEDIDO</Text>
 				</TouchableOpacity>
 				<TouchableOpacity style={style.btn} onPress={()=>acceso=="admin" || acceso=="solucion" ?navigation.navigate("conversacion", {tokenPhone, acceso}) :formularioChat ?navigation.navigate("conversacion", {tokenPhone, acceso}) :this.setState({modal:true})}>
-					<Icon name="comments" style={style.icon} />
+					<Image source={require('../../assets/img/pg2/bot03.png')} style={style.icon}/>
 					<Text style={style.text}>CHAT</Text>
 				</TouchableOpacity>
 			</View>	
 		)
 	}
 	renderBtnUsuarios(){ 
-		console.log(this.state.usuariosEntrando.length)
 		return(
-			<TouchableOpacity style={style.btnUsuariosOnline} onPress={this.state.usuariosEntrando.length==0?null :()=>this.crearConversacion()}>
-				<Text style={style.textUsuariosOnline}>Hay {this.state.usuariosEntrando.length} Usuarios en espera </Text>
-			</TouchableOpacity>
+			<ImageBackground style={style.fondoOnline} source={require('../../assets/img/pg2/bot01.png')}  resizeMode={'contain'} >
+				<TouchableOpacity style={style.btnUsuariosOnline} onPress={this.state.usuariosEntrando.length==0?null :()=>this.crearConversacion()}>
+					<Text style={style.textUsuariosOnline}>Hay {this.state.usuariosEntrando.length} Usuarios en espera </Text>
+				</TouchableOpacity>
+			</ImageBackground>
 		)
 	}
 	renderFormulario(){
@@ -215,14 +216,15 @@ class Home extends Component{
 	render(){
 		const {navigation} = this.props
 		const {acceso, userId, nombre} = this.state
-		console.log({userId, nombre})
+		let imagen = `${URL}/public/img/pg1/fondo.jpg` 
+		console.log({imagen, userId, nombre})
 	    return (
-				<View style={style.container}>
-					{this.renderFormulario()}
-					{(acceso=="solucion" || acceso=="admin") &&this.renderBtnUsuarios()}
-					{this.renderBotones()}
-					<Footer navigation={navigation} />
-				</View>
+				<ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
+						{this.renderFormulario()}
+						{(acceso=="solucion" || acceso=="admin") &&this.renderBtnUsuarios()}
+						{this.renderBotones()}
+						<Footer navigation={navigation} />
+				</ImageBackground>
 		)
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,25 +268,25 @@ class Home extends Component{
 const mapState = state => {
 	return {
 		 
-	  };
-  };
-  
-	const mapDispatch = dispatch => {
-		return {
-		
 		};
 	};
   
-  Home.defaultProps = {
-	 
-  };
+const mapDispatch = dispatch => {
+	return {
+	
+	};
+};
   
-  Home.propTypes = {
-	 
-  };
+Home.defaultProps = {
+	
+};
   
-  export default connect(
+Home.propTypes = {
+	
+};
+  
+export default connect(
 	mapState,
 	mapDispatch
-  )(Home);
+)(Home);
   
