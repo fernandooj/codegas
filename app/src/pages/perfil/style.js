@@ -59,6 +59,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:0
 	},
 	txtLista:{
+		fontFamily: "Comfortaa-Light",
 		width:"77%",
 		fontSize:20,
 		left:20
@@ -69,6 +70,7 @@ export const style = MediaQueryStyleSheet.create({
 		borderRadius:30
 	},
 	nombre:{
+		fontFamily: "Comfortaa-Light",
 		fontSize:17
 	},
 	icon:{
@@ -84,7 +86,7 @@ export const style = MediaQueryStyleSheet.create({
 		height:45,
 		paddingLeft:10,
 		borderWidth:1,
-		// fontFamily:"quicksand-medium",
+		fontFamily: "Comfortaa-Light",
 		backgroundColor:'#ffffff',
 		shadowColor: 'rgba(0,0,0, .7)', // IOS
 		borderColor:"rgba(0,0,0,.2)",
@@ -103,6 +105,7 @@ export const style = MediaQueryStyleSheet.create({
         borderColor:"rgba(255, 0, 0, 0.42)"
     },
     titulo:{
+		fontFamily: "Comfortaa-Regular",
 		color:"#002587",
 		fontSize:22,
 		marginBottom:20,
@@ -110,11 +113,13 @@ export const style = MediaQueryStyleSheet.create({
 	btnGuardar:{
 		flexDirection:"row",
 		backgroundColor:"#00218b",
-		padding:10,
+		paddingTop:5,
+		paddingBottom:10,
 		paddingHorizontal:20,
 		borderRadius:20
 	},
 	textGuardar:{
+		fontFamily: "Comfortaa-Light",
 		color:"#ffffff"
 	},
 	iconCargando:{
@@ -124,10 +129,12 @@ export const style = MediaQueryStyleSheet.create({
 		marginVertical:25
 	},
 	textOlvidar:{
+		fontFamily: "Comfortaa-Light",
 		color:"#00218b"
 	},
 
 	tituloRegresar:{
+		fontFamily: "Comfortaa-Light",
 		textAlign:"center",
 		fontSize:22,
 		marginTop:30,

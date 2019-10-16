@@ -24,15 +24,33 @@ router.get('/', (req,res)=>{
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO UNA NOVEDAD POR SU ID
 ////////////////////////////////////////////////////////////
-router.get('/:novedadId', (req,res)=>{
+router.get('/byNovedad/:novedadId', (req,res)=>{
 	novedadServices.getByNovedad(req.params.novedadId, (err, novedad)=>{
 		if (err) {
 			res.json({ status:false, message: err }); 
 		}else{
+            
 			res.json({ status:true, novedad });
 		}
 	})
 })
+
+////////////////////////////////////////////////////////////
+////////////        OBTENGO UNA NOVEDAD POR SU ID
+////////////////////////////////////////////////////////////
+router.get('/byPedido/:pedidoId', (req,res)=>{
+	novedadServices.getByPedido(req.params.pedidoId, (err, novedad)=>{
+		if (err) {
+			res.json({ status:false, message: err, novedad:[] }); 
+		}else{
+            novedad = novedad.filter(e=>{
+                return e.novedad
+            })
+			res.json({ status:true, novedad });
+		}
+	})
+})
+
 
 ///////////////////////////////////////////////////////////////
 ////////////        OBTENGO UNA NOVEDAD POR UN USUARIO

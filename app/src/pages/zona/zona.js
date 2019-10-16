@@ -35,7 +35,7 @@ class Zona extends Component{
             return (
                 <View style={style.vehiculo} key={key}>
                     <View style={style.vehiculoTexto}>
-                        <Text>{e.nombre}</Text>
+                        <Text style={{fontFamily: "Comfortaa-Regular",}}>{e.nombre}</Text>
                     </View>
                     <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.eliminarZona(e.nombre, e._id)}>
                         <Icon name={'trash'} style={style.iconCerrar} />

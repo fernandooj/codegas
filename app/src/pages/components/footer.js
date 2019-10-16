@@ -34,8 +34,6 @@ export default class FooterComponent extends Component{
 		try {
 			const userId = await AsyncStorage.getItem('userId')
 			if(userId !== null) {
-				// console.log("userId")
-				console.log(userId)
 				this.setState({userId})
 				this.socket.on(`badgeMensaje${userId}`, 	this.reciveMensanje.bind(this));
 				this.socket.on(`PedidoConductor${userId}`,this.recivePedidoConductor.bind(this));
@@ -121,7 +119,7 @@ export default class FooterComponent extends Component{
 						acceso!=="conductor"
 						&&<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
 							<Image source={require('../../assets/img/footer/img2.png')} style={style.icon}  resizeMode={'contain'} />	
-							<Text style={style.textFooter}>Nuevo pedido</Text>
+							<Text style={style.textFooter}>Nuevo Pedido</Text>
 						</TouchableOpacity>
 					}
 					 

@@ -46,6 +46,7 @@ const getUsuarios = data => {
     return axios
       .get(`users/`)
       .then(res => {
+        console.log(res.data)
         dispatch({
           type: GET_USUARIOS,
           usuarios: res.data.usuarios

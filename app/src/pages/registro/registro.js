@@ -359,17 +359,6 @@ class Home extends Component{
                 this.setState({cargando:false})
                 Toast.show("Tenemos un problema, intentalo mas tarde")
             }
-            // if(e.data.status){
-            //     if(acceso=="cliente") {
-            //         alert("Usuario guardado con exito")
-            //         this.props.navigation.navigate("perfil")
-            //     }else{
-            //         this.avatar(imagen, e.data.user._id)
-            //     } 
-            // }else{
-            //     Toast.show("Este email ya existe")
-            //     this.setState({cargando:false})
-            // }
         })
         .catch(err=>{
             console.log(err)

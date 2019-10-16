@@ -174,12 +174,12 @@ class Home extends Component{
 											<Icon name={'times-circle'} style={style.iconCerrar} />
 									</TouchableOpacity>
 									<Text style={style.tituloModal}>Bienvenido a nuestro chat </Text>
-									<Text>Horario de atención es lunes a viernes 8:00AM - 5:00PM. </Text>
+									<Text style={style.tituloModal2}>Horario de atención es lunes a viernes 8:00AM - 5:00PM. </Text>
 									{
 										(dia=="Saturday" || dia=="Sunday")  
 										?null
 										:<View>
-										<Text>Ingresa tus datos para iniciar </Text>
+										<Text style={style.tituloModal2}>Ingresa tus datos para iniciar </Text>
 										<TextInput
 											value={nombre}
 											onChangeText={nombre => this.setState({ nombre })}

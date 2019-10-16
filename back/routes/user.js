@@ -463,8 +463,11 @@ module.exports = function(app, passport){
             if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion') {
                 userServices.get((err, usuarios)=>{
                     if(!err){
+                        usuarios = usuarios.filter(e=>{
+                            return e.eliminado==false
+                        })
                         let usuarios2 = usuarios.filter(e=>{
-                            return e.acceso="cliente"
+                            return e.acceso=="cliente"
                         })
                         usuarios2 = usuarios2.filter(e=>{
                             return e.idPadre==null

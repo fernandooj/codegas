@@ -96,16 +96,16 @@ class Mensaje extends Component{
 				<View style={e.activo ?style.subContenedorActivo :style.subContenedorInActivo} key={key}>
 					<View style={style.contenedorTexto}>
 						<View style={style.subContenedorConversacion}>
-							<Text>Nombre: </Text>
-							<Text>{e.nombre}</Text>
+							<Text style={{fontFamily: "Comfortaa-Regular"}}>Nombre: </Text>
+							<Text style={{ fontFamily: "Comfortaa-Regular"}}>{e.nombre}</Text>
 						</View>
 						<View style={style.subContenedorConversacion}>
-							<Text>Celular: </Text>
-							<Text>{e.celular}</Text>
+							<Text style={{ fontFamily: "Comfortaa-Regular"}}>Celular: </Text>
+							<Text style={{ fontFamily: "Comfortaa-Regular"}}>{e.celular}</Text>
 						</View>
 						<View style={style.subContenedorConversacion}>
-							<Text>Fecha Creado: </Text>
-							<Text>{e.creado}</Text>
+							<Text style={{ fontFamily: "Comfortaa-Regular"}}>Fecha Creado: </Text>
+							<Text style={{ fontFamily: "Comfortaa-Regular"}}>{e.creado}</Text>
 						</View>
 					</View>
 					<TouchableOpacity style={style.btnRight} onPress={()=>this.actualizaBadge(e._id)}>

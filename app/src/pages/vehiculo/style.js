@@ -21,7 +21,6 @@ export const style = MediaQueryStyleSheet.create({
 	contenedorCabezera:{
 		width:"90%",
         flexDirection:"row"
-
 	},
 	subContenedorCabezera:{
 	},
@@ -71,11 +70,14 @@ export const style = MediaQueryStyleSheet.create({
 		paddingBottom:5
     },
     vehiculoTexto:{
-        width:"75%"
+        width:"70%"
     },
     btnVehiculo:{
         padding:10
-    },
+	},
+	iconVehiculo:{
+		fontSize:18
+	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				MODAL
 	//////////////////////////////////////////////////////////////////
@@ -120,11 +122,13 @@ export const style = MediaQueryStyleSheet.create({
         padding:5
     },
     conductor:{
+		fontFamily: "Comfortaa-Regular",
         fontSize:18,
         width:200,
         top:5
     },
     titulo:{
+		fontFamily: "Comfortaa-Regular",
         fontSize:21,
         marginVertical:15
     },

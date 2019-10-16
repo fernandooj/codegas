@@ -12,6 +12,7 @@ export const style = MediaQueryStyleSheet.create({
         marginBottom:55
     },
     titulo:{
+        fontFamily: "Comfortaa-Regular",
         fontSize:28,
         marginBottom:8
     },
@@ -52,7 +53,7 @@ export const style = MediaQueryStyleSheet.create({
     badge:{
 		backgroundColor:"red",
 		position:"absolute",
-		bottom:15,
+		bottom:22,
 		left:20,
 		width:20,
 		height:20,
@@ -62,6 +63,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:0
 	},
 	textBadge:{
+        fontFamily: "Comfortaa-Regular",
 		textAlign:"center",
 		color:"#ffffff",
 		fontSize:12

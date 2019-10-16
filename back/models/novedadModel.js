@@ -10,7 +10,7 @@ let Schema   = mongoose.Schema;
 /********** genero la base la coleccion llamada users   ****************/
 /////////////////////////////////////////////////////////////////////////
 let NovedadSchema = mongoose.Schema({
-	created: Number,
+	creado: String,
     novedad :String,
     pedidoId : {type: Schema.ObjectId, ref:'Pedido'},
     usuarioId: {type: Schema.ObjectId, ref:'User'},

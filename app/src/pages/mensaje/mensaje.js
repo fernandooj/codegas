@@ -100,7 +100,7 @@ class Conversacion extends Component{
 					{
 						e.tipo==1
 						?<View style={tokenPhone==e.usuarioId.tokenPhone ?style.mensaje2 :style.mensaje1}>
-							<Text>{e.mensaje}</Text>	
+							<Text style={{fontFamily: "Comfortaa-Regular"}}>{e.mensaje}</Text>	
 						</View>
 						:<View style={tokenPhone==e.usuarioId.tokenPhone ?style.contenedorImagen2 :style.contenedorImagen1}>
 							<Lightbox 

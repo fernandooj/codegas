@@ -31,6 +31,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:25
 	},
     input:{
+		fontFamily: "Comfortaa-Regular",
         borderColor:"rgba(0,0,0,.2)",
         backgroundColor:"#ffffff",
         borderWidth:1,
@@ -47,6 +48,7 @@ export const style = MediaQueryStyleSheet.create({
         borderColor:"rgba(255, 0, 0, 0.22)"
     },
     titulo:{
+		fontFamily: "Comfortaa-Bold",
 		fontSize:22,
 		marginBottom:20
 	},
@@ -56,6 +58,7 @@ export const style = MediaQueryStyleSheet.create({
 		borderRadius:5
 	},
 	textGuardar:{
+		fontFamily: "Comfortaa-Regular",
 		color:"#ffffff"
 	},
 	btnUbicacion:{
@@ -107,9 +110,11 @@ export const style = MediaQueryStyleSheet.create({
 		width:"93%"
     },
     tituloModal:{
+		fontFamily: "Comfortaa-Bold",
         margin:10
     },
 	titulo1:{
+		fontFamily: "Comfortaa-Regular",
 		fontSize:17,
 		padding:10
 	},
@@ -129,6 +134,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:30
 	},
 	textoFiltro:{
+		fontFamily: "Comfortaa-Regular",
 		width:100
 	},
 	btnLimpiar:{
@@ -242,6 +248,7 @@ export const style = MediaQueryStyleSheet.create({
         paddingVertical:10
     },
     textZona:{
+		fontFamily: "Comfortaa-Regular",
         fontSize:14,
         width:130
     },

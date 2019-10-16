@@ -67,7 +67,7 @@ export default class ConfirmarComponent extends Component{
             axios.post("user/verificaToken", {token:code, email})
             .then(res=>{
                 alert("tu usuario ha sido activado")
-                res.data.status ?this.props.navigation.navigate("registro") : Toast.show("Tenemos un problema intentalo mas tarde")
+                res.data.status ?this.props.navigation.navigate("privacidad") : Toast.show("Tenemos un problema intentalo mas tarde")
             })
         }else{
             Toast.show("Codigo Incorrecto")

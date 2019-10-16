@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>codegas</string>
+	<string>Codegas</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -37,12 +37,19 @@
 			</dict>
 		</dict>
 	</dict>
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>Queremos acceder a tu camara para editar tu avatar</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Queremos acceder a tu camara para editar tu avatar</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-  <string>Queremos acceder a tu ubicacion para entregar mas eficientemente tus pedidos</string>
-  <key>NSCameraUsageDescription</key>
-  <string>Queremos acceder a tu camara para editar tu avatar</string>
+	<string>Queremos acceder a tu ubicacion para entregar mas eficientemente tus pedidos</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Queremos acceder a tu camara para editar tu avatar</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>FontAwesome.ttf</string>
+		<string>Comfortaa-Light.ttf</string>
+		<string>Comfortaa-Regular.ttf</string>
+		<string>Comfortaa-Bold.ttf</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
@@ -56,14 +63,8 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>FontAwesome.ttf</string>
-	</array>
 </dict>
 </plist>

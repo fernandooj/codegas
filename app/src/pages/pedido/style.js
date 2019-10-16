@@ -25,6 +25,7 @@ export const style = MediaQueryStyleSheet.create({
 		color:"#ffffff",
 	},
 	text:{
+		fontFamily: "Comfortaa-Regular",
 		fontSize:15
 	},
 	columna1:{
@@ -44,6 +45,7 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection:"row"
 	},
 	textPedido:{
+		fontFamily: "Comfortaa-Regular",
 		width:"48%"
 	},	
 	imagen:{
@@ -54,6 +56,7 @@ export const style = MediaQueryStyleSheet.create({
 		textAlign:"center",
 		fontSize:22
 	},
+
 	//////////////////////////////////////////////////////////////////		
 	///////////				CABEZERA
 	//////////////////////////////////////////////////////////////////
@@ -65,6 +68,7 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection:"row"
 	},
 	inputCabezera:{
+		fontFamily: "Comfortaa-Bold",
 		position:"relative",
 		zIndex:0,
 		width:"90%",
@@ -86,7 +90,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginLeft:10
 	},	
 	titulo:{
-		// textAlign:"center",
+		fontFamily: "Comfortaa-Regular",
 		width:"80%",
 		fontSize:22,
 		marginVertical:10,
@@ -97,6 +101,7 @@ export const style = MediaQueryStyleSheet.create({
 		// borderWidth:1
 	},
 	textZonas:{
+		fontFamily: "Comfortaa-Regular",
 		fontSize:20
 	},
 	//////////////////////////////////////////////////////////////////		
@@ -116,6 +121,7 @@ export const style = MediaQueryStyleSheet.create({
 		width:"90%"
 	},
 	titulo1:{
+		fontFamily: "Comfortaa-Bold",
 		fontSize:17,
 		padding:10
 	},
@@ -127,6 +133,7 @@ export const style = MediaQueryStyleSheet.create({
 		top:5
 	},
 	btnRegresar:{
+		fontFamily: "Comfortaa-Bold",
 		paddingVertical:4,
 		paddingHorizontal:8,
 		marginRight:8,
@@ -142,6 +149,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:15
 	},
 	textoFiltro:{
+		fontFamily: "Comfortaa-Regular",
 		width:100
 	},
 	btnLimpiar:{
@@ -151,7 +159,8 @@ export const style = MediaQueryStyleSheet.create({
 		top:Platform.OS=='android' ?10 :35
 	},
 	textoLimpiar:{
-		width:50
+		fontFamily: "Comfortaa-Regular",
+		width:80
 	},
 
 	//////////////////////////////////////////////////////////////////		
@@ -181,6 +190,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:10
 	},
 	textZona:{
+		fontFamily: "Comfortaa-Regular",
 		textAlign:"center",
 		width:100
 	},
@@ -219,7 +229,8 @@ export const style = MediaQueryStyleSheet.create({
 		height:size.height-100,
 		borderRadius:7,
 		padding:10,
-		alignItems:"center"
+		alignItems:"center",
+		minWidth:size.width/1.5
 	},
 	subContenedorModal2:{
 		backgroundColor:"#ffffff",
@@ -259,6 +270,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop:15
 	},
 	tituloModal:{
+		fontFamily: "Comfortaa-Regular",
 		textAlign:"center",
 		fontSize:22,
 		marginVertical:0
@@ -271,6 +283,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:6
 	},
 	textoEspera:{
+		fontFamily: "Comfortaa-Regular",
 		fontSize:18,
 		width:"80%",
 	},
@@ -329,6 +342,7 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent:"center"
 	},
 	textGuardar:{
+		fontFamily: "Comfortaa-Regular",
 		color:"white",
 		fontSize:15,
 		textAlign:"center"
@@ -356,6 +370,34 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom:10,
 		paddingVertical:8,
 		paddingHorizontal:5,
+	},
+	btnNovedad:{
+		backgroundColor:"rgba(255, 204, 0, 1)",
+		alignItems:"center",
+		width:110,
+		padding:5,
+		borderRadius:8
+	},	
+	textNovedad:{
+		color:"#ffffff",
+		fontFamily: "Comfortaa-Regular",
+	},
+	contenedorNovedad:{
+		width:size.width/1.7,
+		borderTopWidth:1,
+		borderTopColor:"rgba(0,0,0,.2)"
+	},
+	textNovedad:{
+		fontFamily: "Comfortaa-Regular",
+		fontSize:14
+	},
+	textNovedad2:{
+		fontFamily: "Comfortaa-Regular",
+		fontSize:12
+	},
+	tituloNovedades:{
+		fontFamily: "Comfortaa-Bold",
+		fontSize:18
 	},
 	////////////////////////////////////////////////////////////
 	//////////////////		MODAL CONDUCTOR

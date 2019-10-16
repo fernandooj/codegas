@@ -9,6 +9,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop:15,
     },
     titulo:{
+        fontFamily: "Comfortaa-Bold",
         textAlign:"center",
         fontSize:20,
         marginTop:12,
@@ -25,6 +26,7 @@ export const style = MediaQueryStyleSheet.create({
         width:"25.3%",
     },
     btnInput:{
+        fontFamily: "Comfortaa-Regular",
         alignItems:"center",
         borderColor:"rgba(0,0,0,.2)",
         borderWidth:1,
@@ -65,14 +67,17 @@ export const style = MediaQueryStyleSheet.create({
         color:"#ffffff"
     },
     textInfo:{
+        fontFamily: "Comfortaa-Regular",
         color:"#ffffff"
     },
     tituloContrasena:{
+        fontFamily: "Comfortaa-Regular",
         marginTop:20,
         fontSize:22,
         textAlign:"center"
     },
     input:{
+        fontFamily: "Comfortaa-Regular",
         borderColor:"rgba(0,0,0,.2)",
         backgroundColor:"#ffffff",
         borderWidth:1,
@@ -92,7 +97,7 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5,
         width:size.width/2,
         left:size.width/3.5,
-        marginBottom:50,
+        marginBottom:70,
         marginTop:20
 	},
 	textGuardar:{
@@ -149,9 +154,11 @@ export const style = MediaQueryStyleSheet.create({
 		width:"90%"
     },
     tituloModal:{
+        fontFamily: "Comfortaa-Regular",
         margin:10
     },
 	titulo1:{
+        fontFamily: "Comfortaa-Regular",
 		fontSize:17,
 		padding:10
 	},
@@ -171,6 +178,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:30
 	},
 	textoFiltro:{
+        fontFamily: "Comfortaa-Regular",
 		width:100
 	},
 	btnLimpiar:{
@@ -180,6 +188,7 @@ export const style = MediaQueryStyleSheet.create({
 		top:Platform.OS=='android' ?10 :35
 	},
 	textoLimpiar:{
+        fontFamily: "Comfortaa-Regular",
 		width:50
     },
     contenedorAdd:{
@@ -258,6 +267,7 @@ export const style = MediaQueryStyleSheet.create({
         paddingVertical:10
     },
     textZona:{
+        fontFamily: "Comfortaa-Regular",
         fontSize:14,
         width:130
     },

@@ -39,7 +39,7 @@ class verPerfil extends Component{
         //////////////////////////////  DEVUELVE EL LISTADO DE LAS ZONAS
         axios.get("zon/zona/activos")   
         .then(res=>{
-            console.log(res.data)
+ 
             res.data.status &&this.setState({zonas:res.data.zona})
         })
         ////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ class verPerfil extends Component{
         :params.tipoAcceso=="editar"
         ?axios.get(`/user/byId/${params.idUsuario}`).then(e=>{
             const {user} = e.data
-            console.log(e.data)
+ 
             this.setState({
                 razon_social:     user.razon_social ?user.razon_social :"",
                 cedula:           user.cedula       ?user.cedula       :"",
@@ -95,13 +95,13 @@ class verPerfil extends Component{
     }
     renderPerfil(){
         const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo} = this.state
-        console.log({activo})
+        
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:0}}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
             {/* ACCESO */}	 
                 {
-                    tipoAcceso=="admin"
+                    tipoAcceso=="admin" || tipoAcceso=="editar"
                     &&<View style={style.tipo}>
                         <RNPickerSelect
                             placeholder={{
@@ -524,10 +524,7 @@ class verPerfil extends Component{
         return (
             <View  style={style.container}>
                 {this.modalUbicacion()}
-                  
-                        {this.renderPerfil()}
-                    
-                
+                    {this.renderPerfil()}
                 <Footer navigation={navigation} />
             </View>
         )
@@ -723,11 +720,11 @@ class verPerfil extends Component{
         console.log({clientes})
         console.log({clientesNuevos})
         console.log({puntos})
-        console.log({puntosNuevos})
+        console.log({acceso})
         axios.put(`user/update/${idUsuario}`, {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas})
         .then(e=>{
+            console.log(e.data)
             if(acceso=="cliente") {
-                console.log(e.data)
                 ////////////////////////////////////////////        EDITO LOS CLIENTES
                 if(clientes.length>0){
                     axios.put("user/update_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
@@ -782,7 +779,7 @@ class verPerfil extends Component{
                 }
                 AsyncStorage.setItem('nombre', e.data.user.nombre)
                 this.props.navigation.navigate("Home")
-                Toast.show("Usuario guardado con exito")
+                Toast.show("Usuario editado con exito")
                 this.setState({cargando:false})
             }else{
                 if(editaAvatar){
@@ -790,8 +787,6 @@ class verPerfil extends Component{
                 }else{
                     this.edicionExitosa(nombre)
                 }
-                 
-                
             }
         })
         .catch(err=>{
@@ -800,9 +795,10 @@ class verPerfil extends Component{
         })
     } 
     async edicionExitosa(nombre){
+        this.setState({cargando:false})
         AsyncStorage.setItem('nombre', nombre)
-        Toast.show("Usuario guardado con exito")
-        this.props.navigation.navigate("Home")
+        Toast.show("Usuario editado")
+        this.props.navigation.navigate("inicio")
     }
     async loginExitoso(user){
         console.log(user)

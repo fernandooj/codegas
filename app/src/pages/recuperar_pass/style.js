@@ -18,6 +18,7 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems: 'center',
 	},
 	tituloRegresar:{
+		fontFamily: "Comfortaa-Light",
 		textAlign:"center",
 		fontSize:22,
 		marginTop:30,
@@ -39,7 +40,7 @@ export const style = MediaQueryStyleSheet.create({
 		paddingVertical:10,
 		height:45,
 		paddingLeft:10,
-		// fontFamily:"quicksand-medium",
+		fontFamily: "Comfortaa-Light",
 		backgroundColor:'#ffffff',
 		shadowColor: 'rgba(0,0,0, .2)', // IOS
 		borderColor:"rgba(0,0,0,0)",
@@ -58,15 +59,19 @@ export const style = MediaQueryStyleSheet.create({
         borderColor:"rgba(255, 0, 0, 0.22)"
     },
     titulo:{
+		fontFamily: "Comfortaa-Light",
 		fontSize:22,
 		marginBottom:20
 	},
 	btnGuardar:{
 		backgroundColor:"#00218b",
-		padding:10,
+		paddingTop:6,
+		paddingBottom:10,
+		paddingHorizontal:20,
 		borderRadius:5
 	},
 	textGuardar:{
+		fontFamily: "Comfortaa-Light",
 		color:"#ffffff"
 	},
   

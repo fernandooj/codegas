@@ -5,13 +5,14 @@ let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
 class userServices {
 	get(callback){
-		User.find({$or:[
-			{acceso:"admin", eliminado:false}, 
-			{acceso:"solucion", eliminado:false}, 
-			{acceso:"despacho", eliminado:false}, 
-			{acceso:"conductor", eliminado:false}, 
-			{acceso:"cliente", eliminado:false} 
-		]}).sort({_id: 'desc'}).exec(callback)
+		// User.find({$or:[
+		// 	{acceso:"admin", eliminado:false}, 
+		// 	{acceso:"solucion", eliminado:false}, 
+		// 	{acceso:"despacho", eliminado:false}, 
+		// 	{acceso:"conductor", eliminado:false}, 
+		// 	{acceso:"cliente", eliminado:false} 
+		// ]}).sort({_id: 'desc'}).exec(callback)
+		User.find().exec(callback)
 	}
 	getEmail(user, callback){
 		let email = user.email.toLowerCase()
@@ -67,8 +68,9 @@ class userServices {
 		console.log(user)
 		let newUsuario = new User() 
 		User.findByIdAndUpdate(id, {$set: {
+			'acceso'	  : user.acceso,
 			'razon_social': user.razon_social,
-			'cedula':       user.cedula,
+			'cedula'	  : user.cedula,
 			'direccion_factura': user.direccion_factura,
 			'nombre':     	user.nombre,
 			'codt':     	user.codt,

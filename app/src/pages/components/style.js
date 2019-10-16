@@ -25,17 +25,18 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems:"center"
 	},
 	subContenedorFooterConductor:{
-		width:"50.5%"
+		width:"50.5%",
+		alignItems:"center"
 	},
 	icon:{
 		width:70,
 		height:34,
-		borderWidth:1
 	},
 	textFooter:{
+		fontFamily: "Comfortaa-Regular",
 		textAlign:"center",
 		color:"#002587",
-		fontSize:14,
+		fontSize:12,
 		top:4
 	},
 	badge:{
@@ -51,6 +52,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:0
 	},
 	textBadge:{
+		fontFamily: "Comfortaa-Light",
 		textAlign:"center",
 		color:"#ffffff",
 		fontSize:9
@@ -80,11 +82,13 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:40,
 	},
 	textPortada:{
+		fontFamily: "Comfortaa-Regular",
 		color:"#ffffff",
 		fontSize:15,
 		marginVertical:5
 	},
 	textPortada2:{
+		fontFamily: "Comfortaa-Regular",
 		color:"#00218b",
 		fontSize:15,
 		marginVertical:0
@@ -124,6 +128,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:12
 	},
 	textModal:{
+		fontFamily: "Comfortaa-Light",
 		fontSize:19
 	},
 	avatarPerfil:{
@@ -134,7 +139,7 @@ export const style = MediaQueryStyleSheet.create({
 },{
 	"@media (min-device-height: 812)": {
 		contenedorFooter:{
-			height:70
+			height:75
 		},
 	}
 })

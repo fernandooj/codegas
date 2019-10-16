@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, NetInfo, Keyboard} from 'react-native'
+import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, Keyboard} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import AsyncStorage        from '@react-native-community/async-storage';
 import moment 			   from 'moment-timezone'
@@ -48,6 +48,7 @@ class Pedido extends Component{
         inicio:0,
         final:4,
         zonaPedidos:[],
+        novedades:[],           //////  guardo la cantidad de novedades de cada pedido
         top:new Animated.Value(size.height),
         elevation:7,     ////// en Android sale un error al abrir el filtro debido a la elevation
         fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
@@ -71,9 +72,7 @@ class Pedido extends Component{
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
     }
-    componentDidMount(){
-        NetInfo.isConnected.addEventListener('change', this.estadoRed);
-    }
+    
     componentWillReceiveProps(props){
         this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos})   
     }    
@@ -84,8 +83,46 @@ class Pedido extends Component{
     reciveMensanje(messages) {
         this.props.getPedidos()
 	}
-    estadoRed(estadoRed){
-        // console.log(estadoRed)
+    callObservaciones(id){
+        axios.get(`nov/novedad/byPedido/${id}`)
+        .then(e=>{
+            this.setState({novedades:e.data.novedad})
+        })
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LAS NOVEDADES
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    modalNovedades(){
+        let { novedades, nPedido} = this.state
+        return(
+            <View style={style.contenedorModal2}>
+                <View style={[style.subContenedorModal, {alignItems:"flex-start"}]}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {this.setState({showNovedades:false})}}
+                        style={style.btnModalConductorClose}
+                    >
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                    </TouchableOpacity>
+                        <Text style={style.tituloNovedades}>Novedades pedido: {nPedido}</Text>
+                        <ScrollView>
+                            {
+                                this.state.novedades.map(e=>{
+                                    return (
+                                        <View key={e._id} style={style.contenedorNovedad}>
+                                            <Text style={style.textNovedad}>{e.novedad}</Text>
+                                            <Text style={style.textNovedad2}>{e.usuarioId ? e.usuarioId.nombre :""}</Text>       
+                                            <Text style={style.textNovedad2}>{e.creado}</Text>
+                                        </View>
+                                    )
+                                })
+                            }
+                            
+                        </ScrollView>
+                      
+                </View>
+            </View>
+        )
     }
     renderPedidos(){
         const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
@@ -109,10 +146,13 @@ class Pedido extends Component{
                     }
                     ////// solo activa el modal si es de despachos o administrador o conductor 
                     onPress={
-                        ()=>
-                        acceso!=="cliente"
-                        ?this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, rutaImagen:e.imagen[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido })
-                        :null                               
+                        ()=>{
+                            this.callObservaciones(e._id);
+                       
+                            acceso!=="cliente"
+                            ?this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido })
+                            :null       
+                        }                        
                     }
                 >
                      {/* <Text>{e._id}</Text> */}
@@ -186,14 +226,14 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>Estado</Text>
                         {
                             e.estado=="activo" &&!e.entregado
-                            ?<Text>Activo</Text>
+                            ?<Text style={{fontFamily: "Comfortaa-Regular"}}>Activo</Text>
                             :e.estado=="innactivo"
-                            ?<Text>In Activo</Text>
+                            ?<Text style={{fontFamily: "Comfortaa-Regular"}}>In Activo</Text>
                             :e.estado=="espera"
-                            ?<Text>Espera</Text>
+                            ?<Text style={{fontFamily: "Comfortaa-Regular"}}>Espera</Text>
                             :e.estado=="activo" &&e.entregado
-                            ?<Text>Entregado</Text>
-                            :<Text>Cerrado sin entregar</Text>
+                            ?<Text style={{fontFamily: "Comfortaa-Regular"}}>Entregado</Text>
+                            :<Text style={{fontFamily: "Comfortaa-Regular"}}>Cerrado sin entregar</Text>
                         }
                             
                     </View>
@@ -223,25 +263,25 @@ class Pedido extends Component{
         let diaActual =  moment().tz("America/Bogota").format('YYYY-MM-DD')
         return(
              
-                    <View style={style.contenedorModal2}>
-                        <View style={[style.subContenedorModal, {height:size.height-180}]}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalFechaEntrega:false})} style={style.btnModalClose}>
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
-                            </TouchableOpacity>
-                            <Text style={style.tituloModal}>Fecha entrega</Text>
-                            <Calendar
-                                style={style.calendar}
-                                current={fechaEntrega ?fechaEntrega :diaActual}
-                                minDate={diaActual}
-                                firstDay={1}
-                                onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
-                                markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
-                            />
-                        </View>
-                        <TouchableOpacity style={style.btnGuardar} onPress={fechaEntrega ?()=>this.asignarFecha() :null}>
-                            <Text style={style.textGuardar}>Guardar fecha</Text>
-                        </TouchableOpacity>
-                    </View>
+            <View style={style.contenedorModal2}>
+                <View style={[style.subContenedorModal, {height:size.height-180}]}>
+                    <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalFechaEntrega:false})} style={style.btnModalClose}>
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                    </TouchableOpacity>
+                    <Text style={style.tituloModal}>Fecha entrega</Text>
+                    <Calendar
+                        style={style.calendar}
+                        current={fechaEntrega ?fechaEntrega :diaActual}
+                        minDate={diaActual}
+                        firstDay={1}
+                        onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
+                        markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
+                    />
+                </View>
+                <TouchableOpacity style={style.btnGuardar} onPress={fechaEntrega ?()=>this.asignarFecha() :null}>
+                    <Text style={style.textGuardar}>Guardar fecha</Text>
+                </TouchableOpacity>
+            </View>
                 
         )
     }
@@ -260,24 +300,30 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     editarPedido(){
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, valor_unitario, placaPedido, imagen, estadoEntrega, conductorPedido, rutaImagen,nPedido } = this.state
-        let nuevaRuta = rutaImagen ?rutaImagen.split("-") :""
-        let nuevaRuta2 = `${nuevaRuta[0]}Miniatura${nuevaRuta[2]}`
-        console.log({keyboard})
+        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades } = this.state
+        console.log({imagenPedido})
+        let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
+        let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
+        let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
+        let imagenCerrar2 = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
+        console.log({imagenPedido2})
         return (
             <View style={style.contenedorModal}>
-               
+                {showNovedades ?this.modalNovedades() :null}
                 <View style={!keyboard ?style.subContenedorModal :[style.subContenedorModal, {marginTop:acceso=="admin" ?-610: -370}]}>
                     <ScrollView onContentSizeChange={(height) => { this.setState({height}) }}  keyboardDismissMode="on-drag">
                         <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false, elevation:7})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
                             <Icon name={'times-circle'} style={style.iconCerrar} />
                         </TouchableOpacity>
-                            <Text>Razón Social: {razon_social}</Text>
-                            <Text>Cedula: {cedula}</Text>
-                            <Text>N Pedido: {nPedido}</Text>
-                            <Text>Forma:  {forma}</Text>
-                            <Text>{cantidad &&`cantidad ${cantidad}`}</Text>
-                            {nuevaRuta!=="" &&<Image source={{uri:nuevaRuta2}} style={style.imagen} />}
+                            <Text style={{fontFamily: "Comfortaa-Regular"}}>Razón Social: {razon_social}</Text>
+                            <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula: {cedula}</Text>
+                            <Text style={{fontFamily: "Comfortaa-Regular"}}>N Pedido: {nPedido}</Text>
+                            <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma:  {forma}</Text>
+                            <Text style={{fontFamily: "Comfortaa-Regular"}}>{cantidad &&`cantidad ${cantidad}`}</Text>
+                            <TouchableOpacity style={style.btnNovedad} onPress={()=>this.setState({showNovedades:true})} >
+                                <Text style={style.txtNovedad} >Novedades: {novedades.length} </Text>
+                            </TouchableOpacity>
+                            {imagenPedido ?<Image source={{uri:imagenPedido2}} style={style.imagen} /> :null}
                         
                         {/* CAMBIAR ESTADO */}
                         {
@@ -327,18 +373,21 @@ class Pedido extends Component{
                                         <View style={style.separador}></View>
                                         <Text style={style.tituloModal}>Pedido Cerrado</Text>
                                         <View style={style.pedido}>
-                                        <ImageProgress 
-                                            resizeMode="cover" 
-                                            renderError={ (err) => { return (<ImageProgress source={require('../../assets/img/filtro.png')} imageStyle={{height: 40, width: 40, borderRadius: 10, left:-30, top:5}}  />) }} 
-                                            source={{ uri:  imagenPedido}} 
-                                            indicator={{
-                                                size: 20, 
-                                                borderWidth: 0,
-                                                color: '#ffffff',
-                                                unfilledColor: '#ffffff'
-                                                }} 
-                                            style={style.imagen}
-                                        />
+                                        {
+                                            imagenCerrar
+                                            &&<ImageProgress 
+                                                resizeMode="cover" 
+                                                renderError={ (err) => { return (<ImageProgress source={require('../../assets/img/filtro.png')} imageStyle={{height: 40, width: 40, borderRadius: 10, left:-30, top:5}}  />) }} 
+                                                source={{ uri:  imagenCerrar2}} 
+                                                indicator={{
+                                                    size: 20, 
+                                                    borderWidth: 0,
+                                                    color: '#ffffff',
+                                                    unfilledColor: '#ffffff'
+                                                    }} 
+                                                style={style.imagen}
+                                            />
+                                        }
                                         </View>
                                         <View style={style.pedido}>
                                             <Text>Kilos: </Text>

@@ -24,8 +24,9 @@ export const style = MediaQueryStyleSheet.create({
 		marginLeft:30
 	},
 	text:{
+		fontFamily: "Comfortaa-Regular",
 		color:"#002587",
-		fontSize:30
+		fontSize:26
 	},
 	fondoOnline:{
 		width:340,
@@ -37,8 +38,9 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom:20,
 	},
 	textUsuariosOnline:{
+		fontFamily: "Comfortaa-Light",
 		color:"#ffffff",
-		fontSize:18,
+		fontSize:16,
 		top:8,
 		left:10
 	},
@@ -75,10 +77,16 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:30
 	},
 	tituloModal:{
+		fontFamily: "Comfortaa-Bold",
 		textAlign:"center",
 		marginVertical:5,
 		fontWeight: "bold"
 	},	
+	tituloModal2:{
+		fontFamily: "Comfortaa-Regular",
+		textAlign:"center",
+		marginBottom:10
+	},
 	btnGuardar:{
 		backgroundColor:"#00218b",
 		alignItems:"center",
@@ -94,9 +102,11 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop:25
 	},
 	textGuardar:{
+		fontFamily: "Comfortaa-Bold",
 		color:"#ffffff"
 	},
 	input:{
+		fontFamily: "Comfortaa-Regular",
 		width:size.width-100,
 		backgroundColor:"#ffffff",
 		borderColor:"rgba(90,90,90,.3)",

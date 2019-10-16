@@ -30,25 +30,27 @@ export const style = MediaQueryStyleSheet.create({
         marginTop:125
     },
     tituloForm:{
+        fontFamily: "Comfortaa-Bold",
         textAlign:"center",
         color:"#00218b",
         backgroundColor:"rgba(255,255,255,0)",
         width:280,
         fontSize:22,
-        top:-32
+        top:-35
     },
     btnFormaLlenar:{
         flexDirection:"row",
         padding:5,
     },
     textForma:{
+        fontFamily: "Comfortaa-Bold",
+        color:"#00218b",
         fontSize:19,
         width:"70%",
-        color:"#00218b",
     },
     icon:{
        width:50,
-       height:28,
+       height:31,
        marginRight:25
     },
     iconCheck:{
@@ -60,7 +62,7 @@ export const style = MediaQueryStyleSheet.create({
 		paddingVertical:10,
 		height:45,
 		paddingLeft:10,
-		// fontFamily:"quicksand-medium",
+		fontFamily: "Comfortaa-Light",
 		backgroundColor:'#ffffff',
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
 		borderColor:"rgba(0,0,0,0)",
@@ -75,9 +77,11 @@ export const style = MediaQueryStyleSheet.create({
 		textAlignVertical:"center",
     },
     inputInvalid:{
+        fontFamily: "Comfortaa-Light",
         borderColor:"red"
     },
     titulo:{
+        fontFamily: "Comfortaa-Bold",
         fontSize:22
     },
     btnEnviar:{
@@ -99,6 +103,7 @@ export const style = MediaQueryStyleSheet.create({
         // marginTop:25
     },
     textGuardar:{
+        fontFamily: "Comfortaa-Light",
 		color:"#00218b"
     },
     //////////////////////////////////////////////////////////////////
@@ -121,6 +126,7 @@ export const style = MediaQueryStyleSheet.create({
     iconFrecuencia:{
         color:"#00218b",
         marginHorizontal:10,
+        top:6
     },
     contenedorFrecuencia:{
         flexDirection:"row",
@@ -134,7 +140,7 @@ export const style = MediaQueryStyleSheet.create({
 		height:80,
 		paddingLeft:10,
         borderWidth:1,
-		// fontFamily:"quicksand-medium",
+		fontFamily: "Comfortaa-Light",
 		backgroundColor:'#ffffff',
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
 		borderColor:"rgba(0,0,0,.5)",
@@ -158,6 +164,7 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5
     },
     textZona:{
+        fontFamily: "Comfortaa-Light",
         width:"50%"
     },
 

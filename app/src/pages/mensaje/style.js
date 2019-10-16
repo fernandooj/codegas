@@ -70,6 +70,7 @@ export const style = MediaQueryStyleSheet.create({
         minHeight:size.height-149, 
     },
     textoUnirse:{
+        fontFamily: "Comfortaa-Regular",
         textAlign:"center",
         fontSize:11,
         marginVertical:Platform.OS==='android' ?5 :10
@@ -97,6 +98,7 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:25
     },
     titulo:{
+        fontFamily: "Comfortaa-Regular",
         fontSize:22
     },
     btnCabezera:{
@@ -110,9 +112,10 @@ export const style = MediaQueryStyleSheet.create({
         fontSize:25,
     },
     nombre:{
+        fontFamily: "Comfortaa-Regular",
         width:"55%",
         fontSize:22,
-        top:10
+        top:2
     },
     iconUser:{
         color:"#0071bb",
@@ -129,11 +132,12 @@ export const style = MediaQueryStyleSheet.create({
         justifyContent:"center",
         paddingVertical:5,
         paddingHorizontal:8,
-        height:30,
+        height:35,
         top:Platform.OS=='android' ?9 :12,
         borderRadius:5
     },
     textCerrar:{
+        fontFamily: "Comfortaa-Regular",
         color:"#fff"
     },
     /////////////////////////////////////////////
@@ -150,6 +154,7 @@ export const style = MediaQueryStyleSheet.create({
         bottom:Platform.OS=='android' ?5 :-305
     },
     input:{
+        fontFamily: "Comfortaa-Regular",
         width:"75%",
         backgroundColor:"#ffffff",
         borderColor:"rgba(90,90,90,.3)",

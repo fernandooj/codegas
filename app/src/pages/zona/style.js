@@ -26,6 +26,7 @@ export const style = MediaQueryStyleSheet.create({
 	subContenedorCabezera:{
 	},
 	inputCabezera:{
+		fontFamily: "Comfortaa-Regular",
 		position:"relative",
 		zIndex:0,
 		width:"90%",
@@ -69,6 +70,7 @@ export const style = MediaQueryStyleSheet.create({
 		borderRadius:5,
     },
     vehiculoTexto:{
+		fontFamily: "Comfortaa-Regular",
 		width:"85%",
 		justifyContent:"center"
     },
@@ -123,6 +125,7 @@ export const style = MediaQueryStyleSheet.create({
         top:5
     },
     titulo:{
+		fontFamily: "Comfortaa-Regular",
         fontSize:21,
         marginVertical:15
     },

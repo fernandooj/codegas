@@ -15,6 +15,8 @@ class verPerfil extends Component{
         super(props);
         this.state={
             terminoBuscador:"",
+            inicio:0,
+            final:10
         }
     }
  
@@ -22,11 +24,20 @@ class verPerfil extends Component{
        this.props.getUsuarios()
     }
      
-     
+    onScroll(e) {
+		const {final} =  this.state
+		let paddingToBottom = 10;
+        paddingToBottom += e.nativeEvent.layoutMeasurement.height;
+        if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
+            this.setState({final:final+5, showSpin:true})
+            this.myInterval = setInterval(()=>this.setState({showSpin:false}), 2000)
+            // clearInterval(this.myInterval);
+        }
+	}
     renderUsuarios(){
         const {usuarios, navigation} = this.props
-        const {terminoBuscador} = this.state
-        let filtroUsuarios = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        const {terminoBuscador, inicio, final} = this.state
+        let filtroUsuarios = usuarios.slice(inicio, final).filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         return filtroUsuarios.map((e, key)=>{
             return(
                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
@@ -59,11 +70,9 @@ class verPerfil extends Component{
                     value={terminoBuscador}
                     style={[style.inputCabezera]}
                 />
-                {
-                    <ScrollView style={{ marginBottom:75}}>
-                        {this.renderUsuarios()}
-                    </ScrollView>
-                }
+                <ScrollView style={{ marginBottom:85}} onScroll={(e)=>this.onScroll(e)} >
+                    {this.renderUsuarios()}
+                </ScrollView>
                 <Footer navigation={navigation} />
             </View>
         )
@@ -73,7 +82,7 @@ class verPerfil extends Component{
     
 }
 const mapState = state => {
-    console.log(state)
+   
 	return {
         usuarios:state.usuario.usuarios,
 	};

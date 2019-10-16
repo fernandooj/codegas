@@ -172,6 +172,7 @@ class pedidoServices{
   cambiarEstado(idUsuario, _id, estado, callback){
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'estado':estado,
+			'entregado':false,
 			'usuarioAsigna':idUsuario,
 		}}, callback);
   }
@@ -183,7 +184,7 @@ class pedidoServices{
 			'factura'  		:data.factura,
 			'valor_unitario':data.valor_unitario,
 			'forma_pago':data.forma_pago,
-			'imagen':imagen,
+			'imagenCerrar':imagen,
 			'orden_cerrado':orden_cerrado,
 			'fechaEntregado':fecha
 		}}, callback);
