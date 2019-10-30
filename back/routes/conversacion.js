@@ -37,19 +37,21 @@ router.get('/byUser', (req,res)=>{
 	}
 })
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////		OBTIENE LAS CONVERSACIONES DE UN USUARIO POR SU TOKEN
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get('/byTokenPhone/:tokenPhone/:activo/:nombre/:email/:celular/:enviaNotificacion', (req,res)=>{
 	conversacionServices.getByToken(req.params.tokenPhone, req.params.activo, (err, mensaje)=>{
 		if (mensaje) {
 			res.json({ status: true, mensaje }); 
 		}else{
-			let mensajeJson={
+			let mensajeJson = {
 				tokenPhone:req.params.tokenPhone, 
 				nombre:req.params.nombre,
-				celular:req.params.celular
+				celular:req.params.celular,
+				activo:true
 			}
+			 
 			let mensajeBadge={
 				badge:1
 			}
@@ -126,8 +128,10 @@ router.post('/cerrar/:idConversacion', (req,res)=>{
 					if(err2){
 						res.json({ err, status:false })
 					}else{
-						cliente.publish('cerrarConversacion', req.params.idConversacion) 
-						res.json({ status:true, conversacion })
+						userServices.estadoUsuario(conversacion1.usuarioId2, false, (err3, usuario)=>{
+							cliente.publish('cerrarConversacion', req.params.idConversacion) 
+							res.json({ status:true, conversacion })
+						})
 					}
 				})  
 			}

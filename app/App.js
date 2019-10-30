@@ -1,5 +1,5 @@
 import React, { Component }        from 'react'
-import { YellowBox, Text, NetInfo, StyleSheet } from 'react-native'
+import { YellowBox, ImageBackground, NetInfo, StyleSheet, Image, Text, View } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios                       from 'axios' 
 import {Provider}                  from 'react-redux';
@@ -15,7 +15,7 @@ YellowBox.ignoreWarnings(['Require cycle:']);
 //////  RUTA GENERAL DE LA URL PARA EL API
 //////////////////////////////////////////////////////////////////////////////////////////
 export const URL = 'https://appcodegas.com';     //// URL WEB DEV
-// export const URL = 'http://192.168.0.3:8181'; //// URL local
+// export const URL = 'http://192.168.0.12:8181'; //// URL local
 export const VERSION = "1.0.0"
 axios.defaults.baseURL = URL+"/x/v1";
 
@@ -89,11 +89,15 @@ export default class App extends Component<{}> {
       <Provider store={store}>
         {
           !this.state.connection_Status
-          ?<Text style={style.alert}>actualmente estas Offline</Text>
-          :null
+          ?<ImageBackground style={style.container} source={require('./src/assets/img/pg1/fondo.jpg')} >
+            <View style={style.subContainer} >
+              <Image source={require("./src/assets/img/sin-internet.jpg")} style={style.img} />
+              <Text style={style.text}>Estas sin internet</Text>
+            </View>
+          </ImageBackground>
+          :<MainRoutes />
         }
           
-          <MainRoutes />
       </Provider> 
     )
   }
@@ -102,5 +106,27 @@ export default class App extends Component<{}> {
 const style = StyleSheet.create({
   alert: {
     color:"red"
+  },
+  container:{
+    flex:1,
+ 
+    alignItems:"center",
+    textAlign:"center"
+  },
+  subContainer:{
+    flex:1,
+    justifyContent:"center",
+    alignItems:"center",
+    textAlign:"center"
+  },
+  text:{
+    fontFamily: "Comfortaa-Bold",
+    fontSize:22,
+    alignItems:"center",
+    textAlign:"center"
+  },
+  img:{
+    width:200,
+    height:200
   }
 }); 

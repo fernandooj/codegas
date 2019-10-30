@@ -13,10 +13,6 @@ import {style} from './style'
 import axios from 'axios';
 import Toast from 'react-native-simple-toast';
  
- 
-let screenWidth = Dimensions.get('window').width;
- 
- 
 class Home extends Component{
 	constructor(props) {
 	  super(props);
@@ -30,33 +26,43 @@ class Home extends Component{
 	}
 	 
 	async componentWillMount(){
-		try{
-			const userId    			 = await AsyncStorage.getItem('userId') //// id del usuario si estas logueado
-			const nombre    			 = await AsyncStorage.getItem('nombre') //// nombre del usuario si estas logueado
-			const email 					 = await AsyncStorage.getItem('email')  //// email del usuario si estas logueado
-			const avatar    			 = await AsyncStorage.getItem('avatar') //// avatar del usuario si estas logueado
-			const acceso    			 = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
-			const formularioChat	 = await AsyncStorage.getItem('formularioChat') //// Muestra el formulario al usuario para entrar al chat, si no lo ha llenado
-			let usuariosEntrando   = await AsyncStorage.getItem('usuariosEntrando') ///// array de los usuarios que estan llamando en el chat
-			usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"
-			usuariosEntrando = JSON.parse(usuariosEntrando)
-			this.setState({formularioChat})
-			if(!nombre &&userId){
-				this.props.navigation.navigate("verPerfil", {tipoAcceso:null})
-			}else{
-				if(acceso=="solucion" || acceso=="admin"){
-					this.socket = SocketIOClient(URL);
-					this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
+		let usuariosEntrando   = await AsyncStorage.getItem('usuariosEntrando') ///// muestra la suma de usuarios que estan ingresando al chat
+ 
+		usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"
+		usuariosEntrando = JSON.parse(usuariosEntrando)
+
+		axios.get('user/perfil/')
+		.then((res)=>{
+			if(res.data.status){
+				const userId = res.data.user._id
+				const nombre = res.data.user.nombre
+				const email  = res.data.user.email
+				const avatar = res.data.user.avatar
+				const acceso = res.data.user.acceso
+				
+				if(!nombre &&userId){
+					this.props.navigation.navigate("verPerfil", {tipoAcceso:null}) ///// si se registro y no lleno los datos lo envio a editar el perfil
 				}else{
-					this.setState({formularioChat, nombre:"", email:"", celular:""})
+					if(acceso=="solucion" || acceso=="admin"){
+						this.socket = SocketIOClient(URL);
+						this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
+					}else{
+						this.setState({formularioChat, nombre:"", email:"", celular:""})
+					}
+					userId ?this.setState({userId, nombre, email, avatar, acceso, usuariosEntrando}) :null
 				}
-				userId ?this.setState({userId, nombre, email, avatar, acceso, usuariosEntrando}) :null
+			}else{
+				//////////////////////// para saber si muestra el formulario del chat //////////////////////////
+				FCM.getFCMToken().then(token => {
+					axios.get(`users/formulario_chat/${token}/${true}`)
+					.then(res2=>{
+						console.log(res2.data)
+						res2.data.status ?this.setState({formularioChat:true}) :this.setState({formularioChat:false})
+					})
+				})
+				////////////////////////////////////////////////////////////////////////////////////////////////
 			}
-	 
-	
-		}catch(e){
-				console.log(e)
-		}
+		})
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +70,7 @@ class Home extends Component{
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	async componentDidMount() {
 		//FCM.createNotificationChannel is mandatory for Android targeting >=8. Otherwise you won't see any notification
-		console.log({nav:this.props.navigation})
+		// console.log({nav:this.props.navigation})
 		FCM.createNotificationChannel({
 		  id: 'default',
 		  name: 'Default',
@@ -111,19 +117,31 @@ class Home extends Component{
 	async reciveMensanje(mensaje){
 		console.log("mensaje")
 		console.log(mensaje)
- 
-		let {usuariosEntrando} = this.state
-		console.log("usuariosEntrando1")
-		console.log(usuariosEntrando)
-		let estaUsuario = usuariosEntrando.filter(e=>{
-			return e.tokenPhone==mensaje.tokenPhone
-		})
-		estaUsuario.length===0 ?usuariosEntrando.push(mensaje) :null
-		console.log("usuariosEntrando2")
-		console.log(estaUsuario)
-		console.log("----------------------------")
-		this.setState({usuariosEntrando})
-		AsyncStorage.setItem('usuariosEntrando', JSON.stringify(usuariosEntrando))
+		let {usuariosEntrando} = this.state //////// es el array con los usuarios que estan entrando a abrir el chat
+		if(mensaje.activo){
+			////////////////////////////////////////////////////////////////////////
+			console.log("usuariosEntrando1")
+			console.log(usuariosEntrando)
+			let estaUsuario = usuariosEntrando.filter(e=>{
+				return e.tokenPhone==mensaje.tokenPhone
+			})
+			estaUsuario.length===0 ?usuariosEntrando.push(mensaje) :null
+			console.log("usuariosEntrando2")
+			console.log(estaUsuario)
+			console.log("----------------------------")
+			this.setState({usuariosEntrando})
+			AsyncStorage.setItem('usuariosEntrando', JSON.stringify(usuariosEntrando))
+		}else{
+		 
+			console.log("usuariosEntrando1")
+			console.log(usuariosEntrando)
+			usuariosEntrando= usuariosEntrando.filter(e=>{
+				return e.tokenPhone!==mensaje.tokenPhone
+			})
+			this.setState({usuariosEntrando})
+			AsyncStorage.setItem('usuariosEntrando', JSON.stringify(usuariosEntrando))
+		}
+		
 	 
 	} 	 
 
@@ -217,7 +235,7 @@ class Home extends Component{
 		const {navigation} = this.props
 		const {acceso, userId, nombre} = this.state
 		let imagen = `${URL}/public/img/pg1/fondo.jpg` 
-		console.log({imagen, userId, nombre})
+		console.log({userId, nombre, acceso})
 	    return (
 				<ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
 						{this.renderFormulario()}
@@ -236,7 +254,6 @@ class Home extends Component{
 		this.setState({modal:false})
 		let minuto = moment().format('mm');
 		navigation.navigate("conversacion", {tokenPhone, acceso, nombre, email, celular})
-		AsyncStorage.setItem('formularioChat', "true")
 		AsyncStorage.setItem('minutoInicio',   minuto)
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

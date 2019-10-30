@@ -114,8 +114,8 @@ export const style = MediaQueryStyleSheet.create({
     nombre:{
         fontFamily: "Comfortaa-Regular",
         width:"55%",
-        fontSize:22,
-        top:2
+        fontSize:16,
+        top:10
     },
     iconUser:{
         color:"#0071bb",
@@ -130,9 +130,10 @@ export const style = MediaQueryStyleSheet.create({
         flexDirection:"row",
         backgroundColor:"#0071bb",
         justifyContent:"center",
-        paddingVertical:5,
+        paddingTop:2,
+        paddingBottom:5,
         paddingHorizontal:8,
-        height:35,
+        height:30,
         top:Platform.OS=='android' ?9 :12,
         borderRadius:5
     },

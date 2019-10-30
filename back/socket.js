@@ -36,9 +36,10 @@ io.on('connection', (socket)=>{
 		}	
 		////////	ENVIA EL MENSAJE DE LA CONVERSACION
 		if (canal=='chatConversacion') {
+			let newInfo = JSON.parse(info)
 			console.log('---------')
-			console.log(info)
-		   	io.emit('chatConversacion', JSON.parse(info))
+			console.log(newInfo.conversacionId)
+		   	io.emit(`chatConversacion${newInfo.conversacionId}`, JSON.parse(info))
 		}
 		////////	BADGE CUANDO SE ENVIO UN MENSAJE
 		if (canal=='badgeMensaje') {
@@ -76,12 +77,5 @@ io.on('connection', (socket)=>{
 			// console.log(newInfo)
 			io.emit(`actualizaPedidos`, true)
 		}		
-		////////	BADGE CUANDO SE ENVIO UN MENSAJE
-		   // if (canal=='badgeCuenta') {
-		// 	let newInfo = JSON.parse(info)
-		// 	console.log('_____________')
-		// 	console.log(newInfo)
-		// 	io.emit(`badgeCuenta${newInfo.userId}`, JSON.parse(newInfo.badge))
-		// }
 	})
 }

@@ -29,16 +29,19 @@ class Conversacion extends Component{
 	  this.cerrarConversacionSocket = this.cerrarConversacionSocket.bind(this)
 	}
 	async componentWillMount(){
+		axios.get('user/perfil/')
+		.then((res)=>{
+			const acceso  = res.data.user.acceso
+			this.setState({acceso})
+		})
+
 		try {
 			let idUsuario = await AsyncStorage.getItem('userId')
-			const acceso  = await AsyncStorage.getItem('acceso')
+			
 			let tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
 			tokenPhone = JSON.parse(tokenPhone)
 			idUsuario = idUsuario ?idUsuario :123
-			this.setState({idUsuario, acceso, tokenPhone})
-			 
-			 
-			
+			this.setState({idUsuario, tokenPhone})
 		} catch (error) {
 			alert(error)
 		}
@@ -47,7 +50,7 @@ class Conversacion extends Component{
 		this.props.getMensajes(id)
 		this.props.getConversacion(id)
 		this.socket = SocketIOClient(URL);
-		this.socket.on(`chatConversacion`, 	 	  this.reciveMensanje.bind(this));
+		this.socket.on(`chatConversacion${id}`, 	 	  this.reciveMensanje.bind(this));
 		this.socket.on(`cerrarConversacion${id}`, this.cerrarConversacionSocket.bind(this));
 	}  
 	componentWillReceiveProps(props){
@@ -92,7 +95,7 @@ class Conversacion extends Component{
 	renderMensajes(){
 		const {usuario, navigator} = this.props
 		const {tokenPhone, mensajes} = this.state
-		console.log(mensajes)
+		console.log(tokenPhone)
 		return mensajes.map((e, key)=>{
 			let imagen = e.tipo==2 ?e.imagen.split("-") :null
 			return(
@@ -129,7 +132,7 @@ class Conversacion extends Component{
 		let nombre = acceso=="admin" || acceso=="solucion" ?usuarioId2.nombre :usuarioId1.nombre
 		return(
 			<View style={style.contenedorCabezera}>
-				<TouchableOpacity style={style.btnCabezera}  onPress={()=>this.props.navigation.navigate((acceso=="admin" || acceso=="solucion") ?"conversacion" :"inicio")}>
+				<TouchableOpacity style={style.btnCabezera} onPress={()=>this.props.navigation.navigate((acceso=="admin" || acceso=="solucion") ?"conversacion" :"Home")}>
 					<Icon name={'chevron-left'} style={style.iconCabezera} />
 				</TouchableOpacity>
 				<TouchableOpacity style={style.contenedorAvatar} >

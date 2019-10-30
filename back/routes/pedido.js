@@ -115,7 +115,8 @@ router.post('/', (req,res)=>{
 	}else{
         let id = req.session.usuario.acceso=="cliente" ?req.session.usuario._id : req.body.idCliente 
         console.log("id")
-        console.log(id)
+        console.log(req.session.usuario)
+        console.log(req.body)
         userServices.getById(id, (err, clientes)=>{
             if(!err){
                 pedidoServices.totalPedidos((err3, totalPedidos)=>{
@@ -185,6 +186,13 @@ router.post('/', (req,res)=>{
                             
                             res.json({ status: true, pedido });	
                         }else{
+                            let titulo = `<font size="5">error en el pedido</font>`
+                            let text1  = err2
+                            let text2  = err3 
+                            let asunto = err
+                            let user   = {email:"fernandooj@ymail.com"} 
+                            htmlTemplate(req, user, titulo, text1, text2,  asunto)
+
                             console.log(err2)
                         }
                     })

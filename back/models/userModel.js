@@ -27,7 +27,7 @@ let UserSchema = mongoose.Schema({
 	token	   :  String,
 	avatar	   : String,
 	codt	   : String,
-	activo     : Boolean,   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
+	activo     : Boolean,     //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
 	eliminado  : {type: Boolean, default:false},   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
 	idPadre    : {type: Schema.ObjectId, ref:'User'},
 });

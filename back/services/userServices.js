@@ -5,13 +5,6 @@ let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
 class userServices {
 	get(callback){
-		// User.find({$or:[
-		// 	{acceso:"admin", eliminado:false}, 
-		// 	{acceso:"solucion", eliminado:false}, 
-		// 	{acceso:"despacho", eliminado:false}, 
-		// 	{acceso:"conductor", eliminado:false}, 
-		// 	{acceso:"cliente", eliminado:false} 
-		// ]}).sort({_id: 'desc'}).exec(callback)
 		User.find().exec(callback)
 	}
 	getEmail(user, callback){
@@ -20,6 +13,10 @@ class userServices {
 	}
 	getByAcceso(acceso, callback){
 		User.find({'acceso':acceso, activo:true, eliminado:false}).exec(callback)
+	}
+	getByTokenPhone(tokenPhone, callback){
+		console.log({tokenPhone})
+		User.findOne({'tokenPhone':tokenPhone, activo:true, acceso:null}).exec(callback)
 	}
 	getByCliente(callback){
 		User.find({'acceso':"cliente", activo:true, eliminado:false}).exec(callback)
@@ -63,12 +60,12 @@ class userServices {
 		    'updatedAt':  moment(fecha).valueOf()
 		}}, callback);
 	}
-	edit(user, id, callback){
+	edit(user, id, acceso, callback){
 		console.log("padresito")
-		console.log(user)
+		console.log(acceso)
 		let newUsuario = new User() 
 		User.findByIdAndUpdate(id, {$set: {
-			'acceso'	  : user.acceso,
+			'acceso'	  : acceso=="cliente" ?"cliente" :user.acceso,
 			'razon_social': user.razon_social,
 			'cedula'	  : user.cedula,
 			'direccion_factura': user.direccion_factura,
@@ -89,9 +86,17 @@ class userServices {
 			'updatedAt':     moment(fecha).valueOf()
 		}}, callback);
 	}
+	// editFormularioChat(formularioChat, id, callback){
+	// 	console.log({formularioChat, id})
+	// 	User.findByIdAndUpdate(id, {$set: {
+	// 		'activo':     formularioChat,
+	// 		'updatedAt':  moment(fecha).valueOf()
+	// 	}}, callback);
+	// }
 
 	 
 	modificaTokenPhone(idUser, tokenPhone, callback){
+		console.log({idUser, tokenPhone})
 		User.findByIdAndUpdate(idUser, {$set:{
 			'tokenPhone':tokenPhone,
 		}}, callback );	

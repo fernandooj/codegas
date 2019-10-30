@@ -28,17 +28,18 @@ class Mensaje extends Component{
 	}
 	async componentDidMount(){
 		const {nombre, email, celular} = this.props.navigation.state.params
-		try {
-			const acceso       = await AsyncStorage.getItem('acceso') //// acceso del usuario si estas logueado
-			const tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
-			const minutoInicio = await AsyncStorage.getItem('minutoInicio') //// acceso del usuario si estas logueado
-			console.log("otro negrito")
+		const tokenPhone   = await AsyncStorage.getItem('tokenPhone') //// acceso del usuario si estas logueado
+		const minutoInicio = await AsyncStorage.getItem('minutoInicio') //// acceso del usuario si estas logueado
+		this.setState({tokenPhone})
+		axios.get('user/perfil/')
+		.then((res)=>{ 
+			const acceso  = res.data.user.acceso
+			console.log(res.data.user.acceso)
 			if(acceso=="admin" || acceso=="solucion"){
 				this.props.getConversaciones()
 				this.setState({showSpin:false})
 			}else{			
 				//el ultimo parametro avisa si le envia la notificacion a los admin de que hay un chat entrante
-				console.log("negrito")
 				axios.get(`con/conversacion/byTokenPhone/${JSON.parse(tokenPhone)}/true/${nombre}/${email}/${celular}/true`)
 				.then(res=>{
 					console.log({status:res.data})
@@ -46,15 +47,11 @@ class Mensaje extends Component{
 						clearInterval(this.myInterval);
 						this.props.navigation.navigate("mensaje", {id:res.data.mensaje._id})
 					}else{
-
 						this.myInterval = setInterval(()=>this.conversacion(minutoInicio), 2000)
 					}
 				})
 			}
-			
-		} catch (error) {
-			
-		}
+		})
 	}  
 	reciveMensanje(messages) {
 		this.props.getConversaciones()
@@ -66,10 +63,13 @@ class Mensaje extends Component{
 	conversacion(minutoInicio){
 		let minutoActual = moment().format('mm');
 		let minutoFinal  = parseInt(minutoActual) - parseInt(minutoInicio)
-		console.log({minutoInicio, minutoActual, minutoFinal})
-		const {acceso, tokenPhone, nombre, email, celular} = this.props.navigation.state.params
+		let {tokenPhone} = this.state
+		tokenPhone = JSON.parse(tokenPhone)
+		console.log({tokenPhone, minutoInicio, minutoActual, minutoFinal})
+		const {acceso, nombre, email, celular} = this.props.navigation.state.params
 	 
-		if(minutoFinal>=0 && minutoFinal<3){
+		if(minutoFinal>=0 && minutoFinal<1){
+			
 			axios.get(`con/conversacion/byTokenPhone/${tokenPhone}/true/${nombre}/${email}/${celular}/false`)
 			.then(res=>{
 				console.log(res.data)
@@ -81,9 +81,13 @@ class Mensaje extends Component{
 				}
 			})
 		}else{
-			alert("En este momento nuestros agentes estan ocupados intentalo mas tarde")
-			AsyncStorage.removeItem('formularioChat')
-			this.props.navigation.navigate("Home") 
+			
+			axios.get(`users/eliminar_usuario_entrando/${tokenPhone}/${false}`)
+			.then(res2=>{
+				alert("En este momento nuestros agentes estan ocupados intentalo mas tarde")
+				this.props.navigation.navigate("Home")
+			})
+		
 		}
 	}
 	componentWillUnmount(){
@@ -151,15 +155,8 @@ class Mensaje extends Component{
 	}
 }
 const mapState = state => {
-	// let mensajes = state.conversacion.mensaje[0].mensaje.reverse()
-	// let usuario =  state.conversacion.mensaje[0].usuario
-	// let tokenPhoneFiltro = mensajes.filter(e=>{if(e.username==usuario) return e})
-	// let tokenPhone = tokenPhoneFiltro[0] ?tokenPhoneFiltro[0].tokenPhone :""
-	console.log(state)
 	return {
 		conversaciones:state.mensaje.conversaciones,
-		// usuario,
-		// tokenPhone
 	};
 };
   

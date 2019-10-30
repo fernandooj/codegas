@@ -13,8 +13,8 @@
     "prop-types": "^15.7.2",
     "react": "16.8.3",
     "react-addons-update": "^15.6.2",
-    "react-native": "0.59.9",
-    "react-native-android-location-enabler": "^1.0.8",
+    "react-native": "0.59.5",
+    "react-native-android-location-enabler": "^1.0.9",
     "react-native-auto-height-image": "^1.1.0",
     "react-native-calendars": "^1.112.0",
     "react-native-confirmation-code-input": "^1.0.4",
@@ -22,7 +22,7 @@
     "react-native-fast-image": "^6.0.3",
     "react-native-fcm": "^16.2.4",
     "react-native-firebase": "^5.5.5",
-    "react-native-gesture-handler": "^1.2.0",
+    "react-native-gesture-handler": "^1.1.3",
     "react-native-image-crop-picker": "^0.24.0",
     "react-native-image-progress": "^1.1.1",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
@@ -37,7 +37,7 @@
     "react-native-scalable-image": "^0.5.1",
     "react-native-search-filter": "^0.1.4",
     "react-native-simple-toast": "^0.0.8",
-    "react-native-spinkit": "^1.3.0",
+    "react-native-spinkit": "^1.4.1",
     "react-navigation": "^3.11.0",
     "react-redux": "^7.0.3",
     "redux": "^4.0.1",
@@ -55,10 +55,5 @@
   },
   "jest": {
     "preset": "react-native"
-  },
-  "rnpm": {
-    "assets": [
-      "./src/assets/fonts/"
-    ]
   }
 }

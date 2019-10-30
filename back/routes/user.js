@@ -5,7 +5,8 @@ let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 let userServices       = require('./../services/userServices.js') 
 let puntoServices      = require('./../services/puntoServices.js') 
 const htmlTemplate     = require('../notificaciones/template-email.js')
-const notificacionPush = require('../notificaciones/notificacionPush.js')
+let redis        = require('redis')
+let cliente      = redis.createClient()
 
 module.exports = function(app, passport){ 
     ///////////////////////////////////////////////////////////////////////////
@@ -212,7 +213,7 @@ module.exports = function(app, passport){
     */
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/perfil', function(req, res){
-        console.log(req.session)
+        
         if(req.session.usuario){
             const {usuario} = req.session
             puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
@@ -317,17 +318,18 @@ module.exports = function(app, passport){
                         })  
                         if (!err2) {
                             let user = {
-                                _id:          usuario._id, 
-                                razon_social: usuario.razon_social,
-                                cedula:       usuario.cedula, 
-                                direccion:    usuario.direccion, 
-                                email:        usuario.email, 
-                                nombre:       usuario.nombre,
-                                celular:      usuario.celular,
-                                tipo:         usuario.tipo, 
-                                acceso:       usuario.acceso, 
-                                avatar:       usuario.avatar, 
-                                codt:              usuario.codt, 
+                                _id:           usuario._id, 
+                                razon_social:  usuario.razon_social,
+                                cedula:        usuario.cedula, 
+                                direccion:     usuario.direccion, 
+                                email:         usuario.email, 
+                                nombre:        usuario.nombre,
+                                celular:       usuario.celular,
+                                tipo:          usuario.tipo, 
+                                acceso:        usuario.acceso, 
+                                avatar:        usuario.avatar, 
+                                codt:          usuario.codt, 
+                                formularioChat:usuario.formularioChat, 
                                 direccion_factura: usuario.direccion_factura, 
                                 ubicaciones:  nUbicaciones
                             }
@@ -378,7 +380,7 @@ module.exports = function(app, passport){
         if(!req.session.usuario){
             res.json({ status: false, message: 'Usuario Innactivo'}) 
         } else{
-            userServices.edit(req.body, req.params.idUsuario, (err, user)=>{ 
+            userServices.edit(req.body, req.params.idUsuario, req.session.usuario.acceso, (err, user)=>{ 
                 if(!err){
                     userServices.getEmail(req.session.usuario, (err2, users)=>{    
                         if(!err2){
@@ -663,6 +665,34 @@ module.exports = function(app, passport){
         })
     })
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////     CAMBIA EL ESTADO DE FORMULARIO, PARA VER SI ES UN USUARIO NUEVA EN EL CHAT
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/formulario_chat/:tokenPhone/:estado', (req,res)=>{
+        
+        userServices.getByTokenPhone(req.params.tokenPhone, (err, usuarios)=>{
+            if(usuarios){  
+                res.json({status:true})
+            }else{
+                res.json({ status: false, err}) 
+            }
+        })
+    })
+    app.get('/x/v1/users/eliminar_usuario_entrando/:tokenPhone/:estado', (req,res)=>{
+        let mensajeJson = {
+            tokenPhone:req.params.tokenPhone, 
+            // nombre:req.params.nombre,
+            // celular:req.params.celular,
+            activo:false
+        }
+         
+        let mensajeBadge={
+            badge:-1
+        }	
+        cliente.publish('nuevoChat', JSON.stringify(mensajeJson)) 
+        cliente.publish('badgeConversacion', JSON.stringify(mensajeBadge)) 
+        res.json({status:true})
+    })
     ///////////////////////////////////////////////////////////////////////////
     //////////////////      TOMATELA TE DIGO
     ///////////////////////////////////////////////////////////////////////////
