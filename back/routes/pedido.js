@@ -110,19 +110,14 @@ const ubicacionJimp =  '../front/docs/public/uploads/pedido/'
 //////////////////////////////////////////////////////////////
 router.post('/', (req,res)=>{
 	if (!req.session.usuario) {
-        console.log("sin sesion")
 		res.json({ status: false, message: 'No hay un usuario logueado' }); 
 	}else{
         let id = req.session.usuario.acceso=="cliente" ?req.session.usuario._id : req.body.idCliente 
-        console.log("id")
-        console.log(req.session.usuario)
-        console.log(req.body)
         userServices.getById(id, (err, clientes)=>{
             if(!err){
                 pedidoServices.totalPedidos((err3, totalPedidos)=>{
                     let ruta = [];
                     if(req.files.imagen){
-                        console.log(req.files.imagen)
                         let esArray = Array.isArray(req.files.imagen)
                         if(esArray){
                             req.files.imagen.map(e=>{
@@ -422,7 +417,8 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
                 return e.frecuencia=="mensual"
             })
             mensual = mensual.filter(e=>{
-                if((e.dia1-fechaMensual)==2) return e
+                // if((e.dia1-fechaMensual)==2) return e
+                console.log(fechaMensual-e.dia1)
             })
             mensual.map(e=>{
                 let data = {
@@ -481,7 +477,7 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
                         :7
                 if((dia-fechaSemanal)==2) return e
             })
-            semanal.map(e=>{
+            semanal.map((e, key)=>{
                 let data = {
                     forma:e.forma, 
                     cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
@@ -489,20 +485,23 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
                     pedidoPadre:e._id,
                     fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal)+2)),
                 }
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, (err2, pedido)=>{
-                })
+                // let letNpedido = pedidos.length+(key+1) ///////////////// esta variable me permite crear el n0 pedido
+                // pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, (err2, pedido)=>{
+
+                // })
             })
 
             let mensajeJson={
                 badge:mensual.length+quincenal.length+semanal.length
             }
-            cliente.publish('pedido', JSON.stringify(mensajeJson)) 
+            // cliente.publish('pedido', JSON.stringify(mensajeJson)) 
             
             let titulo = `<font size="5">Hoy se han creado los siguientes pedidos</font>`
             let text1  = `Frecuencia Mensual: ${mensual.length}<br/>Frecuencia Quincenal: ${quincenal.length}<br/>Frecuencia Semanal: ${semanal.length}<br/>`
             let text2  = `Total pedidos Dia:  ${mensajeJson.badge}` 
             let asunto = "Nuevos pedidos por frecuencia"
-            let user   = {email:"fernandooj@ymail.com, gestioncalidad@codegascolombia.com"} 
+            let user   = {email:"fernandooj@ymail.com"} 
+            // res.json({ status:true, semanal }); 
             htmlTemplate(req, user, titulo, text1, text2,  asunto)
 
             enviaNotificacion(res, "admin", "Nuevos pedidos Frecuencia", `total ${mensajeJson.badge} `)

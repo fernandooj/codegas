@@ -37,8 +37,9 @@ class verPerfil extends Component{
     renderUsuarios(){
         const {usuarios, navigation} = this.props
         const {terminoBuscador, inicio, final} = this.state
-        let filtroUsuarios = usuarios.slice(inicio, final).filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-        return filtroUsuarios.map((e, key)=>{
+        let filtroUsuarios = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        let newUsuarios = filtroUsuarios.slice(inicio, final) 
+        return newUsuarios.map((e, key)=>{
             return(
                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
                     <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
@@ -54,9 +55,7 @@ class verPerfil extends Component{
                 </View>
             )
         })
-    }
-
-    
+    }    
 	render(){
         const {navigation} = this.props
         const {terminoBuscador} = this.state
@@ -77,14 +76,11 @@ class verPerfil extends Component{
             </View>
         )
     }
-     
-  
-    
 }
 const mapState = state => {
-   
 	return {
         usuarios:state.usuario.usuarios,
+        usuariosFiltro:state.usuario.usuarios,
 	};
 };
 

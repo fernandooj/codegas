@@ -39,7 +39,6 @@ class verPerfil extends Component{
         //////////////////////////////  DEVUELVE EL LISTADO DE LAS ZONAS
         axios.get("zon/zona/activos")   
         .then(res=>{
- 
             res.data.status &&this.setState({zonas:res.data.zona})
         })
         ////////////////////////////////////////////////////////////////
@@ -95,13 +94,13 @@ class verPerfil extends Component{
     }
     renderPerfil(){
         const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo} = this.state
-        
+        console.log({tipoAcceso})
         return (
             <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:0}}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
             {/* ACCESO */}	 
                 {
-                    tipoAcceso=="admin" || tipoAcceso=="editar"
+                    (tipoAcceso=="admin" || tipoAcceso=="editar")
                     &&<View style={style.tipo}>
                         <RNPickerSelect
                             placeholder={{

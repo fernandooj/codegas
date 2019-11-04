@@ -68,7 +68,7 @@ class Mensaje extends Component{
 		console.log({tokenPhone, minutoInicio, minutoActual, minutoFinal})
 		const {acceso, nombre, email, celular} = this.props.navigation.state.params
 	 
-		if(minutoFinal>=0 && minutoFinal<1){
+		if(minutoFinal>=0 && minutoFinal<4){
 			
 			axios.get(`con/conversacion/byTokenPhone/${tokenPhone}/true/${nombre}/${email}/${celular}/false`)
 			.then(res=>{
