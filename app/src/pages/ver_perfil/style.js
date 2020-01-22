@@ -130,6 +130,7 @@ export const style = MediaQueryStyleSheet.create({
         borderWidth:1,
         width:"88%",
         height:50,
+        paddingTop:Platform.OS==='android' ?0 :15,
         marginTop:10,
         marginBottom:10,
         borderRadius:5,
@@ -140,7 +141,7 @@ export const style = MediaQueryStyleSheet.create({
     ///////////				MODAL UBICACION
     //////////////////////////////////////////////////////////////////
 	modal:{
-		position:Platform.OS==='android' ?"relative" :"absolute",
+		position:Platform.OS==='android' ?"relative" :"relative",
 		backgroundColor:"#ffffff",
 		zIndex:100,
 		width:size.width,
@@ -230,7 +231,7 @@ export const style = MediaQueryStyleSheet.create({
 	///////////				MODAL  ZONA
 	//////////////////////////////////////////////////////////////////
 	modalZona:{
-		position:Platform.OS=='android' ?null :"absolute",
+		position:Platform.OS=='android' ?null :"relative",
 		alignItems:"center",
 		justifyContent: 'center',
 		backgroundColor:"rgba(0,0,0,.5)",
@@ -245,7 +246,7 @@ export const style = MediaQueryStyleSheet.create({
 		backgroundColor:"#ffffff",
 		borderRadius:7,
         padding:10,
-        height:size.height-120,
+        height:size.height-150,
 		alignItems:"center"
 	},
 	btnModalClose:{

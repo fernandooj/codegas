@@ -113,7 +113,7 @@ export const style = MediaQueryStyleSheet.create({
 	btnGuardar:{
 		flexDirection:"row",
 		backgroundColor:"#00218b",
-		paddingTop:5,
+		paddingTop:Platform.OS==='android' ?5 :10,
 		paddingBottom:10,
 		paddingHorizontal:20,
 		borderRadius:20

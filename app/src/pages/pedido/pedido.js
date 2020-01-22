@@ -204,7 +204,7 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>{e.forma} 
                         {
                             e.forma=="cantidad" 
-                            ?' '+Number(e.cantidadKl).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")+" KL" 
+                            ?' '+Number(e.cantidadKl).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")+" KG" 
                             :e.forma=="monto" ?'$ '+Number(e.cantidadPrecio).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") :""}</Text>
                     </View>
                     {

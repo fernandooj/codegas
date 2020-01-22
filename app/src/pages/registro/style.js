@@ -95,7 +95,7 @@ export const style = MediaQueryStyleSheet.create({
     ///////////				MODAL UBICACION
     //////////////////////////////////////////////////////////////////
 	modal:{
-		position:Platform.OS==='android' ?"relative" :"absolute",
+		position:Platform.OS==='android' ?"relative" :"relative",
 		backgroundColor:"#ffffff",
 		zIndex:100,
 		width:size.width,
@@ -211,7 +211,7 @@ export const style = MediaQueryStyleSheet.create({
 	///////////				MODAL  ZONA
 	//////////////////////////////////////////////////////////////////
 	modalZona:{
-		position:Platform.OS=='android' ?null :"absolute",
+		position:Platform.OS=='android' ?null :"relative",
 		alignItems:"center",
 		justifyContent: 'center',
 		backgroundColor:"rgba(0,0,0,.5)",

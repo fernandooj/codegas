@@ -39,7 +39,7 @@ export default class App extends Component<{}> {
         if(res.data.status){
           AsyncStorage.setItem('userId', res.data.user._id)
           AsyncStorage.setItem('acceso', res.data.user.acceso)
-          AsyncStorage.setItem('nombre', res.data.user.nombre)
+          AsyncStorage.setItem('nombre', res.data.user.nombre ?res.data.user.nombre :"")
           AsyncStorage.setItem('email',  res.data.user.email)
           AsyncStorage.setItem('avatar', res.data.user.avatar ?res.data.user.avatar :"null")
         }else{
@@ -55,9 +55,10 @@ export default class App extends Component<{}> {
       axios.get(`user/perfil/${userId}`)
       .then((res)=>{
         if(res.data.status){
+          console.log(res.data)
           AsyncStorage.setItem('userId', res.data.user._id)
           AsyncStorage.setItem('acceso', res.data.user.acceso)
-          AsyncStorage.setItem('nombre', res.data.user.nombre)
+          AsyncStorage.setItem('nombre', res.data.user.nombre ?res.data.user.nombre :"")
           AsyncStorage.setItem('email',  res.data.user.email)
           AsyncStorage.setItem('avatar', res.data.user.avatar ?res.data.user.avatar :"null")
         }else{

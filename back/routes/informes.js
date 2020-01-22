@@ -2,6 +2,7 @@ let express = require('express')
 let router = express.Router();
 const {Parser} = require('json2csv');
 const PDFDocument = require('pdfkit');
+let  moment = require('moment-timezone');
 let pedidoServices     = require('../services/pedidoServices.js') 
 let userServices       = require('./../services/userServices.js') 
 let conversacionServices = require('../services/conversacionServices.js')
@@ -47,11 +48,20 @@ router.get('/conversacion/:email/:fechaInicio/:fechaFinal', (req,res)=>{
 
 ///////////////////////////////////////////////////   2.	USUARIOS CORPORATIVOS
 router.get('/users/corporativos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
-    userServices.get((err, pedidos)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    userServices.get((err, usuarios)=>{
         if(!err){
-            pedidos = pedidos.filter(e=>{
+            usuarios = usuarios.filter(e=>{
                 return e.acceso=="despacho" || e.acceso=="conductor" || e.acceso=="admin" || e.acceso=="solucion"
             })
+            usuarios = usuarios.filter(e=>{
+                return e.created>fechaInicio && e.created<fechaFinal
+            })
+            console.log(usuarios.length)
+            let usuario = req.session.usuario.nombre
+            let fecha = moment().subtract(5, 'hours');
+            fecha     = moment(fecha).format('YYYY-MM-DD_h:mm');
+
             const fields = [{
                 label: 'Correo',
                 value: 'email'
@@ -70,12 +80,19 @@ router.get('/users/corporativos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Avatar',
                 value: 'avatar'
+            },{
+                label: usuario,
+                value: ''
+            }
+            ,{
+                label: fecha,
+                value: ''
             }];
             const opts = {fields, withBOM:true};
              
             try {
                 const parser = new Parser(opts);
-                const csv = parser.parse(pedidos);
+                const csv = parser.parse(usuarios);
                 res.attachment('usuariosCorporativos.csv');
                 res.status(200).send(csv);
               } catch (err) {
@@ -87,9 +104,12 @@ router.get('/users/corporativos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
 
 ///////////////////////////////////////////////////   2.	CLIENTES
 router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
-    puntoServices.getUsers((err, puntos)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    puntoServices.getUsers((err, clientes)=>{
         if(!err){
-            
+            clientes = clientes.filter(e=>{
+                return e.created>fechaInicio && e.created<fechaFinal
+            })
             const fields = [{
                 label: 'Correo',
                 value: 'UserData.email'
@@ -132,7 +152,7 @@ router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
  
             try {
                 const parser = new Parser(opts);
-                const csv = parser.parse(puntos);
+                const csv = parser.parse(clientes);
                 res.attachment('clientes.csv');
                 res.status(200).send(csv);
               } catch (err) {
@@ -144,7 +164,13 @@ router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
 
 ///////////////////////////////////////////////////   3.	Vehículos
 router.get('/vehiculos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    let {fechaInicio, fechaFinal} = req.params
+    fechaInicio = fechaInicio.valueOf()
+    fechaFinal  = fechaFinal.valueOf()
     carroServices.get((err, carro)=>{
+        carro = carro.filter(e=>{
+            return e.creado>fechaInicio && e.creado<fechaFinal
+        })
         if(!err){
             const fields = [{
                 label: 'Placa',
@@ -175,12 +201,15 @@ router.get('/vehiculos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
 
 ////////////////////////////////////////////  4.	PEDIDOS TRAZABILIDAD DE PEDIDO
 router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
     pedidoServices.get((err, pedido)=>{
         if(!err){
             pedido = pedido.filter(e=>{
                 return e.estado!=="noentregado"  
             })
-            // res.json({pedido})
+            pedido = pedido.filter(e=>{
+                return e.creado>fechaInicio && e.creado<fechaFinal
+            })
             const fields = [{   
                 label: 'N Pedido',
                 value: 'nPedido'
@@ -247,12 +276,15 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
 
 ////////////////////////////////////////////  5.	PEDIDOS NO ENTREGADOS
 router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
     pedidoServices.get((err, pedido)=>{
         if(!err){
             pedido = pedido.filter(e=>{
                 return e.estado=="noentregado" && e.entregado
             })
-            // res.json({pedido})
+            pedido = pedido.filter(e=>{
+                return e.creado>fechaInicio && e.creado<fechaFinal
+            })
             const fields = [{   
                 label: 'N Pedido',
                 value: '_id'
@@ -304,12 +336,15 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
 
 ////////////////////////////////////////////  6.	PEDIDOS ENTREGADOS
 router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
     pedidoServices.get((err, carro)=>{
         if(!err){
             carro = carro.filter(e=>{
                 return e.estado=="activo" && e.entregado
             })
-            // res.json({carro})
+            pedido = pedido.filter(e=>{
+                return e.creado>fechaInicio && e.creado<fechaFinal
+            })
             const fields = [{   
                 label: 'N Pedido',
                 value: 'nPedido'
@@ -367,11 +402,14 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
-////////////////////////////////////////////  6.	PEDIDOS ENTREGADOS
+////////////////////////////////////////////  6.	conversaciones
 router.get('/pdf/chats/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
     conversacionServices.groupoByConversacion((err, mensajes)=>{
         if(!err){
-            // res.json({mensajes})
+            mensajes = mensajes.filter(e=>{
+                return e.creado>fechaInicio && e.creado<fechaFinal
+            })
             
             let doc = new PDFDocument;
             doc.pipe(fs.createWriteStream('chats.pdf'));
@@ -398,8 +436,6 @@ router.get('/pdf/chats/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                     doc.text(`Creado: ${data.creado}`)
                 })
             })
-
-            
             doc.pipe(res)
             doc.end();
 

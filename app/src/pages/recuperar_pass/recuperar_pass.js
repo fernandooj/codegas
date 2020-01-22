@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Dimensions, Alert, ScrollView} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground, ScrollView} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios    from 'axios'
@@ -118,7 +118,7 @@ class Home extends Component{
         const {navigation} = this.props
         const {showModulo} = this.state
 	    return (
-            <View style={style.container}>
+            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
                 <KeyboardAwareScrollView style={style.containerRegistro}>
                     {
                         !showModulo
@@ -129,7 +129,7 @@ class Home extends Component{
                     }
                 </KeyboardAwareScrollView>
                 <Footer navigation={navigation} />
-            </View>
+            </ImageBackground>
 		)
     }
     cambiarPass(){
@@ -158,11 +158,11 @@ class Home extends Component{
     async cambioExitoso(user){
         console.log(user)
         AsyncStorage.setItem('userId', user._id)
-        AsyncStorage.setItem('nombre', user.nombre)
+        AsyncStorage.setItem('nombre', user.nombre ?user.nombre :"")
         AsyncStorage.setItem('email',  user.email)
         AsyncStorage.setItem('acceso', user.acceso)
         AsyncStorage.setItem('avatar', user.avatar ?user.avatar :"null")
-        AsyncStorage.setItem('tokenPhone', user.tokenPhone)
+        AsyncStorage.setItem('tokenPhone', user.tokenPhone ?user.tokenPhone :"")
 
         Toast.show("Contraseña cambiada")
         this.props.navigation.navigate("inicio")   

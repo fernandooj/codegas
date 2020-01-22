@@ -149,7 +149,7 @@ class Nuevo_pedido extends Component{
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({forma:"cantidad", cantidad:""})} style={style.btnFormaLlenar}>
                             <Image source={require('../../assets/img/pg3/btn3.png')} style={style.icon}  resizeMode={'contain'} />
-                            <Text style={style.textForma}>Cantidad KL</Text>
+                            <Text style={style.textForma}>Cantidad KG</Text>
                             {forma=="cantidad" &&<Icon name="check" style={style.iconCheck} />}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={()=>this.setState({forma:"lleno", cantidad:""})} style={style.btnFormaLlenar}>
@@ -211,6 +211,7 @@ class Nuevo_pedido extends Component{
                                 style={style.btnFrecuencia}
                                 data={frecuencias}
                                 initValue="Frecuencia"
+                                cancelText="Cancelar"
                                 onChange={(option)=>{ this.setState({frecuencia:option.key, dia1:null, dia2:null, franja:null}) }} 
                                 selectStyle={!frecuencia &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                             />
@@ -221,6 +222,7 @@ class Nuevo_pedido extends Component{
                                         style={style.btnFrecuencia}
                                         data={dias}
                                         initValue={"Dia"}
+                                        cancelText="Cancelar"
                                         onChange={(option)=>{ this.setState({dia1:option.key}) }} 
                                         selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                     />
@@ -229,6 +231,7 @@ class Nuevo_pedido extends Component{
                                     style={style.btnFrecuencia}
                                     data={diasN}
                                     initValue={"Dia"}
+                                    cancelText="Cancelar"
                                     onChange={(option)=>{ this.setState({dia1:option.key}) }} 
                                     selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                 />
@@ -237,6 +240,7 @@ class Nuevo_pedido extends Component{
                                         style={style.btnFrecuencia}
                                         data={diasN.slice(0,15)}
                                         initValue={"Dia 1"}
+                                        cancelText="Cancelar"
                                         onChange={(option)=>{ this.setState({dia1:option.key}) }} 
                                         selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                     />
@@ -244,6 +248,7 @@ class Nuevo_pedido extends Component{
                                         style={style.btnFrecuencia}
                                         data={diasN.slice(15,31)}
                                         initValue={"Dia 2"}
+                                        cancelText="Cancelar"
                                         onChange={(option)=>{ this.setState({dia2:option.key}) }} 
                                         selectStyle={!dia2 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                     />
@@ -337,8 +342,9 @@ class Nuevo_pedido extends Component{
                         :!guardando &&this.handleSubmit()
                     }>
                         {/* <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text> */}
-                        <Image source={require('../../assets/img/pg3/btnEnviar.png')} style={style.btnEnviar}  resizeMode={'contain'} />
-
+                        {/* <Image source={require('../../assets/img/pg3/btnEnviar.png')} style={style.btnEnviar}  resizeMode={'contain'} /> */}
+                        <Icon name="caret-square-o-right" style={!forma ?style.iconGuardarDisable :style.iconGuardar} />
+                        <Text style={!forma ?style.textGuardarDisable :style.textGuardar}>{!guardando ?"Enviar" :"Enviando..."}</Text>
                         {guardando &&<ActivityIndicator color="#ffffff" />}
                     </TouchableOpacity>
                 </View>
@@ -397,7 +403,8 @@ class Nuevo_pedido extends Component{
 					visible={modalCliente}
 					onSelect={(e)=>this.filtroClientes(e)}
 					onCancel={()=>this.setState({modalCliente:false})}
-					options={clientes}
+                    options={clientes}
+                    cancelButtonText="CANCELAR"
                 />
                 {
                     idCliente
@@ -425,7 +432,7 @@ class Nuevo_pedido extends Component{
                     &&this.modalFechaEntrega()
                     
                 }
-                <ScrollView style={{marginBottom:62}}>
+                <ScrollView style={{marginBottom:82}}>
                     {this.renderPedido()}
                 </ScrollView>
                 <Footer navigation={navigation} />
@@ -472,13 +479,22 @@ class Nuevo_pedido extends Component{
                 })
                 axios.post(`nov/novedad/`, {pedidoId:e.data.pedido._id, novedad})
                 .then((res2)=>{ 
-                    this.setState({guardando:false})
-                    this.props.navigation.navigate("Home")
-                    Toast.show("Su pedido ha sido guardado")
+                    console.log(e.data)
+                    if(res2.data.status){
+                        // this.setState({guardando:false})
+                        this.props.navigation.navigate("Home")
+                        Toast.show("Su pedido ha sido guardado")
+                    }else{
+                        Toast.show("Algo salio mal intentalo nuevamente")
+                    }
                 })
             }else{
                 this.setState({guardando:false})
-                alert("No pudimos procesar el pedido, intentelo mas tarde", JSON.stringify(res.data))
+                if(e.data.code==2){
+                    alert("Seleccione una zona")
+                }else{
+                    alert("No pudimos procesar el pedido, intentelo mas tarde", JSON.stringify(e.data))
+                }
                     
             }
         })

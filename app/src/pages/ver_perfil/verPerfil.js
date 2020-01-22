@@ -352,11 +352,11 @@ class verPerfil extends Component{
     modalZonas(){
         const {modalZona, zonas, idZona} = this.state
         return(
-            <Modal transparent visible={modalZona} animationType="fade" >
+            <View  animationType="fade" >
                 <TouchableOpacity activeOpacity={1}  >   
                     <View style={style.modalZona}>
                         <View style={style.subModalZona}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalUbicacion:false})} style={style.btnModalClose}>
+                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalZona:false})} style={style.btnModalClose}>
                                 <Icon name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
                             <Text style={style.tituloModal}>Seleccione una Zona</Text>
@@ -375,7 +375,7 @@ class verPerfil extends Component{
                         </View>
                     </View>
                 </TouchableOpacity>
-            </Modal>
+            </View>
         )
     }
     actualizaZona(id, nombre){
@@ -386,96 +386,99 @@ class verPerfil extends Component{
     }
  
     modalUbicacion(){
-        let {modalUbicacion, ubicaciones} = this.state
+        let {modalZona, ubicaciones} = this.state
+        console.log(modalZona)
         return(
-            <Modal transparent visible={modalUbicacion} animationType="fade" >
-                {this.modalZonas()}
-                <TouchableOpacity activeOpacity={1}  >   
-                    <View style={style.modal}>
-                        <View style={style.subContenedorModal}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalUbicacion:false})} style={style.btnModalClose}>
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
-                            </TouchableOpacity>
-                            <ScrollView keyboardDismissMode="on-drag" >
-                                <Text style={style.tituloModal}>Si el pedido lo realizara el encargado del punto por favor inserta su informacion, de lo contrario solo inserta la dirección y zona</Text>
-                                <View>
-                                    {
-                                        ubicaciones.map((e, key)=>{
-                                            return(
-                                                <View key={key}>
-                                                   <View>
+            <View>
+                {modalZona ?this.modalZonas() :null}
+                <View>
+                    <TouchableOpacity activeOpacity={1}  >   
+                        <View style={style.modal}>
+                            <View style={style.subContenedorModal}>
+                                <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalUbicacion:false})} style={style.btnModalClose}>
+                                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                                </TouchableOpacity>
+                                <ScrollView keyboardDismissMode="on-drag" >
+                                    <Text style={style.tituloModal}>Si el pedido lo realizara el encargado del punto por favor inserta su informacion, de lo contrario solo inserta la dirección y zona</Text>
+                                    <View>
+                                        {
+                                            ubicaciones.map((e, key)=>{
+                                                return(
+                                                    <View key={key}>
+                                                    <View>
+                                                            <TextInput
+                                                                type='outlined'
+                                                                label='Dirección'
+                                                                placeholder="Dirección"
+                                                                value={e.direccion}
+                                                                onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
+                                                                style={style.input}
+                                                            />
+                                                            <Text style={style.asterisco}>*</Text>
+                                                        </View>
+                                                        <View>
+                                                            <TouchableOpacity style={style.btnUbicacion} onPress={()=>this.setState({modalZona:true, key})}>
+                                                                <Text style={style.textZona}>{e.nombreZona ?e.nombreZona :"Zona"}</Text>
+                                                            </TouchableOpacity>
+                                                            <Text style={style.asterisco}>*</Text>
+                                                        </View>
                                                         <TextInput
                                                             type='outlined'
-                                                            label='Dirección'
-                                                            placeholder="Dirección"
-                                                            value={e.direccion}
-                                                            onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
-                                                            style={style.input}
+                                                            label='observacion al momento de ingresar el vehiculo'
+                                                            placeholder="observaciones ingreso del vehiculo"
+                                                            value={e.observacion}
+                                                            onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
+                                                            style={[style.input, {marginBottom: (e.nuevo || !e.idCliente ) && key>0 ?40 :10}]}
                                                         />
-                                                        <Text style={style.asterisco}>*</Text>
+                                                        {
+                                                            (e.nuevo || e.idCliente )
+                                                            &&<TextInput
+                                                                type='outlined'
+                                                                label='Email'
+                                                                placeholder="Email"
+                                                                value={e.email}
+                                                                onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
+                                                                style={style.input}
+                                                            />
+                                                        }
+                                                        {
+                                                            (e.nuevo || e.idCliente)
+                                                            &&<TextInput
+                                                                type='outlined'
+                                                                label='Nombre'
+                                                                placeholder="Nombre"
+                                                                value={e.nombre}
+                                                                onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
+                                                                style={[style.input, {marginBottom: key>0 ?40 :10}]}
+                                                            />
+                                                        }
+                                                        {
+                                                            key>0
+                                                            &&<TouchableOpacity style={style.btnEliminar} onPress={()=>this.eliminarUbicacion(key)}>
+                                                                <Icon name={'trash'} style={style.iconEliminar} />
+                                                            </TouchableOpacity>
+                                                        }
+                                                        
+                                                        <Text style={style.separador}></Text>
                                                     </View>
-                                                    <View>
-                                                        <TouchableOpacity style={style.btnUbicacion} onPress={()=>this.setState({modalZona:true, key})}>
-                                                            <Text style={style.textZona}>{e.nombreZona ?e.nombreZona :"Zona"}</Text>
-                                                        </TouchableOpacity>
-                                                        <Text style={style.asterisco}>*</Text>
-                                                    </View>
-                                                    <TextInput
-                                                        type='outlined'
-                                                        label='observacion al momento de ingresar el vehiculo'
-                                                        placeholder="observaciones ingreso del vehiculo"
-                                                        value={e.observacion}
-                                                        onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
-                                                        style={[style.input, {marginBottom: (e.nuevo || !e.idCliente ) && key>0 ?40 :10}]}
-                                                    />
-                                                    {
-                                                        (e.nuevo || e.idCliente )
-                                                        &&<TextInput
-                                                            type='outlined'
-                                                            label='Email'
-                                                            placeholder="Email"
-                                                            value={e.email}
-                                                            onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
-                                                            style={style.input}
-                                                        />
-                                                    }
-                                                    {
-                                                        (e.nuevo || e.idCliente)
-                                                        &&<TextInput
-                                                            type='outlined'
-                                                            label='Nombre'
-                                                            placeholder="Nombre"
-                                                            value={e.nombre}
-                                                            onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                            style={[style.input, {marginBottom: key>0 ?40 :10}]}
-                                                        />
-                                                    }
-                                                    {
-                                                        key>0
-                                                        &&<TouchableOpacity style={style.btnEliminar} onPress={()=>this.eliminarUbicacion(key)}>
-                                                            <Icon name={'trash'} style={style.iconEliminar} />
-                                                        </TouchableOpacity>
-                                                    }
-                                                    
-                                                    <Text style={style.separador}></Text>
-                                                </View>
-                                            )
-                                        })
-                                    }
-                                </View>
-                                <View style={style.contenedorAdd}>
-                                    <TouchableOpacity onPress={() => this.actualizaUbicacion()} style={style.btnAdd}>
-                                        <Icon name={'plus'} style={style.iconAdd} />
+                                                )
+                                            })
+                                        }
+                                    </View>
+                                    <View style={style.contenedorAdd}>
+                                        <TouchableOpacity onPress={() => this.actualizaUbicacion()} style={style.btnAdd}>
+                                            <Icon name={'plus'} style={style.iconAdd} />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.guardarUbicacion() }>
+                                        <Text style={style.textGuardar}>Guardar</Text>
                                     </TouchableOpacity>
-                                </View>
-                                <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.guardarUbicacion() }>
-                                    <Text style={style.textGuardar}>Guardar</Text>
-                                </TouchableOpacity>
-                            </ScrollView>
+                                </ScrollView>
+                            </View>
                         </View>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
+                    </TouchableOpacity>
+                </View>
+             </View>
         )
     }
     renderFormPass(){
@@ -519,11 +522,12 @@ class verPerfil extends Component{
                 </View>
     }
 	render(){
-        const {navigation} = this.props     
+        const {navigation} = this.props  
+        const {modalUbicacion, modalZona} = this.state   
         return (
             <View  style={style.container}>
-                {this.modalUbicacion()}
-                    {this.renderPerfil()}
+                {modalUbicacion ?this.modalUbicacion() :null}
+                {this.renderPerfil()}
                 <Footer navigation={navigation} />
             </View>
         )

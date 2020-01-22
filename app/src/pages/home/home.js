@@ -39,8 +39,11 @@ class Home extends Component{
 				const email  = res.data.user.email
 				const avatar = res.data.user.avatar
 				const acceso = res.data.user.acceso
-				
+				console.log("nombre")
+				console.log(nombre)
+				console.log(userId)
 				if(!nombre &&userId){
+					 
 					this.props.navigation.navigate("verPerfil", {tipoAcceso:null}) ///// si se registro y no lleno los datos lo envio a editar el perfil
 				}else{
 					if(acceso=="solucion" || acceso=="admin"){
@@ -192,9 +195,9 @@ class Home extends Component{
 											<Icon name={'times-circle'} style={style.iconCerrar} />
 									</TouchableOpacity>
 									<Text style={style.tituloModal}>Bienvenido a nuestro chat </Text>
-									<Text style={style.tituloModal2}>Horario de atención es lunes a viernes 8:00AM - 5:00PM. </Text>
+									<Text style={style.tituloModal2}>Horario de atención de lunes a viernes 7:00AM - 5:00PM. </Text>
 									{
-										(dia=="Saturday" || dia=="Sunday")  
+										(dia=="Saturday" || dia=="Sunday")  || !horaLaboral
 										?null
 										:<View>
 										<Text style={style.tituloModal2}>Ingresa tus datos para iniciar </Text>

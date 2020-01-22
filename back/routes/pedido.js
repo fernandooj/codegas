@@ -183,12 +183,14 @@ router.post('/', (req,res)=>{
                         }else{
                             let titulo = `<font size="5">error en el pedido</font>`
                             let text1  = err2
-                            let text2  = err3 
+                            let text2  = req.session.usuario.email+" / "+err3 
                             let asunto = err
                             let user   = {email:"fernandooj@ymail.com"} 
                             htmlTemplate(req, user, titulo, text1, text2,  asunto)
-
-                            console.log(err2)
+                            if(err2){
+                                res.json({ status: false, code:2, pedido:err2 });	
+                            }
+                            console.log(err3)
                         }
                     })
                 })

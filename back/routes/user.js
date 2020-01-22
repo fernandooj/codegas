@@ -46,6 +46,11 @@ module.exports = function(app, passport){
                         return res.json({ err })
                     }else{
                         htmlTemplate(req, req.body, titulo, text1, text2, asunto)
+                        
+               
+                        let userRegistrado = {email:"fernandooj@ymail.com, directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+                        htmlTemplate(req, userRegistrado, req.body.email, "Se ha registrado", "",  "Nuevo usuario")
+
                         res.json({ status:true, message: 'usuario registrado', user, code:2, token });     
                     }
                 })  

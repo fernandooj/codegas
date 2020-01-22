@@ -11,7 +11,7 @@ export const style = MediaQueryStyleSheet.create({
 	containerRegistro:{
 		flex:1,
 		width:"100%",
-		marginTop:Platform.OS==='android' ?10 :20
+		marginTop:Platform.OS==='android' ?110 :140
 	},
 	subContainerRegistro:{
 		flex:1,
@@ -61,11 +61,11 @@ export const style = MediaQueryStyleSheet.create({
     titulo:{
 		fontFamily: "Comfortaa-Light",
 		fontSize:22,
-		marginBottom:20
+		marginVertical:20
 	},
 	btnGuardar:{
 		backgroundColor:"#00218b",
-		paddingTop:6,
+		paddingTop:Platform.OS==='android' ?6 :10,
 		paddingBottom:10,
 		paddingHorizontal:20,
 		borderRadius:5

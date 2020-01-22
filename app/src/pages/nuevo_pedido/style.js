@@ -90,21 +90,34 @@ export const style = MediaQueryStyleSheet.create({
         height:80    
     },
     btnGuardar:{
-        // flexDirection:"row",
-		// backgroundColor:"#00218b",
-		// padding:10,
-        // borderRadius:5,
-        // marginTop:25
+        flexDirection:"row",
+		backgroundColor:"#00218b",
+		padding:10,
+        borderRadius:5,
+        marginTop:25
     },
     btnGuardarDisable:{
-		// backgroundColor:"grey",
-		// padding:10,
-        // borderRadius:5,
-        // marginTop:25
+        backgroundColor:"grey",
+        flexDirection:"row",
+		padding:10,
+        borderRadius:5,
+        marginTop:25
     },
     textGuardar:{
         fontFamily: "Comfortaa-Light",
 		color:"#00218b"
+    },
+    iconGuardar:{
+        top: 3,
+        marginRight:5,
+        color:"white"
+    },
+    iconGuardarDisable:{
+        top: 3,
+        marginRight:5
+    },
+    textGuardar:{
+        color:"white"
     },
     //////////////////////////////////////////////////////////////////
     //////////////////////      FRECUENCIA

@@ -2,8 +2,8 @@ let nodemailer = require('nodemailer');
 let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'releoapp@gmail.com',
-        pass: 'Releoco55%&123'
+        user: 'app@codegascolombia.com',
+        pass: 'C0D3G@S-2020-4PP'
     }
 });
 
@@ -23,7 +23,7 @@ const mailOptions = (req, user, titulo, text1, text2, asunto)=>{
     console.log("-------")
     console.log(user.email)
     let options = {
-        from: '<releoapp@gmail.com>',         
+        from: '<app@codegascolombia.com>',         
         to: user.email,                       
         subject: asunto,                          
         html:  htmlTemplate(titulo, text1, text2)

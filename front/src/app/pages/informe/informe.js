@@ -2,81 +2,86 @@
 
 import React, { PureComponent } from "react";
  
-import { Button, Form, Icon, Card, message, Row, Col, Statistic  } from 'antd'; 
+import { Button, Form, Icon, Card, message, Row, Col, DatePicker  } from 'antd'; 
 import 'antd/dist/antd.css';
 import axios from "axios";
-  
+import locale from 'antd/es/date-picker/locale/es_ES';
+const { RangePicker } = DatePicker;
+
 class Home extends PureComponent {
   constructor(props){
     super(props)
     this.state={
-      pedidos:[]
+      pedidos:[],
+      fechaInicio:"2019-01-01",
+      fechaFinal: "2030-01-01",
     }
   }
-  componentWillMount(){
-//     <Row>
-         
-//     <Col span={6} offset={6}>
-//        <h2>Generar Informes</h2>
-//        <a href="x/v1/inf/informe/conversacion/true/null/null" type="primary" htmlType="submit" className="login-form-button">
-//             Generar Chats
-//         </a>
-//         <a href="x/v1/inf/informe/conversacion/true/null/null" type="primary" htmlType="submit" className="login-form-button">
-//             Generar Chats
-//         </a>
-//     </Col>
-//   </Row>
+ 
+  onChange(date, dateString){
+    if(date.length==0){
+      this.setState({fechaInicio:"2019-01-01", fechaFinal:"2030-01-01"})
+    }else{
+      this.setState({fechaInicio:dateString[0], fechaFinal:dateString[1]})
+    }
+  }
+  onOpenChanges(data, as){
+    console.log(data, as)
   }
   renderFormulario(){  
+    let {fechaInicio, fechaFinal} = this.state
     return(
-      
       <div style={{ background: '#ECECEC', padding: '30px' }}>
+        <Row gutter={16} style={{ "padding-bottom": "30px" }}>
+          <h4 style={{ float: 'left', margin: "6px 13px" }}>Filtrar por fechas</h4> 
+          <RangePicker onChange={(date,string)=>this.onChange(date,string)} onPanelChange={(date,string)=>this.onPanelChange(date,string)} locale={locale}/>
+        </Row>
       <Row gutter={16}>
         <Col span={6}>
           <Card>
-            <a href="x/v1/inf/informe/conversacion/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+            <a href={"x/v1/inf/informe/conversacion/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 1.  Generar Chats
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <a href="x/v1/inf/informe/users/corporativos/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+            <a href={"x/v1/inf/informe/users/corporativos/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
                 2.  Generar Usuarios corporativos
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <a href="x/v1/inf/informe/users/clientes/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+            <a href={"x/v1/inf/informe/users/clientes/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 3.  Generar Clientes
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <a href="x/v1/inf/informe/vehiculos/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+            <a href={"x/v1/inf/informe/vehiculos/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
                 4.  Generar Vehiculos
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <a href="x/v1/inf/informe/pedidos/trazabilidad/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+            <a href={"x/v1/inf/informe/pedidos/trazabilidad/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
                5.	Pedidos trazabilidad
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <a href="x/v1/inf/informe/pedidos/no_entregados/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+            <a href={"x/v1/inf/informe/pedidos/no_entregados/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
               6.    Generar Pedidos no entregados
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <a href="x/v1/inf/informe/pedidos/cerrados/true/null/null" type="primary" htmlType="submit" className="login-form-button">
+            <a href={"x/v1/inf/informe/pedidos/cerrados/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 7.  Generar Facturación
             </a>
           </Card>
