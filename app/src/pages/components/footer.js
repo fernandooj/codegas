@@ -117,7 +117,7 @@ export default class FooterComponent extends Component{
 					</TouchableOpacity> */}
 				 	{
 						acceso!=="conductor"
-						&&<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
+						&&<TouchableOpacity style={style.subContenedorFooter2} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
 							<Image source={require('../../assets/img/footer/img2.png')} style={style.icon}  resizeMode={'contain'} />	
 							<Text style={style.textFooter}>Nuevo Pedido</Text>
 						</TouchableOpacity>
@@ -125,7 +125,7 @@ export default class FooterComponent extends Component{
 					 
 				 
 				
-				<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter} onPress={()=>{userId ?this.pedidos() :navigation.navigate('perfil')} }>
+				<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter3} onPress={()=>{userId ?this.pedidos() :navigation.navigate('perfil')} }>
 					<Image source={require('../../assets/img/footer/img3.png')} style={style.icon}  resizeMode={'contain'} />	
 					<Text style={style.textFooter}>Pedidos</Text>
 					{

@@ -118,4 +118,16 @@ export const style = MediaQueryStyleSheet.create({
 		padding:10,
 		margin:8
     },
+},{
+	"@media (max-device-width: 410)": {
+		icon:{
+			width:65,
+			height:65,
+			marginRight:15,
+			marginLeft:30
+		},
+		text:{
+			fontSize:24
+		},
+	}
 })

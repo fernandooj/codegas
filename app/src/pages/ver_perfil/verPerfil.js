@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert, Modal} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, ImageBackground, ActivityIndicator, Alert, Modal} from 'react-native'
 import {style}   from './style'
 import {connect} from 'react-redux' 
 import axios from "axios"
@@ -96,7 +96,7 @@ class verPerfil extends Component{
         const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo} = this.state
         console.log({tipoAcceso})
         return (
-            <ScrollView  keyboardDismissMode="on-drag" style={{marginBottom:0}}>
+            <ScrollView  keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
             {/* ACCESO */}	 
                 {
@@ -525,11 +525,11 @@ class verPerfil extends Component{
         const {navigation} = this.props  
         const {modalUbicacion, modalZona} = this.state   
         return (
-            <View  style={style.container}>
+            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
                 {modalUbicacion ?this.modalUbicacion() :null}
                 {this.renderPerfil()}
                 <Footer navigation={navigation} />
-            </View>
+            </ImageBackground>
         )
     }
     guardarUbicacion(){

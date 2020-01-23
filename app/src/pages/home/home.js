@@ -39,9 +39,8 @@ class Home extends Component{
 				const email  = res.data.user.email
 				const avatar = res.data.user.avatar
 				const acceso = res.data.user.acceso
-				console.log("nombre")
-				console.log(nombre)
-				console.log(userId)
+				const celular = res.data.user.celular
+			
 				if(!nombre &&userId){
 					 
 					this.props.navigation.navigate("verPerfil", {tipoAcceso:null}) ///// si se registro y no lleno los datos lo envio a editar el perfil
@@ -50,9 +49,12 @@ class Home extends Component{
 						this.socket = SocketIOClient(URL);
 						this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
 					}else{
-						this.setState({formularioChat, nombre:"", email:"", celular:""})
+						console.log("nombre")
+						console.log(nombre)
+						console.log(userId)
+						this.setState({nombre:"", email:"", celular:""})
 					}
-					userId ?this.setState({userId, nombre, email, avatar, acceso, usuariosEntrando}) :null
+					userId ?this.setState({userId, nombre, email, celular, avatar, acceso, usuariosEntrando}) :null
 				}
 			}else{
 				//////////////////////// para saber si muestra el formulario del chat //////////////////////////
@@ -241,10 +243,10 @@ class Home extends Component{
 		console.log({userId, nombre, acceso})
 	    return (
 				<ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
-						{this.renderFormulario()}
-						{(acceso=="solucion" || acceso=="admin") &&this.renderBtnUsuarios()}
-						{this.renderBotones()}
-						<Footer navigation={navigation} />
+					{this.renderFormulario()}
+					{(acceso=="solucion" || acceso=="admin") &&this.renderBtnUsuarios()}
+					{this.renderBotones()}
+					<Footer navigation={navigation} />
 				</ImageBackground>
 		)
 	}

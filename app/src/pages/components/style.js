@@ -21,7 +21,17 @@ export const style = MediaQueryStyleSheet.create({
 		paddingBottom:3,
 	},
 	subContenedorFooter:{
-		width:"25.0%",
+		borderWidth:0,
+		width:"25.3%",
+		alignItems:"center"
+	},
+	subContenedorFooter2:{
+		borderWidth:0,
+		width:"28.9%",
+		alignItems:"center"
+	},
+	subContenedorFooter3:{
+		width:"21.9%",
 		alignItems:"center"
 	},
 	subContenedorFooterConductor:{

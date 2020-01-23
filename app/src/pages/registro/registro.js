@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Dimensions, Modal, ScrollView} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground, ScrollView} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import RNPickerSelect from 'react-native-picker-select';
 import Footer   from '../components/footer'
@@ -316,14 +316,14 @@ class Home extends Component{
         const {navigation} = this.props
         const {modalUbicacion} = this.state
 	    return (
-				<View style={style.container}>
-                    {modalUbicacion ?this.modalUbicacion() :null}
-                    
-					<KeyboardAwareScrollView style={style.containerRegistro}>
-                         {this.renderRegistro()}
-					</KeyboardAwareScrollView>
-					<Footer navigation={navigation} />
-				</View>
+            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
+                {modalUbicacion ?this.modalUbicacion() :null}
+                
+                <KeyboardAwareScrollView style={style.containerRegistro}>
+                        {this.renderRegistro()}
+                </KeyboardAwareScrollView>
+                <Footer navigation={navigation} />
+            </ImageBackground>
 		)
 	}
     handleSubmit(e){

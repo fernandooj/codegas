@@ -139,4 +139,18 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:22,
 		marginTop:30,
 	}
+},{
+	"@media (max-device-width: 410)": {
+		columna1:{
+			width:"30%"
+		},
+		txtLista:{
+			fontSize:18,
+			left:20
+		},
+		icon:{
+			width:80,
+			height:80
+		},
+	}
 })

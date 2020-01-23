@@ -6,7 +6,6 @@ export const style = MediaQueryStyleSheet.create({
 	container:{
 		backgroundColor:'#ffffff',
 		flex:1,
-		marginTop:15,
     },
     titulo:{
         fontFamily: "Comfortaa-Bold",
@@ -118,6 +117,10 @@ export const style = MediaQueryStyleSheet.create({
         marginBottom:10,
         borderRadius:5,
         paddingLeft:10
+    },
+    contenedorPerfil:{
+        marginTop:100,
+        marginBottom:20
     },
     /////////////////////////////////////////////////////////////////
     ////////////////////        PICKER
