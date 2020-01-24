@@ -75,21 +75,35 @@ class Home extends PureComponent {
         <Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/pedidos/no_entregados/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
-              6.    Generar Pedidos no entregados
+              6. Generar Pedidos no entregados
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/pedidos/cerrados/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
-                7.  Generar Facturación
+              7.  Facturación
+            </a>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <a href={"x/v1/inf/informe/novedades/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+                8.  Observaciones
+            </a>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <a href={"x/v1/inf/informe/calificaciones/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+                9.  Calificaciones
             </a>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <a href="x/v1/inf/informe/pdf/chats/true/null/null" type="primary" htmlType="submit" className="login-form-button">
-                7.  Generar PDF chats
+                10.  Generar PDF chats
             </a>
           </Card>
         </Col>

@@ -10,7 +10,7 @@ let Schema   = mongoose.Schema;
 let calificacion = new Schema({
 	sugerencia  : String,
 	calificacion: Number,
-	creado:       Number,
+	creado:       String,
 	idConversacion: {type: Schema.ObjectId, ref:'Conversacion'},
 })
 

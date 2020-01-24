@@ -18,7 +18,9 @@ router.get('/', (req,res)=>{
 //////////////////////////////////////////////////////////////
 router.post('/', (req,res)=>{
     calificacionServices.create(req.body, (err2, calificacion)=>{
+        console.log(err2)
         if (!err2) {
+            
             res.json({ status: true, calificacion });	
         }else{
             res.json({ status: false });	    

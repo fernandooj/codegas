@@ -1,13 +1,15 @@
-let express = require('express')
-let router = express.Router();
-const {Parser} = require('json2csv');
-const PDFDocument = require('pdfkit');
-let  moment = require('moment-timezone');
-let pedidoServices     = require('../services/pedidoServices.js') 
-let userServices       = require('./../services/userServices.js') 
+let express              = require('express')
+let router               = express.Router();
+const {Parser}           = require('json2csv');
+const PDFDocument        = require('pdfkit');
+let  moment              = require('moment-timezone');
+let pedidoServices       = require('../services/pedidoServices.js') 
+let userServices         = require('./../services/userServices.js') 
 let conversacionServices = require('../services/conversacionServices.js')
-let puntoServices = require('../services/puntoServices.js') 
-let carroServices = require('../services/carroServices.js') 
+let puntoServices        = require('../services/puntoServices.js') 
+let carroServices        = require('../services/carroServices.js') 
+let novedadServices      = require('../services/novedadServices.js') 
+let calificacionServices = require('../services/calificacionServices.js') 
 
 let fs = require('fs');
 ///////////////////////////////////////////////////   1.    CONVERSACIONES
@@ -102,7 +104,7 @@ router.get('/users/corporativos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
-///////////////////////////////////////////////////   2.	CLIENTES
+///////////////////////////////////////////////////   3.	CLIENTES
 router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     puntoServices.getUsers((err, clientes)=>{
@@ -162,7 +164,7 @@ router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
-///////////////////////////////////////////////////   3.	Vehículos
+///////////////////////////////////////////////////   4.	VEHICULOS
 router.get('/vehiculos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     let {fechaInicio, fechaFinal} = req.params
     fechaInicio = fechaInicio.valueOf()
@@ -199,7 +201,7 @@ router.get('/vehiculos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
-////////////////////////////////////////////  4.	PEDIDOS TRAZABILIDAD DE PEDIDO
+////////////////////////////////////////////  5.	PEDIDOS TRAZABILIDAD DE PEDIDO
 router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     pedidoServices.get((err, pedido)=>{
@@ -210,6 +212,13 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             pedido = pedido.filter(e=>{
                 return e.creado>fechaInicio && e.creado<fechaFinal
             })
+            // pedido = pedido.filter(e=>{
+            //     if(e.imagen){
+            //         let imagenPedido1 = e.imagen ?e.imagen.split("-") :""
+            //         e.imagen = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
+            //     }
+            //     return e
+            // })
             const fields = [{   
                 label: 'N Pedido',
                 value: 'nPedido'
@@ -258,6 +267,9 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Imagen',
                 value: 'imagen'
+            },{
+                label: 'Imagen de cierre',
+                value: 'imagenCerrar'
             }];
             const opts = {fields, withBOM:true};
              
@@ -274,7 +286,7 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
 })
 
 
-////////////////////////////////////////////  5.	PEDIDOS NO ENTREGADOS
+////////////////////////////////////////////  6.	PEDIDOS NO ENTREGADOS
 router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     pedidoServices.get((err, pedido)=>{
@@ -285,9 +297,14 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
             pedido = pedido.filter(e=>{
                 return e.creado>fechaInicio && e.creado<fechaFinal
             })
+            pedido = pedido.filter(e=>{
+                let imagenPedido1 = e.imagen ?e.imagen.split("-") :""
+                e.imagen = `${imagenPedido1[0]}Miniatura${imagenPedido1[1]}`
+                return e
+            })
             const fields = [{   
                 label: 'N Pedido',
-                value: '_id'
+                value: 'nPedido'
             },{
                 label: 'CODT',
                 value: 'usuarioId.codt'
@@ -318,6 +335,9 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
             },{
                 label: 'Imagen', /// aun no esta
                 value: 'imagen'
+            },{
+                label: 'Imagen de cierre',
+                value: 'imagenCerrar'
             }];
             const opts = {fields, withBOM:true};
              
@@ -334,12 +354,12 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
 })
 
 
-////////////////////////////////////////////  6.	PEDIDOS ENTREGADOS
+////////////////////////////////////////////  7.	PEDIDOS ENTREGADOS
 router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
-    pedidoServices.get((err, carro)=>{
+    pedidoServices.get((err, pedido)=>{
         if(!err){
-            carro = carro.filter(e=>{
+            pedido = pedido.filter(e=>{
                 return e.estado=="activo" && e.entregado
             })
             pedido = pedido.filter(e=>{
@@ -402,7 +422,91 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
-////////////////////////////////////////////  6.	conversaciones
+////////////////////////////////////////////  8.	OBSERVACIONES
+router.get('/novedades/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    novedadServices.get((err, novedad)=>{
+        if(!err){
+            novedad = novedad.filter(e=>{
+                return e.creado>fechaInicio && e.creado<fechaFinal
+            })
+            const fields = [{   
+                label: 'N Pedido',
+                value: 'pedidoId.nPedido'
+            },{
+                label: 'Usuario',
+                value: 'usuarioId.nombre'
+            },{
+                label: 'Observacion',
+                value: 'novedad'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(novedad);
+                res.attachment('novedades.csv');
+                res.status(200).send(csv);
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
+
+
+////////////////////////////////////////////  9.	CALIFICACIONES
+router.get('/calificaciones/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    let {fechaInicio, fechaFinal} = req.params
+    calificacionServices.getAll((err, calificacion)=>{
+        if(!err){
+            
+            calificacion = calificacion.map(e=>{
+                return {
+                    nombreEmpleado:e.data[0].nombreEmpleado,
+                    nombreCliente:e.data[0].nombreCliente,
+                    calificacion:e.data[0].calificacion,
+                    sugerencia:e.data[0].sugerencia,
+                    creado:e.data[0].fecha,
+                }
+            })
+            calificacion = calificacion.filter(e=>{
+                return e.creado>fechaInicio && e.creado<fechaFinal
+            })
+            
+            const fields = [{   
+                label: 'Fecha',
+                value: 'creado'
+            },{
+                label: 'Cliente',
+                value: 'nombreCliente'
+            },{
+                label: 'Operador',
+                value: 'nombreEmpleado'
+            },{
+                label: 'Sugerencia',
+                value: 'sugerencia'
+            },{
+                label: 'Calificación',
+                value: 'calificacion'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(calificacion);
+                res.attachment('calificaciones.csv');
+                res.status(200).send(csv);
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
+
+
+
+////////////////////////////////////////////  8.	conversaciones
 router.get('/pdf/chats/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     conversacionServices.groupoByConversacion((err, mensajes)=>{

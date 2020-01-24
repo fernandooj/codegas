@@ -13,7 +13,7 @@ class novedadServices{
 
 	}
 	get(callback){
-		Novedad.find({}, callback)
+		Novedad.find({}).populate('usuarioId').populate('pedidoId').sort({_id: 'desc'}).exec(callback)
 	}
 	getByNovedad(_id, callback){
 		Novedad.find({_id}).populate('usuarioId').sort({_id: 'desc'}).exec(callback)

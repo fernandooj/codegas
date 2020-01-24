@@ -13,6 +13,9 @@ class calificacionServices{
 	constructor(){
 
 	}
+	get(callback){
+		calificacion.find({}).populate('usuarioId1').populate('usuarioId2').sort({_id: 'desc'}).exec(callback)
+	}
 	getAll(callback){
 		Conversacion.aggregate([
 			{
@@ -59,6 +62,7 @@ class calificacionServices{
 			},
 			{
 				$project:{
+					nChat:"$Conversacion.id",
 					nombreEmpleado:'$UserData.nombre',
 					nombreCliente:'$UserData1.nombre',
 					calificacionId:'$CalificacionData._id',
@@ -70,21 +74,21 @@ class calificacionServices{
 			{
 			    $group:{
 						_id: "$calificacionId",
-			      		data: { $addToSet:  {nombreEmpleado:"$nombreEmpleado", nombreCliente:"$nombreCliente", calificacion:"$calificacion", sugerencia:"$sugerencia", fecha:"$fecha"}
+			      		data: { $addToSet:  {nChat:"$nChat", nombreEmpleado:"$nombreEmpleado", nombreCliente:"$nombreCliente", calificacion:"$calificacion", sugerencia:"$sugerencia", fecha:"$fecha"}
                     },
 			    }
 			},
 		], callback)
 	}
- 
+	 
 	create(data, callback){
-		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
-		let creado = moment(fecha).valueOf()
+		let fecha = moment().subtract(5, 'hours');
+            fecha     = moment(fecha).format('YYYY-MM-DD h:mm');
 		let newCalificacion = new calificacion({
 			sugerencia	   :data.sugerencia,
-			calificacion	 :data.calificacion,
+			calificacion  :data.calificacion,
 			idConversacion :data.idConversacion,
-			creado
+			creado:fecha
 		})
 		newCalificacion.save(callback)	
 	}
