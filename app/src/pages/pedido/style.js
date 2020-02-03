@@ -232,6 +232,9 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems:"center",
 		minWidth:size.width/1.5
 	},
+	containerTituloModal:{
+		minWidth:size.width/1.6
+	},
 	subContenedorModal2:{
 		backgroundColor:"#ffffff",
 		height:220,
@@ -326,8 +329,10 @@ export const style = MediaQueryStyleSheet.create({
 	btnGuardar3:{
 		backgroundColor: "#00218b",
 		paddingVertical:4,
-		width:120,
-		marginVertical:20,
+		width:"44%",
+		borderRadius:10,
+		paddingVertical:15,
+		marginVertical:10,
 		left:0,
 		marginHorizontal:10,
 		justifyContent:"center"
@@ -446,7 +451,8 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop:5,
 		marginBottom:0,
 		borderRadius:5,
-		paddingLeft:0
+		paddingLeft:0,
+		paddingTop:Platform.OS==='android' ?0 :15,
 	},
   // inputIOS: {
 	// },

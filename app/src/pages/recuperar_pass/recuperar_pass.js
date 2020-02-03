@@ -41,6 +41,7 @@ class Home extends Component{
                     value={email}
                     keyboardType='email-address'
                     autoCapitalize="none"
+                    placeholderTextColor="#aaa" 
                 />
                 <TouchableOpacity style={style.btnGuardar} 
                     onPress={()=> email.length<5 ?alert("Email es obligatorio") :this.recuperar()}>

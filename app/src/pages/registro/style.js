@@ -11,13 +11,17 @@ export const style = MediaQueryStyleSheet.create({
 	containerRegistro:{
 		flex:1,
 		width:"100%",
-		marginTop:60,
+		marginTop:5,
         marginBottom:40
 	},
 	subContainerRegistro:{
 		flex:1,
 		alignItems: 'center',
 	},
+	cabezera1:{
+        width:size.width,
+        height:110
+    },  
     //////////////////////////////////////////////////////////////////
     //////////////////////      REGISTRO
 	//////////////////////////////////////////////////////////////////
@@ -85,7 +89,7 @@ export const style = MediaQueryStyleSheet.create({
         borderWidth:1,
         width:"88%",
         height:50,
-        marginTop:10,
+        paddingTop:Platform.OS==='android' ?0 :15,
         marginBottom:10,
         borderRadius:5,
         paddingLeft:10

@@ -74,7 +74,6 @@ if (horaActual < 16 ) {
 } else {
     hora=2
 }
-console.log({hora, horaActual})
 class Nuevo_pedido extends Component{
 	constructor(props) {
 	  super(props);
@@ -138,219 +137,216 @@ class Nuevo_pedido extends Component{
 	renderPedido(){
         const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud, guardando} = this.state
         return(
-            <KeyboardAwareScrollView style={style.containerNuevo}>
-                <View style={style.subContainerNuevo}>
-                    <View style={style.contenedorMonto}>
-                        <Text style={style.tituloForm}>Realice su pedido</Text>
-                        <TouchableOpacity onPress={()=>this.setState({forma:"monto", cantidad:""})} style={style.btnFormaLlenar}>
-                            <Image source={require('../../assets/img/pg3/btn2.png')} style={style.icon}  resizeMode={'contain'} />	
-                            <Text style={style.textForma}>Monto $</Text>
-                            {forma=="monto" &&<Icon name="check" style={style.iconCheck} />}
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={()=>this.setState({forma:"cantidad", cantidad:""})} style={style.btnFormaLlenar}>
-                            <Image source={require('../../assets/img/pg3/btn3.png')} style={style.icon}  resizeMode={'contain'} />
-                            <Text style={style.textForma}>Cantidad KG</Text>
-                            {forma=="cantidad" &&<Icon name="check" style={style.iconCheck} />}
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={()=>this.setState({forma:"lleno", cantidad:""})} style={style.btnFormaLlenar}>
-                            <Image source={require('../../assets/img/pg3/btn4.png')} style={style.icon}  resizeMode={'contain'} />
-                            <Text style={style.textForma}>Lleno total</Text>
-                            {forma=="lleno" &&<Icon name="check" style={style.iconCheck} />}
-                        </TouchableOpacity>
-                    </View>
-                    {
-                        forma=="monto"
-                        ?<TextInputMask
-                            type={'money'}
-                            options={{
-                                precision: 0,
-                                separator: ',',
-                                delimiter: '.',
-                                unit: '$',
-                                suffixUnit: ''
-                            }}
-                            value={cantidad}
-                            style={style.input}
-                            placeholder="Monto"
-                            onChangeText={cantidad => { this.setState({cantidad}) }}
-                            ref={(ref) => this.campoMonto = ref}
-                        />
-                        :forma=="cantidad"
-                        &&<TextInputMask
-                            type={'only-numbers'}
-                            options={{
-                                precision: 0,
-                                separator: ',',
-                                delimiter: '.',
-                                unit: '',
-                                suffixUnit: ''
-                            }}
-                            style={style.input}
-                            value={cantidad}
-                            placeholder="Cantidad"
-                            onChangeText={cantidad => { this.setState({ cantidad }) }}
-                        />
-                    }
-                    {
-                        showFrecuencia
-                        ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=>this.setState({showFrecuencia:false, frecuencia:null, dia1:null, dia2:null, franja:null})}>
-                            <Icon name="minus" style={style.iconFrecuencia} />
-                            <Text style={style.textGuardar}>Frecuencia pedido</Text>
-                        </TouchableOpacity>
-                        :<TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.setState({showFrecuencia:true})}>
-                            <Icon name="plus" style={style.iconFrecuencia} />
-                            <Text style={style.textGuardar}>Frecuencia pedido</Text>
-                        </TouchableOpacity>
+            <View style={style.subContainerNuevo}>
+                <View style={style.contenedorMonto}>
+                    <Text style={style.tituloForm}>Realice su pedido</Text>
+                    <TouchableOpacity onPress={()=>this.setState({forma:"monto", cantidad:""})} style={style.btnFormaLlenar}>
+                        <Image source={require('../../assets/img/pg3/btn2.png')} style={style.icon}  resizeMode={'contain'} />	
+                        <Text style={style.textForma}>Monto $</Text>
+                        {forma=="monto" &&<Icon name="check" style={style.iconCheck} />}
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>this.setState({forma:"cantidad", cantidad:""})} style={style.btnFormaLlenar}>
+                        <Image source={require('../../assets/img/pg3/btn3.png')} style={style.icon}  resizeMode={'contain'} />
+                        <Text style={style.textForma}>Cantidad KG</Text>
+                        {forma=="cantidad" &&<Icon name="check" style={style.iconCheck} />}
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>this.setState({forma:"lleno", cantidad:""})} style={style.btnFormaLlenar}>
+                        <Image source={require('../../assets/img/pg3/btn4.png')} style={style.icon}  resizeMode={'contain'} />
+                        <Text style={style.textForma}>Lleno total</Text>
+                        {forma=="lleno" &&<Icon name="check" style={style.iconCheck} />}
+                    </TouchableOpacity>
+                </View>
+                {
+                    forma=="monto"
+                    ?<TextInputMask
+                        type={'money'}
+                        options={{
+                            precision: 0,
+                            separator: ',',
+                            delimiter: '.',
+                            unit: '$',
+                            suffixUnit: ''
+                        }}
+                        value={cantidad}
+                        style={style.input}
+                        placeholder="Monto"
+                        onChangeText={cantidad => { this.setState({cantidad}) }}
+                        ref={(ref) => this.campoMonto = ref}
+                    />
+                    :forma=="cantidad"
+                    &&<TextInputMask
+                        type={'only-numbers'}
+                        options={{
+                            precision: 0,
+                            separator: ',',
+                            delimiter: '.',
+                            unit: '',
+                            suffixUnit: ''
+                        }}
+                        style={style.input}
+                        value={cantidad}
+                        placeholder="Cantidad"
+                        onChangeText={cantidad => { this.setState({ cantidad }) }}
+                    />
+                }
+                {
+                    showFrecuencia
+                    ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=>this.setState({showFrecuencia:false, frecuencia:null, dia1:null, dia2:null, franja:null})}>
+                        <Icon name="minus" style={style.iconFrecuencia} />
+                        <Text style={style.textGuardar}>Frecuencia pedido</Text>
+                    </TouchableOpacity>
+                    :<TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.setState({showFrecuencia:true})}>
+                        <Icon name="plus" style={style.iconFrecuencia} />
+                        <Text style={style.textGuardar}>Frecuencia pedido</Text>
+                    </TouchableOpacity>
 
-                    }
-                   
-                    {
-                        showFrecuencia
-                        &&<View style={style.contenedorFrecuencia}>
-                            <ModalSelector
-                                style={style.btnFrecuencia}
-                                data={frecuencias}
-                                initValue="Frecuencia"
-                                cancelText="Cancelar"
-                                onChange={(option)=>{ this.setState({frecuencia:option.key, dia1:null, dia2:null, franja:null}) }} 
-                                selectStyle={!frecuencia &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
-                            />
-                            {
-                                frecuencia
-                                ?frecuencia=="semanal"
-                                    ?<ModalSelector
-                                        style={style.btnFrecuencia}
-                                        data={dias}
-                                        initValue={"Dia"}
-                                        cancelText="Cancelar"
-                                        onChange={(option)=>{ this.setState({dia1:option.key}) }} 
-                                        selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
-                                    />
-                                :frecuencia=="mensual"
+                }
+                
+                {
+                    showFrecuencia
+                    &&<View style={style.contenedorFrecuencia}>
+                        <ModalSelector
+                            style={style.btnFrecuencia}
+                            data={frecuencias}
+                            initValue="Frecuencia"
+                            cancelText="Cancelar"
+                            onChange={(option)=>{ this.setState({frecuencia:option.key, dia1:null, dia2:null, franja:null}) }} 
+                            selectStyle={!frecuencia &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
+                        />
+                        {
+                            frecuencia
+                            ?frecuencia=="semanal"
                                 ?<ModalSelector
                                     style={style.btnFrecuencia}
-                                    data={diasN}
+                                    data={dias}
                                     initValue={"Dia"}
                                     cancelText="Cancelar"
                                     onChange={(option)=>{ this.setState({dia1:option.key}) }} 
                                     selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                 />
-                                :<View style={style.contenedorFrecuencia}>
-                                    <ModalSelector
-                                        style={style.btnFrecuencia}
-                                        data={diasN.slice(0,15)}
-                                        initValue={"Dia 1"}
-                                        cancelText="Cancelar"
-                                        onChange={(option)=>{ this.setState({dia1:option.key}) }} 
-                                        selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
-                                    />
-                                    <ModalSelector
-                                        style={style.btnFrecuencia}
-                                        data={diasN.slice(15,31)}
-                                        initValue={"Dia 2"}
-                                        cancelText="Cancelar"
-                                        onChange={(option)=>{ this.setState({dia2:option.key}) }} 
-                                        selectStyle={!dia2 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
-                                    />
-                                </View>
-                                :null
-                            }
-                            {/* {
-                                frecuencia
-                                &&<ModalSelector
+                            :frecuencia=="mensual"
+                            ?<ModalSelector
+                                style={style.btnFrecuencia}
+                                data={diasN}
+                                initValue={"Dia"}
+                                cancelText="Cancelar"
+                                onChange={(option)=>{ this.setState({dia1:option.key}) }} 
+                                selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
+                            />
+                            :<View style={style.contenedorFrecuencia}>
+                                <ModalSelector
                                     style={style.btnFrecuencia}
-                                    data={franjas}
-                                    initValue={"Franja Horaria"}
-                                    onChange={(option)=>{ this.setState({franja:option.key}) }} 
-                                    selectStyle={!franja &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
+                                    data={diasN.slice(0,15)}
+                                    initValue={"Dia 1"}
+                                    cancelText="Cancelar"
+                                    onChange={(option)=>{ this.setState({dia1:option.key}) }} 
+                                    selectStyle={!dia1 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
                                 />
-                            } */}
-                        </View>
-                    }
-                    {
-                        acceso=="admin" || acceso=="solucion"
-                        ?this.renderCliente()
-                        :null
-                    }
-                     {
-                    puntos.length>1
-                    ?<View>
-                    <Text>Selecciona el punto de entrega</Text>
-                        {
-                            puntos.map((e, key)=>{
-                                return (
-                                    <TouchableOpacity key={key} style={style.btnZona} onPress={()=>this.setState({puntoId:e._id, idZona:e.idZona})}>
-                                        <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                                        <Text style={style.textZona}>{e.direccion}</Text>
-                                        {(puntoId==e._id) &&<Icon name="check" style={style.iconCheck} /> }
-                                    </TouchableOpacity>
-                                )
-                            })
+                                <ModalSelector
+                                    style={style.btnFrecuencia}
+                                    data={diasN.slice(15,31)}
+                                    initValue={"Dia 2"}
+                                    cancelText="Cancelar"
+                                    onChange={(option)=>{ this.setState({dia2:option.key}) }} 
+                                    selectStyle={!dia2 &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
+                                />
+                            </View>
+                            :null
                         }
+                        {/* {
+                            frecuencia
+                            &&<ModalSelector
+                                style={style.btnFrecuencia}
+                                data={franjas}
+                                initValue={"Franja Horaria"}
+                                onChange={(option)=>{ this.setState({franja:option.key}) }} 
+                                selectStyle={!franja &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
+                            />
+                        } */}
                     </View>
-                    :puntos.map((e, key)=>{
-                        return (
-                            <View key={key} >
-                                <Text>Punto de entrega</Text>
-                                <Text>{e.direccion}</Text>
-                            </View>    
-                        )
-                    })
-                }   
-                {
-                    solicitud 
-                    ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=> this.setState({solicitud:null})}>
-                        <Icon name="minus" style={style.iconFrecuencia} />
-                        <Text style={style.textGuardar}>{fechaSolicitud}</Text>
-                    </TouchableOpacity>
-                    :<TouchableOpacity style={style.nuevaFrecuencia} 
-                        onPress={()=>{Toast.show("Esta fecha esta sujeta a verificación si nuestros vehiculos estan en la zona"); this.setState({showFechaEntrega:true})} }
-                    >
-                        <Icon name="plus" style={style.iconFrecuencia} />
-                        <Text style={style.textGuardar}>Fecha Entrega</Text>
-                    </TouchableOpacity>
                 }
-                  
-                    <TextInput
-                       placeholder="Observaciones"
-                       onChangeText={(novedad)=> this.setState({ novedad })}
-                       value={novedad}
-                       multiline = {true}
-                       style={[style.inputNovedades]}
-                   />
-                    <TomarFoto 
-                        width={110}
-                        
-                        limiteImagenes={3}
-                        imagenes={(imagen) => {  this.setState({imagen, showLoading:false}) }}
-                    /> 
-                    <TouchableOpacity style={!forma ?style.btnGuardarDisable :style.btnGuardar} onPress={()=>
-                        (acceso=="admin" || acceso=="solucion") && !idCliente
-                        ?alert("Selecciona un cliente")
-                        :(acceso=="admin" || acceso=="solucion") && !puntoId
-                        ?alert("Selecciona una dirección")
-                        :!forma
-                        ?alert("selecciona una forma")
-                        :(forma=="monto"&&cantidad<10)
-                        ?alert("Inserta una cantidad")
-                        :(forma=="cantidad"&&cantidad<10)
-                        ?alert("Inserta una cantidad")
-                        :(frecuencia=="semanal" || frecuencia=="mensual") &&!dia1
-                        ?alert("Inserta un dia de frecuencia")
-                        :frecuencia=="quincenal"  &&(!dia1 ||!dia2)
-                        ?alert("Inserta los dias de frecuencia")
-                        :!guardando &&this.handleSubmit()
-                    }>
-                        {/* <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text> */}
-                        {/* <Image source={require('../../assets/img/pg3/btnEnviar.png')} style={style.btnEnviar}  resizeMode={'contain'} /> */}
-                        <Icon name="caret-square-o-right" style={!forma ?style.iconGuardarDisable :style.iconGuardar} />
-                        <Text style={!forma ?style.textGuardarDisable :style.textGuardar}>{!guardando ?"Enviar" :"Enviando..."}</Text>
-                        {guardando &&<ActivityIndicator color="#ffffff" />}
-                    </TouchableOpacity>
+                {
+                    acceso=="admin" || acceso=="solucion"
+                    ?this.renderCliente()
+                    :null
+                }
+                    {
+                puntos.length>1
+                ?<View>
+                <Text>Selecciona el punto de entrega</Text>
+                    {
+                        puntos.map((e, key)=>{
+                            return (
+                                <TouchableOpacity key={key} style={style.btnZona} onPress={()=>this.setState({puntoId:e._id, idZona:e.idZona})}>
+                                    <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
+                                    <Text style={style.textZona}>{e.direccion}</Text>
+                                    {(puntoId==e._id) &&<Icon name="check" style={style.iconCheck} /> }
+                                </TouchableOpacity>
+                            )
+                        })
+                    }
                 </View>
-            </KeyboardAwareScrollView>
+                :puntos.map((e, key)=>{
+                    return (
+                        <View key={key} >
+                            <Text>Punto de entrega</Text>
+                            <Text>{e.direccion}</Text>
+                        </View>    
+                    )
+                })
+            }   
+            {
+                solicitud 
+                ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=> this.setState({solicitud:null})}>
+                    <Icon name="minus" style={style.iconFrecuencia} />
+                    <Text style={style.textGuardar}>{fechaSolicitud}</Text>
+                </TouchableOpacity>
+                :<TouchableOpacity style={style.nuevaFrecuencia} 
+                    onPress={()=>{Toast.show("Esta fecha esta sujeta a verificación si nuestros vehiculos estan en la zona"); this.setState({showFechaEntrega:true})} }
+                >
+                    <Icon name="plus" style={style.iconFrecuencia} />
+                    <Text style={style.textGuardar}>Fecha Entrega</Text>
+                </TouchableOpacity>
+            }
+                
+                <TextInput
+                    placeholder="Observaciones"
+                    onChangeText={(novedad)=> this.setState({ novedad })}
+                    value={novedad}
+                    multiline = {true}
+                    style={[style.inputNovedades]}
+                />
+                {/* <TomarFoto 
+                    width={110}
+                    
+                    limiteImagenes={3}
+                    imagenes={(imagen) => {  this.setState({imagen, showLoading:false}) }}
+                />  */}
+                <TouchableOpacity style={!forma ?style.btnGuardarDisable :style.btnGuardar} onPress={()=>
+                    (acceso=="admin" || acceso=="solucion") && !idCliente
+                    ?alert("Selecciona un cliente")
+                    :(acceso=="admin" || acceso=="solucion") && !puntoId
+                    ?alert("Selecciona una dirección")
+                    :!forma
+                    ?alert("selecciona una forma")
+                    :(forma=="monto"&&cantidad<10)
+                    ?alert("Inserta una cantidad")
+                    :(forma=="cantidad"&&cantidad<10)
+                    ?alert("Inserta una cantidad")
+                    :(frecuencia=="semanal" || frecuencia=="mensual") &&!dia1
+                    ?alert("Inserta un dia de frecuencia")
+                    :frecuencia=="quincenal"  &&(!dia1 ||!dia2)
+                    ?alert("Inserta los dias de frecuencia")
+                    :!guardando &&this.handleSubmit()
+                }>
+                    {/* <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text> */}
+                    {/* <Image source={require('../../assets/img/pg3/btnEnviar.png')} style={style.btnEnviar}  resizeMode={'contain'} /> */}
+                    <Icon name="caret-square-o-right" style={!forma ?style.iconGuardarDisable :style.iconGuardar} />
+                    <Text style={!forma ?style.textGuardarDisable :style.textGuardar}>{!guardando ?"Enviar" :"Enviando..."}</Text>
+                    {guardando &&<ActivityIndicator color="#ffffff" />}
+                </TouchableOpacity>
+            </View>
         )
-       
     }
     filtroClientes(idCliente){
 		let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
@@ -424,19 +420,22 @@ class Nuevo_pedido extends Component{
 	render(){
         const {navigation} = this.props
         const {idUsuario, showFechaEntrega} = this.state
-        console.log(this.state.idZona)
+        
         return (
-            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
-                {
-                    showFechaEntrega
-                    &&this.modalFechaEntrega()
-                    
-                }
-                <ScrollView style={{marginBottom:82}}>
-                    {this.renderPedido()}
-                </ScrollView>
-                <Footer navigation={navigation} />
-            </ImageBackground>
+            <View style={style.container} >
+                <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera} />
+                <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
+                    {
+                        showFechaEntrega
+                        &&this.modalFechaEntrega()
+                        
+                    }
+                    <KeyboardAwareScrollView style={style.containerNuevo}>
+                        {this.renderPedido()}
+                    </KeyboardAwareScrollView>
+                    <Footer navigation={navigation} />
+                </ImageBackground>
+            </View>
         )
 	}
     handleSubmit(){

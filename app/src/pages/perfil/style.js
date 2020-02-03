@@ -10,9 +10,8 @@ export const style = MediaQueryStyleSheet.create({
 	},	 
 	containerRegistro:{
 		flex:1,
+		marginBottom:80,
 		width:"100%",
-		marginTop:Platform.OS==='android' ?100 :120,
-		marginBottom:65
 	},
 	subContainerRegistro:{
 		flex:1,
@@ -32,9 +31,13 @@ export const style = MediaQueryStyleSheet.create({
 	containerRegistro2:{
 		flex:1,
 		width:"100%",
-		marginTop:30,
-		marginBottom:30
+		marginTop:45,
+		marginBottom:45
 	},
+	cabezera1:{
+		width:size.width,
+		height:110
+	},  
 	 
 	//////////////////////////////////////////////////////////////////
     //////////////////////      CABEZERA
@@ -60,7 +63,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	txtLista:{
 		fontFamily: "Comfortaa-Light",
-		width:"77%",
+		width:"80%",
 		fontSize:20,
 		left:20
 	},
@@ -74,8 +77,13 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:17
 	},
 	icon:{
-		width:90,
-		height:90
+		width:80,
+		height:80
+	},
+	footer:{
+		position:"absolute",
+		bottom:0,
+		width:"100%"
 	},
     //////////////////////////////////////////////////////////////////
     //////////////////////      INPUTS

@@ -178,6 +178,7 @@ class Conversacion extends Component{
 					style={style.input}
 					ref='username' 
 					multiline
+					placeholderTextColor="#aaa" 
 				/>
 				<TouchableOpacity onPress={(mensaje.length==0 || showSpin)?null :()=>this.handleSubmit()} style={style.btnEnviar}>
 					<Icon name={'paper-plane'} style={style.icon} />

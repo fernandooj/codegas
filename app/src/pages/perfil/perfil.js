@@ -50,6 +50,7 @@ class Home extends Component{
                         value={email}
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        placeholderTextColor="#aaa" 
                     />
                      <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
                         <Text style={style.textGuardar}>Registrarme</Text>
@@ -71,6 +72,7 @@ class Home extends Component{
                         value={email2}
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        placeholderTextColor="#aaa" 
                     />
                     <TextInput
                         style={style.input}
@@ -78,6 +80,7 @@ class Home extends Component{
                         onChangeText={(password2) => this.setState({password2})}
                         secureTextEntry
                         value={password2}
+                        placeholderTextColor="#aaa" 
                     />
                     <TouchableOpacity style={style.btnGuardar} onPress={()=>this.login()}>
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
@@ -95,7 +98,7 @@ class Home extends Component{
         const {nombre, idUsuario, avatar, email, err, acceso} = this.state
         console.log(idUsuario)
         return (
-            <ScrollView style={style.containerRegistro}>
+            <ScrollView style={style.containerRegistro}> 
                 <View style={style.perfilContenedor}>
                     <View style={style.columna1}>
                         {
@@ -171,7 +174,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.4</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.5</Text> 
                     </TouchableOpacity> 
                     {
                         err
@@ -214,19 +217,25 @@ class Home extends Component{
         const {navigation} = this.props
         const {userId} = this.state
 	    return (
-            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
-                {
-                    userId
-                    ?this.renderPerfil()
-                    :<KeyboardAwareScrollView style={style.containerRegistro}>
-                        {this.renderEmail()}
-                        <View style={style.separador}></View>
-                        {this.iniciarSesion()}
+            <View style={style.container}>
+                <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />
+                <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
+                    <KeyboardAwareScrollView  style={style.container}>
+                        {
+                            userId
+                            ?this.renderPerfil()
+                            :<KeyboardAwareScrollView style={style.containerRegistro}>
+                                {this.renderEmail()}
+                                <View style={style.separador}></View>
+                                {this.iniciarSesion()}
+                            </KeyboardAwareScrollView>
+                        }
                     </KeyboardAwareScrollView>
-                }
-                
-                <Footer navigation={navigation} />
-            </ImageBackground>
+                        <View style={style.footer}>
+                            <Footer navigation={navigation} />
+                        </View>
+                </ImageBackground>
+            </View>
 		)
 	}
     handleSubmit(){

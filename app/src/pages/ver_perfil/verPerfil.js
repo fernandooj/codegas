@@ -134,6 +134,7 @@ class verPerfil extends Component{
                 placeholder="Email"
                 autoCapitalize = 'none'
                 keyboardType='email-address'
+                placeholderTextColor="#aaa" 
                 value={email}
                 onChangeText={email => this.setState({ email })}
                 style={email.length<3 ?[style.input, style.inputRequired] :style.input}
@@ -144,6 +145,7 @@ class verPerfil extends Component{
                     acceso=="cliente"
                     &&<TextInput
                         type='outlined'
+                        placeholderTextColor="#aaa" 
                         placeholder="Razon Social"
                         autoCapitalize = 'none'
                         value={razon_social}
@@ -156,6 +158,7 @@ class verPerfil extends Component{
                 <TextInput
                     type='outlined'
                     placeholder="Cedula / Nit"
+                    placeholderTextColor="#aaa" 
                     keyboardType='numeric'
                     value={cedula}
                     onChangeText={cedula => this.setState({ cedula })}
@@ -167,6 +170,7 @@ class verPerfil extends Component{
                     &&<TextInput
                         type='outlined'
                         placeholder="Dirección factura"
+                        placeholderTextColor="#aaa" 
                         autoCapitalize = 'none'
                         value={direccion_factura}
                         onChangeText={direccion_factura => this.setState({ direccion_factura })}
@@ -187,6 +191,7 @@ class verPerfil extends Component{
                         type='outlined'
                         placeholder="CODT"
                         autoCapitalize = 'none'
+                        placeholderTextColor="#aaa" 
                         value={codt}
                         onChangeText={codt => this.setState({ codt })}
                         style={style.input}
@@ -199,6 +204,7 @@ class verPerfil extends Component{
                     label='Nombres'
                     placeholder="Nombres"
                     autoCapitalize = 'none'
+                    placeholderTextColor="#aaa" 
                     value={nombre}
                     onChangeText={nombre => this.setState({ nombre })}
                     style={nombre.length<3 ?[style.input, style.inputRequired] :style.input}
@@ -208,7 +214,7 @@ class verPerfil extends Component{
                     type='outlined'
                     placeholder="Celular"
                     autoCapitalize = 'none'
-					// keyboardType='numeric'
+					placeholderTextColor="#aaa" 
                     value={celular}
                     onChangeText={celular => this.setState({ celular })}
                     style={celular.length<3 ?[style.input, style.inputRequired] :style.input}
@@ -275,12 +281,12 @@ class verPerfil extends Component{
                     !tipoAcceso
                     ?<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit("editar")}>
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
-                        <Text style={style.textGuardar}>{cargando ?"Editando" :"Editar"}</Text>
+                        <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
                     </TouchableOpacity> 
                     :tipoAcceso=="editar"
                     ?<TouchableOpacity style={style.btnGuardar} onPress={()=>this.editarUsuario("editar")}>
                     {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
-                        <Text style={style.textGuardar}>{cargando ?"Editando" :"Editar Usuario"}</Text>
+                        <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar Usuario"}</Text>
                     </TouchableOpacity>
                     :<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}

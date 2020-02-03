@@ -4,14 +4,17 @@ let size = Dimensions.get('window');
 
 export const style = MediaQueryStyleSheet.create({
     container:{
-		flex:1,
-		backgroundColor:'#ffffff',
+        flex:1,
+        backgroundColor:'#ffffff',
 	},	 
 	containerNuevo:{
-		flex:1,
-		width:"100%",
-		marginTop:Platform.OS==='android' ?10 :20
-	},
+        marginBottom:70,
+        flex:1, 
+    },
+    cabezera:{
+        width:size.width,
+        height:110
+    },  
 	subContainerNuevo:{
 		flex:1,
 		alignItems: 'center',
@@ -27,7 +30,7 @@ export const style = MediaQueryStyleSheet.create({
         width:"90%",
         borderRadius:30,
         padding:20,
-        marginTop:125
+        marginTop:25
     },
     tituloForm:{
         fontFamily: "Comfortaa-Bold",
@@ -139,7 +142,7 @@ export const style = MediaQueryStyleSheet.create({
     iconFrecuencia:{
         color:"#00218b",
         marginHorizontal:10,
-        top:6
+        top:2
     },
     contenedorFrecuencia:{
         flexDirection:"row",

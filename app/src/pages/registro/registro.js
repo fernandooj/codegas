@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground, ScrollView} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Dimensions, ImageBackground, Image, ScrollView} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import RNPickerSelect from 'react-native-picker-select';
 import Footer   from '../components/footer'
@@ -118,6 +118,7 @@ class Home extends Component{
                                                                 type='outlined'
                                                                 label='Dirección'
                                                                 placeholder="Dirección"
+                                                                placeholderTextColor="#aaa" 
                                                                 value={e.direccion}
                                                                 onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
                                                                 style={style.inputUbicacion}
@@ -135,6 +136,7 @@ class Home extends Component{
                                                             label='observacion al momento de ingresar el vehiculo'
                                                             placeholder="observaciones ingreso del vehiculo"
                                                             value={e.observacion}
+                                                            placeholderTextColor="#aaa" 
                                                             onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
                                                             style={style.inputUbicacion}
                                                         />
@@ -142,6 +144,7 @@ class Home extends Component{
                                                             type='outlined'
                                                             label='Email'
                                                             placeholder="Email"
+                                                            placeholderTextColor="#aaa" 
                                                             value={e.email}
                                                             onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
                                                             style={style.inputUbicacion}
@@ -150,6 +153,7 @@ class Home extends Component{
                                                             type='outlined'
                                                             label='Nombre'
                                                             placeholder="Nombre"
+                                                            placeholderTextColor="#aaa" 
                                                             value={e.nombre}
                                                             onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
                                                             style={[style.input, {marginBottom: key>0 ?40 :10}]}
@@ -232,6 +236,7 @@ class Home extends Component{
                         onChangeText={(razon_social) => this.setState({razon_social})}
                         value={razon_social}
                         autoCapitalize="none"
+                        placeholderTextColor="#aaa" 
                     />
                     <TextInput
                         style={cedula.length<2 ?[style.input, style.inputInvalid] :style.input}
@@ -239,11 +244,13 @@ class Home extends Component{
                         onChangeText={(cedula) => this.setState({cedula})}
                         value={cedula}
                         keyboardType="numeric"
+                        placeholderTextColor="#aaa" 
                     />
                     <TextInput
                         type='outlined'
                         placeholder="Dirección factura"
                         autoCapitalize = 'none'
+                        placeholderTextColor="#aaa" 
                         value={direccion_factura}
                         onChangeText={direccion_factura => this.setState({ direccion_factura })}
                         style={direccion_factura.length<3 ?[style.input, style.inputRequired] :style.input}
@@ -258,6 +265,7 @@ class Home extends Component{
                         onChangeText={(nombre) => this.setState({nombre})}
                         value={nombre}
                         autoCapitalize="none"
+                        placeholderTextColor="#aaa" 
                     />
                     <View style={{flexDirection:"row"}}>
                         <TextInput
@@ -267,6 +275,7 @@ class Home extends Component{
                             secureTextEntry
                             value={password}
                             secureTextEntry={showcontrasena ?false :true}
+                            placeholderTextColor="#aaa" 
                         />
                         <TouchableOpacity style={style.btnIconPassLogin} onPress={()=>this.setState({showcontrasena:!this.state.showcontrasena})}>
                             <Icon name={showcontrasena ?'eye-slash' :'eye'} allowFontScaling style={style.iconPass} />
@@ -277,7 +286,7 @@ class Home extends Component{
                         placeholder="Celular"
                         onChangeText={(celular) => this.setState({celular})}
                         value={celular}
-                        // keyboardType="numeric"
+                        placeholderTextColor="#aaa" 
                     />
                     <View   style={tipo.length<2 ?[style.tipo, style.inputInvalid] :style.tipo}>
                         <RNPickerSelect
@@ -316,14 +325,17 @@ class Home extends Component{
         const {navigation} = this.props
         const {modalUbicacion} = this.state
 	    return (
-            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
-                {modalUbicacion ?this.modalUbicacion() :null}
-                
-                <KeyboardAwareScrollView style={style.containerRegistro}>
-                        {this.renderRegistro()}
-                </KeyboardAwareScrollView>
-                <Footer navigation={navigation} />
-            </ImageBackground>
+            <View style={style.container} >
+                <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />
+                <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
+                    {modalUbicacion ?this.modalUbicacion() :null}
+                    
+                    <KeyboardAwareScrollView style={style.containerRegistro}>
+                            {this.renderRegistro()}
+                    </KeyboardAwareScrollView>
+                    <Footer navigation={navigation} />
+                </ImageBackground>
+            </View>
 		)
 	}
     handleSubmit(e){

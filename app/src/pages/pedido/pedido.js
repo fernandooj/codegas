@@ -148,10 +148,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>{
                             this.callObservaciones(e._id);
-                       
-                            acceso!=="cliente"
-                            ?this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido })
-                            :null       
+                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido })
                         }                        
                     }
                 >
@@ -306,7 +303,7 @@ class Pedido extends Component{
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
         let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
         let imagenCerrar2 = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
-        console.log({imagenPedido2})
+        console.log({imagenCerrar})
         return (
             <View style={style.contenedorModal}>
                 {showNovedades ?this.modalNovedades() :null}
@@ -315,15 +312,18 @@ class Pedido extends Component{
                         <TouchableOpacity activeOpacity={1} onPress={() => this.setState({openModal:false, elevation:7})} style={size.height<height ?style.btnModalClose :style.btnModalClose2}>
                             <Icon name={'times-circle'} style={style.iconCerrar} />
                         </TouchableOpacity>
-                            <Text style={{fontFamily: "Comfortaa-Regular"}}>Razón Social: {razon_social}</Text>
-                            <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula: {cedula}</Text>
-                            <Text style={{fontFamily: "Comfortaa-Regular"}}>N Pedido: {nPedido}</Text>
-                            <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma:  {forma}</Text>
-                            <Text style={{fontFamily: "Comfortaa-Regular"}}>{cantidad &&`cantidad ${cantidad}`}</Text>
-                            <TouchableOpacity style={style.btnNovedad} onPress={()=>this.setState({showNovedades:true})} >
-                                <Text style={style.txtNovedad} >Novedades: {novedades.length} </Text>
-                            </TouchableOpacity>
-                            {imagenPedido ?<Image source={{uri:imagenPedido2}} style={style.imagen} /> :null}
+                            <View style={style.containerTituloModal}>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Razón Social: {razon_social}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula: {cedula}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>N Pedido: {nPedido}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma:  {forma}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>{cantidad &&`cantidad ${cantidad}`}</Text>
+                                <TouchableOpacity style={style.btnNovedad} onPress={()=>this.setState({showNovedades:true})} >
+                                    <Text style={style.txtNovedad} >Novedades: {novedades.length} </Text>
+                                </TouchableOpacity>
+                                {imagenPedido ?<Image source={{uri:imagenPedido2}} style={style.imagen} /> :null}
+
+                            </View>
                         
                         {/* CAMBIAR ESTADO */}
                         {
@@ -364,6 +364,46 @@ class Pedido extends Component{
                             :null
                         }
                         {/* CERRAR PEDIDO  */}
+                        {
+                            acceso=="cliente" && entregado
+                            &&<View>
+                                <View style={style.separador}></View>
+                                <Text style={style.tituloModal}>Pedido Cerrado</Text>
+                                <View style={style.pedido}>
+                                {
+                                    imagenCerrar
+                                    &&<ImageProgress 
+                                        resizeMode="cover" 
+                                        renderError={ (err) => { return (<ImageProgress source={require('../../assets/img/filtro.png')} imageStyle={{height: 40, width: 40, borderRadius: 10, left:-30, top:5}}  />) }} 
+                                        source={{ uri:  imagenCerrar}} 
+                                        indicator={{
+                                            size: 20, 
+                                            borderWidth: 0,
+                                            color: '#ffffff',
+                                            unfilledColor: '#ffffff'
+                                            }} 
+                                        style={style.imagen}
+                                    />
+                                }
+                                </View>
+                                <View style={style.pedido}>
+                                    <Text>Kilos: </Text>
+                                    <Text>{kilos}</Text>
+                                </View>
+                                <View style={style.pedido}>
+                                    <Text>Factura: </Text>
+                                    <Text>{factura}</Text>
+                                </View>
+                                <View style={style.pedido}>
+                                    <Text>Valor unitario: </Text>
+                                    <Text>{forma_pago}</Text>
+                                </View>
+                                <View style={style.pedido}>
+                                    <Text>Forma de pago: </Text>
+                                    <Text>{forma_pago}</Text>
+                                </View>
+                            </View>
+                        }
                         {
                             (acceso=="admin" || acceso=="conductor") && fechaEntrega
                             ?<View>
@@ -421,11 +461,13 @@ class Pedido extends Component{
                                             onChangeText={(kilosTexto)=> this.setState({ kilosTexto })}
                                             value={kilosTexto}
                                             keyboardType='numeric'
+                                            placeholderTextColor="#aaa" 
                                             style={[style.inputTerminarPedido, {marginTop:20}]}
                                         />
                                         <TextInput
                                             placeholder="N Factura"
                                             autoCapitalize = 'none'
+                                            placeholderTextColor="#aaa" 
                                             onChangeText={(facturaTexto)=> this.setState({ facturaTexto })}
                                             value={facturaTexto}
                                             style={style.inputTerminarPedido}
@@ -434,6 +476,7 @@ class Pedido extends Component{
                                             placeholder="Valor Unitario"
                                             autoCapitalize = 'none'
                                             keyboardType='numeric'
+                                            placeholderTextColor="#aaa" 
                                             onChangeText={(valor_unitarioTexto)=> this.setState({ valor_unitarioTexto })}
                                             value={valor_unitarioTexto}
                                             style={style.inputTerminarPedido}
@@ -471,6 +514,7 @@ class Pedido extends Component{
                                             multiline={true}
                                             numberOfLines={4}
                                             style={style.inputNovedad}
+                                            placeholderTextColor="#aaa" 
                                             onSubmitEditing={Keyboard.dismiss}
                                         />
                                         <View style={style.contenedorConductor}>
@@ -782,6 +826,7 @@ class Pedido extends Component{
                         acceso!=="conductor"
                         &&<TextInput
                             placeholder="Buscar por: cliente, fecha, forma"
+                            placeholderTextColor="#aaa" 
                             autoCapitalize = 'none'
                             onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador: terminoBuscador })}
                             value={terminoBuscador}
@@ -789,8 +834,9 @@ class Pedido extends Component{
                         />
                     }
                     {   
-                        acceso!=="conductor"
-                        &&<TouchableOpacity style={style.btnFiltro} onPress={()=>this.showModal()}>
+                        (acceso=="conductor" ||  acceso=="cliente")
+                        ?null
+                        :<TouchableOpacity style={style.btnFiltro} onPress={()=>this.showModal()}>
                             <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />
                         </TouchableOpacity>
                     }
@@ -812,6 +858,7 @@ class Pedido extends Component{
                 <Text>Novedad Innactividad</Text>
                 <TextInput
                     placeholder="Novedades"
+                    placeholderTextColor="#aaa" 
                     autoCapitalize = 'none'
                     onChangeText={(novedad)=> this.setState({novedad})}
                     value={novedad}

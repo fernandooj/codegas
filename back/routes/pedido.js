@@ -162,8 +162,10 @@ router.post('/', (req,res)=>{
                     }
         
                     pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, ruta, (err2, pedido)=>{
+                        console.log("req.body")
+                        console.log(req.body)
                         if (!err2) {
-                            console.log({dia1:req.body.dia2})
+                            ////////////////////////        ENVIO EL CORREO AL USUARIO CLIENTE AVISANDOLE DEL NUEVO PEDIDO
                             const dia1       = req.body.dia1!=="undefined" ?`Dia 1: ${req.body.dia1}<br/>` :"" 
                             const dia2       = req.body.dia2=="undefined" || req.body.dia2=="null" ?"" :`Dia 2: ${req.body.dia2}<br/>` 
                             const cantidad   = req.body.cantidad!=="" ?`Cantidad: ${req.body.cantidad}<br/>` :"" 
@@ -173,12 +175,18 @@ router.post('/', (req,res)=>{
                             let text2  = `Forma: <b>${req.body.forma}</b><br/> ${cantidad} ${frecuencia} ${dia1} ${dia2} `
                                     
                             htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
+                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                            //////////////////////      ENVIO UN CORREO A CODEGAS AVINSANDOLE DEL NUEVO PEDIDO CREADO
+                            let userRegistrado = {email:"fernandooj@ymail.com, directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+                            let email = req.body.email ?req.body.email :req.session.usuario.email
+                            htmlTemplate(req, userRegistrado, email, text2, "",  "Nuevo pedido")
+                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             let mensajeJson={
                                 badge:1
                             }
                             cliente.publish('pedido', JSON.stringify(mensajeJson)) 
                             cliente.publish('actualizaPedidos', true) 
-                            
+                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             res.json({ status: true, pedido });	
                         }else{
                             let titulo = `<font size="5">error en el pedido</font>`
@@ -190,6 +198,7 @@ router.post('/', (req,res)=>{
                             if(err2){
                                 res.json({ status: false, code:2, pedido:err2 });	
                             }
+                            res.json({ status: false, err3 });	
                             console.log(err3)
                         }
                     })

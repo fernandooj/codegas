@@ -42,13 +42,13 @@
 		AD135CC822A17B530001D314 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AD135C9B22A17B530001D314 /* UserNotifications.framework */; };
 		AD19418D2299C0EA00915392 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		AD1941972299C4FF00915392 /* libRNGestureHandler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD1941942299C4F300915392 /* libRNGestureHandler.a */; };
-		AD2192EF2276B85400BAA20D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AD2192EE2276B85300BAA20D /* GoogleService-Info.plist */; };
 		AD270EC0229F8DCC0064E705 /* libRNFIRMessaging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD270EBF229F8DA90064E705 /* libRNFIRMessaging.a */; };
 		AD58DE6F234C7B5700F01975 /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = AD58DE3E234C7B5600F01975 /* fonts */; };
 		AD58DE71234C824D00F01975 /* Comfortaa-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD58DE70234C824D00F01975 /* Comfortaa-Bold.ttf */; };
 		AD58DE73234C825100F01975 /* Comfortaa-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD58DE72234C825100F01975 /* Comfortaa-Light.ttf */; };
 		AD58DE75234C825500F01975 /* Comfortaa-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AD58DE74234C825500F01975 /* Comfortaa-Regular.ttf */; };
 		AD90A3AC22A750B5005E117B /* libFastImage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD90A37F22A7509F005E117B /* libFastImage.a */; };
+		ADA91BE523DE9EE800A8255A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = ADA91BE423DE9EE800A8255A /* GoogleService-Info.plist */; };
 		ADB9474C2278681500D3E975 /* libRNSpinkit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADB94749227867EA00D3E975 /* libRNSpinkit.a */; };
 		C96FABA0EB0A482AB5673048 /* libRNFirebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CB54AC96A1984D03B02CDB88 /* libRNFirebase.a */; };
 		D2985169CEBE4A67BC028201 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8D688C723B5C42559CA58ADB /* FontAwesome.ttf */; };
@@ -428,7 +428,6 @@
 		A24D2DB1443DAA7CD1A26042 /* Pods-codegas.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-codegas.debug.xcconfig"; path = "Target Support Files/Pods-codegas/Pods-codegas.debug.xcconfig"; sourceTree = "<group>"; };
 		AD135C9B22A17B530001D314 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		AD19418E2299C4F200915392 /* RNGestureHandler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNGestureHandler.xcodeproj; path = "../node_modules/react-native-gesture-handler/ios/RNGestureHandler.xcodeproj"; sourceTree = "<group>"; };
-		AD2192EE2276B85300BAA20D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AD270EBA229F8DA80064E705 /* RNFIRMessaging.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNFIRMessaging.xcodeproj; path = "../node_modules/react-native-fcm/ios/RNFIRMessaging.xcodeproj"; sourceTree = "<group>"; };
 		AD58DE3E234C7B5600F01975 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../src/assets/fonts; sourceTree = "<group>"; };
 		AD58DE70234C824D00F01975 /* Comfortaa-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Bold.ttf"; sourceTree = "<group>"; };
@@ -436,6 +435,7 @@
 		AD58DE74234C825500F01975 /* Comfortaa-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Regular.ttf"; sourceTree = "<group>"; };
 		AD90A37922A7509E005E117B /* FastImage.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FastImage.xcodeproj; path = "../node_modules/react-native-fast-image/ios/FastImage.xcodeproj"; sourceTree = "<group>"; };
 		AD95C91A22769E54004025F8 /* codegas.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = codegas.entitlements; path = codegas/codegas.entitlements; sourceTree = "<group>"; };
+		ADA91BE423DE9EE800A8255A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		ADB94743227867E800D3E975 /* RNSpinkit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNSpinkit.xcodeproj; path = "../node_modules/react-native-spinkit/ios/RNSpinkit.xcodeproj"; sourceTree = "<group>"; };
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		CB54AC96A1984D03B02CDB88 /* libRNFirebase.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNFirebase.a; sourceTree = "<group>"; };
@@ -591,7 +591,7 @@
 		13B07FAE1A68108700A75B9A /* codegas */ = {
 			isa = PBXGroup;
 			children = (
-				AD2192EE2276B85300BAA20D /* GoogleService-Info.plist */,
+				ADA91BE423DE9EE800A8255A /* GoogleService-Info.plist */,
 				AD95C91A22769E54004025F8 /* codegas.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -1355,9 +1355,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				ADA91BE523DE9EE800A8255A /* GoogleService-Info.plist in Resources */,
 				AD58DE6F234C7B5700F01975 /* fonts in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
-				AD2192EF2276B85400BAA20D /* GoogleService-Info.plist in Resources */,
 				D2985169CEBE4A67BC028201 /* FontAwesome.ttf in Resources */,
 				AD58DE75234C825500F01975 /* Comfortaa-Regular.ttf in Resources */,
 				AD58DE71234C824D00F01975 /* Comfortaa-Bold.ttf in Resources */,
@@ -1587,7 +1587,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = codegas/codegas.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = HA7N297ZJ7;
 				HEADER_SEARCH_PATHS = (
@@ -1598,7 +1598,7 @@
 				);
 				INFOPLIST_FILE = codegas/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.0;
+				MARKETING_VERSION = 5.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1616,7 +1616,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = codegas/codegas.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = HA7N297ZJ7;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1626,7 +1626,7 @@
 				);
 				INFOPLIST_FILE = codegas/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.0;
+				MARKETING_VERSION = 5.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

@@ -65,6 +65,7 @@ class verPerfil extends Component{
                 <TextInput
                     placeholder="Buscar por: cliente, fecha, forma"
                     autoCapitalize = 'none'
+                    placeholderTextColor="#aaa" 
                     onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador: terminoBuscador })}
                     value={terminoBuscador}
                     style={[style.inputCabezera]}

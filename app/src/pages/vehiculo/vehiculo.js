@@ -133,6 +133,7 @@ class Pedido extends Component{
                     onChangeText={(placa)=> this.setState({ placa })}
                     value={placa}
                     style={style.inputCabezera}
+                    placeholderTextColor="#aaa" 
                 />
                 <TouchableOpacity  style={style.btnIconNuevo} onPress={()=>this.crearVehiculo()}>
                     <Icon name={'plus'} style={style.iconNuevo} />

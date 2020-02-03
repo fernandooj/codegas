@@ -27,12 +27,14 @@ class Home extends Component{
 	 
 	async componentWillMount(){
 		let usuariosEntrando   = await AsyncStorage.getItem('usuariosEntrando') ///// muestra la suma de usuarios que estan ingresando al chat
- 
+		let userId 						 = await AsyncStorage.getItem('userId');
 		usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"
 		usuariosEntrando = JSON.parse(usuariosEntrando)
-
-		axios.get('user/perfil/')
+		let url = (userId===null || userId==='0') ? 'user/perfil/' :`user/perfil/${userId}`
+		axios.get(url)
 		.then((res)=>{
+			console.log("res.data")
+			console.log(res.data)
 			if(res.data.status){
 				const userId = res.data.user._id
 				const nombre = res.data.user.nombre
@@ -49,9 +51,7 @@ class Home extends Component{
 						this.socket = SocketIOClient(URL);
 						this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
 					}else{
-						console.log("nombre")
-						console.log(nombre)
-						console.log(userId)
+					 
 						this.setState({nombre:"", email:"", celular:""})
 					}
 					userId ?this.setState({userId, nombre, email, celular, avatar, acceso, usuariosEntrando}) :null
@@ -61,7 +61,7 @@ class Home extends Component{
 				FCM.getFCMToken().then(token => {
 					axios.get(`users/formulario_chat/${token}/${true}`)
 					.then(res2=>{
-						console.log(res2.data)
+					 
 						res2.data.status ?this.setState({formularioChat:true}) :this.setState({formularioChat:false})
 					})
 				})
@@ -106,7 +106,7 @@ class Home extends Component{
 		FCM.getFCMToken().then(token => {
 			console.log(token)
 			this.setState({ tokenPhone: token || "" });
-			AsyncStorage.setItem('tokenPhone', JSON.stringify(token))
+			AsyncStorage.setItem('tokenPhone', token ?JSON.stringify(token) :"")
 		});
 	
 		if (Platform.OS === "ios") {
@@ -153,7 +153,6 @@ class Home extends Component{
 	renderBotones(){
 		const {navigation} = this.props
 		const {acceso, tokenPhone, formularioChat, userId} = this.state
-		console.log({formularioChat, acceso})
 		return(
 			<View>
 				<TouchableOpacity style={[style.btn, {marginTop:50}]} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
@@ -177,9 +176,7 @@ class Home extends Component{
 		)
 	}
 	renderFormulario(){
-		const {navigation} = this.props
 		const {modal, email, nombre, celular} = this.state
-		let dia = moment().format('dddd');
 		var today = new Date().getHours();
 		let horaLaboral;
 		if (today >= 8 && today <= 17) {
@@ -239,7 +236,6 @@ class Home extends Component{
 	render(){
 		const {navigation} = this.props
 		const {acceso, userId, nombre} = this.state
-		let imagen = `${URL}/public/img/pg1/fondo.jpg` 
 		console.log({userId, nombre, acceso})
 	    return (
 				<ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
