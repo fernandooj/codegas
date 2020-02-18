@@ -87,16 +87,8 @@ export default class App extends Component<{}> {
   render(){
     return (
       <Provider store={store}>
-        {
-          !this.state.connection_Status
-          ?<ImageBackground style={style.container} source={require('./src/assets/img/pg1/fondo.jpg')} >
-            <View style={style.subContainer} >
-              <Image source={require("./src/assets/img/sin-internet.jpg")} style={style.img} />
-              <Text style={style.text}>Estas sin internet</Text>
-            </View>
-          </ImageBackground>
-          :<MainRoutes />
-        }
+        <MainRoutes />
+        
           
       </Provider> 
     )

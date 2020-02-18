@@ -143,6 +143,7 @@ class verPerfil extends Component{
                                 {label: 'Solución Cliente', value: 'solucion',  key: 'solucion'},
                                 {label: 'Despachos',        value: 'despacho',  key: 'despacho'},
                                 {label: 'Conductor',        value: 'conductor', key: 'conductor'},
+                                {label: 'Pedidos',          value: 'pedidos', key: 'pedidos'},
                                 {label: 'Cliente',          value: 'cliente',   key: 'cliente'}
                             ]}
                             onValueChange={acceso => {this.setState({ acceso })}}

@@ -21,6 +21,14 @@ export const style = MediaQueryStyleSheet.create({
 		borderWidth:1,
 		padding:10
 	},
+	hidePedido:{
+		height: 0, 
+		width: 0, 
+		opacity: 0, 
+		margin:0, 
+		padding:0,
+		borderWidth:0
+	},
 	icon:{
 		color:"#ffffff",
 	},
@@ -53,10 +61,17 @@ export const style = MediaQueryStyleSheet.create({
 		height:300
 	},
 	sinPedidos:{
+		fontFamily: "Comfortaa-Regular",
 		textAlign:"center",
 		fontSize:22
 	},
-
+	pedido:{
+		flexDirection:"row",
+		padding:6
+	},
+	txtPedidoFinalizado:{
+		fontFamily: "Comfortaa-Regular",
+	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				CABEZERA
 	//////////////////////////////////////////////////////////////////
@@ -73,7 +88,7 @@ export const style = MediaQueryStyleSheet.create({
 		zIndex:0,
 		width:"90%",
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
-		borderColor:"rgba(0,0,0,0)",
+		borderColor: "rgba(150,150,150, .5)",
 		shadowOffset: { height: 2, width: 2 }, // IOS
 		shadowOpacity: .5, // IOS
 		shadowRadius: 5, //IOS
@@ -81,8 +96,9 @@ export const style = MediaQueryStyleSheet.create({
 		paddingLeft:10,
 		marginBottom:20,
 		borderRadius:5,
-		paddingVertical:2,
-		height:Platform.OS==="ios" ?30 :30
+		paddingTop:9,
+		borderWidth:1,
+		height:Platform.OS==="ios" ?30 :35
 	},
 	imgFiltro:{
 		width:28,
@@ -91,7 +107,7 @@ export const style = MediaQueryStyleSheet.create({
 	},	
 	titulo:{
 		fontFamily: "Comfortaa-Regular",
-		width:"80%",
+		width:"62%",
 		fontSize:22,
 		marginVertical:10,
 	},
@@ -329,9 +345,9 @@ export const style = MediaQueryStyleSheet.create({
 	btnGuardar3:{
 		backgroundColor: "#00218b",
 		paddingVertical:4,
-		width:"44%",
+		width:size.width/2.5,
 		borderRadius:10,
-		paddingVertical:15,
+		padding:4,
 		marginVertical:10,
 		left:0,
 		marginHorizontal:10,
@@ -339,8 +355,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnDisable3:{
 		backgroundColor:"grey",
-		paddingVertical:4,
-		width:120,
+		padding:4,
+		width:size.width/2.5,
 		marginVertical:20,
 		left:0,
 		marginHorizontal:10,
@@ -412,7 +428,8 @@ export const style = MediaQueryStyleSheet.create({
 		padding:10
 	},
 	conductor:{
-		fontSize:18,
+		fontFamily: "Comfortaa-Regular",
+		fontSize:14,
 		width:120,
 		top:5,
 		 

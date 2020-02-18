@@ -124,15 +124,17 @@ export default class FooterComponent extends Component{
 					}
 					 
 				 
-				
-				<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter3} onPress={()=>{userId ?this.pedidos() :navigation.navigate('perfil')} }>
-					<Image source={require('../../assets/img/footer/img3.png')} style={style.icon}  resizeMode={'contain'} />	
-					<Text style={style.textFooter}>Pedidos</Text>
-					{
-						badgeSocketPedido>0  
-						&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketPedido}</Text></View>
-					}
-				</TouchableOpacity>
+					 {
+						acceso!=="pedidos"
+						&&<TouchableOpacity style={acceso=="conductor" ?style.subContenedorFooterConductor :style.subContenedorFooter3} onPress={()=>{userId ?this.pedidos() :navigation.navigate('perfil')} }>
+							<Image source={require('../../assets/img/footer/img3.png')} style={style.icon}  resizeMode={'contain'} />	
+							<Text style={style.textFooter}>Pedidos</Text>
+							{
+								badgeSocketPedido>0  
+								&&<View style={style.badge}><Text style={style.textBadge}>{badgeSocketPedido}</Text></View>
+							}
+						</TouchableOpacity>
+					 }
 				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('perfil')}>
 				<Image source={require('../../assets/img/footer/img4.png')} style={style.icon}  resizeMode={'contain'} />	
 					<Text style={style.textFooter}>Perfil</Text>

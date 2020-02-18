@@ -427,7 +427,7 @@ class Nuevo_pedido extends Component{
      
 	render(){
         const {navigation} = this.props
-        const {idUsuario, showFechaEntrega} = this.state
+        const {idUsuario, showFechaEntrega, acceso} = this.state
         
         return (
             <View style={style.container} >

@@ -30,6 +30,18 @@ LocaleConfig.defaultLocale = 'es';
 
 const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
 let size  = Dimensions.get('window');
+function parseNumber(strg) {
+    var strg = strg || "";
+    var decimal = '.';
+    strg = strg.replace(/[^0-9$.,]/g, '');
+    if(strg.indexOf(',') > strg.indexOf('.')) decimal = ',';
+    if((strg.match(new RegExp("\\" + decimal,"g")) || []).length > 1) decimal="";
+    if (decimal != "" && (strg.length - strg.indexOf(decimal) - 1 == 3) && strg.indexOf("0" + decimal)!==0) decimal = "";
+    strg = strg.replace(new RegExp("[^0-9$" + decimal + "]","g"), "");
+    strg = strg.replace(',', '.');
+    return parseFloat(strg);
+} 
+
 class Pedido extends Component{
 	constructor(props) {
 	  super(props);
@@ -133,27 +145,25 @@ class Pedido extends Component{
                 <TouchableOpacity 
                     key={key}
                     style={e.estado=="espera" 
-                        ?[style.pedidoBtn, {backgroundColor:"#5bc0de"}] 
+                        ?[style.pedidoBtn, {backgroundColor:"rgba(91, 192, 222, 0.79)"}] 
                         :e.estado=="noentregado" 
                         ?[style.pedidoBtn, {backgroundColor:"#ffffff"}] 
                         :e.estado=="innactivo" 
-                        ?[style.pedidoBtn, {backgroundColor:"#d9534f"}] 
+                        ?[style.pedidoBtn, {backgroundColor:"rgba(217, 83, 79, 0.79)"}] 
                         :e.estado=="activo" &&!e.carroId && !e.entregado 
-                        ?[style.pedidoBtn, {backgroundColor:"#ffeb00"}]
+                        ?[style.pedidoBtn, {backgroundColor:"rgba(255, 235, 0, 0.79)"}]
                         :e.estado=="activo" && !e.entregado 
-                        ?[style.pedidoBtn, {backgroundColor:"#f0ad4e"}]
-                        :[style.pedidoBtn, {backgroundColor:"#5cb85c"}]
+                        ?[style.pedidoBtn, {backgroundColor:"rgba(240, 173, 78, 0.79)"}]
+                        :[style.pedidoBtn, {backgroundColor:"rgba(92, 184, 92, 0.79)",  }]
                     }
                     ////// solo activa el modal si es de despachos o administrador o conductor 
                     onPress={
                         ()=>{
                             this.callObservaciones(e._id);
-                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido })
+                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido, estadoInicial:e.estado })
                         }                        
                     }
                 >
-                     {/* <Text>{e._id}</Text> */}
-                   {/* <Text>{e.orden}</Text> */}
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>{e.usuarioId.razon_social}</Text>
                         <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
@@ -297,13 +307,13 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     editarPedido(){
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades } = this.state
-        console.log({imagenPedido})
+        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, valor_unitario, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades } = this.state
+    
         let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
         let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
         letimagenCerrar = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
-        console.log({imagenCerrar})
+        console.log({entregado, estado})
         return (
             <View style={style.contenedorModal}>
                 {showNovedades ?this.modalNovedades() :null}
@@ -335,17 +345,26 @@ class Pedido extends Component{
                                     <Text style={style.textoEspera}>Activo</Text>
                                     {estado=="activo" &&<Icon name="check" style={style.iconEditar} />}
                                 </TouchableOpacity>
-                                <TouchableOpacity style={estado=="innactivo" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"innactivo"})}>
+                                <TouchableOpacity style={estado=="innactivo" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} 
+                                    onPress={()=>(entregado==true &&estado=="activo") ?null :this.setState({estado:"innactivo"})}>
                                     <Text style={style.textoEspera}>In activo</Text>
                                     {estado=="innactivo" &&<Icon name="check" style={style.iconEditar} />}
                                 </TouchableOpacity>
-                                <TouchableOpacity style={estado=="espera" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} onPress={()=>this.setState({estado:"espera"})}>
+                                <TouchableOpacity style={estado=="espera" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} 
+                                    onPress={()=>(entregado==true &&estado=="activo") ?null :this.setState({estado:"espera"})}>
                                     <Text style={style.textoEspera}>Espera</Text>
                                     {estado=="espera" &&<Icon name="check" style={style.iconEditar} />}
                                 </TouchableOpacity>
-                                <TouchableOpacity style={style.btnGuardar2} onPress={()=>this.handleSubmit()}>
-                                    <Text style={style.textGuardar}>Cambiar Estado</Text>
-                                </TouchableOpacity>
+                                {
+                                    entregado==true &&estado=="activo"
+                                    ?null
+                                    :<TouchableOpacity style={style.btnGuardar2} onPress={()=>this.handleSubmit()}>
+                                        <Text style={style.textGuardar}>Cambiar Estado</Text>
+                                    </TouchableOpacity>
+                                }
+                                    
+                                
+                               
                             </View>
                             :null
                         }
@@ -356,10 +375,14 @@ class Pedido extends Component{
                                 <View style={style.separador}></View>
                                 <Text style={style.tituloModal}>Asignar Vehiculo y fecha</Text>
                                 {placaPedido &&<Text style={style.tituloModal}>{placaPedido} - {conductorPedido}</Text>}
-                                <TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row", left:45}]} onPress={()=>this.setState({modalConductor:true})}>
-                                    <Text style={style.textGuardar}>Asignar</Text>
-                                    <Icon name="user" style={style.iconBtnGuardar} />
-                                </TouchableOpacity>   
+                                {
+                                    entregado==true &&estado=="activo"
+                                    ?null
+                                    :<TouchableOpacity style={[style.btnGuardar2, {flexDirection:"row", left:45}]} onPress={()=>this.setState({modalConductor:true})}>
+                                        <Text style={style.textGuardar}>Asignar</Text>
+                                        <Icon name="user" style={style.iconBtnGuardar} />
+                                    </TouchableOpacity>   
+                                }
                             </View>
                             :null
                         }
@@ -396,7 +419,13 @@ class Pedido extends Component{
                                 </View>
                                 <View style={style.pedido}>
                                     <Text>Valor unitario: </Text>
-                                    <Text>{forma_pago}</Text>
+                                    <Text>{valor_unitario}</Text>
+                                </View>
+                                <View style={style.pedido}>
+                                    <Text style={style.txtPedidoFinalizado}>Total: </Text>
+                                    <Text style={style.txtPedidoFinalizado}>
+                                        {'$ '+Number(valor_unitario)*parseNumber(kilos).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
+                                    </Text>
                                 </View>
                                 <View style={style.pedido}>
                                     <Text>Forma de pago: </Text>
@@ -430,20 +459,26 @@ class Pedido extends Component{
                                         }
                                         </View>
                                         <View style={style.pedido}>
-                                            <Text>Kilos: </Text>
-                                            <Text>{kilos}</Text>
+                                            <Text style={style.txtPedidoFinalizado}>Kilos: </Text>
+                                            <Text style={style.txtPedidoFinalizado}>{kilos}</Text>
                                         </View>
                                         <View style={style.pedido}>
-                                            <Text>Factura: </Text>
-                                            <Text>{factura}</Text>
+                                            <Text style={style.txtPedidoFinalizado}>Factura: </Text>
+                                            <Text style={style.txtPedidoFinalizado}>{factura}</Text>
                                         </View>
                                         <View style={style.pedido}>
-                                            <Text>Valor unitario: </Text>
-                                            <Text>{forma_pago}</Text>
+                                            <Text style={style.txtPedidoFinalizado}>Valor unitario: </Text>
+                                            <Text style={style.txtPedidoFinalizado}>{valor_unitario}</Text>
                                         </View>
                                         <View style={style.pedido}>
-                                            <Text>Forma de pago: </Text>
-                                            <Text>{forma_pago}</Text>
+                                            <Text style={style.txtPedidoFinalizado}>Total: </Text>
+                                            <Text style={style.txtPedidoFinalizado}>
+                                                {'$ '+Number(valor_unitario)*parseNumber(kilos).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
+                                            </Text>
+                                        </View>
+                                        <View style={style.pedido}>
+                                            <Text style={style.txtPedidoFinalizado}>Forma de pago: </Text>
+                                            <Text style={style.txtPedidoFinalizado}>{forma_pago}</Text>
                                         </View>
                                     </View>
                                     :<View style={style.contenedorCerrarPedido}>
@@ -451,7 +486,7 @@ class Pedido extends Component{
                                         <Text style={style.tituloModal}>Cerrar Pedido</Text>
                                         <TomarFoto 
                                             source={avatar}
-                                            width={100}
+                                            width={180}
                                             limiteImagenes={3}
                                             imagenes={(imagen) => {  this.setState({imagen}) }}
                                         /> 
@@ -460,7 +495,6 @@ class Pedido extends Component{
                                             autoCapitalize = 'none'
                                             onChangeText={(kilosTexto)=> this.setState({ kilosTexto })}
                                             value={kilosTexto}
-                                            keyboardType='numeric'
                                             placeholderTextColor="#aaa" 
                                             style={[style.inputTerminarPedido, {marginTop:20}]}
                                         />
@@ -554,7 +588,6 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     modalZonas(){
         const {modalZona, zonas, idZona, zonaPedidos} = this.state
-        console.log(zonaPedidos)
         return(
             <Modal transparent visible={modalZona} animationType="fade" >
                 <TouchableOpacity activeOpacity={1}  >   
@@ -725,6 +758,23 @@ class Pedido extends Component{
         this.props.getPedidos(filtro) 
         this.setState({fechaEntregaFiltro:filtro})
     }
+    actualizaVehiculos(placa){
+        let {pedidos, pedidosFiltro} = this.state
+        pedidos = pedidosFiltro.filter(e=>{
+            return e.carroId
+        })
+        pedidos = pedidos.filter(e=>{
+            return (e.carroId!=="undefined" || e.carroId!==undefined)
+        })
+        // pedidos = pedidos.filter(e=>{
+        //     console.log(e._id, e.carroId)
+        // })
+        pedidos = pedidos.filter(e=>{
+            return e.carroId.placa==placa
+        })
+      
+        this.setState({pedidos, modalCarrosFiltro:false, placa})
+    }
     actualizarFechaSolicitud(filtro){ 
         axios.get(`zon/zona/pedidoSolicitud/${filtro}`)
         .then(res => {
@@ -738,7 +788,7 @@ class Pedido extends Component{
         this.setState({pedidos})  
     }
     limpiar(){
-        this.setState({pedidos:this.state.pedidosFiltro, textEstado:"todos"})
+        this.setState({pedidos:this.state.pedidosFiltro, textEstado:"todos", modalCarrosFiltro:false, placa:null})
         this.props.getPedidos() 
         this.props.getZonasPedidos(moment().format("YYYY-MM-DD")) 
     }
@@ -817,14 +867,48 @@ class Pedido extends Component{
               
         )
     }
+    modalCarrosFiltro(){
+        let {idVehiculo, modalConductor, showCalendar, fechaEntrega, placa} = this.state
+        return(
+            <View style={style.contenedorModal2}>
+                <View style={style.subContenedorModal}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {this.setState({modalCarrosFiltro:false, placa:null, idVehiculo:null})}}
+                        style={style.btnModalConductorClose}
+                    >
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                    </TouchableOpacity>
+                    <ScrollView>
+                        {
+                            this.props.vehiculos.map(e=>{
+                                return <TouchableOpacity
+                                        key={e._id}
+                                        style={placa == e.placa ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
+                                        onPress={()=>placa == e.placa ?this.limpiar() :this.actualizaVehiculos(e.placa)}
+                                    >
+                                    <Text style={style.conductor}>{e.placa}</Text>       
+                                    <Text style={style.conductor}>{e.conductor ? e.conductor.nombre :""}</Text>       
+                                    {e.conductor &&<Image source={{uri:e.conductor.avatar}} style={style.avatar} /> }
+                                </TouchableOpacity>
+                            })
+                        }
+                    </ScrollView>
+                </View>
+            </View>
+        )
+    }
     renderCabezera(){
         const {terminoBuscador, elevation, acceso, fechaEntregaFiltro, pedidos} = this.state
         return(
             <View style={style.contenedorCabezera}>
                 <View style={{flexDirection:"row"}}>
                     {
-                        pedidos &&<Text style={style.titulo}>Pedidos:{pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
+                        pedidos &&<Text style={style.titulo}>Pedidos: {pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
                     }
+                    <TouchableOpacity style={style.btnZonas} onPress={()=>this.setState({modalCarrosFiltro:true, elevation:0})}>
+                        <Text style={style.textZonas}>Carros</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity style={style.btnZonas} onPress={()=>this.setState({modalZona:true})}>
                         <Text style={style.textZonas}>Zonas</Text>
                     </TouchableOpacity>
@@ -913,12 +997,12 @@ class Pedido extends Component{
 
 	render(){
         const {navigation} = this.props
-        const {idUsuario, pedidos, fechaEntrega, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, modalPerfiles} = this.state
-        
+        const {pedidos, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, modalPerfiles, modalCarrosFiltro} = this.state
         return (
             <View style={style.container}>
                 {modalPerfiles &&this.modalPerfiles()}
                 {modalConductor &&this.modalVehiculos()}
+                {modalCarrosFiltro &&this.modalCarrosFiltro()}
                 {modalFechaEntrega &&this.modalFechaEntrega()}
                 {modalNovedad &&this.modalNovedad()}
                 {this.renderCabezera()}
@@ -1114,13 +1198,20 @@ class Pedido extends Component{
     ////////////////////////            CAMBIO EL ESTADO DEL PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     handleSubmit(){
-        const {id, estado} = this.state
+        const {id, estado, estadoInicial} = this.state
+        console.log({estadoInicial})
         axios.get(`ped/pedido/cambiarEstado/${id}/${estado}`)
         .then(res=>{
             console.log(res.data)
             if(res.data.status){
                 if(estado=="activo"){
-                    this.setState({modalFechaEntrega:true, estadoEntrega:"asignado"})
+                    //////// esta condicion es para cuando estaba el pedido innactivo y luego lo activaron
+                    if(estadoInicial=="innactivo"){
+                        this.setState({modalNovedad:true, estadoEntrega:"asignado"})
+                    }else{
+                        this.setState({modalFechaEntrega:true, estadoEntrega:"asignado"})
+                    }
+                    ////////////////////////////////////////////////////////////////////////////////////
                 }else if(estado=="innactivo"){
                     this.setState({modalNovedad:true})
                 } else{
@@ -1138,8 +1229,6 @@ const mapState = state => {
     let vehiculos = state.vehiculo.vehiculos.filter(e=>{
         return e.conductor!=null
     })
-    console.log("state.pedido")
-    console.log(state.pedido)
 	return {
         pedidos: state.pedido.pedidos,
         vehiculos:vehiculos,
