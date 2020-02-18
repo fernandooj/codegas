@@ -247,7 +247,7 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Estado Pedido',
                 value: 'estado'
             },{
-                label: 'Fecha asignación',
+                label: 'Fecha Asignación',
                 value: 'fechaEntrega'
             },{
                 label: 'Usuario Asigna',
@@ -333,9 +333,6 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
                 label: 'Motivo no entrega',
                 value: 'motivo_no_cierre'
             },{
-                label: 'Imagen', /// aun no esta
-                value: 'imagen'
-            },{
                 label: 'Imagen de cierre',
                 value: 'imagenCerrar'
             }];
@@ -390,7 +387,7 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Conductor',
                 value: 'conductorId.nombre'
             },{
-                label: 'Fecha factura',
+                label: 'Fecha Asignación',
                 value: 'fechaEntrega'
             },{
                 label: 'Kilos',
@@ -406,13 +403,13 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 value: 'forma_pago'
             },{
                 label: 'Imagen', /// aun no esta
-                value: 'imagen'
+                value: 'imagenCerrar'
             }];
             const opts = {fields, withBOM:true};
              
             try {
                 const parser = new Parser(opts);
-                const csv = parser.parse(carro);
+                const csv = parser.parse(pedido);
                 res.attachment('pedidosEntregados.csv');
                 res.status(200).send(csv);
               } catch (err) {

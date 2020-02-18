@@ -18,7 +18,7 @@ const Pedido = new Schema({
     fechaEntrega  :String,
     fechaSolicitud:String,
     fechaEntregado:String,
-    kilos         :Number,
+    kilos         :String,
     factura       :String,
     valor_unitario:String,
     orden         :Number,

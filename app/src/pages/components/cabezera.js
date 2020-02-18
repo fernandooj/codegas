@@ -1,8 +1,6 @@
 import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, TextInput, Image} from 'react-native'
 import Icon from 'react-native-fa-icons' 
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import { Makiko } from 'react-native-textinput-effects';
 import {style} from './style'
 import {connect}   from 'react-redux' 
  

@@ -181,7 +181,7 @@ export const style = MediaQueryStyleSheet.create({
     },
     textZona:{
         fontFamily: "Comfortaa-Light",
-        width:"50%"
+        width:"100%"
     },
 
 

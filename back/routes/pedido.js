@@ -177,7 +177,7 @@ router.post('/', (req,res)=>{
                             htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             //////////////////////      ENVIO UN CORREO A CODEGAS AVINSANDOLE DEL NUEVO PEDIDO CREADO
-                            let userRegistrado = {email:"fernandooj@ymail.com, directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+                            let userRegistrado = {email:"directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
                             let email = req.body.email ?req.body.email :req.session.usuario.email
                             htmlTemplate(req, userRegistrado, email, text2, "",  "Nuevo pedido")
                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

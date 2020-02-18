@@ -31,7 +31,7 @@ class verPerfil extends Component{
         zonas:[],
         puntos:[],
         ubicacionesEliminadas:[], //envio los id de las ubicaciones eliminados
-        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, acceso:"cliente"}]
+        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, capacidad:undefined,  acceso:"cliente"}]
 	  }
     }
  
@@ -52,7 +52,7 @@ class verPerfil extends Component{
         !params.tipoAcceso
         ?axios.get("user/perfil").then(e=>{
             const {user} = e.data
-            console.log(e.data.user)
+         
             this.setState({
                 razon_social:     user.razon_social ?user.razon_social :"",
                 cedula:           user.cedula       ?user.cedula       :"",
@@ -72,7 +72,37 @@ class verPerfil extends Component{
         :params.tipoAcceso=="editar"
         ?axios.get(`/user/byId/${params.idUsuario}`).then(e=>{
             const {user} = e.data
- 
+            let ubicaciones =  user.ubicaciones  ?user.ubicaciones  :[]
+            ubicaciones= ubicaciones.map(data=>{
+                let data1 = params.idUsuario
+                let data2 = data.idCliente
+                if(data1===data2){
+                    return {
+                        direccion: data.direccion,
+                        email: undefined,
+                        idCliente: undefined,
+                        idZona: data.idZona,
+                        nombre: undefined,
+                        nombreZona: data.nombreZona,
+                        observacion: data.observacion,
+                        capacidad: data.capacidad,
+                        _id: data._id
+                    }
+                }else{
+                    return {
+                        direccion: data.direccion,
+                        email: data.email,
+                        idCliente: data.idCliente,
+                        idZona: data.idZona,
+                        nombre: data.nombre,
+                        nombreZona: data.nombreZona,
+                        observacion: data.observacion,
+                        capacidad: data.capacidad,
+                        _id: data._id
+                    }
+                }
+            })  
+            console.log({ubicaciones})
             this.setState({
                 razon_social:     user.razon_social ?user.razon_social :"",
                 cedula:           user.cedula       ?user.cedula       :"",
@@ -84,7 +114,7 @@ class verPerfil extends Component{
                 acceso:           user.acceso       ?user.acceso       :"",
                 imagen:           user.avatar       ?user.avatar       :"",
                 codt:             user.codt         ?user.codt         :"",
-                ubicaciones:      user.ubicaciones  ?user.ubicaciones  :[],
+                ubicaciones,
                 activo:           user.activo       &&user.activo ,
                 idUsuario:        user._id          ?user._id          :"",
                 direccion_factura:user.direccion_factura ?user.direccion_factura :"",
@@ -352,7 +382,11 @@ class verPerfil extends Component{
     }
     actualizaArrayUbicacion(type, value, key){
         let {ubicaciones} = this.state 
-        type == "direccion" ?ubicaciones[key].direccion = value :type=="observacion" ?ubicaciones[key].observacion = value :type=="emailUbicacion" ?ubicaciones[key].email = value :ubicaciones[key].nombre = value
+        type == "direccion"     ?ubicaciones[key].direccion   = value 
+        :type=="observacion"    ?ubicaciones[key].observacion = value 
+        :type=="emailUbicacion" ?ubicaciones[key].email       = value 
+        :type=="capacidad"      ?ubicaciones[key].capacidad   = value 
+        :ubicaciones[key].nombre = value
         this.setState({ubicaciones})
     }
     modalZonas(){
@@ -428,6 +462,14 @@ class verPerfil extends Component{
                                                             </TouchableOpacity>
                                                             <Text style={style.asterisco}>*</Text>
                                                         </View>
+                                                        <TextInput
+                                                            type='outlined'
+                                                            label='capacidad'
+                                                            placeholder="Capacidad almacenamiento"
+                                                            value={e.capacidad}
+                                                            onChangeText={capacidad => this.actualizaArrayUbicacion("capacidad", capacidad, key)}
+                                                            style={style.input}
+                                                        />
                                                         <TextInput
                                                             type='outlined'
                                                             label='observacion al momento de ingresar el vehiculo'
@@ -660,7 +702,7 @@ class verPerfil extends Component{
             return !e.email 
         })
         puntos = puntos.map(e=>{
-            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion}
+            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, capacidad:e.capacidad}
         })
         
         axios.post("user/sign_up", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos})
@@ -718,7 +760,7 @@ class verPerfil extends Component{
             return !e.email 
         })
         puntos = puntos.map(e=>{
-            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, _id:e._id}
+            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, _id:e._id, capacidad:e.capacidad}
         })
         let puntosNuevos = puntos.filter(e=>{
             return !e._id
@@ -730,13 +772,14 @@ class verPerfil extends Component{
         console.log({clientesNuevos})
         console.log({puntos})
         console.log({acceso})
-        axios.put(`user/update/${idUsuario}`, {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas})
+        axios.put(`user/update/${idUsuario}`, {puntos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas})
         .then(e=>{
             console.log(e.data)
             if(acceso=="cliente") {
                 ////////////////////////////////////////////        EDITO LOS CLIENTES
                 if(clientes.length>0){
-                    axios.put("user/update_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
+                    console.log("perrito socio")
+                    axios.put("user/update_varios", {clientes, idPadre:idUsuario, nombrePadre:e.data.user.nombre})
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
@@ -749,7 +792,7 @@ class verPerfil extends Component{
                 }
                 ////////////////////////////////////////////        INSERTO LOS CLIENTES
                 if(clientesNuevos.length>0){
-                    axios.post("user/crea_varios", {clientes:clientesNuevos, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
+                    axios.post("user/crea_varios", {clientes:clientesNuevos, idPadre:idUsuario, nombrePadre:e.data.user.nombre})
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
@@ -762,7 +805,7 @@ class verPerfil extends Component{
                 }
                 ////////////////////////////////////////////       EDITO LOS PUNTOS
                 if(puntos.length>0){
-                    axios.put("pun/punto/varios",{puntos, id:e.data.user._id})
+                    axios.put("pun/punto/varios",{puntos, idPadre:idUsuario})
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
@@ -775,7 +818,7 @@ class verPerfil extends Component{
                 }
                 ////////////////////////////////////////////       INSERTO LOS PUNTOS
                 if(puntosNuevos.length>0){
-                    axios.post("pun/punto/varios", {puntos:puntosNuevos, id:e.data.user._id})
+                    axios.post("pun/punto/varios", {puntos:puntosNuevos, idPadre:idUsuario, idCliente:idUsuario})
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
@@ -805,9 +848,9 @@ class verPerfil extends Component{
     } 
     async edicionExitosa(nombre){
         this.setState({cargando:false})
-        AsyncStorage.setItem('nombre', nombre)
+        // this.state.tipoAcceso=="editar" ?null :AsyncStorage.setItem('nombre', nombre)
         Toast.show("Usuario editado")
-        this.props.navigation.navigate("inicio")
+        this.props.navigation.navigate("Home")
     }
     async loginExitoso(user){
         console.log(user)

@@ -48,8 +48,8 @@ module.exports = function(app, passport){
                         htmlTemplate(req, req.body, titulo, text1, text2, asunto)
                         
                
-                        let userRegistrado = {email:"fernandooj@ymail.com, directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
-                        htmlTemplate(req, userRegistrado, req.body.email, "Se ha registrado", "",  "Nuevo usuario")
+                        // let userRegistrado = {email:"directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+                        // htmlTemplate(req, userRegistrado, req.body.email, "Se ha registrado", "",  "Nuevo usuario")
 
                         res.json({ status:true, message: 'usuario registrado', user, code:2, token });     
                     }
@@ -281,7 +281,7 @@ module.exports = function(app, passport){
 
     ///////////////////////////////////////////////////////////////////////////
     /*
-    si el login es exitoso
+   obtiene la informacion de un usuario
     */
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/perfil/:idUser', function(req, res){
@@ -289,6 +289,7 @@ module.exports = function(app, passport){
             if(err){
                 res.json({ status: false, err });	
                 console.log(err)
+               
             }else{
                 if(!usuario){
                     res.json({ status: false, err:"no existe usuario" });	
@@ -304,6 +305,7 @@ module.exports = function(app, passport){
                                     idCliente: undefined,
                                     idZona: data.idZona,
                                     nombre: undefined,
+                                    capacidad:data.capacidad,
                                     nombreZona: data.nombreZona,
                                     observacion: data.observacion,
                                     _id: data._id
@@ -315,6 +317,7 @@ module.exports = function(app, passport){
                                     idCliente: data.idCliente,
                                     idZona: data.idZona,
                                     nombre: data.nombre,
+                                    capacidad:data.capacidad,
                                     nombreZona: data.nombreZona,
                                     observacion: data.observacion,
                                     _id: data._id
@@ -386,6 +389,7 @@ module.exports = function(app, passport){
             res.json({ status: false, message: 'Usuario Innactivo'}) 
         } else{
             userServices.edit(req.body, req.params.idUsuario, req.session.usuario.acceso, (err, user)=>{ 
+                 
                 if(!err){
                     userServices.getEmail(req.session.usuario, (err2, users)=>{    
                         if(!err2){
@@ -399,7 +403,11 @@ module.exports = function(app, passport){
                                    htmlTemplate(req, e, titulo, text1, text2,  asunto)
                                })
                             })
-
+                            req.body.puntos.map(e=>{
+                                puntoServices.editar(e, e._id, (err2, puntos)=>{
+                                    // console.log(puntos)
+                                })
+                            })
                             //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO
                             req.session.usuario=users
 
@@ -536,7 +544,6 @@ module.exports = function(app, passport){
                     usuarios = usuarios.filter(e=>{
                         return e.razon_social
                     })
-                    console.log(usuarios)
                     res.json({status:true, usuarios})
                 }else{
                     res.json({ status: 'FAIL', usuarios:[], err}) 
@@ -586,29 +593,17 @@ module.exports = function(app, passport){
                     puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
                         let nUbicaciones = ubicaciones.map(e=>{
                             let data = e.data[0] 
-                            if(data.idCliente==usuario._id){
-                                return {
-                                    direccion: data.direccion,
-                                    email: undefined,
-                                    idCliente: undefined,
-                                    idZona: data.idZona,
-                                    nombre: undefined,
-                                    nombreZona: data.nombreZona,
-                                    observacion: data.observacion,
-                                    _id: data._id
-                                }
-                            }else{
-                                return {
-                                    direccion: data.direccion,
-                                    email: data.email,
-                                    idCliente: data.idCliente,
-                                    idZona: data.idZona,
-                                    nombre: data.nombre,
-                                    nombreZona: data.nombreZona,
-                                    observacion: data.observacion,
-                                    _id: data._id
-                                }
-                            }
+                            return {
+                                direccion: data.direccion,
+                                email: data.email,
+                                idCliente: data.idCliente,
+                                idZona: data.idZona,
+                                nombre: data.nombre,
+                                capacidad:data.capacidad,
+                                nombreZona: data.nombreZona,
+                                observacion: data.observacion,
+                                _id: data._id
+                            }  
                         })  
                         if (!err2) {
                             let user = {

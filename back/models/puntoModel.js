@@ -9,7 +9,8 @@ let Schema   = mongoose.Schema;
 //////////////////////////////////////////////////////////////////////////////
 let Punto = new Schema({
 	direccion   : String,
-	observacion : String,
+	capacidad : String,
+	punto : String,
 	activo      : {type: Boolean, default:true},
 	creado      : String,
 	updated     : String,

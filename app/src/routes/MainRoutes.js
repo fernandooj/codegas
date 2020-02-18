@@ -6,15 +6,15 @@ import { createStackNavigator, createAppContainer, NetInfo }   from 'react-navig
 //////////////////////////////////////////////////////////////////////////////////////////
 //////  IMPORTO LOS COMPONENTES
 //////////////////////////////////////////////////////////////////////////////////////////
-import homeComponent   	   	 from '../pages/home/home';
-import perfilComponent   	 from '../pages/perfil/perfil';
-import verPerfilComponent	 from '../pages/ver_perfil/verPerfil';
-import confirmarComponent 	 from '../pages/perfil/confirmarCode';
-import registroComponent	 from '../pages/registro/registro';
-import pedidoComponent	 	 from '../pages/pedido/pedido';
-import conversacionComponent from '../pages/conversacion/conversacion';
-import mensajeComponent	 	 from '../pages/mensaje/mensaje';
-import vehiculoComponent	 from '../pages/vehiculo/vehiculo';
+import homeComponent   	   	 		from '../pages/home/home';
+import perfilComponent   	 			from '../pages/perfil/perfil';
+import verPerfilComponent	 			from '../pages/ver_perfil/verPerfil';
+import confirmarComponent 	 		from '../pages/perfil/confirmarCode';
+import registroComponent	 			from '../pages/registro/registro';
+import pedidoComponent	 	 			from '../pages/pedido/pedido';
+import conversacionComponent 		from '../pages/conversacion/conversacion';
+import mensajeComponent	 	 			from '../pages/mensaje/mensaje';
+import vehiculoComponent	 			from '../pages/vehiculo/vehiculo';
 import zonaComponent	 	 				from '../pages/zona/zona';
 import nuevoPedidoComponent	 		from '../pages/nuevo_pedido/nuevo_pedido';
 import recuperarComponent	 		  from '../pages/recuperar_pass/recuperar_pass';

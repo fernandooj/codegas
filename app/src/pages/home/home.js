@@ -178,6 +178,7 @@ class Home extends Component{
 	renderFormulario(){
 		const {modal, email, nombre, celular} = this.state
 		var today = new Date().getHours();
+		let dia = moment().format('dddd');
 		let horaLaboral;
 		if (today >= 8 && today <= 17) {
 			horaLaboral=true

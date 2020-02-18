@@ -53,8 +53,8 @@ router.post('/', (req,res)=>{
 //////////////////////////////////////////////////////////////
 router.post('/varios', (req,res)=>{
     req.body.puntos.map(e=>{
-        puntoServices.create(e, req.body.id, req.body.id, (err2, puntos)=>{
-            // console.log(puntos)
+        puntoServices.create(e, req.body.idCliente, req.body.idPadre, (err2, puntos)=>{
+            console.log({test:req.body.idPadre})
         })
     })
     res.json({ status: true });	

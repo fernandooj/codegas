@@ -54,6 +54,7 @@ class puntoServices{
 					_id:1,
 					direccion:1,
 					observacion:1,
+					capacidad:1,
 					activo:1,
 					idZona:'$ZonaData._id',
 					nombre:'$ZonaData.nombre',
@@ -72,7 +73,7 @@ class puntoServices{
 			{
 			    $group:{	 
 					_id:'$nombre', 
-					data: { $addToSet: {_id:"$_id", direccion:"$direccion", observacion:"$observacion", activo:'$activo', nombre:'$nombre', idPedido:'$idPedido', estado:'$estado', entregado:'$entregado', fechaEntrega:'$fechaEntrega'},	
+					data: { $addToSet: {_id:"$_id", direccion:"$direccion", observacion:"$observacion", capacidad:"$capacidad",  activo:'$activo', nombre:'$nombre', idPedido:'$idPedido', estado:'$estado', entregado:'$entregado', fechaEntrega:'$fechaEntrega'},	
 					},
 					total:{ $sum :1},
 			    }
@@ -116,6 +117,7 @@ class puntoServices{
 				$project:{
 					_id:1,
 					observacion:1,
+					capacidad:1,
 					direccion:1,
 					idZona:1,
 					idCliente:1,
@@ -137,7 +139,7 @@ class puntoServices{
 			{
 			    $group:{
 						_id:'$_id',
-						data: { $addToSet: {_id:"$_id", observacion:"$observacion", direccion:"$direccion", idZona:'$idZona',  activo:'$activo',  idCliente:'$idCliente', nombre:'$nombre', email:'$email', nombreZona:'$nombreZona' }                  },
+						data: { $addToSet: {_id:"$_id", observacion:"$observacion", direccion:"$direccion",  capacidad:"$capacidad", idZona:'$idZona',  activo:'$activo',  idCliente:'$idCliente', nombre:'$nombre', email:'$email', nombreZona:'$nombreZona' }                  },
 			    }
 			},
 		], callback)
@@ -178,6 +180,7 @@ class puntoServices{
 					_id:1,
 					direccion:1,
 					observacion:1,
+					capacidad:1,
 					activo:1,
 					idZona:'$ZonaData._id',
 					nombre:'$ZonaData.nombre',
@@ -196,7 +199,7 @@ class puntoServices{
 			{
 			    $group:{	 
 					_id:'$nombre', 
-					data: { $addToSet: {_id:"$_id", direccion:"$direccion", observacion:"$observacion", activo:'$activo', nombre:'$nombre', idPedido:'$idPedido', estado:'$estado', entregado:'$entregado', fechaEntrega:'$fechaEntrega'},	
+					data: { $addToSet: {_id:"$_id", direccion:"$direccion", observacion:"$observacion", capacidad:"$capacidad",  activo:'$activo', nombre:'$nombre', idPedido:'$idPedido', estado:'$estado', entregado:'$entregado', fechaEntrega:'$fechaEntrega'},	
 					},
 					total:{ $sum :1},
 			    }
@@ -255,32 +258,39 @@ class puntoServices{
 	}  
 
 	create(data, idCliente, idPadre, callback){
-		let creado = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD h:mm:ss a')
-	 
+		let creado = moment().subtract(5, 'hours');
+    creado     = moment(creado).format('YYYY-MM-DD h:mm');
+		console.log(data)
 		let newPunto = new punto({
-			direccion : data.direccion,
+			direccion   : data.direccion,
 			observacion : data.observacion,
-			idZona : data.idZona,
-			idCliente : idCliente,
-			idPadre : idPadre,
+			capacidad 	: data.capacidad,
+			idZona 		  : data.idZona,
+			idCliente   : idCliente,
+			idPadre 	  : idPadre,
 			creado     
 		})
 		newPunto.save(callback)	
 	}
 	editar(data, id, callback){
-		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD h:mm:ss a')
+		let creado = moment().subtract(5, 'hours');
+    creado     = moment(creado).format('YYYY-MM-DD h:mm');
+		console.log(data)
 		punto.findByIdAndUpdate(id, {$set: {
 			'direccion'  : data.direccion,
+			'capacidad'  : data.capacidad,
 			'observacion': data.observacion,
 			'idZona'		 : data.idZona,
-			'updated':   moment(fecha).valueOf()
+			'updated':   creado
 		}}, callback);
 	}
 	desactivar(id, callback){
-		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY-MM-DD h:mm:ss a')
+		let creado = moment().subtract(5, 'hours');
+    creado     = moment(creado).format('YYYY-MM-DD h:mm');
+	 
 		punto.findByIdAndUpdate(id, {$set: {
 			'activo'  	 : false,
-			'updated':   moment(fecha).valueOf()
+			'updated':  creado
 		}}, callback);
 	}
 }

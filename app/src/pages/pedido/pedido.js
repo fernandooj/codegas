@@ -302,7 +302,7 @@ class Pedido extends Component{
         let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
         let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
-        let imagenCerrar2 = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
+        letimagenCerrar = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
         console.log({imagenCerrar})
         return (
             <View style={style.contenedorModal}>
@@ -418,7 +418,7 @@ class Pedido extends Component{
                                             &&<ImageProgress 
                                                 resizeMode="cover" 
                                                 renderError={ (err) => { return (<ImageProgress source={require('../../assets/img/filtro.png')} imageStyle={{height: 40, width: 40, borderRadius: 10, left:-30, top:5}}  />) }} 
-                                                source={{ uri:  imagenCerrar2}} 
+                                                source={{ uri: imagenCerrar}} 
                                                 indicator={{
                                                     size: 20, 
                                                     borderWidth: 0,
@@ -568,7 +568,7 @@ class Pedido extends Component{
                                 {
                                     zonaPedidos.map((e, key)=>{
                                         return(
-                                            <TouchableOpacity key={key} onPress={()=>this.actualizaZona(e._id, e.nombre)}
+                                            <TouchableOpacity key={key} onPress={()=>this.actualizaZona(e._id)}
                                                 style={
                                                     (e.total>3 && e.total<=5) ?[style.btnZona,{backgroundColor:"#F59F24"}]
                                                     :e.total>5 ?[style.btnZona,{backgroundColor:"#F55024"}]
@@ -677,6 +677,14 @@ class Pedido extends Component{
 				</ScrollView>
 			</Animated.View>
 		)
+    }
+    actualizaZona(nombre){
+        console.log({nombre})
+        let {pedidos, pedidosFiltro} = this.state
+        pedidos = pedidosFiltro.filter(e=>{
+          return e.zonaId.nombre==nombre
+        })
+        this.setState({pedidos})
     }
     actualizarTabla(filtro){
         let {pedidos, pedidosFiltro} = this.state
@@ -1130,7 +1138,8 @@ const mapState = state => {
     let vehiculos = state.vehiculo.vehiculos.filter(e=>{
         return e.conductor!=null
     })
-    console.log(state.pedido.pedidos)
+    console.log("state.pedido")
+    console.log(state.pedido)
 	return {
         pedidos: state.pedido.pedidos,
         vehiculos:vehiculos,

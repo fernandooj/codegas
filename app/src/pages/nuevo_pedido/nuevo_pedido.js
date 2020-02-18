@@ -89,7 +89,8 @@ class Nuevo_pedido extends Component{
         modalFechaEntrega:true,
         // guardando:true,
         fechaSolicitud: moment().tz("America/Bogota").add(hora, 'days').format('YYYY-MM-DD')
-	  }
+      }
+     
 	}
 	 
 	async componentWillMount(){
@@ -112,6 +113,8 @@ class Nuevo_pedido extends Component{
         .then(e=>{
             
             if(e.data.status){
+                console.log("e.data")
+                console.log(e.data)
                 e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, idZona:e.data.puntos[0].idZona, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
             }else{
                 Toast.show("Tuvimos un problema, intentele mas tarde")
@@ -134,6 +137,7 @@ class Nuevo_pedido extends Component{
         })
        
     }
+ 
 	renderPedido(){
         const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud, guardando} = this.state
         return(
@@ -279,7 +283,10 @@ class Nuevo_pedido extends Component{
                             return (
                                 <TouchableOpacity key={key} style={style.btnZona} onPress={()=>this.setState({puntoId:e._id, idZona:e.idZona})}>
                                     <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                                    <Text style={style.textZona}>{e.direccion}</Text>
+                                    <View>
+                                        <Text style={style.textZona}>{e.direccion}</Text>   
+                                        <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
+                                    </View>
                                     {(puntoId==e._id) &&<Icon name="check" style={style.iconCheck} /> }
                                 </TouchableOpacity>
                             )
@@ -289,8 +296,9 @@ class Nuevo_pedido extends Component{
                 :puntos.map((e, key)=>{
                     return (
                         <View key={key} >
-                            <Text>Punto de entrega</Text>
-                            <Text>{e.direccion}</Text>
+                            <Text style={style.textZona}>Punto de entrega</Text>
+                            <Text style={style.textZona}>{e.direccion}</Text>
+                            <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
                         </View>    
                     )
                 })
