@@ -49,6 +49,7 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
             if (!err) {
                  
                 res.json({ status:true, pedido }); 
+
             }else{
                
                 res.json({ status:false, message: err, pedido:[] }); 
