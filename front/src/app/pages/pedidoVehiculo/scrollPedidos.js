@@ -52,7 +52,7 @@ export default class List extends React.Component {
       let {pedidos} = this.state
       
       let listItems = pedidos.map((item, i) => {
-      let {_id, entregado, forma, cantidadKl, cantidadPrecio, cliente, direccion, orden, orden_cerrado, estado} = item.info[0]
+      let {_id, entregado, forma, cantidadKl, cantidadPrecio, cliente, direccion, orden, orden_cerrado, estado, nPedido, razon_social} = item.info[0]
         return (
           <li 
             style={
@@ -74,12 +74,12 @@ export default class List extends React.Component {
                 </Popover>
               }
               
-              {_id}<br/>
+              {nPedido}<br/>
               {/* {orden}<br/> */}
               {entregado ?"Entregado" :"En ruta"}<br/>
-              {forma}: 
+              {forma}
               {forma=="cantidad" ?cantidadKl+" Kl" :forma=="monto" ?" $"+cantidadPrecio :" "}<br/>
-              {cliente}<br/>
+              {razon_social}<br/>
               {direccion}<br/>
           </li>
         )

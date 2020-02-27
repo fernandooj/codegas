@@ -209,16 +209,23 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             pedido = pedido.filter(e=>{
                 return e.estado!=="noentregado"  
             })
+            pedido["CV"]=""
+            pedido = pedido.filter(e=>{
+                let data=e.usuarioId.cedula.split('-')
+                e.usuarioId.cedula=data[0]
+                e.CV=data[1]
+                return e
+            })
+            pedido = pedido.filter(e=>{
+                e.usuarioId.cedula=e.usuarioId.cedula.replace('.', '')
+                e.usuarioId.cedula=e.usuarioId.cedula.replace(',', '')
+                return e
+            })
+            
             pedido = pedido.filter(e=>{
                 return e.creado>fechaInicio && e.creado<fechaFinal
             })
-            // pedido = pedido.filter(e=>{
-            //     if(e.imagen){
-            //         let imagenPedido1 = e.imagen ?e.imagen.split("-") :""
-            //         e.imagen = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
-            //     }
-            //     return e
-            // })
+            
             const fields = [{   
                 label: 'N Pedido',
                 value: 'nPedido'
@@ -228,6 +235,9 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Cedula ',
                 value: 'usuarioId.cedula'
+            },{
+                label: 'CV',
+                value: 'CV'
             },{
                 label: 'Razon Social',
                 value: 'usuarioId.razon_social'
@@ -297,6 +307,18 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
             pedido = pedido.filter(e=>{
                 return e.creado>fechaInicio && e.creado<fechaFinal
             })
+            pedido["CV"]=""
+            pedido = pedido.filter(e=>{
+                let data=e.usuarioId.cedula.split('-')
+                e.usuarioId.cedula=data[0]
+                e.CV=data[1]
+                return e
+            })
+            pedido = pedido.filter(e=>{
+                e.usuarioId.cedula=e.usuarioId.cedula.replace('.', '')
+                e.usuarioId.cedula=e.usuarioId.cedula.replace(',', '')
+                return e
+            })
             pedido = pedido.filter(e=>{
                 let imagenPedido1 = e.imagen ?e.imagen.split("-") :""
                 e.imagen = `${imagenPedido1[0]}Miniatura${imagenPedido1[1]}`
@@ -351,7 +373,7 @@ router.get('/pedidos/no_entregados/:email/:fechaInicio/:fechaFinal', (req,res)=>
 })
 
 
-////////////////////////////////////////////  7.	PEDIDOS ENTREGADOS
+////////////////////////////////////////////  7.	PEDIDOS ENTREGADOS / FACTURACION
 router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     pedidoServices.get((err, pedido)=>{
@@ -362,6 +384,32 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             pedido = pedido.filter(e=>{
                 return e.creado>fechaInicio && e.creado<fechaFinal
             })
+            pedido["CV"]=""
+            pedido = pedido.filter(e=>{
+                let data=e.usuarioId.cedula.split('-')
+                e.usuarioId.cedula=data[0]
+                e.CV=data[1]
+                return e
+            })
+            pedido = pedido.filter(e=>{
+                e.usuarioId.cedula=e.usuarioId.cedula.replace('.', '')
+                e.usuarioId.cedula=e.usuarioId.cedula.replace(',', '')
+                return e
+            })
+            /////// remplaza las comas por punto en valor unitario
+            pedido = pedido.filter(e=>{
+                return e.valor_unitario=e.valor_unitario.replace(',', '.')
+            })
+            /////// remplaza las comas de los kilos por punto
+            pedido = pedido.filter(e=>{
+                return e.kilos=e.kilos.replace(',', '.')
+            })
+            /////// da el valor total
+            pedido.push({valor_total:0})
+            pedido = pedido.filter(e=>{
+                return e.valor_total = e.kilos*e.valor_unitario
+            })
+            
             const fields = [{   
                 label: 'N Pedido',
                 value: 'nPedido'

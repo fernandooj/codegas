@@ -19,6 +19,7 @@ export const CAMBIAR_CONTRASENA   = "CAMBIAR_CONTRASENA";
 ///////////////////////////////////////////////////////////////////////////
 export const GET_PEDIDO  = "GET_PEDIDO";
 export const GET_PEDIDOS = "GET_PEDIDOS";
+export const GET_PEDIDOS_FRECUENCIA = "GET_PEDIDOS_FRECUENCIA";
 
 
 ///////////////////////////////////////////////////////////////////////////

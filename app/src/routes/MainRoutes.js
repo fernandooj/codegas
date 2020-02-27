@@ -22,6 +22,7 @@ import usuariosComponent	 			from '../pages/usuarios/usuarios';
 import calificacionComponent 		from '../pages/calificacion/calificacion';
 import verCalificacionComponent from '../pages/calificacion/verCalificacion';
 import privacidadComponent 			from '../pages/privacidad/privacidad';
+import frecuenciaComponent 			from '../pages/frecuencia/frecuencia';
  
  
 const AppNavigator = createStackNavigator({
@@ -44,6 +45,7 @@ const AppNavigator = createStackNavigator({
 	usuarios 	 	 : {screen: usuariosComponent},
 	calificacion : {screen: calificacionComponent},
 	verCalificacion : {screen: verCalificacionComponent},
+	frecuencia : {screen: frecuenciaComponent},
   },{ headerMode: 'none'});
 
 export default createAppContainer(AppNavigator)

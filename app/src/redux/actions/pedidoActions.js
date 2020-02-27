@@ -3,6 +3,7 @@ import {
     GET_PEDIDOS,
     GET_VEHICULOS_PEDIDOS,
     GET_ZONA_PEDIDOS,
+    GET_PEDIDOS_FRECUENCIA,
 } from "./constants/actionsTypes";
 import axios from "axios";
 
@@ -76,10 +77,28 @@ const getZonasPedidos = (fechaEntrega) => {
   };
 };
 
+const getFrecuencia = () => {
+  return dispatch => {
+    return axios
+      .get(`ped/pedido/ver_frecuencia/todos`)
+      .then(res => {
+        console.log(res.data)
+        dispatch({
+          type: GET_PEDIDOS_FRECUENCIA,
+          pedidosFrecuencia: res.data.pedidos
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+};
+
 
 export {
     getPedido,
     getPedidos,
     getVehiculosConPedidos,
     getZonasPedidos,
+    getFrecuencia
 };

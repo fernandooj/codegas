@@ -47,7 +47,22 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
         })
         :pedidoServices.getByFechaEntrega(req.params.fechaEntrega, (err, pedido)=>{
             if (!err) {
-                 
+                let pedido1 = pedido.filter(e=>{
+                    return e.kilos=="undefined" || e.kilos==undefined
+                })
+                pedido1 = pedido1.filter(e=>{
+                    return e.estado!=="innactivo"
+                })
+                let pedido2 = pedido.filter(e=>{
+                    return e.entregado==true && e.estado=="activo"
+                })
+                
+                pedido2 = pedido2.filter((e, index)=>{
+                    return index<40
+                })
+                console.log(pedido2.length)
+                pedido = pedido1.concat(pedido2)
+
                 res.json({ status:true, pedido }); 
 
             }else{
@@ -57,6 +72,28 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
         })
     }
 })
+
+
+
+router.get('/todos/web/:fechaEntrega', (req,res)=>{
+    if (!req.session.usuario) {
+        res.json({ status:false, message: 'No hay un usuario logueado' }); 
+    }else{
+        pedidoServices.getByFechaEntrega(req.params.fechaEntrega, (err, pedido)=>{
+            if (!err) {
+                res.json({ status:true, pedido }); 
+            }else{
+                res.json({ status:false, message: err, pedido:[] }); 
+            }
+        })
+    }
+})
+
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN PEDIDO POR SU ID
@@ -522,6 +559,49 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
         }
     })
 })
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+////////////////////////            OBTIENE PEDIDOS CON FRECUENCIAS 
+///////////////////////////////////////////////////////////////////////////////////
+router.get('/ver_frecuencia/todos', (req,res)=>{
+ 
+   
+    pedidoServices.get((err, pedidos)=>{
+        if (!err) {
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            OBTIENE LAS FECHAS MENSUAL
+           
+            // let mensual = pedidos.filter(e=>{
+            //     return e.frecuencia=="mensual"
+            // })
+             
+            pedidos = pedidos.filter(e=>{
+                return e.frecuencia=="mensual" || e.frecuencia=="quincenal" || e.frecuencia=="semanal"
+            })
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            OBTIENE LAS FECHAS QUINCENAL
+            // let quincenal = pedidos.filter(e=>{
+            //     return e.frecuencia=="quincenal"
+            // })
+
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            OBTIENE LAS FECHAS SEMANALES
+            
+            // let semanal = pedidos.filter(e=>{
+            //     return e.frecuencia=="semanal"
+            // })
+                 
+
+            res.json({ status:true, pedidos }); 
+        }else{
+            res.json({ status:false, messagess: err }); 
+        }
+    })
+})
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

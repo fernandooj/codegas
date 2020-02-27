@@ -18,13 +18,13 @@ class userServices {
 		User.findOne({'tokenPhone':tokenPhone, activo:true, acceso:null}).exec(callback)
 	}
 	getByCliente(callback){
-		User.find({'acceso':"cliente", activo:true, eliminado:false}).exec(callback)
+		User.find({'acceso':"cliente", activo:true, eliminado:false}).sort({_id: 'desc'}).exec(callback)
 	}
 	sinVehiculo(acceso, callback){
 		User.find({'acceso':acceso, activo:true}).exec(callback)
 	}
 	getAdminSolucion(callback){
-		User.find({ $or: [ {acceso: "admin"}, {acceso: "solucion"}]}).exec(callback)
+		User.find({ $or: [ {acceso: "admin"}, {acceso: "solucion"}]}).sort({_id: 'desc'}).exec(callback)
 	}
 	getById(_id, callback){
 		User.findOne({_id}).exec(callback)

@@ -103,7 +103,7 @@ class Nuevo_pedido extends Component{
             }
         })
 
-        let idUsuario = await AsyncStorage.getItem('userId')
+        let idUsuario   = await AsyncStorage.getItem('userId')
         const acceso   	= await AsyncStorage.getItem('acceso')
         const email   	= await AsyncStorage.getItem('email')
         const nombre   	= await AsyncStorage.getItem('nombre')

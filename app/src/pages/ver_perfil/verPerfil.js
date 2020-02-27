@@ -143,7 +143,7 @@ class verPerfil extends Component{
                                 {label: 'Solución Cliente', value: 'solucion',  key: 'solucion'},
                                 {label: 'Despachos',        value: 'despacho',  key: 'despacho'},
                                 {label: 'Conductor',        value: 'conductor', key: 'conductor'},
-                                {label: 'Pedidos',          value: 'pedidos', key: 'pedidos'},
+                                {label: 'Pedidos',          value: 'pedidos',   key: 'pedidos'},
                                 {label: 'Cliente',          value: 'cliente',   key: 'cliente'}
                             ]}
                             onValueChange={acceso => {this.setState({ acceso })}}
@@ -722,7 +722,7 @@ class verPerfil extends Component{
                             this.setState({cargando:false})
                         })
                     }else{
-                        axios.post("pun/punto/varios",{puntos, id:e.data.user._id})
+                        axios.post("pun/punto/varios",{puntos, idPadre:e.data.user._id})
                         .then(res=>{
                             console.log(res.data)
                             this.props.navigation.navigate("perfil")

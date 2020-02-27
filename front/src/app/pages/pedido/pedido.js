@@ -3,7 +3,7 @@
 import React, { PureComponent } from "react";
  
 import style from "./style.scss"
-import { Table, Modal, Button, Avatar, notification, DatePicker } from 'antd'; 
+import { Table, Modal, Button, Avatar, notification, DatePicker, Select, Input } from 'antd'; 
 import 'antd/dist/antd.css';
 import locale              from 'antd/lib/date-picker/locale/es_ES';
 import axios               from "axios";
@@ -13,9 +13,13 @@ import SocketIOClient      from 'socket.io-client';
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import { connect }         from "react-redux";
- 
+import Zoom from 'react-medium-image-zoom'
+import 'react-medium-image-zoom/dist/styles.css'
+
 const confirm = Modal.confirm;
-const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', , "zonaId.nombre", 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
+const { Option } = Select;
+const { TextArea } = Input;
+const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', "nPedido", "zonaId.nombre", 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.codt", "usuarioId.email", "frecuencia", "estado", "imagenCerrar", "puntoId.direccion"] 
 
 class Home extends PureComponent {
   constructor(props){
@@ -26,18 +30,51 @@ class Home extends PureComponent {
       loading: false,
       terminoBuscador:"",
       pedidos:[],
+      vehiculos:[],
+      zonas:[],
       fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
     }
   }
   componentWillMount(){
+    axios.get("zon/zona/activos")
+       .then(res=>{
+          console.log(res.data)
+          
+            let zonas=res.data.zona.map(e=>{
+              return{
+                text:e.nombre,
+                value:e.nombre
+              }
+            })
+            
+            this.setState({zonas})
+           
+       })
     this.props.getPedidos()
     this.props.getVehiculos()
     this.socket = SocketIOClient(window.location.origin);
     this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
   }
   componentWillReceiveProps(props){
-    console.log(props.pedidos)
-    this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})
+ 
+    let vehiculos = props.vehiculos.map(e=>{
+      return{
+        text:e.placa,
+        value:e.placa
+      }
+    })
+    let pedidos = props.pedidos.filter(e=>{
+      if(!e.carroId)
+      e["carroId"]={placa:"Sin placa"}
+      return e
+    })
+    pedidos = pedidos.filter(e=>{
+      if(!e.zonaId)
+      e["zonaId"]={nombre:"Sin Zona"}
+      return e
+    })
+    console.log(pedidos)
+    this.setState({pedidos, pedidosFiltro:props.pedidos, vehiculos})
   }
   reciveMensanje(messages) {
     this.props.getPedidos()
@@ -45,8 +82,7 @@ class Home extends PureComponent {
   }
 
   renderBotones(){
-    const {fechaEntregaFiltro} = this.state
-    const dateFormat = 'YYYY-MM-DD';
+ 
     return(
       <div>
          <Button style={{backgroundColor:"#d9534f"}} onClick={()=>this.actualizarTabla("innactivo")}>Innactivo</Button>
@@ -55,7 +91,7 @@ class Home extends PureComponent {
          <Button style={{backgroundColor:"#5cb85c"}} onClick={()=>this.actualizarTabla2("activo", true)}>Asignado</Button>
          <Button style={{backgroundColor:"#00218b"}} onClick={()=>this.actualizarTabla3("activo")}>Entregado</Button>
          <Button style={{color:"#000000"}}           onClick={()=>this.actualizarTabla("noentregado")}>No Entregado</Button>
-         <Button style={{color:"#000000"}}           onClick={()=>this.actualizarTabla("noentregado")}>No Entregado</Button>
+ 
          
          <DatePicker 
           onChange={(data, fechaEntregaFiltro)=>this.actualizaFecha({data, fechaEntregaFiltro})} 
@@ -100,6 +136,7 @@ class Home extends PureComponent {
     this.setState({pedidos})
   }
   renderTable(){
+    console.log(this.state.zonas)
     const columns = [
       {
         title: 'N Pedido',
@@ -126,6 +163,10 @@ class Home extends PureComponent {
       {
         title: 'Zona',
         dataIndex: 'zonaId.nombre',
+        filters:this.state.zonas,
+        onFilter: (value, record) => record.zonaId.nombre.indexOf(value) === 0,
+        sorter: (a, b) => a.zonaId.nombre.length - b.zonaId.nombre.length,
+        sortDirections: ['descend', 'ascend'],
       },
       {
         title: 'Fecha creación',
@@ -133,6 +174,7 @@ class Home extends PureComponent {
         render:fecha=>(
           fecha
         ),
+       
         onFilter: (value, record) => record.creado.indexOf(value) === 0,
         sorter: (a, b) => a.creado.length - b.creado.length,
         sortDirections: ['descend', 'ascend'],
@@ -188,6 +230,7 @@ class Home extends PureComponent {
       {
         title: 'Vehiculo Asignado',
         dataIndex: 'carroId.placa',
+        filters:this.state.vehiculos,
         render:(carro, e)=>(
           <Button type="link" className={style.link} 
             onClick={()=>
@@ -207,7 +250,13 @@ class Home extends PureComponent {
       {
         title: 'Estado',
         dataIndex: 'estado',
-       
+        render:(carro, e)=>(
+          <Select style={{ width: '100%' }} value={e.estado} onChange={(estado)=>this.cambiarEstado(estado, e._id, e.estado, e.nPedido )} >
+            <Option value="activo">Activo</Option>
+            <Option value="innactivo">Innactivo</Option>
+            <Option value="espera">Espera</Option>
+          </Select>
+        ),
         onFilter: (value, record) => record.estado.indexOf(value) === 0,
         sorter: (a, b) => a.estado.length - b.estado.length,
         sortDirections: ['descend', 'ascend'],
@@ -222,14 +271,114 @@ class Home extends PureComponent {
         sorter: (a, b) => a.entregado.length - b.entregado.length,
         sortDirections: ['descend', 'ascend'],
       },
+      {
+        title: 'Imagen',
+        dataIndex: 'imagenCerrar',
+        render:(carro, e)=>(
+          <Zoom>
+            <img src={e.imagenCerrar} className={style.iconImagen} />
+          </Zoom>
+        ),
+        onFilter: (value, record) => record.estado.indexOf(value) === 0,
+        sorter: (a, b) => a.estado.length - b.estado.length,
+        sortDirections: ['descend', 'ascend'],
+      },
     ];
     const {pedidos, terminoBuscador} = this.state
     let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
     
-    return (<Table columns={columns} dataSource={pedidosFiltro} onChange={()=>this.onChange()} />)
+    return (<Table columns={columns} dataSource={pedidosFiltro} scroll={{ x: 2500 }} />)
   }
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////            CAMBIO EL ESTADO DEL PEDIDO
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  cambiarEstado(estado, id, estadoInicial, nPedido){
+    const openNotificationWithIcon = type => {
+      notification[type]({
+        message: 'Pedido editado',
+        duration: 8,
+        description:
+          `Nuevo estado: ${estado}`,
+      });
+    };
+    confirm({
+      title: `Cambiar el pedido N: ${nPedido}`,
+      // content: 'a este pedido',
+      okText: 'Si',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk() {
+        confirmar()
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
 
+    const confirmar =()=>{
+      axios.get(`ped/pedido/cambiarEstado/${id}/${estado}`)
+      .then(res=>{
+        console.log(res.data)
+        if(res.data.status){
+            if(estado=="activo"){
+                //////// esta condicion es para cuando estaba el pedido innactivo y luego lo activaron
+                if(estadoInicial=="innactivo"){
+                    this.setState({modalNovedad:true, estadoEntrega:"asignado"})
+                }else{
+                    // this.setState({modalFechaEntrega:true, estadoEntrega:"asignado"})
+                    openNotificationWithIcon('success')
+                }
+                ////////////////////////////////////////////////////////////////////////////////////
+            }else if(estado=="innactivo"){
+                this.setState({modalNovedad:true})
+            } else{
+              openNotificationWithIcon('success')
+              this.props.getPedidos()
+            }
+        }else{
+            alert("Tenemos un problema, intentelo mas tarde")
+        }
+      })
+    }
+  }  
+  modalNovedad(){
+    const {novedad} = this.state
+    return(
+      <Modal
+        title="Novedad Innactividad"
+        visible={this.state.modalNovedad}
+        onOk={()=>this.guardarNovedadInnactivo()}
+        onCancel={()=>this.setState({modalNovedad:false})}
+      >
+        <TextArea 
+          rows={4}
+          placeholder="Novedades"
+          placeholderTextColor="#aaa" 
+          autoCapitalize = 'none'
+          onChangeText={(novedad)=> this.setState({novedad})}
+        />
+          
+      </Modal>
+    )
+  } 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////           GUARDAR NOVEDAD CUANDO ES INNACTIVO
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  guardarNovedadInnactivo(){
+    let {novedad, id} = this.state
+    axios.post(`nov/novedad/`, {pedidoId:id, novedad})
+    .then((res2)=>{
+        this.setState({modalNovedad:false, estadoEntrega:"noentregado", novedad:""})
+        setTimeout(() => {
+            alert("Pedido actualizado")
+        }, 1000);
+        // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+        this.props.getPedidos()
+    })
+  }
+
+  
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////            RENDER MODAL VEHICULO
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,9 +392,6 @@ class Home extends PureComponent {
           onOk={this.handleOk}
           onCancel={()=>this.setState({modal:false, idVehiculo:null, placa:null })}
           footer={[
-            // <Button key="back" onCancel={()=>this.setState({modal:false})}>
-            //   Cancelar
-            // </Button>,
             <Button key="submit" type="primary" loading={loading} onClick={()=>{!placa ?alert("Selecciona un vehiculo") :this.asignarConductor()} }>
               Asignar
             </Button>,
@@ -408,6 +554,7 @@ class Home extends PureComponent {
         </section>
         {this.renderTable()}
         {this.renderModalVehiculo()}
+        {this.modalNovedad()}
         {this.modalFecha()}
       </div>
     );
@@ -434,7 +581,7 @@ class Home extends PureComponent {
   }
 }
 const mapState = state => {
-  console.log(state.pedido.pedidos)
+ 
 	return {
         pedidos: state.pedido.pedidos,
         vehiculos:state.vehiculo.vehiculos

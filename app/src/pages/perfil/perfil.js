@@ -126,10 +126,17 @@ class Home extends Component{
                         </TouchableOpacity>
                     }
                     {
-                            (acceso=="admin" || acceso=="solucion")
+                        (acceso=="admin" || acceso=="solucion")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios")} >
                             <Text style={style.txtLista}>Usuarios</Text> 
                             <Image source={require('../../assets/img/pg1/icon3.png')} style={style.icon} />
+                        </TouchableOpacity>
+                    }
+                    {
+                        (acceso=="admin" || acceso=="solucion")
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("frecuencia")} >
+                            <Text style={style.txtLista}>Frecuencias</Text> 
+                            <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
                     {

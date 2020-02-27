@@ -27,10 +27,10 @@ class pedidoServices{
 		pedido.count({}, callback)
 	}
 	getByPedido(_id, callback){
-		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioId, callback){
-		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").populate("zonaId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).populate("zonaId").sort({_id: 'desc'}).exec(callback)
 	}
 	getByConductor(conductorId, fecha, callback){
 		let fechaHoy = moment().subtract(5, 'hours');
@@ -43,8 +43,8 @@ class pedidoServices{
 	}
 	getByFechaEntrega(fechaEntrega,  callback){
 		fechaEntrega!="undefined"
-		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).exec(callback)
-		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("zonaId").populate("conductorId").sort({_id: 'desc'}).exec(callback)
+		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").limit(1000).sort({orden: 'asc'}).exec(callback)
+		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("zonaId").populate("conductorId").limit(1000).sort({_id: 'desc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)
@@ -124,6 +124,20 @@ class pedidoServices{
 				}
 			},
 			{
+				$lookup:{
+					from:"puntos",
+					localField:"puntoId",
+					foreignField:"_id",
+					as:"PuntoData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$PuntoData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			{
 				$project:{
 					forma:1,
 					_id:1,
@@ -136,12 +150,14 @@ class pedidoServices{
 					orden:1,
 					orden_cerrado:1,
 					fechaEntrega:1,
+					nPedido:1,
 					placa:'$CarroData.placa',
 					idPlaca:'$CarroData._id',
 					conductor:'$ConductorData.nombre',
 					conductorId:'$ConductorData._id',
 					cliente:'$ClienteData.nombre',
-					direccion:"$ClienteData.direccion",
+					direccion:"$PuntoData.direccion",
+					razon_social:"$ClienteData.razon_social",
 					// monto:'$PagoData.monto'
 				},
 			},
@@ -162,7 +178,7 @@ class pedidoServices{
 							idPlaca:'$idPlaca',
 						},
 			      data: { $addToSet: {info:[{_id:"$_id", placa:"$placa", activo:"$activo", eliminado:'$eliminado', forma:'$forma', cantidadKl:'$cantidadKl', cantidadPrecio:'$cantidadPrecio', estado:'$estado',
-						entregado:'$entregado', eliminado:'$eliminado', fechaEntrega:'$fechaEntrega', conductor:'$conductor', cliente:'$cliente', orden:'$orden', orden_cerrado:'$orden_cerrado', direccion:'$direccion', conductorId:"$conductorId"}]}
+						entregado:'$entregado', eliminado:'$eliminado', nPedido:'$nPedido', fechaEntrega:'$fechaEntrega', razon_social:'$razon_social', conductor:'$conductor', cliente:'$cliente', orden:'$orden', orden_cerrado:'$orden_cerrado', direccion:'$direccion', conductorId:"$conductorId"}]}
                     },
 			    }
 			},
