@@ -9,6 +9,8 @@ let Schema   = mongoose.Schema;
 //////////////////////////////////////////////////////////////////////////////
 let Carro = new Schema({
 	creado: 	Number,
+	centro: 	Number,
+	bodega: 	Number,
 	placa: 	    String,
 	activo:     {type:Boolean, default:true},
 	eliminado:  {type:Boolean, default:false},

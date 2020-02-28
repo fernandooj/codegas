@@ -4,7 +4,7 @@ import Toast from 'react-native-simple-toast';
 import AsyncStorage        from '@react-native-community/async-storage';
 import moment 			   from 'moment-timezone'
 import axios               from 'axios';
-import KeyboardListener    from 'react-native-keyboard-listener';
+ 
 import Icon                from 'react-native-fa-icons';
 import {Calendar, LocaleConfig}     from 'react-native-calendars';
 import { createFilter }    from 'react-native-search-filter';
@@ -52,6 +52,7 @@ class Pedido extends Component{
         modalZona:false,
         terminoBuscador:"",
         kilosTexto:"",
+        remisionTexto:"",
         facturaTexto:"",
         valor_unitarioTexto:"",
         forma_pagoTexto:"",
@@ -140,6 +141,7 @@ class Pedido extends Component{
         const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = pedidosFiltro.slice(inicio, final)
+        console.log(newPedidos)
         return newPedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -160,7 +162,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>{
                             this.callObservaciones(e._id);
-                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido, estadoInicial:e.estado })
+                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad })
                         }                        
                     }
                 >
@@ -307,13 +309,15 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     editarPedido(){
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const {openModal, estado, razon_social, cedula, forma, cantidad, acceso, novedad, kilosTexto, facturaTexto, valor_unitarioTexto, height, valor_unitario, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades } = this.state
+        const {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_unitarioTexto, height, valor_unitario, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad } = this.state
     
         let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
         let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
         letimagenCerrar = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
-        console.log({entregado, estado})
+        let total =Number(valor_unitario)*parseNumber(kilos)
+        console.log({total})
+
         return (
             <View style={style.contenedorModal}>
                 {showNovedades ?this.modalNovedades() :null}
@@ -324,9 +328,10 @@ class Pedido extends Component{
                         </TouchableOpacity>
                             <View style={style.containerTituloModal}>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Razón Social: {razon_social}</Text>
-                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula: {cedula}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula/NIT: {cedula}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>N Pedido: {nPedido}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma:  {forma}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Capacidad:  {capacidad}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>{cantidad &&`cantidad ${cantidad}`}</Text>
                                 <TouchableOpacity style={style.btnNovedad} onPress={()=>this.setState({showNovedades:true})} >
                                     <Text style={style.txtNovedad} >Novedades: {novedades.length} </Text>
@@ -422,9 +427,13 @@ class Pedido extends Component{
                                     <Text>{valor_unitario}</Text>
                                 </View>
                                 <View style={style.pedido}>
+                                    <Text>Remisión: </Text>
+                                    <Text>{remision}</Text>
+                                </View>
+                                <View style={style.pedido}>
                                     <Text style={style.txtPedidoFinalizado}>Total: </Text>
                                     <Text style={style.txtPedidoFinalizado}>
-                                        {'$ '+Number(valor_unitario)*parseNumber(kilos).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
+                                        {'$ '+Number(total).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
                                     </Text>
                                 </View>
                                 <View style={style.pedido}>
@@ -471,9 +480,13 @@ class Pedido extends Component{
                                             <Text style={style.txtPedidoFinalizado}>{valor_unitario}</Text>
                                         </View>
                                         <View style={style.pedido}>
+                                            <Text style={style.txtPedidoFinalizado}>Remisión: </Text>
+                                            <Text style={style.txtPedidoFinalizado}>{remision}</Text>
+                                        </View>
+                                        <View style={style.pedido}>
                                             <Text style={style.txtPedidoFinalizado}>Total: </Text>
                                             <Text style={style.txtPedidoFinalizado}>
-                                                {'$ '+Number(valor_unitario)*parseNumber(kilos).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
+                                                {'$ '+Number(total).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
                                             </Text>
                                         </View>
                                         <View style={style.pedido}>
@@ -515,6 +528,16 @@ class Pedido extends Component{
                                             value={valor_unitarioTexto}
                                             style={style.inputTerminarPedido}
                                         />
+                                         <TextInput
+                                            placeholder="Remisión"
+                                            autoCapitalize = 'none'
+                                            keyboardType='numeric'
+                                            placeholderTextColor="#aaa" 
+                                            onChangeText={(remisionTexto)=> this.setState({ remisionTexto })}
+                                            value={remisionTexto}
+                                            style={style.inputTerminarPedido}
+                                        />
+                                        
                                         <View style={style.contenedorSelect}>
                                             <RNPickerSelect
                                                 placeholder={{
@@ -766,9 +789,6 @@ class Pedido extends Component{
         pedidos = pedidos.filter(e=>{
             return (e.carroId!=="undefined" || e.carroId!==undefined)
         })
-        // pedidos = pedidos.filter(e=>{
-        //     console.log(e._id, e.carroId)
-        // })
         pedidos = pedidos.filter(e=>{
             return e.carroId.placa==placa
         })
@@ -1146,7 +1166,7 @@ class Pedido extends Component{
     ////////////////////////           CERRAR PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
-        let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_unitarioTexto, id, tokenPhone, imagen, email, fechaEntrega, fechaEntregaFiltro} = this.state
+        let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_unitarioTexto, id, tokenPhone, imagen, email, fechaEntrega, remisionTexto} = this.state
         Alert.alert(
             `Seguro desea cerrar este pedido`,
             '',
@@ -1170,6 +1190,7 @@ class Pedido extends Component{
             data.append('valor_unitario', valor_unitarioTexto);
             data.append('forma_pago', forma_pagoTexto);
             data.append('fechaEntrega', fechaEntrega);
+            data.append('remision', remisionTexto);
             
             axios({
                 method: 'post',  

@@ -32,6 +32,8 @@ class carroServices{
 		let creado = moment(fecha).valueOf()
 		let newCarro = new carro({
 			placa      : data.placa,
+			centro     : data.centro,
+			bodega     : data.bodega,
 			usuarioCrea,
       activo    :true,
 			eliminado :false,
@@ -39,13 +41,19 @@ class carroServices{
 		})
 		newCarro.save(callback)	
 	}
-
-    cambiarEstado(_id, activo, callback){
+	editar(_id, data, callback){
+		carro.findByIdAndUpdate(_id, {$set: {
+			'placa':data.placa,
+			'centro':data.centro,
+			'bodega':data.bodega
+		}}, callback);
+  }
+  cambiarEstado(_id, activo, callback){
 		carro.findByIdAndUpdate(_id, {$set: {
 			'activo':activo
 		}}, callback);
-    }
-    eliminar(_id, eliminado, callback){
+  }
+  eliminar(_id, eliminado, callback){
 		carro.findByIdAndUpdate(_id, {$set: {
 			'eliminado':eliminado
 		}}, callback);

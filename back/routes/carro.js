@@ -140,6 +140,25 @@ router.get('/eliminar/:idVehiculo/:estado', (req,res)=>{
     }
 })
 
+
+///////////////////////////////////////////////////////////////
+////////////      EDITAR
+//////////////////////////////////////////////////////////////
+router.put('/editar/:idVehiculo/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        carroServices.editar(req.params.idVehiculo, req.body, (err, pedido)=>{
+            if (!err) {
+                res.json({ status:true, pedido }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+
 ///////////////////////////////////////////////////////////////
 ////////////       GUARDO UN CARRO
 //////////////////////////////////////////////////////////////

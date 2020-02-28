@@ -66,7 +66,7 @@ class pedidoServices{
 			dia2       		 : data.dia2,
 			puntoId    		 : data.puntoId,
 			zonaId    		 : data.idZona,
-			creado			 : data.creado,
+			creado			 	 : data.creado,
 			fechaSolicitud : data.fechaSolicitud,
 			pedidoPadre    : data.pedidoPadre,
 			estado     	   :"espera",
@@ -195,14 +195,15 @@ class pedidoServices{
   finalizar(data, activo, imagen, orden_cerrado, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 		pedido.findByIdAndUpdate(data._id, {$set: {
-			'entregado'		:activo,
-			'kilos'	   		:data.kilos,
-			'factura'  		:data.factura,
-			'valor_unitario':data.valor_unitario,
-			'forma_pago':data.forma_pago,
-			'imagenCerrar':imagen,
-			'orden_cerrado':orden_cerrado,
-			'fechaEntregado':fecha
+			'entregado'			: activo,
+			'kilos'	   			: data.kilos,
+			'factura'  			: data.factura,
+			'valor_unitario': data.valor_unitario,
+			'forma_pago'		: data.forma_pago,
+			'remision'			: data.remision,
+			'imagenCerrar'	: imagen,
+			'orden_cerrado'	: orden_cerrado,
+			'fechaEntregado': fecha
 		}}, callback);
 	}
 	novedad(_id, orden_cerrado, motivo_no_cierre, perfil_novedad, callback){

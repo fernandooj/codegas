@@ -21,6 +21,8 @@ const Pedido = new Schema({
     kilos         :String,
     factura       :String,
     valor_unitario:String,
+    remision      :String,
+ 
     orden         :Number,
     orden_cerrado :Number,
     motivo_no_cierre:String,

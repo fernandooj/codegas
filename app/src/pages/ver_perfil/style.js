@@ -100,6 +100,7 @@ export const style = MediaQueryStyleSheet.create({
         marginTop:20
 	},
 	textGuardar:{
+        fontFamily: "Comfortaa-Regular",
 		color:"#ffffff"
 	},
 	iconCargando:{

@@ -27,7 +27,8 @@ export const style = MediaQueryStyleSheet.create({
 	inputCabezera:{
 		position:"relative",
 		zIndex:0,
-		width:"90%",
+		width:"30%",
+		marginRight:5,
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
 		borderColor:"rgba(0,0,0,0)",
 		shadowOffset: { height: 2, width: 2 }, // IOS
@@ -70,7 +71,7 @@ export const style = MediaQueryStyleSheet.create({
 		paddingBottom:5
     },
     vehiculoTexto:{
-        width:"70%"
+        width:"60%"
     },
     btnVehiculo:{
         padding:10
@@ -132,5 +133,48 @@ export const style = MediaQueryStyleSheet.create({
         fontSize:21,
         marginVertical:15
     },
- 
+	input:{
+		position:"relative",
+		fontFamily: "Comfortaa-Regular",
+		zIndex:0,
+		width:190,
+		marginHorizontal:20,
+		shadowColor: 'rgba(0,0,0, .4)', // IOS
+		borderColor:"rgba(0,0,0,0)",
+		shadowOffset: { height: 2, width: 2 }, // IOS
+		shadowOpacity: .5, // IOS
+		shadowRadius: 5, //IOS
+		backgroundColor: '#fff',
+		elevation: 7, // Android
+		paddingLeft:10,
+		marginBottom:20,
+		borderRadius:5,
+		height:40
+	},
+	text:{
+		fontFamily: "Comfortaa-Regular",
+		fontSize:15,
+		marginHorizontal:22
+	},
+	subContenedorModalEditar:{
+		backgroundColor:"#ffffff",
+		borderRadius:7,
+		padding:10,
+		paddingVertical:30,
+	},
+	btnGuardar:{
+        flexDirection:"row",
+        justifyContent:"center",
+        backgroundColor:"#00218b",
+		padding:10,
+		borderRadius:5,
+		marginHorizontal:20,
+		width:190,
+        marginBottom:70,
+        marginTop:20
+	},
+	textGuardar:{
+		fontFamily: "Comfortaa-Regular",
+		color:"#ffffff"
+	}
 })
