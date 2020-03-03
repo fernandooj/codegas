@@ -65,7 +65,7 @@ class pedidoServices{
 			dia1       		 : data.dia1,
 			dia2       		 : data.dia2,
 			puntoId    		 : data.puntoId,
-			zonaId    		 : data.idZona,
+			zonaId    		 : data.zonaId,
 			creado			 	 : data.creado,
 			fechaSolicitud : data.fechaSolicitud,
 			pedidoPadre    : data.pedidoPadre,

@@ -109,9 +109,9 @@ router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     puntoServices.getUsers((err, clientes)=>{
         if(!err){
-            clientes = clientes.filter(e=>{
-                return e.created>fechaInicio && e.created<fechaFinal
-            })
+            // clientes = clientes.filter(e=>{
+            //     return e.created>fechaInicio && e.created<fechaFinal
+            // })
             const fields = [{
                 label: 'Correo',
                 value: 'UserData.email'
@@ -268,6 +268,12 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Vehiculo asignado', // aun no esta
                 value: 'carroId.placa'
+            },{
+                label: 'Vehiculo Centro', // aun no esta
+                value: 'carroId.centro'
+            },{
+                label: 'Vehiculo Bodega', // aun no esta
+                value: 'carroId.bodega'
             },{
                 label: 'Conductor asignado',
                 value: 'conductorId.nombre'
@@ -434,6 +440,12 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Conductor',
                 value: 'conductorId.nombre'
+            },{
+                label: 'Vehiculo Centro', // aun no esta
+                value: 'carroId.centro'
+            },{
+                label: 'Vehiculo Bodega', // aun no esta
+                value: 'carroId.bodega'
             },{
                 label: 'Fecha Asignación',
                 value: 'fechaEntrega'

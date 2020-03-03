@@ -453,23 +453,22 @@ router.put('/editarOrden/', (req,res)=>{
 ///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////            CREAR PEDIDOS CON FRECUENCIAS 
 ///////////////////////////////////////////////////////////////////////////////////
-router.get('/crear_frecuencia/todos', (req,res)=>{
-    let fechaFrecuencia = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
-    fechaFrecuencia = fechaFrecuencia.valueOf()
-   
+let fechaFrecuencia = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
+fechaFrecuencia = fechaFrecuencia.valueOf()
+router.get('/crear_frecuencia/mensual', (req,res)=>{
     pedidoServices.get((err, pedidos)=>{
         if (!err) {
             ////////////////////////////////////////////////////////////////////////
-            ////////////////////////            INSERT LAS FECHAS MENSUAL
+            ////////////////////////            INSERTA LAS FECHAS MENSUAL
             let fechaMensual = moment(fechaFrecuencia).format("D")
+            fechaMensual = parseInt(fechaMensual)
             let mensual = pedidos.filter(e=>{
                 return e.frecuencia=="mensual"
             })
             mensual = mensual.filter(e=>{
-                // if((e.dia1-fechaMensual)==2) return e
-                console.log(fechaMensual-e.dia1)
+                if(parseInt(e.dia1)==(fechaMensual+1)) return e
             })
-            mensual.map(e=>{
+            mensual.map((e, key)=>{
                 let data = {
                     forma:e.forma, 
                     cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
@@ -477,54 +476,73 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
                     pedidoPadre:e._id,
                     fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+e.dia1),
                 }
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, (err2, pedido)=>{
+                let letNpedido = pedidos.length+(key+1)
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null,  (err2, pedido)=>{
                 })
             })
-
+            res.json({fechaMensual, total:mensual.length, status:true, mensual }); 
+        }else{
+            res.json({ status:false, messagess: err }); 
+        }
+    })
+})
+router.get('/crear_frecuencia/quincenal', (req,res)=>{
+    pedidoServices.get((err, pedidos)=>{
+        if (!err) {
             ////////////////////////////////////////////////////////////////////////
-            ////////////////////////            INSERT LAS FECHAS QUINCENAL
+            ////////////////////////            INSERTA LAS FECHAS QUINCENAL
+            let fechaQuincenal = moment(fechaFrecuencia).format("D")
+            fechaQuincenal = parseInt(fechaQuincenal)
             let quincenal = pedidos.filter(e=>{
                 return e.frecuencia=="quincenal"
             })
-            let fechaQuincenal = moment(fechaFrecuencia).format("D")
-            
             quincenal = quincenal.filter(e=>{
-                if((e.dia1-fechaQuincenal)==2 || (e.dia2-fechaQuincenal)==2 ) return e
+                if(parseInt(e.dia1)==(fechaQuincenal+1) || parseInt(e.dia2)==(fechaQuincenal+1) ) return e
             })
-            quincenal.map(e=>{
+             
+            quincenal.map((e, key)=>{
                 let data = {
                     forma:e.forma, 
                     cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
                     puntoId:e.puntoId._id,
                     pedidoPadre:e._id,
-                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal)+2)),
+                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal))),
                 }
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, (err2, pedido)=>{
+                let letNpedido = pedidos2.length+(key+1)
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null,  (err2, pedido)=>{
                 })
             })
-
+            res.json({fechaQuincenal, total:quincenal.length, status:true, quincenal }); 
+        }else{
+            res.json({ status:false, messagess: err }); 
+        }
+    })
+})
+router.get('/crear_frecuencia/semanal', (req,res)=>{
+    pedidoServices.get((err, pedidos)=>{
+        if (!err) {
             ////////////////////////////////////////////////////////////////////////
-            ////////////////////////            INSERT LAS FECHAS SEMANALES
+            ////////////////////////            INSERTALAS FECHAS SEMANALES
             let fechaSemanal = moment(fechaFrecuencia).lang("es").format("dddd")
             fechaSemanal = fechaSemanal=="lunes"     ?1 
-                           :fechaSemanal=="martes"   ?2
-                           :fechaSemanal=="miercoles"?3
-                           :fechaSemanal=="jueves"   ?4
-                           :fechaSemanal=="viernes"  ?5
-                           :fechaSemanal=="sabado"   ?6
-                           :7
+                        :fechaSemanal=="martes"   ?2
+                        :fechaSemanal=="miercoles"?3
+                        :fechaSemanal=="jueves"   ?4
+                        :fechaSemanal=="viernes"  ?5
+                        :fechaSemanal=="sabado"   ?6
+                        :7
             let semanal = pedidos.filter(e=>{
                 return e.frecuencia=="semanal"
             })
             semanal = semanal.filter(e=>{
                 let dia = e.dia1=="lunes"   ?1 
-                        :e.dia1=="martes"   ?2
-                        :e.dia1=="miercoles"?3
-                        :e.dia1=="jueves"   ?4
-                        :e.dia1=="viernes"  ?5
-                        :e.dia1=="sabado"   ?6
-                        :7
-                if((dia-fechaSemanal)==2) return e
+                :e.dia1=="martes"   ?2
+                :e.dia1=="miercoles"?3
+                :e.dia1=="jueves"   ?4
+                :e.dia1=="viernes"  ?5
+                :e.dia1=="sabado"   ?6
+                :7
+                if(dia===(fechaSemanal+1)) return e
             })
             semanal.map((e, key)=>{
                 let data = {
@@ -532,27 +550,83 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
                     cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
                     puntoId:e.puntoId._id,
                     pedidoPadre:e._id,
-                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal)+2)),
+                    zonaId:e.zonaId._id,
+                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaSemanal))),
                 }
-                // let letNpedido = pedidos.length+(key+1) ///////////////// esta variable me permite crear el n0 pedido
-                // pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, (err2, pedido)=>{
-
-                // })
+                let letNpedido = pedidos.length+(key+1) ///////////////// esta variable me permite crear el n0 pedido
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, (err2, pedido)=>{
+                    
+                })
             })
+            res.json({fechaSemanal, total:semanal.length, status:true, semanal }); 
+        }else{
+            res.json({ status:false, messagess: err }); 
+        }
+    })
+})
+router.get('/crear_frecuencia/todos', (req,res)=>{
+    pedidoServices.get((err, pedidos)=>{
+        if (!err) {
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            INSERTA LAS FECHAS MENSUAL
+            let fechaMensual = moment(fechaFrecuencia).format("D")
+            fechaMensual = parseInt(fechaMensual)
+            let mensual = pedidos.filter(e=>{
+                return e.frecuencia=="mensual"
+            })
+            mensual = mensual.filter(e=>{
+                if(parseInt(e.dia1)==(fechaMensual+1)) return e
+            })
+           
+
+           
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            INSERTA LAS FECHAS QUINCENAL
+            let fechaQuincenal = moment(fechaFrecuencia).format("D")
+            fechaQuincenal = parseInt(fechaQuincenal)
+            let quincenal = pedidos.filter(e=>{
+                return e.frecuencia=="quincenal"
+            })
+            quincenal = quincenal.filter(e=>{
+                if(parseInt(e.dia1)==(fechaQuincenal+1) || parseInt(e.dia2)==(fechaQuincenal+1) ) return e
+            })
+            
+            ////////////////////////////////////////////////////////////////////////
+            ////////////////////////            INSERTALAS FECHAS SEMANALES
+            let fechaSemanal = moment(fechaFrecuencia).lang("es").format("dddd")
+            fechaSemanal = fechaSemanal=="lunes"     ?1 
+                        :fechaSemanal=="martes"   ?2
+                        :fechaSemanal=="miercoles"?3
+                        :fechaSemanal=="jueves"   ?4
+                        :fechaSemanal=="viernes"  ?5
+                        :fechaSemanal=="sabado"   ?6
+                        :7
+            let semanal = pedidos.filter(e=>{
+                return e.frecuencia=="semanal"
+            })
+            semanal = semanal.filter(e=>{
+                let dia = e.dia1=="lunes"   ?1 
+                :e.dia1=="martes"   ?2
+                :e.dia1=="miercoles"?3
+                :e.dia1=="jueves"   ?4
+                :e.dia1=="viernes"  ?5
+                :e.dia1=="sabado"   ?6
+                :7
+                if(dia===(fechaSemanal+1)) return e
+            })
+             
 
             let mensajeJson={
                 badge:mensual.length+quincenal.length+semanal.length
             }
-            // cliente.publish('pedido', JSON.stringify(mensajeJson)) 
+            cliente.publish('pedido', JSON.stringify(mensajeJson)) 
             
             let titulo = `<font size="5">Hoy se han creado los siguientes pedidos</font>`
             let text1  = `Frecuencia Mensual: ${mensual.length}<br/>Frecuencia Quincenal: ${quincenal.length}<br/>Frecuencia Semanal: ${semanal.length}<br/>`
             let text2  = `Total pedidos Dia:  ${mensajeJson.badge}` 
             let asunto = "Nuevos pedidos por frecuencia"
             let user   = {email:"fernandooj@ymail.com"} 
-            // res.json({ status:true, semanal }); 
             htmlTemplate(req, user, titulo, text1, text2,  asunto)
-
             enviaNotificacion(res, "admin", "Nuevos pedidos Frecuencia", `total ${mensajeJson.badge} `)
         }else{
             res.json({ status:false, messagess: err }); 

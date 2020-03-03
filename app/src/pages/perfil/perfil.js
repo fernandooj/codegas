@@ -181,7 +181,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.7</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.9</Text> 
                     </TouchableOpacity> 
                     {
                         err

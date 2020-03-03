@@ -23,29 +23,31 @@ import calificacionComponent 		from '../pages/calificacion/calificacion';
 import verCalificacionComponent from '../pages/calificacion/verCalificacion';
 import privacidadComponent 			from '../pages/privacidad/privacidad';
 import frecuenciaComponent 			from '../pages/frecuencia/frecuencia';
+import tanquesComponent 				from '../pages/tanques/tanques';
+import chartComponent 					from '../pages/chart/chart';
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 : {screen: homeComponent},
-	inicio 		 	 : {screen: homeComponent},
-	perfil       : {screen: perfilComponent},
-	verPerfil    : {screen: verPerfilComponent},
-	confirmar    : {screen: confirmarComponent},
-	registro     : {screen: registroComponent},
-	privacidad   : {screen: privacidadComponent},
-	mensaje      : {screen: mensajeComponent, navigationOptions: {
-        gesturesEnabled: false,
-    },},
-	pedido       : 		{screen: pedidoComponent},
-	vehiculo     : 		{screen: vehiculoComponent},
-	zona		 		 : 		{screen: zonaComponent},
-	nuevo_pedido : 		{screen: nuevoPedidoComponent},
-	conversacion : 		{screen: conversacionComponent},
-	recuperar 	 : 		{screen: recuperarComponent},
-	usuarios 	 	 : 		{screen: usuariosComponent},
-	calificacion : 		{screen: calificacionComponent},
+	Home  		 	 		: {screen: chartComponent},
+	inicio 		 	 		: {screen: homeComponent},
+	perfil       		: {screen: perfilComponent},
+	verPerfil    		: {screen: verPerfilComponent},
+	confirmar    		: {screen: confirmarComponent},
+	registro     		: {screen: registroComponent},
+	privacidad   		: {screen: privacidadComponent},
+	mensaje      		: {screen: mensajeComponent, navigationOptions: { gesturesEnabled: false }},
+	pedido       		:	{screen: pedidoComponent},
+	vehiculo     		:	{screen: vehiculoComponent},
+	zona		 		 		:	{screen: zonaComponent},
+	nuevo_pedido 		:	{screen: nuevoPedidoComponent},
+	conversacion 		:	{screen: conversacionComponent},
+	recuperar 	 		:	{screen: recuperarComponent},
+	usuarios 	 	 		:	{screen: usuariosComponent},
+	calificacion 		:	{screen: calificacionComponent},
 	verCalificacion : {screen: verCalificacionComponent},
-	frecuencia : {screen: frecuenciaComponent},
+	frecuencia 			: {screen: frecuenciaComponent},
+	tanques 				: {screen: tanquesComponent},
+	chart 					: {screen: chartComponent},
   },{ headerMode: 'none'});
 
 export default createAppContainer(AppNavigator)

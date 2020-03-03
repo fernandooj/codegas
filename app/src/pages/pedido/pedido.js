@@ -141,7 +141,6 @@ class Pedido extends Component{
         const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = pedidosFiltro.slice(inicio, final)
-        console.log(newPedidos)
         return newPedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -316,7 +315,7 @@ class Pedido extends Component{
         let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
         letimagenCerrar = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
         let total =Number(valor_unitario)*parseNumber(kilos)
-        console.log({total})
+   
 
         return (
             <View style={style.contenedorModal}>
@@ -735,7 +734,6 @@ class Pedido extends Component{
 		)
     }
     actualizaZona(nombre){
-        console.log({nombre})
         let {pedidos, pedidosFiltro} = this.state
         pedidos = pedidosFiltro.filter(e=>{
           return e.zonaId.nombre==nombre

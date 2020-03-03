@@ -425,8 +425,9 @@ class Home extends PureComponent {
     )
   }
   disabledDate(current) {
+    console.log
     // Can not select days before today and today
-    return current && current < moment().endOf('day');
+    return current && current < moment().subtract(1, 'days');
   }
   modalFecha(){
     let {modalFecha, fechaEntrega, loading} = this.state

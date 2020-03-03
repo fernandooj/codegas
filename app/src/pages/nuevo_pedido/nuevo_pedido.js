@@ -451,7 +451,7 @@ class Nuevo_pedido extends Component{
         let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud, idZona, imagen, cliente} = this.state
         email = idCliente ?emailCliente :email
         forma=="monto" ?cantidad = this.campoMonto.getRawValue() :null
-        let creado = moment().tz("America/Bogota").add(1, 'days').format('YYYY-MM-DD h:mm')
+        let creado = moment().tz("America/Bogota").add(0, 'days').format('YYYY-MM-DD h:mm')
         console.log({creado, forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
         let data = new FormData();
         imagen.forEach(e=>{

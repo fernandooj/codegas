@@ -25,8 +25,8 @@ android {
         applicationId "com.codegas"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "8.0"
+        versionCode 9
+        versionName "9.0"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
@@ -70,7 +70,8 @@ android {
 }
 
 dependencies {
-    implementation project(':react-native-android-location-enabler')
+    implementation project(':react-native-svg')
+    
     implementation project(':@react-native-community_async-storage')
     implementation project(':react-native-fcm')
     implementation project(':react-native-firebase')
