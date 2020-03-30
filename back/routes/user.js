@@ -18,7 +18,9 @@ module.exports = function(app, passport){
     app.post('/x/v1/user/sign_up', (req, res)=>{
         let token = Math.floor(1000 + Math.random() * 9000);
         let tokens = token
-        userServices.getEmail(req.body, (err, users)=>{
+        console.log("fer")
+                    console.log(req.body)
+        userServices.registro(req.body, (err, users)=>{
             let titulo = req.body.acceso=="cliente" 
                         ?`<font size="5">Verificación de Email</font>`
                         :`<font size="5">Nueva cuenta creada</font>`;
@@ -31,7 +33,15 @@ module.exports = function(app, passport){
             let asunto = req.body.acceso=="cliente" ?"Nuevo codigo de verificación" :"Cuenta creada en Codegas"
             if (users) {
                 if(users.activo){
-                    res.json({ status:false, message: 'este email ya existe', code:0 });            
+                    /////////////////////////////////////////////
+                    if(users.editado){
+                        res.json({ status:false, message: 'este email ya existe', code:0 }) 
+                    }else{
+                        let user = users
+                        req.session.usuario=user
+                        res.json({ status:false, message: 'sin editar', code:3, users })
+                    }
+                    ////////////////////////////////////////////////////////////////////////   
                 }else{
                     userServices.modificaToken(users, token, (err2, user)=>{
                         if(!err2){
@@ -42,6 +52,7 @@ module.exports = function(app, passport){
                 }
             }else{
                 userServices.create(req.body, token, null, (err, user)=>{
+                    
                     if(err){
                         return res.json({ err })
                     }else{
@@ -264,8 +275,10 @@ module.exports = function(app, passport){
                         acceso:            usuario.acceso, 
                         avatar:            usuario.avatar, 
                         codt:              usuario.codt, 
+                        editado:           usuario.editado, 
                         direccion_factura: usuario.direccion_factura, 
-                        ubicaciones:  nUbicaciones
+                        codMagister:       usuario.codMagister, 
+                        ubicaciones:       nUbicaciones
                     }
                     res.json({status:true, user})
                 }else{
@@ -339,6 +352,7 @@ module.exports = function(app, passport){
                                 codt:          usuario.codt, 
                                 formularioChat:usuario.formularioChat, 
                                 direccion_factura: usuario.direccion_factura, 
+                                codMagister:       usuario.codMagister, 
                                 ubicaciones:  nUbicaciones
                             }
                             res.json({status:true, user})
@@ -494,9 +508,22 @@ module.exports = function(app, passport){
                         res.json({ status: false, err}) 
                     }
                 })
+            }else if(req.session.usuario.acceso=='comercial'){
+                userServices.get((err, usuarios)=>{
+                    res.json({status:true, usuarios})
+                })
+            }else if(req.session.usuario.acceso=='veo'){
+                userServices.get((err, usuarios)=>{
+                    usuarios = usuarios.filter(e=>{
+                        return e.comercialAsignado==req.session.usuario._id
+                    })
+
+                    res.json({status:true, usuarios})
+                })
             }else{
                 res.json({ status: false, message:'No tienes acceso', usuarios:[]})
             }
+            
         }else{
             res.json({ status: false, message:'usuario no logueado'})  
         }
@@ -524,31 +551,60 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/clientes', (req,res)=>{
         if(req.session.usuario){
-            userServices.getByCliente((err, usuarios)=>{
-                if(!err){
-                    usuarios = usuarios.filter(e=>{
-                        return e.idPadre==null
-                    })
-                    usuarios = usuarios.filter(e=>{
-                        return e.razon_social!==null
-                    })
-                    usuarios = usuarios.filter(e=>{
-                        return e.razon_social!=="null"
-                    })
-                    usuarios = usuarios.filter(e=>{
-                        return e.razon_social!=="undefined"
-                    })
-                    usuarios = usuarios.filter(e=>{
-                        return e.razon_social!==""
-                    })
-                    usuarios = usuarios.filter(e=>{
-                        return e.razon_social
-                    })
-                    res.json({status:true, usuarios})
-                }else{
-                    res.json({ status: 'FAIL', usuarios:[], err}) 
-                }
-            })
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion') {
+                userServices.getByCliente((err, usuarios)=>{
+                    if(!err){
+                        usuarios = usuarios.filter(e=>{
+                            return e.idPadre==null
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!==null
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!=="null"
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!=="undefined"
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!==""
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social
+                        })
+                        res.json({status:true, usuarios})
+                    }else{
+                        res.json({ status: 'FAIL', usuarios:[], err}) 
+                    }
+                })
+            }else{
+                userServices.getByVeos(req.session.usuario._id, (err, usuarios)=>{
+                    console.log(req.session.usuario._id)
+                    if(!err){
+                        usuarios = usuarios.filter(e=>{
+                            return e.idPadre==null
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!==null
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!=="null"
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!=="undefined"
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social!==""
+                        })
+                        usuarios = usuarios.filter(e=>{
+                            return e.razon_social
+                        })
+                        res.json({status:true, usuarios})
+                    }else{
+                        res.json({ status: 'FAIL', usuarios:[], err}) 
+                    }
+                })
+            }
         }else{
             res.json({ status: 'FAIL', message:'usuario no logueado', usuarios:[]})  
         }
@@ -588,7 +644,7 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/byId/:idUsuario', (req,res)=>{
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'|| req.session.usuario.acceso=='veo') {
                 userServices.getById(req.params.idUsuario, (err, usuario)=>{
                     puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
                         let nUbicaciones = ubicaciones.map(e=>{
@@ -618,9 +674,11 @@ module.exports = function(app, passport){
                                 activo:       usuario.activo, 
                                 codt:         usuario.codt, 
                                 direccion_factura:usuario.direccion_factura, 
-                                acceso:       usuario.acceso, 
-                                avatar:       usuario.avatar, 
-                                ubicaciones:  nUbicaciones
+                                acceso           : usuario.acceso, 
+                                avatar           : usuario.avatar, 
+                                ubicaciones      : nUbicaciones,
+                                codMagister      : usuario.codMagister, 
+                                veos             : usuario.comercialAsignado,
                             }
                             res.json({status:true, user})
                         }else{
@@ -678,11 +736,42 @@ module.exports = function(app, passport){
             }
         })
     })
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////     CAMBIA EL VALOR UNITARIO DE UN USUARIO
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/cambiarValor/:valor/:idUser', (req,res)=>{
+        userServices.editarValorUnitario(req.params.valor, req.params.idUser, (err, usuarios)=>{
+            if(usuarios){  
+                res.json({status:true})
+            }else{
+                res.json({ status: false, err}) 
+            }
+        })
+    })
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////     CAMBIA EL VALOR UNITARIO DEL PRODUCTO
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/cambiarValorTodos/:valor', (req,res)=>{
+        userServices.get((err, usuarios)=>{
+            if(!err){  
+                usuarios.filter(e=>{
+                    userServices.editarValorUnitario(req.params.valor, e._id, (err2, user)=>{
+                        console.log(err2)
+                    })
+                })
+                res.json({status:true})
+            }else{
+                res.json({ status: false, err}) 
+            }
+        })
+    })
+
+
     app.get('/x/v1/users/eliminar_usuario_entrando/:tokenPhone/:estado', (req,res)=>{
         let mensajeJson = {
             tokenPhone:req.params.tokenPhone, 
-            // nombre:req.params.nombre,
-            // celular:req.params.celular,
             activo:false
         }
          
@@ -693,6 +782,20 @@ module.exports = function(app, passport){
         cliente.publish('badgeConversacion', JSON.stringify(mensajeBadge)) 
         res.json({status:true})
     })
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////     ASIGNAR COMERCIAL 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/asignarComercial/:idUser/:idComercial', (req,res)=>{
+        userServices.asignarComercial(req.params.idUser, req.params.idComercial, (err, usuario)=>{
+            if(!err){  
+                res.json({status:true, usuario})
+            }else{
+                res.json({ status: false, err}) 
+            }
+        })
+    })
+
     ///////////////////////////////////////////////////////////////////////////
     //////////////////      TOMATELA TE DIGO
     ///////////////////////////////////////////////////////////////////////////
@@ -715,6 +818,7 @@ module.exports = function(app, passport){
             res.json({ status: false, message:'usuario no logueado'})  
         }
     })
+
 
 
     // =====================================

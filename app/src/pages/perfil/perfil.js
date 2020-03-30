@@ -45,7 +45,7 @@ class Home extends Component{
                     <Text style={style.titulo}>Crear Nueva Cuenta</Text>
                     <TextInput
                         style={email.length<2 ?[style.input, style.inputInvalid] :style.input}
-                        placeholder="Email"
+                        placeholder="Email / CODT"
                         onChangeText={(email) => this.setState({email})}
                         value={email}
                         keyboardType="email-address"
@@ -126,7 +126,7 @@ class Home extends Component{
                         </TouchableOpacity>
                     }
                     {
-                        (acceso=="admin" || acceso=="solucion")
+                        (acceso=="admin" || acceso=="solucion" || acceso=="comercial" || acceso=="veo")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios")} >
                             <Text style={style.txtLista}>Usuarios</Text> 
                             <Image source={require('../../assets/img/pg1/icon3.png')} style={style.icon} />
@@ -167,7 +167,22 @@ class Home extends Component{
                             <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
-                     {
+                    {
+                         (acceso=="admin" || acceso=="comercial")
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("tanques")} >
+                            <Text style={style.txtLista}>Tanques</Text> 
+                            <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
+                        </TouchableOpacity>
+                    }
+                    {
+                         (acceso=="admin" || acceso=="comercial")
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("revision")} >
+                            <Text style={style.txtLista}>Revisiones</Text> 
+                            <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
+                        </TouchableOpacity>
+                    }
+                    
+                    {
                         (acceso=="admin" && email=="fernandooj@ymail.com")
                         &&<View style={style.btnLista}  >
                             <TextInput style={style.txtLista} onChangeText={(idUsuario)=>this.setState({idUsuario})} placeholder="id" /> 
@@ -181,7 +196,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 1.0.9</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.0</Text> 
                     </TouchableOpacity> 
                     {
                         err
@@ -250,8 +265,16 @@ class Home extends Component{
         let acceso = "cliente";
         axios.post("user/sign_up", {email, acceso})
         .then(e=>{
-            console.log(e.data.user)
-            e.data.status ?this.registroExitoso(email, e.data.token, e.data.user._id) :Toast.show("Este email ya existe en el sistema")
+            console.log(e.data)
+            if(e.data.code==0){
+                Toast.show("Este email ya existe en el sistema")
+            }else if(e.data.code==2){
+                this.registroExitoso(email, e.data.token, e.data.user._id)
+            }else if(e.data.code==3){
+                this.props.navigation.navigate("verPerfil", {tipoAcceso:null})
+                AsyncStorage.setItem('idPerfilregistro', e.data.users._id)
+            }   
+            // e.data.status ?this.registroExitoso(email, e.data.token, e.data.user._id) :Toast.show("Este email ya existe en el sistema")
         })
         .catch(err=>{
             console.log(err)

@@ -159,10 +159,13 @@ class Home extends Component{
 					<Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon}/>
 					<Text style={style.text}>NUEVO PEDIDO</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={[style.btn, {marginTop:10}]} onPress={()=>navigation.navigate('chart')}>
-					<Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon}/>
-					<Text style={style.text}>INFORMES</Text>
-				</TouchableOpacity>
+				{
+					acceso=="cliente"
+					&&<TouchableOpacity style={[style.btn, {marginTop:10}]} onPress={()=>navigation.navigate('chart')}>
+						<Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon}/>
+						<Text style={style.text}>INFORMES</Text>
+					</TouchableOpacity>
+				}
 				{
 					acceso!="pedidos"
 					&&<TouchableOpacity style={style.btn} onPress={()=>acceso=="admin" || acceso=="solucion" ?navigation.navigate("conversacion", {tokenPhone, acceso}) :formularioChat ?navigation.navigate("conversacion", {tokenPhone, acceso}) :this.setState({modal:true})}>

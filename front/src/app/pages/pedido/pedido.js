@@ -8,17 +8,19 @@ import 'antd/dist/antd.css';
 import locale              from 'antd/lib/date-picker/locale/es_ES';
 import axios               from "axios";
 import moment 			       from 'moment-timezone'
-import {createFilter} from 'react-search-input'
+import {createFilter}       from 'react-search-input'
 import SocketIOClient      from 'socket.io-client';
 import {getPedidos}        from '../../redux/actions/pedidoActions' 
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import { connect }         from "react-redux";
+import reqwest from 'reqwest';
 import Zoom from 'react-medium-image-zoom'
 import 'react-medium-image-zoom/dist/styles.css'
 
 const confirm = Modal.confirm;
 const { Option } = Select;
-const { TextArea } = Input;
+const { TextArea, Search } = Input;
+
 const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', "nPedido", "zonaId.nombre", 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.codt", "usuarioId.email", "frecuencia", "estado", "imagenCerrar", "puntoId.direccion"] 
 
 class Home extends PureComponent {
@@ -32,13 +34,16 @@ class Home extends PureComponent {
       pedidos:[],
       vehiculos:[],
       zonas:[],
+      data: [],
+      pagination: {},
+      loading: false,
       fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
     }
   }
   componentWillMount(){
     axios.get("zon/zona/activos")
        .then(res=>{
-          console.log(res.data)
+   
           
             let zonas=res.data.zona.map(e=>{
               return{
@@ -50,10 +55,13 @@ class Home extends PureComponent {
             this.setState({zonas})
            
        })
-    this.props.getPedidos()
+    
     this.props.getVehiculos()
     this.socket = SocketIOClient(window.location.origin);
     this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
+  }
+  reciveMensanje(messages) {
+    this.fetch()
   }
   componentWillReceiveProps(props){
  
@@ -63,22 +71,12 @@ class Home extends PureComponent {
         value:e.placa
       }
     })
-    let pedidos = props.pedidos.filter(e=>{
-      if(!e.carroId)
-      e["carroId"]={placa:"Sin placa"}
-      return e
-    })
-    pedidos = pedidos.filter(e=>{
-      if(!e.zonaId)
-      e["zonaId"]={nombre:"Sin Zona"}
-      return e
-    })
-    console.log(pedidos)
-    this.setState({pedidos, pedidosFiltro:props.pedidos, vehiculos})
+    
+ 
+    this.setState({pedidosFiltro:props.pedidos, vehiculos})
   }
-  reciveMensanje(messages) {
-    this.props.getPedidos()
-    this.props.getVehiculos()
+  componentDidMount() {
+    this.fetch();
   }
 
   renderBotones(){
@@ -109,34 +107,198 @@ class Home extends PureComponent {
     )
   }
   actualizarTabla(filtro){
-    let {pedidos, pedidosFiltro} = this.state
-    pedidos = pedidosFiltro.filter(e=>{
-      return e.estado==filtro
-    })
-    this.setState({pedidos})
+    this.setState({ loading: true });
+    let params={
+      results: 1000,
+      page: 1000,
+      sortField: 1000,
+      sortOrder: 1000,
+    }
+    reqwest({
+      url: `x/v1/ped/pedido/todos/web/undefined`,
+      method: 'get',
+      data: {
+        results: 10,
+        ...params,
+      },
+      type: 'json',
+    }).then(data => {
+      console.log(data)
+      let pedidos = data.pedido.filter(e=>{
+        if(!e.carroId)
+        e["carroId"]={placa:"Sin placa"}
+        return e
+      })
+      pedidos = pedidos.filter(e=>{
+        if(!e.zonaId)
+        e["zonaId"]={nombre:"Sin Zona"}
+        return e
+      })
+      pedidos = pedidos.filter(e=>{
+        return e.estado==filtro
+      })
+      const pagination = { ...this.state.pagination };
+      pagination.total = 200;
+      this.setState({
+        loading: false,
+        data: pedidos,
+        pagination,
+      });
+    });
+
+     
+  
   }
   actualizarTabla2(filtro, filtro2){
-    let {pedidos, pedidosFiltro} = this.state
-    if(filtro2){
-      pedidos = pedidosFiltro.filter(e=>{
-        return e.estado==filtro &&e.carroId
-      })
-    }else{
-      pedidos = pedidosFiltro.filter(e=>{
-        return e.estado==filtro &&!e.carroId
-      })
+    this.setState({ loading: true });
+    let params={
+      results: 1000,
+      page: 1000,
+      sortField: 1000,
+      sortOrder: 1000,
     }
-    this.setState({pedidos})
+    reqwest({
+      url: `x/v1/ped/pedido/todos/web/undefined`,
+      method: 'get',
+      data: {
+        results: 10,
+        ...params,
+      },
+      type: 'json',
+    }).then(data => {
+      let pedidos = data.pedido.filter(e=>{
+        if(!e.carroId)
+        e["carroId"]={placa:"Sin placa"}
+        return e
+      })
+      pedidos = pedidos.filter(e=>{
+        if(!e.zonaId)
+        e["zonaId"]={nombre:"Sin Zona"}
+        return e
+      })
+      if(filtro2){
+        pedidos = pedidos.filter(e=>{
+          return e.estado==filtro &&e.carroId
+        })
+        console.log(pedidos)
+      }else{
+        pedidos = pedidos.filter(e=>{
+          return e.estado==filtro &&!e.carroId
+        })
+      }
+      const pagination = { ...this.state.pagination };
+      pagination.total = 200;
+      this.setState({
+        loading: false,
+        data: pedidos,
+        pagination,
+      });
+    });
+
+    // let {pedidos, pedidosFiltro} = this.state
+    // if(filtro2){
+    //   pedidos = pedidosFiltro.filter(e=>{
+    //     return e.estado==filtro &&e.carroId
+    //   })
+    // }else{
+    //   pedidos = pedidosFiltro.filter(e=>{
+    //     return e.estado==filtro &&!e.carroId
+    //   })
+    // }
+    
   }
   actualizarTabla3(filtro, filtro2){
-    let {pedidos, pedidosFiltro} = this.state
-    pedidos = pedidosFiltro.filter(e=>{
-      return e.estado==filtro &&e.entregado
-    })
-    this.setState({pedidos})
+    this.setState({ loading: true });
+    let params={
+      results: 1000,
+      page: 1000,
+      sortField: 1000,
+      sortOrder: 1000,
+    }
+    reqwest({
+      url: `x/v1/ped/pedido/todos/web/undefined`,
+      method: 'get',
+      data: {
+        results: 10,
+        ...params,
+      },
+      type: 'json',
+    }).then(data => {
+      let pedidos = data.pedido.filter(e=>{
+        if(!e.carroId)
+        e["carroId"]={placa:"Sin placa"}
+        return e
+      })
+      pedidos = pedidos.filter(e=>{
+        if(!e.zonaId)
+        e["zonaId"]={nombre:"Sin Zona"}
+        return e
+      })
+      pedidos = pedidos.filter(e=>{
+        return e.estado==filtro &&e.entregado
+      })
+      const pagination = { ...this.state.pagination };
+      pagination.total = 200;
+      this.setState({
+        loading: false,
+        data: pedidos,
+        pagination,
+      });
+    });
+
+   
+    
   }
+  handleTableChange = (pagination, filters, sorter) => {
+    const pager = { ...this.state.pagination };
+    pager.current = pagination.current;
+    this.setState({
+      pagination: pager,
+    });
+    this.fetch({
+      results: pagination.pageSize,
+      page: pagination.current,
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      ...filters,
+    });
+  };
+  fetch = (params = {}) => {
+    console.log('params:', params);
+    this.setState({ loading: true });
+    reqwest({
+      url: `x/v1/ped/pedido/todos/web/undefined`,
+      method: 'get',
+      data: {
+        results: 10,
+        ...params,
+      },
+      type: 'json',
+    }).then(data => {
+      console.log(data)
+      let pedidos = data.pedido.filter(e=>{
+        if(!e.carroId)
+        e["carroId"]={placa:"Sin placa"}
+        return e
+      })
+      pedidos = pedidos.filter(e=>{
+        if(!e.zonaId)
+        e["zonaId"]={nombre:"Sin Zona"}
+        return e
+      })
+
+      const pagination = { ...this.state.pagination };
+      // Read total count from server
+      // pagination.total = data.totalCount;
+      pagination.total = 200;
+      this.setState({
+        loading: false,
+        data: pedidos,
+        pagination,
+      });
+    });
+  };
   renderTable(){
-    console.log(this.state.zonas)
     const columns = [
       {
         title: 'N Pedido',
@@ -188,7 +350,8 @@ class Home extends PureComponent {
             {
               e.estado=="espera" || e.estado=="innactivo" 
               ?alert("No puedes editar aun el pedido")
-              :this.setState({modalFecha:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, nPedido:e.nPedido, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })}
+              :this.setState({modalFecha:true, placaPedido:e.carroId ?e.carroId.placa :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, nombre:e.usuarioId.nombre, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, nPedido:e.nPedido, cantidad:e.cantidad, entregado:e.entregado, factura:e.factura, kilos:e.kilos, valor_unitario:e.valor_unitario })
+            }
             }
             >
            {fecha ?fecha :"Sin Asignar"}
@@ -284,10 +447,19 @@ class Home extends PureComponent {
         sortDirections: ['descend', 'ascend'],
       },
     ];
-    const {pedidos, terminoBuscador} = this.state
-    let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+    const {data, terminoBuscador} = this.state
+    let pedidosFiltro = data.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
     
-    return (<Table columns={columns} dataSource={pedidosFiltro} scroll={{ x: 2500 }} />)
+    return (
+      <Table 
+        columns={columns} 
+        dataSource={pedidosFiltro} 
+        scroll={{ x: 1800 }} 
+        loading={this.state.loading}
+        onChange={this.handleTableChange}
+        
+        rowClassName={ (e, record) =>  e.estado=="espera" ?style.espera :e.estado=="noentregado" ?style.noentregado :e.estado=="innactivo" ?style.innactivo :e.estado=="activo" &&!e.carroId && !e.entregado ?style.activo :e.estado=="activo" && !e.entregado ?style.asignado :style.otro   }
+      />)
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -334,7 +506,7 @@ class Home extends PureComponent {
                 this.setState({modalNovedad:true})
             } else{
               openNotificationWithIcon('success')
-              this.props.getPedidos()
+              this.fetch()
             }
         }else{
             alert("Tenemos un problema, intentelo mas tarde")
@@ -374,7 +546,7 @@ class Home extends PureComponent {
             alert("Pedido actualizado")
         }, 1000);
         // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
-        this.props.getPedidos()
+        this.fetch()
     })
   }
 
@@ -384,7 +556,7 @@ class Home extends PureComponent {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   renderModalVehiculo(){
     const {modal, idVehiculo, loading, placa} = this.state
-    console.log({placa})
+    
     return(
       <Modal
           title="Asignar Vehiculo"
@@ -440,9 +612,7 @@ class Home extends PureComponent {
           onOk={this.handleOk}
           onCancel={()=>this.setState({modalFecha:false})}
           footer={[
-            // <Button key="regresar" onCancel={()=>alert({modalFecha:false})}>
-            //   Cancelar
-            // </Button>,
+             
             <Button key="submit" type="primary" loading={loading} onClick={()=>this.asignarFecha()}>
               Asignar
             </Button>,
@@ -450,7 +620,7 @@ class Home extends PureComponent {
         >
         <DatePicker 
           defaultValue={moment(fechaEntrega, dateFormat)} format={dateFormat}
-          onChange={(data, fechaEntrega)=>this.setState({data, fechaEntrega})} 
+          onChange={(fechaEntrega)=>this.setState({ fechaEntrega})} 
           locale={locale} 
           disabledDate={this.disabledDate}
         />
@@ -463,7 +633,7 @@ class Home extends PureComponent {
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   asignarFecha(){
     let {fechaEntrega, id, nPedido} = this.state
-    // fechaEntrega = moment(fechaEntrega).valueOf()
+    fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
     console.log({fechaEntrega})
     const openNotificationWithIcon = type => {
       notification[type]({
@@ -490,10 +660,11 @@ class Home extends PureComponent {
     const confirmar =()=>{
         axios.get(`ped/pedido/asignarFechaEntrega/${id}/${fechaEntrega}`)
         .then((res)=>{
+          console.log(res.data)
             if(res.data.status){
               openNotificationWithIcon('success')
               this.setState({modalFecha:false})
-              this.props.getPedidos()
+              this.fetch()
             }else{
                 alert("Tenemos un problema, intentelo mas tarde")            }
         })
@@ -530,7 +701,7 @@ class Home extends PureComponent {
         axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${nPedido}`)
         .then((res)=>{
             if(res.data.status){
-                this.props.getPedidos()
+                this.fetch()
                 openNotificationWithIcon('success')
                 this.setState({modal:false, fechaEntrega:null})
             }else{
@@ -539,19 +710,35 @@ class Home extends PureComponent {
         })
     }
   }
+  buscarRegistro= (terminoBuscador) => {
+     
+    
+      this.setState({
+        
+        terminoBuscador
+      });
+      this.fetch({
+        results: 1000,
+        page: 1000,
+        sortField: 1000,
+        sortOrder: 1000,
  
+      });
+ 
+  }
   render() {
     return (
       <div className={style.container}> 
-       
         <section className={style.containerBotones}>
-          
           <section>
             {this.renderBotones()}
           </section>
           <section>
-            <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} />
+            {/* <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} /> */}
+            <Search className={style.inputSearch} placeholder="Buscar registro" onSearch={value => this.buscarRegistro(value)} enterButton /> 
+
           </section>
+
         </section>
         {this.renderTable()}
         {this.renderModalVehiculo()}

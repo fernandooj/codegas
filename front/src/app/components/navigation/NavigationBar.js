@@ -31,7 +31,7 @@ class NavigationBar extends PureComponent {
     this.setState({badgeSocketMessage:this.state.badgeSocketMessage+1, badgeMessage:true })
   }
   reciveMensanjeCuenta(messages) {
-    console.log(messages)
+    
     this.setState({badgeSocketCuenta:this.state.badgeSocketCuenta+1, badgeCuenta:true })
   }
    
@@ -56,7 +56,7 @@ class NavigationBar extends PureComponent {
   render() {
     const { perfil, status } = this.props;
     const { badgeSocketMessage, badgeSocketCuenta, badgeCuenta, badgeMessage } = this.state;
-    console.log(perfil)
+   
     return (
       <nav className={style.nav}>
         
@@ -95,6 +95,14 @@ class NavigationBar extends PureComponent {
                 && <li>
                   <Link to="/informes">
                     Informes
+                  </Link>
+                </li>
+              }
+              {
+                perfil.acceso=="admin"
+                &&<li>
+                  <Link to="/usuarios">
+                    Usuarios
                   </Link>
                 </li>
               }

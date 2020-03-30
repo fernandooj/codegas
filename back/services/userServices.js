@@ -11,8 +11,12 @@ class userServices {
 		let email = user.email.toLowerCase()
 		User.findOne({'email':email}).exec(callback)
 	}
+	registro(user, callback){
+		let email = user.email.toLowerCase()
+		User.findOne({ $or: [ {email: email}, {codt: email}]}).exec(callback)
+	}
 	getByAcceso(acceso, callback){
-		User.find({'acceso':acceso, activo:true, eliminado:false}).exec(callback)
+		User.find({'acceso':acceso, activo:true, eliminado:false}).populate("comercialAsignado").exec(callback)
 	}
 	getByTokenPhone(tokenPhone, callback){
 		User.findOne({'tokenPhone':tokenPhone, activo:true, acceso:null}).exec(callback)
@@ -27,7 +31,10 @@ class userServices {
 		User.find({ $or: [ {acceso: "admin"}, {acceso: "solucion"}]}).sort({_id: 'desc'}).exec(callback)
 	}
 	getById(_id, callback){
-		User.findOne({_id}).exec(callback)
+		User.findOne({_id}).populate("comercialAsignado").exec(callback)
+	}
+	getByVeos(comercialAsignado, callback){
+		User.find({'comercialAsignado':comercialAsignado}).populate("comercialAsignado").exec(callback)
 	}
 	create(user, token, idPadre, callback){ 
 		let fecha2 = moment().subtract(5, 'hours');
@@ -37,6 +44,7 @@ class userServices {
 		newUsuario.cedula		=  user.cedula,
 		newUsuario.direccion_factura	=  user.direccion_factura,
 		newUsuario.tipo			=  user.tipo,		
+		newUsuario.codMagister	=  user.codMagister,		
 		newUsuario.cedula		=  user.cedula,
 		newUsuario.celular		=  user.celular,
 		newUsuario.codt		    =  user.codt,
@@ -60,13 +68,13 @@ class userServices {
 		}}, callback);
 	}
 	edit(user, _id, acceso, callback){
-		console.log("padresito")
-		console.log(_id)
-		console.log(user.nombre)
+		 
 		User.findByIdAndUpdate(_id,   {
-			'acceso'	  : acceso=="cliente" ?"cliente" :user.acceso,
-			'razon_social': user.razon_social,
-			'cedula'	  : user.cedula,
+			'acceso'	  	   : acceso=="cliente" ?"cliente" :user.acceso,
+			'editado'	  	   : acceso=="cliente" &&true,
+			'razon_social'	   : user.razon_social,
+			'cedula'	  	   : user.cedula,
+			'codMagister'	   : user.codMagister,
 			'direccion_factura': user.direccion_factura,
 			'nombre':     	user.nombre,
 			'codt':     	user.codt,
@@ -85,13 +93,12 @@ class userServices {
 			'updatedAt':     moment(fecha).valueOf()
 		}}, callback);
 	}
-	// editFormularioChat(formularioChat, id, callback){
-	// 	console.log({formularioChat, id})
-	// 	User.findByIdAndUpdate(id, {$set: {
-	// 		'activo':     formularioChat,
-	// 		'updatedAt':  moment(fecha).valueOf()
-	// 	}}, callback);
-	// }
+	editarValorUnitario(valorUnitario, id, callback){
+		console.log({valorUnitario, id})
+		User.findByIdAndUpdate(id, {$set: {
+			'valorUnitario':     valorUnitario,
+		}}, callback);
+	}
 
 	 
 	modificaTokenPhone(idUser, tokenPhone, callback){
@@ -133,6 +140,12 @@ class userServices {
 	avatar(id, avatar, callback){
 		User.findByIdAndUpdate(id, {$set: {
             avatar     : avatar,
+            'updatedAt': moment(fecha).valueOf()
+        }}, callback)
+	}
+	asignarComercial(id, comercialAsignado, callback){
+		User.findByIdAndUpdate(id, {$set: {
+            comercialAsignado     : comercialAsignado,
             'updatedAt': moment(fecha).valueOf()
         }}, callback)
 	}

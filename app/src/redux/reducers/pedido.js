@@ -3,7 +3,8 @@ import {
   GET_PEDIDOS,
   GET_VEHICULOS_PEDIDOS,
   GET_ZONA_PEDIDOS,
-  GET_PEDIDOS_FRECUENCIA
+  GET_PEDIDOS_FRECUENCIA,
+  GET_PEDIDOS_USER
 } from "../actions/constants/actionsTypes";
  
  
@@ -51,10 +52,21 @@ const getFrecuencia = (state = [], action) => {
   }
 };
 
+const getPedidosUser = (state = [], action) => {
+  switch (action.type) {
+    case GET_PEDIDOS_USER:
+      return action.pedidosUser;
+    default:
+      return state;
+  }
+};
+
+
 export default function authServiceReducer(state = {}, action) {
   return {   
     pedido:           getPedido(state.pedido, action),
     pedidos:          getPedidos(state.pedidos, action),
+    pedidosUser:      getPedidosUser(state.pedidosUser, action),
     vehiculosPedidos: getVehiculosConPedidos(state.vehiculosPedidos, action),
     zonaPedidos:      getZonasPedidos(state.zonaPedidos, action),
     pedidosFrecuencia:getFrecuencia(state.pedidosFrecuencia, action),

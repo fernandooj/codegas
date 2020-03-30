@@ -26,7 +26,7 @@ const getVehiculos = data => {
     return axios
       .get(`veh/vehiculo/no_eliminados`)
       .then(res => {
-        console.log(res.data)
+        
         dispatch({
           type: GET_VEHICULOS,
           vehiculos: res.data.carro

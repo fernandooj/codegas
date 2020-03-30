@@ -14,7 +14,7 @@ class pedidoServices{
 	}
 	get(callback){
 		pedido.find({})
-		.populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion codt')
+		.populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone direccion codt valorUnitario')
 		.populate("carroId")
 		.populate("puntoId")
 		.populate("conductorId")
@@ -27,10 +27,10 @@ class pedidoServices{
 		pedido.count({}, callback)
 	}
 	getByPedido(_id, callback){
-		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).sort({_id: 'desc'}).exec(callback)
+		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioId, callback){
-		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).populate("zonaId").sort({_id: 'desc'}).exec(callback)
+		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).populate("zonaId").populate("usuarioCrea").sort({_id: 'desc'}).exec(callback)
 	}
 	getByConductor(conductorId, fecha, callback){
 		let fechaHoy = moment().subtract(5, 'hours');
@@ -39,12 +39,15 @@ class pedidoServices{
 	 
 		// let fechaEntrega = fecha==="undefined" ?"2019-07-03" :fecha
 		console.log({fechaEntrega, conductorId, fecha})
-		pedido.find({conductorId, fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).populate("zonaId").exec(callback)
+		pedido.find({conductorId, fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).populate("zonaId").populate("usuarioCrea").exec(callback)
 	}
-	getByFechaEntrega(fechaEntrega,  callback){
+	getByFechaEntrega(fechaEntrega, limit, callback){
+		limit = parseInt(limit)
+		limit = limit*20
+		console.log({limit})
 		fechaEntrega!="undefined"
-		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").limit(1000).sort({orden: 'asc'}).exec(callback)
-		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("zonaId").populate("conductorId").limit(1000).sort({_id: 'desc'}).exec(callback)
+		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").limit(limit).sort({orden: 'asc'}).exec(callback)
+		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)
@@ -65,7 +68,7 @@ class pedidoServices{
 			dia1       		 : data.dia1,
 			dia2       		 : data.dia2,
 			puntoId    		 : data.puntoId,
-			zonaId    		 : data.zonaId,
+			zonaId    		 : data.idZona,
 			creado			 	 : data.creado,
 			fechaSolicitud : data.fechaSolicitud,
 			pedidoPadre    : data.pedidoPadre,
@@ -198,7 +201,7 @@ class pedidoServices{
 			'entregado'			: activo,
 			'kilos'	   			: data.kilos,
 			'factura'  			: data.factura,
-			'valor_unitario': data.valor_unitario,
+			'valor_total'	  : data.valor_total,
 			'forma_pago'		: data.forma_pago,
 			'remision'			: data.remision,
 			'imagenCerrar'	: imagen,

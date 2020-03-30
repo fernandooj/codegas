@@ -28,7 +28,7 @@ LocaleConfig.locales['es'] = {
   };
 LocaleConfig.defaultLocale = 'es';
 
-const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidadKl', 'cantidadPrecio', "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
+const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidadKl', 'cantidadPrecio', "nPedido", "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"] 
 let size  = Dimensions.get('window');
 function parseNumber(strg) {
     var strg = strg || "";
@@ -54,13 +54,14 @@ class Pedido extends Component{
         kilosTexto:"",
         remisionTexto:"",
         facturaTexto:"",
-        valor_unitarioTexto:"",
+        valor_totalTexto:"",
         forma_pagoTexto:"",
         novedad:"",
         fechasFiltro:["0","1"],
         inicio:0,
         final:4,
         zonaPedidos:[],
+        avatar:[],
         novedades:[],           //////  guardo la cantidad de novedades de cada pedido
         top:new Animated.Value(size.height),
         elevation:7,     ////// en Android sale un error al abrir el filtro debido a la elevation
@@ -141,6 +142,7 @@ class Pedido extends Component{
         const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = pedidosFiltro.slice(inicio, final)
+        console.log({newPedidos})
         return newPedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -161,7 +163,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>{
                             this.callObservaciones(e._id);
-                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_unitario:e.valor_unitario, nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad })
+                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_unitarioUsuario:e.usuarioId.valorUnitario, valor_total:e.valor_total,  nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad, usuarioCrea:e.usuarioCrea.nombre, creado:e.creado })
                         }                        
                     }
                 >
@@ -185,13 +187,13 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>CODT</Text>
                         <Text style={style.textPedido}>{e.usuarioId.codt}</Text>
                     </View>
-                    {
+                    {/* {
                         acceso!=="conductor"
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha de creación </Text>
                             <Text style={style.textPedido}>{e.creado}</Text>
                         </View>
-                    }
+                    } */}
                     
                     {   
                         acceso!=="conductor"
@@ -204,17 +206,25 @@ class Pedido extends Component{
                         acceso!=="conductor"
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha entrega </Text>
-                            <Text style={style.textPedido}>{ e.fechaEntrega ?e.fechaEntrega :"sin fecha de asignación"}</Text>
+                            <Text style={style.textPedido}>{ e.fechaEntrega ?e.fechaEntrega :"sin fecha"}</Text>
                         </View>
                     }
-                    <View style={style.containerPedidos}>
+                    {/* <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>Tipo de solicitud:</Text>
                         <Text style={style.textPedido}>{e.forma} 
                         {
                             e.forma=="cantidad" 
                             ?' '+Number(e.cantidadKl).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")+" KG" 
                             :e.forma=="monto" ?'$ '+Number(e.cantidadPrecio).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") :""}</Text>
-                    </View>
+                    </View> */}
+                    {
+                        e.puntoId.capacidad
+                        &&<View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Almacenamiento </Text>
+                            <Text style={style.textPedido}>{ e.puntoId.capacidad}</Text>
+                        </View>
+                    }
+                    
                     {
                         (e.carroId && acceso!=="conductor")
                         &&<View style={style.containerPedidos}>
@@ -308,13 +318,13 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     editarPedido(){
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_unitarioTexto, height, valor_unitario, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad } = this.state
+        const {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, valor_unitarioUsuario, usuarioCrea } = this.state
     
         let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
         let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
         letimagenCerrar = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
-        let total =Number(valor_unitario)*parseNumber(kilos)
+        let valor_unitario =Number(valor_total)/parseNumber(kilos)
    
 
         return (
@@ -330,7 +340,9 @@ class Pedido extends Component{
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula/NIT: {cedula}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>N Pedido: {nPedido}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma:  {forma}</Text>
-                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Capacidad:  {capacidad}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Fecha de creación:  {creado}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Usuario crea:  {usuarioCrea}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Almacenamiento:  {capacidad}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>{cantidad &&`cantidad ${cantidad}`}</Text>
                                 <TouchableOpacity style={style.btnNovedad} onPress={()=>this.setState({showNovedades:true})} >
                                     <Text style={style.txtNovedad} >Novedades: {novedades.length} </Text>
@@ -432,7 +444,7 @@ class Pedido extends Component{
                                 <View style={style.pedido}>
                                     <Text style={style.txtPedidoFinalizado}>Total: </Text>
                                     <Text style={style.txtPedidoFinalizado}>
-                                        {'$ '+Number(total).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
+                                        {'$ '+Number(valor_total).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
                                     </Text>
                                 </View>
                                 <View style={style.pedido}>
@@ -485,7 +497,7 @@ class Pedido extends Component{
                                         <View style={style.pedido}>
                                             <Text style={style.txtPedidoFinalizado}>Total: </Text>
                                             <Text style={style.txtPedidoFinalizado}>
-                                                {'$ '+Number(total).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
+                                                {'$ '+Number(valor_total).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}
                                             </Text>
                                         </View>
                                         <View style={style.pedido}>
@@ -499,9 +511,11 @@ class Pedido extends Component{
                                         <TomarFoto 
                                             source={avatar}
                                             width={180}
+                                            titulo="Foto de factura"
                                             limiteImagenes={3}
                                             imagenes={(imagen) => {  this.setState({imagen}) }}
                                         /> 
+                                        <Text>Valor Unitario: {'$ '+Number(valor_unitarioUsuario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")} </Text>
                                         <TextInput
                                             placeholder="N Kilos"
                                             autoCapitalize = 'none'
@@ -519,12 +533,12 @@ class Pedido extends Component{
                                             style={style.inputTerminarPedido}
                                         />
                                         <TextInput
-                                            placeholder="Valor Unitario"
+                                            placeholder="Valor Total"
                                             autoCapitalize = 'none'
                                             keyboardType='numeric'
                                             placeholderTextColor="#aaa" 
-                                            onChangeText={(valor_unitarioTexto)=> this.setState({ valor_unitarioTexto })}
-                                            value={valor_unitarioTexto}
+                                            onChangeText={(valor_totalTexto)=> this.setState({ valor_totalTexto })}
+                                            value={valor_totalTexto}
                                             style={style.inputTerminarPedido}
                                         />
                                          <TextInput
@@ -575,10 +589,10 @@ class Pedido extends Component{
                                         />
                                         <View style={style.contenedorConductor}>
                                             <TouchableOpacity 
-                                                style={kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_unitarioTexto.length<1 || novedad.length<1 || !imagen
+                                                style={kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<1 || novedad.length<1 || !imagen
                                                 ?style.btnDisable3 :style.btnGuardar3} 
                                                 onPress={
-                                                    kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_unitarioTexto.length<1  || novedad.length<1 || !imagen
+                                                    kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_totalTexto.length<1  || novedad.length<1 || !imagen
                                                     ?()=>alert("llene todos los campos")
                                                     :()=>this.cerrarPedido()
                                                 }
@@ -1015,7 +1029,8 @@ class Pedido extends Component{
 
 	render(){
         const {navigation} = this.props
-        const {pedidos, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, modalPerfiles, modalCarrosFiltro} = this.state
+        const {pedidos, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, modalPerfiles, modalCarrosFiltro, valor_unitario} = this.state
+        
         return (
             <View style={style.container}>
                 {modalPerfiles &&this.modalPerfiles()}
@@ -1164,7 +1179,7 @@ class Pedido extends Component{
     ////////////////////////           CERRAR PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
-        let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_unitarioTexto, id, tokenPhone, imagen, email, fechaEntrega, remisionTexto} = this.state
+        let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_totalTexto, id, tokenPhone, imagen, email, fechaEntrega, remisionTexto} = this.state
         Alert.alert(
             `Seguro desea cerrar este pedido`,
             '',
@@ -1185,7 +1200,7 @@ class Pedido extends Component{
             data.append('_id', id);
             data.append('kilos', kilosTexto);
             data.append('factura', facturaTexto);
-            data.append('valor_unitario', valor_unitarioTexto);
+            data.append('valor_total', valor_totalTexto);
             data.append('forma_pago', forma_pagoTexto);
             data.append('fechaEntrega', fechaEntrega);
             data.append('remision', remisionTexto);
@@ -1200,7 +1215,7 @@ class Pedido extends Component{
                 if(res.data.status){
                     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
                     .then((res2)=>{
-                        this.setState({openModal:false, novedad:"", kilosTexto:"", facturaTexto:"", valor_unitarioTexto:"", id:"", fechaEntrega:""})
+                        this.setState({openModal:false, novedad:"", kilosTexto:"", facturaTexto:"", valor_totalTexto:"", id:"", fechaEntrega:"", remisionTexto:""})
                         sendRemoteNotification(2, tokenPhone, "pedido entregado", `Su pedido ha sido entregado`, null, null, null )
                         setTimeout(() => {
                             alert("Pedido cerrado")

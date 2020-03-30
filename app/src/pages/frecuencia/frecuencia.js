@@ -45,6 +45,7 @@ class verPerfil extends Component{
         const {pedidos, terminoBuscador, inicio, final} = this.state
         let filtroPedidos = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = filtroPedidos.slice(inicio, final) 
+        console.log(newPedidos)
         return (
             <View style={style.container}>
                 <Text style={style.titulo}>Pedidos: {filtroPedidos.length}</Text>
@@ -61,7 +62,7 @@ class verPerfil extends Component{
                         newPedidos.map((e, key)=>{
                             return(
                                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"white" }]} key={key}>
-                                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
+                                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e.usuarioId._id})}>
                                         <View style={{width:"90%"}}>
                                             <Text style={style.textUsers}>Cliente: {e.usuarioId.nombre} - {e.usuarioId.codt}</Text>
                                             <Text style={style.textUsers}>N Pedido:{e.nPedido}</Text>

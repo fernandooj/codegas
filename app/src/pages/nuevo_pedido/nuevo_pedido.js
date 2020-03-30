@@ -135,7 +135,6 @@ class Nuevo_pedido extends Component{
                 this.setState({clientes, modalCliente:true})
             }
         })
-       
     }
  
 	renderPedido(){
@@ -270,7 +269,7 @@ class Nuevo_pedido extends Component{
                     </View>
                 }
                 {
-                    acceso=="admin" || acceso=="solucion"
+                    acceso=="admin" || acceso=="solucion" || acceso=="veo"
                     ?this.renderCliente()
                     :null
                 }

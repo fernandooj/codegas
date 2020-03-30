@@ -13,82 +13,90 @@ class tanqueServices{
 
 	}
 	get(callback){
-		tanque.find({}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").sort({_id: 'desc'}).exec(callback)
+		tanque.find({})
+		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
+		.populate("zonaId")
+		.populate("puntoId")
+		.populate("usuarioId")
+		.sort({_id: 'desc'}).exec(callback)
+	}
+	getById(_id, callback){
+		tanque.findOne({_id})
+		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
+		.populate("zonaId")
+		.populate("puntoId")
+		.populate("usuarioId")
+		.sort({_id: 'desc'}).exec(callback)
+	}
+	getByUser(usuarioCrea, callback){
+		tanque.findOne({usuarioCrea})
+		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
+		.populate("zonaId")
+		.populate("puntoId")
+		.populate("usuarioId")
+		.sort({_id: 'desc'}).exec(callback)
 	}
 	 
 	create(data, usuarioCrea, callback){
-        let creado = moment().subtract(5, 'hours');
-        creado = moment(fecha2).format('YYYY-MM-DD h:mm');
+    let creado = moment().subtract(5, 'hours');
+    creado = moment(creado).format('YYYY-MM-DD h:mm');
 		let newTanque = new tanque({
-			nControl              : data.placa,
-			zonaAdicional         : data.zonaAdicional,
-			sector                : data.sector,
-			propiedad             : data.propiedad,
-			barrio                : data.barrio,
-			usuariosAtendidos     : data.usuariosAtendidos,
-			ubicacion             : data.ubicacion,
-			fechaUltimaRev        : data.fechaUltimaRev,
-			m3                    : data.m3,
-			placa                 : data.placa,
-			codigo                : data.codigo,
-			serie                 : data.serie,
-			placaMantenimiento    : data.placaMantenimiento,
-			ultimaRevisionPar     : data.ultimaRevisionPar,
-			fabricante            : data.fabricante,
-			nPlacaFabricante      : data.nPlacaFabricante,
-			anoFabricacion        : data.anoFabricacion,
-			lote                  : data.lote,
-			nNMedidor             : data.nNMedidor,
-			nComodato             : data.nComodato,
-			fotos                 : data.fotos,
-			observaciones         : data.observaciones,
-			compromisos           : data.compromisos,
-			coordenadas           : data.coordenadas,
-			puntoId               : data.puntoId,
-			zonaId                : data.zonaId,
-			usuarioId             : data.usuarioId,
-            usuarioCrea,
+		 
+			placaText       	: data.placaText,
+			capacidad         : data.capacidad,
+			fabricante        : data.fabricante,
+			ultimaRevisionPar : data.ultimaRevisionPar,
+			fechaUltimaRev    : data.fechaUltimaRev,
+		
+			ubicacion         : data.ubicacion,
+			codigoActivo      : data.codigoActivo,
+			serie       		  : data.serie,
+			anoFabricacion    : data.anoFabricacion,
+		
+		
+			puntoId           : data.puntoId,
+			zonaId            : data.zonaId,
+			usuarioId         : data.usuarioId,
+      usuarioCrea,
 			creado
 		})
 		newTanque.save(callback)	
 	}
 	editar(_id, data, callback){
+		console.log(data)
 		tanque.findByIdAndUpdate(_id, {$set: {
-			nControl              : data.placa,
-			zonaAdicional         : data.zonaAdicional,
-			sector                : data.sector,
-			propiedad             : data.propiedad,
-			barrio                : data.barrio,
-			usuariosAtendidos     : data.usuariosAtendidos,
-			ubicacion             : data.ubicacion,
-			fechaUltimaRev        : data.fechaUltimaRev,
-			m3                    : data.m3,
-			placa                 : data.placa,
-			codigo                : data.codigo,
-			serie                 : data.serie,
-			placaMantenimiento    : data.placaMantenimiento,
-			ultimaRevisionPar     : data.ultimaRevisionPar,
-			fabricante            : data.fabricante,
-			nPlacaFabricante      : data.nPlacaFabricante,
-			anoFabricacion        : data.anoFabricacion,
-			lote                  : data.lote,
-			nNMedidor             : data.nNMedidor,
-			nComodato             : data.nComodato,
-			fotos                 : data.fotos,
-			observaciones         : data.observaciones,
-			compromisos           : data.compromisos,
-			coordenadas           : data.coordenadas,
-			puntoId               : data.puntoId,
-			zonaId                : data.zonaId,
-			usuarioId             : data.usuarioId,
+			placaText       	: data.placaText,
+			capacidad         : data.capacidad,
+			fabricante        : data.fabricante,
+			ultimaRevisionPar : data.ultimaRevisionPar,
+			fechaUltimaRev    : data.fechaUltimaRev,
+		
+			ubicacion         : data.ubicacion,
+			codigoActivo      : data.codigoActivo,
+			serie       		  : data.serie,
+			anoFabricacion    : data.anoFabricacion,
+		
+		
+			puntoId           : data.puntoId,
+			zonaId            : data.zonaId,
+			usuarioId         : data.usuarioId,
 		}}, callback);
-    }
-    cambiarEstado(_id, activo, callback){
+  }
+	editarImagen(_id, placa, placaMantenimiento, placaFabricante, callback){
+		console.log({placa, placaMantenimiento, placaFabricante})
+		tanque.findByIdAndUpdate(_id, {$set: {
+			'placa': placa,
+			'placaMantenimiento': placaMantenimiento,
+			'placaFabricante' : placaFabricante,
+		}}, callback);
+	}
+	
+	cambiarEstado(_id, activo, callback){
 		tanque.findByIdAndUpdate(_id, {$set: {
 			'activo':activo
 		}}, callback);
-    }
-    eliminar(_id, eliminado, callback){
+  }
+  eliminar(_id, eliminado, callback){
 		tanque.findByIdAndUpdate(_id, {$set: {
 			'eliminado':eliminado
 		}}, callback);
@@ -103,7 +111,14 @@ class tanqueServices{
 			'usuarioId':null
 		}}, callback);
 	}
- 
+	geo(_id, data, callback){
+		let coordenadas = {'type':'Point', "coordinates": [parseFloat(data.lng), parseFloat(data.lat)] }
+		tanque.findByIdAndUpdate(_id, {$set: {
+			'coordenadas':coordenadas
+		}}, callback);
+	}
+
+
 }
 
 module.exports = new tanqueServices();

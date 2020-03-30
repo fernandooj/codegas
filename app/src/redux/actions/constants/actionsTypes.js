@@ -17,8 +17,9 @@ export const CAMBIAR_CONTRASENA   = "CAMBIAR_CONTRASENA";
    Acciones para pedido
 */
 ///////////////////////////////////////////////////////////////////////////
-export const GET_PEDIDO  = "GET_PEDIDO";
-export const GET_PEDIDOS = "GET_PEDIDOS";
+export const GET_PEDIDO             = "GET_PEDIDO";
+export const GET_PEDIDOS            = "GET_PEDIDOS";
+export const GET_PEDIDOS_USER       = "GET_PEDIDOS_USER";
 export const GET_PEDIDOS_FRECUENCIA = "GET_PEDIDOS_FRECUENCIA";
 
 

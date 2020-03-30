@@ -1,5 +1,5 @@
 import React, { Component }        from 'react'
-import { YellowBox, ImageBackground, NetInfo, StyleSheet, Image, Text, View } from 'react-native'
+import { YellowBox, NetInfo, StyleSheet} from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios                       from 'axios' 
 import {Provider}                  from 'react-redux';
@@ -14,7 +14,7 @@ YellowBox.ignoreWarnings(['Require cycle:']);
 //////  RUTA GENERAL DE LA URL PARA EL API
 //////////////////////////////////////////////////////////////////////////////////////////
 export const URL = 'https://appcodegas.com';     //// URL WEB DEV
-// export const URL = 'http://192.168.0.17:8181'; //// URL local
+// export const URL = 'http://192.168.0.19:8181'; //// URL local
 export const VERSION = "1.0.0"
 axios.defaults.baseURL = URL+"/x/v1";
 
@@ -87,9 +87,7 @@ export default class App extends Component<{}> {
   render(){
     return (
       <Provider store={store}>
-        <MainRoutes />
-        
-          
+        <MainRoutes />  
       </Provider> 
     )
   }

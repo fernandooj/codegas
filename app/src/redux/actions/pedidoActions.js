@@ -4,6 +4,7 @@ import {
     GET_VEHICULOS_PEDIDOS,
     GET_ZONA_PEDIDOS,
     GET_PEDIDOS_FRECUENCIA,
+    GET_PEDIDOS_USER,
 } from "./constants/actionsTypes";
 import axios from "axios";
 
@@ -23,6 +24,25 @@ const getPedido = pedidoId => {
       });
   };
 };
+
+const getPedidoByUser = userId => {
+  console.log({userId})
+  return dispatch => {
+    return axios
+      .get(`/ped/pedido/byUser/${userId}`)
+      .then(res => {
+        console.log(res.data)
+        dispatch({
+          type: GET_PEDIDOS_USER,
+          pedidosUser: res.data.pedido
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+};
+
 
 const getPedidos = fechaEntrega => {
   console.log({fechaEntrega})
@@ -100,5 +120,6 @@ export {
     getPedidos,
     getVehiculosConPedidos,
     getZonasPedidos,
-    getFrecuencia
+    getFrecuencia,
+    getPedidoByUser
 };

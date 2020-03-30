@@ -6,6 +6,7 @@ import Icon                from 'react-native-fa-icons';
 import {getUsuarios} from '../../redux/actions/usuarioActions'  
 import { createFilter }    from 'react-native-search-filter';
 import Footer    from '../components/footer'
+
 const KEYS_TO_FILTERS = ["acceso", "email", 'nombre', 'codt', "razon_social", "direccion_factura", "celular", "cedula"] 
  
  
@@ -70,7 +71,7 @@ class verPerfil extends Component{
                     value={terminoBuscador}
                     style={[style.inputCabezera]}
                 />
-                <ScrollView style={{ marginBottom:85}} onScroll={(e)=>this.onScroll(e)} >
+                <ScrollView style={{ marginBottom:85}} onScroll={(e)=>this.onScroll(e)}  keyboardDismissMode="on-drag">
                     {this.renderUsuarios()}
                 </ScrollView>
                 <Footer navigation={navigation} />

@@ -1,7 +1,12 @@
 let express = require('express')
 let router = express.Router();
+let fs 		   = require('fs');
+let Jimp       = require("jimp");
+let {promisify} = require('util');
 let tanqueServices = require('../services/tanqueServices.js') 
-
+let  moment = require('moment-timezone');
+let sizeOf    	   = promisify(require('image-size'));
+let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS tanqueS
 ////////////////////////////////////////////////////////////
@@ -9,16 +14,16 @@ router.get('/', (req,res)=>{
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado' }); 
     }else{
-        tanqueServices.get((err, tanque)=>{
+       tanqueServices.get((err, tanque)=>{
             if (!err) {
                 res.json({ status: true, tanque }); 
             }else{
                 res.json({ status:false, message: err,  tanque:[] }); 
             }
         })
+        
     }
 })
-
 
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS ACTIVOS
@@ -40,8 +45,8 @@ router.get('/no_eliminados', (req,res)=>{
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN tanque POR SU ID
 ////////////////////////////////////////////////////////////
-router.get('byId/:tanqueId', (req,res)=>{
-	tanqueServices.getByTanque(req.params.tanqueId, (err, tanque)=>{
+router.get('/byId/:tanqueId', (req,res)=>{
+	tanqueServices.getById(req.params.tanqueId, (err, tanque)=>{
 		if (err) {
 			res.json({ status:false, message: err, tanque:[] }); 
 		}else{
@@ -140,15 +145,31 @@ router.get('/eliminar/:idVehiculo/:estado', (req,res)=>{
 
 
 ///////////////////////////////////////////////////////////////
+////////////       GUARDO UN tanque
+//////////////////////////////////////////////////////////////
+router.post('/', (req,res)=>{
+	if (!req.session.usuario) {
+		res.json({ status: false, message: 'No hay un usuario logueado', code:0 }); 
+	}else{
+        tanqueServices.create(req.body, req.session.usuario._id, (err2, tanque)=>{
+            if (!err2) {
+                res.json({ status: true, tanque });	
+            } 
+        })   
+	}
+})
+
+
+///////////////////////////////////////////////////////////////
 ////////////      EDITAR
 //////////////////////////////////////////////////////////////
-router.put('/editar/:idVehiculo/', (req,res)=>{
+router.put('/:idTanque/', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        tanqueServices.editar(req.params.idVehiculo, req.body, (err, pedido)=>{
+        tanqueServices.editar(req.params.idTanque, req.body, (err, tanque)=>{
             if (!err) {
-                res.json({ status:true, pedido }); 
+                res.json({ status:true, tanque }); 
             }else{
                 res.json({ status:false, message: err }); 
             }
@@ -158,27 +179,231 @@ router.put('/editar/:idVehiculo/', (req,res)=>{
 
 
 ///////////////////////////////////////////////////////////////
-////////////       GUARDO UN tanque
+////////////      GUARDAR COORDENADAS
 //////////////////////////////////////////////////////////////
-router.post('/', (req,res)=>{
-	if (!req.session.usuario) {
-		res.json({ status: false, message: 'No hay un usuario logueado', code:0 }); 
+router.put('/coordenadas/:idVehiculo/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        tanqueServices.getByPlaca(req.body.placa, (err, tanque)=>{
-         console.log(tanque)   
-         if(!tanque){
-             tanqueServices.create(req.body, req.session.usuario._id, (err, pedido)=>{
-                 if (!err) {
-                     res.json({ status: true, pedido });	
-                 } 
-             })
-         }else{
-            res.json({ status: false, message: 'ya existe esta placa', code:1 }); 
-         }
+        tanqueServices.geo(req.params.idVehiculo, req.body, (err, tanque)=>{
+            if (!err) {
+                res.json({ status:true, tanque }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
         })
-	}
+    }
 })
 
+
+
+///////////////////////////////////////////////////////////////
+////////////      GUARDAR IMAGEN
+//////////////////////////////////////////////////////////////
+router.put('/guardarImagen/:idTanque/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        let rutaImgPlaca              = [];
+        let rutaImgPlacaMantenimiento = [];
+        let rutaImgPlacaFabricante    = [];
+        
+       
+        if(req.files.imgPlaca){
+            let esArrayInstalacion = Array.isArray(req.files.imgPlaca)
+            if(esArrayInstalacion){
+                req.files.imgPlaca.map(e=>{
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                    
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    rutaImgPlaca.push(rutas)
+                    ///////////////////     envio la imagen al nuevo path
+                    
+                    let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                    resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                })
+            }else{
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgPlaca  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ///////////////////     envio la imagen al nuevo path
+                
+                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                fs.rename(req.files.imgPlaca.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+           
+        }
+
+        if(req.files.imgPlacaMantenimiento){
+            let esArrayInstalacion = Array.isArray(req.files.imgPlacaMantenimiento)
+            if(esArrayInstalacion){
+                req.files.imgPlacaMantenimiento.map(e=>{
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                    
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    rutaImgPlacaMantenimiento.push(rutas)
+                    ///////////////////     envio la imagen al nuevo path
+                    
+                    let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                    resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                })
+            }else{
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgPlacaMantenimiento  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ///////////////////     envio la imagen al nuevo path
+                
+                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                fs.rename(req.files.imgPlacaMantenimiento.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+        }
+
+        if(req.files.imgPlacaFabricante){
+            let esArrayInstalacion = Array.isArray(req.files.imgPlacaFabricante)
+            if(esArrayInstalacion){
+                req.files.imgPlacaFabricante.map(e=>{
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                    
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    rutaImgPlacaFabricante.push(rutas)
+                    ///////////////////     envio la imagen al nuevo path
+                    
+                    let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                    resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                })
+            }else{
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgPlacaFabricante  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ///////////////////     envio la imagen al nuevo path
+                
+                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                fs.rename(req.files.imgPlacaFabricante.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+        }
+        rutaImgPlaca              = rutaImgPlaca.length==0  ?req.body.imgPlaca :rutaImgPlaca;
+        rutaImgPlacaMantenimiento = rutaImgPlacaMantenimiento.length==0 ?req.body.imgPlacaMantenimiento :rutaImgPlacaMantenimiento;
+        rutaImgPlacaFabricante    = rutaImgPlacaFabricante.length==0   ?req.body.imgPlacaFabricante :rutaImgPlacaFabricante;
+
+        tanqueServices.editarImagen(req.params.idTanque,  rutaImgPlaca, rutaImgPlacaMantenimiento, rutaImgPlacaFabricante, (err, tanque)=>{
+            if (!err) {
+               
+                res.json({ status:true, tanque }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////// CAMBIO LOS TAMAÑOS DE LAS IMAGENES
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const ubicacionJimp =  '../front/docs/public/uploads/tanques/'
+const resizeImagenes = (ruta, randonNumber, extension, res) =>{
+	Jimp.read(ruta, (err, imagen)=> {
+		if(err){
+			return err
+		}else{
+			imagen.resize(800, Jimp.AUTO)             
+			.quality(90)                          
+			.write(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`);
+			// res.json({status:true,  code:1})    
+		}
+	});	
+
+	setTimeout(function(){
+		sizeOf(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`)
+	    .then(dimensions => { 
+		  	let width  = dimensions.width
+		  	let height = dimensions.height
+		  	let x; 
+		  	let y; 
+		  	let w; 
+		  	let h; 
+
+		  	if (width>height) {
+		  		console.log(1)
+		  		x = (width*10)/100
+			  	y = (width*10)/100
+			  	w = (((height*100)/100)-y)
+			  	h = (((height*100)/100)-y)
+		  	}else{
+				x = (height*10)/100
+			  	y = (height*10)/100
+			  	w = (width*90)/100
+			  	h = (width*90)/100
+		  	}
+		  	
+			Jimp.read(ruta, function (err, imagen) {
+			    if (err) throw err;
+			    imagen.resize(800, Jimp.AUTO)             
+				.quality(90)                 
+				.crop(x,y,w,h)                
+				.write(`${ubicacionJimp}Miniatura${fechaImagen}_${randonNumber}.${extension}`);
+			});	
+		})
+	.catch(err => console.error(err));
+	},2000)
+}
 
 
 module.exports = router;

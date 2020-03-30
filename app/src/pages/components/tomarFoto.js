@@ -1,13 +1,16 @@
 import React, {Component} from 'react'
 import {View, Text, Image, TouchableOpacity, Modal} from 'react-native'
-import ImagePicker from 'react-native-image-crop-picker';
-import Icon from 'react-native-fa-icons' 
+import ImagePicker  from 'react-native-image-crop-picker';
+import Icon         from 'react-native-fa-icons' 
+import Lightbox 	from 'react-native-lightbox';
+import {style}      from './style'
  
-import {style}   from './style'
-
 export default class tomarPhoto extends Component{
-    state={
-        imagenes:[]
+    constructor(props) {
+        super(props);
+        this.state={
+            imagenes:props.source
+        }
     }
     subirImagen(){
         let {imagenes} = this.state
@@ -17,7 +20,7 @@ export default class tomarPhoto extends Component{
             width: 800,
             height: 800,
             forgeJpg: true,
-            cropping: true,
+            // cropping: true,
             compressImageQuality:0.5
         };
        
@@ -37,6 +40,7 @@ export default class tomarPhoto extends Component{
 			}
 		});
     }
+     
     tomarFoto(){
         let {imagenes} = this.state
         const options = {
@@ -44,7 +48,7 @@ export default class tomarPhoto extends Component{
             compressImageMaxHeight:800,
             width: 800,
             height: 800,
-            cropping: true,
+            // cropping: true,
             forgeJpg: true,
         };
         ImagePicker.openCamera(options).then(response => {
@@ -65,15 +69,41 @@ export default class tomarPhoto extends Component{
 		
 	}
 	renderImagenes(){
-        return  this.state.imagenes.map((e, key)=>{
+        let {imagenes} = this.state
+        let img = []
+         
+        imagenes.map(e=>{
+            if(e.uri){
+                img.push(e)
+            }else{
+                let img2 = e.split("-")
+                img2 = `${img2[0]}Resize${img2[2]}`
+                img.push({uri:img2})
+            }
+        })
+        
+        return  img.map((e, key)=>{
             return(
-                <View key={key}>
-                    <Image source={{uri:e.uri}} style={style.imagenesFotos} />
-                    <Icon name={'trash'} style={style.iconTrash} onPress={()=>this.eliminarImagen(key)}/>
-                </View>
+                <Lightbox 
+                    backgroundColor="#fff"
+                    renderContent={() => (
+                        <Image 
+                        source={{uri: e.uri }}
+                        style={{ width: "100%", height:400, backgrundColor:"white"}}
+                        resizeMode="contain"
+                        />
+                    )}
+                    >
+                    <View key={key}>
+                        <Image source={{uri:e.uri}} style={style.imagenesFotos} resizeMode="cover" />
+                        <Icon name={'trash'} style={style.iconTrash} onPress={()=>this.eliminarImagen(key)}/>
+                    </View>
+                     
+                </Lightbox>	
             )
         })
     }
+ 
     eliminarImagen(keyImagen){
         let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
         this.setState({imagenes})    
@@ -111,8 +141,8 @@ export default class tomarPhoto extends Component{
     */
     render(){
         const {imagenes, showModal} = this.state
-        const {width, avatar, limiteImagenes, tipoMensaje} = this.props
- 
+        const {width, avatar, limiteImagenes, tipoMensaje, titulo} = this.props
+        console.log({imagenes})
         return(
             <View style={style.contenedorPortada}>
                 {
@@ -126,7 +156,7 @@ export default class tomarPhoto extends Component{
                     &&<TouchableOpacity style={[style.contenedorUploadPortada, {width}]} onPress={() => this.setState({showModal:true, isAndroidShareOpen:true}) }>
                         <Icon name={'camera'} style={style.iconPortada} />
                         {/* <Text style={style.textPortada}> {!avatar ?"Imagen" :"Avatar"}</Text> */}
-                        {!avatar &&<Text style={style.textPortada2}>Subir {!avatar ?"Imagen" :"Avatar"}</Text>}
+                        {!avatar &&<Text style={style.textPortada2}>{titulo}</Text>}
                     </TouchableOpacity>
                 }
                 {

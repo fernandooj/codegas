@@ -1,20 +1,11 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
- 
-import {getPedidos} from '../../redux/actions/pedidoActions' 
- 
-import { connect }         from "react-redux";
-import Footer              from '../components/footer'
-import {
-    LineChart,
-    BarChart,
-    PieChart,
-    ProgressChart,
-    ContributionGraph,
-    StackedBarChart
-  } from "react-native-chart-kit";
-
-import {style}             from './style'
+import {View, Text, Dimensions, Animated} from 'react-native'
+import AsyncStorage        from '@react-native-community/async-storage';
+import {getPedidoByUser} from '../../redux/actions/pedidoActions' 
+import { connect }  from "react-redux";
+import Footer       from '../components/footer'
+import { BarChart}  from "react-native-chart-kit";
+import {style}      from './style'
  
 function groupBy(array, groupFn) {
     var hash = Object.create(null),
@@ -54,18 +45,33 @@ class Chart extends Component{
         conductores:[],
         fechas:[],
         total:[],
+        pedidos:[],
         top:new Animated.Value(size.height),
 	  }
-	}
-    componentWillMount(){
-        this.props.getPedidos()
+    }
+    
+    componentWillMount = async () =>{
+     
+        try {
+            let idUsuario = await AsyncStorage.getItem('userId')
+            const acceso  = await AsyncStorage.getItem('acceso')
+            let userId = acceso=="cliente" ?idUsuario :this.props.navigation.state.params.idUsuario
+            // let userId = "5e3d805e4ceec44739a42f40"
+            console.log({userId})
+            this.props.getPedidoByUser(userId)
+        } catch (error) {
+            console.log(error)
+        }
         
     }
+
+     
     componentWillReceiveProps(props){
         let data   = []
         let fechas = []
         let total  = []
         
+       
         let pedidos = props.pedidos.filter(e=>{
             return e.kilos
         })
@@ -74,7 +80,7 @@ class Chart extends Component{
             return e
         })
         pedidos.map(e=>{
-            data.push({date:e.fechaEntrega, count:parseInt(e.valor_unitario)*parseInt(e.kilos)})
+            data.push({date:e.fechaEntrega, count:parseInt(e.kilos)})
         })
         let datos = groupBy(data, month)
         datos.map(e=>{
@@ -83,12 +89,11 @@ class Chart extends Component{
         datos.map(e=>{
             total.push(e.count)
         })
-        this.setState({fechas, total})
+        this.setState({fechas, total, pedidos})
+        console.log({fechas, total, pedidos})
     }
     renderChat(){
         let {total, fechas} = this.state
-        console.log({total, fechas})
-        
         return(
             <BarChart
                 data={{
@@ -103,8 +108,8 @@ class Chart extends Component{
                 verticalLabelRotation={30}
                 width={size.width} // from react-native
                 height={size.height-130}
-                yAxisLabel="$"
-                yAxisSuffix="k"
+                yAxisLabel=" "
+                yAxisSuffix=" Kilos"
                 yAxisInterval={1} // optional, defaults to 1
                 chartConfig={{
                 backgroundColor: "#e26a00",
@@ -133,10 +138,15 @@ class Chart extends Component{
     }
 	render(){
         const {navigation} = this.props
+        const {pedidos}    = this.state
         return (
             <View style={style.container}>
-                <Text style={style.titulo}>Graficos ultimos 6 meses</Text>
-                    {this.renderChat()}
+                <Text style={style.titulo}>Graficos ultimos 6 meses, pedidos: {pedidos.length}</Text>
+                    {
+                        pedidos.length==0
+                        ?<Text style={style.textNoEntregados}>No tiene pedidos entregados</Text>
+                        :this.renderChat()
+                    }
                 <Footer navigation={navigation} />
             </View>
         )
@@ -144,15 +154,16 @@ class Chart extends Component{
 }
 
 const mapState = state => {
+    console.log(state.pedido.pedidosUser)
 	return {
-        pedidos: state.pedido.pedidos,
+        pedidos: state.pedido.pedidosUser,
 	};
 };
 
 const mapDispatch = dispatch => {
     return {
-        getPedidos: (fechaEntrega) => {
-            dispatch(getPedidos(fechaEntrega));
+        getPedidoByUser: (idUser) => {
+            dispatch(getPedidoByUser(idUser));
         },
     };
 };

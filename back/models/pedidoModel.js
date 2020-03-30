@@ -20,7 +20,7 @@ const Pedido = new Schema({
     fechaEntregado:String,
     kilos         :String,
     factura       :String,
-    valor_unitario:String,
+    valor_total   :String,
     remision      :String,
  
     orden         :Number,

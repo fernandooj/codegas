@@ -3,6 +3,9 @@ package com.codegas;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
+import org.wonday.pdf.RCTPdfView;
+import com.RNFetchBlob.RNFetchBlobPackage;
 import com.horcrux.svg.SvgPackage;
  
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
@@ -32,6 +35,9 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new DocumentPickerPackage(),
+            new RCTPdfView(),
+            new RNFetchBlobPackage(),
             new SvgPackage(),
           new AsyncStoragePackage(),
           new RNFirebasePackage(),

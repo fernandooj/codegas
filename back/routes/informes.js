@@ -257,7 +257,7 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Estado Pedido',
                 value: 'estado'
             },{
-                label: 'Fecha Asignación',
+                label: 'Fecha Entrega',
                 value: 'fechaEntrega'
             },{
                 label: 'Usuario Asigna',
@@ -277,9 +277,6 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Conductor asignado',
                 value: 'conductorId.nombre'
-            },{
-                label: 'Fecha Entrega',
-                value: 'fechaEntregado'
             },{
                 label: 'Imagen',
                 value: 'imagen'
@@ -411,10 +408,10 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 return e.kilos=e.kilos.replace(',', '.')
             })
             /////// da el valor total
-            pedido.push({valor_total:0})
-            pedido = pedido.filter(e=>{
-                return e.valor_total = e.kilos*e.valor_unitario
-            })
+            // pedido.push({valor_total:0})
+            // pedido = pedido.filter(e=>{
+            //     return e.valor_total = e.kilos*e.valor_unitario
+            // })
             
             const fields = [{   
                 label: 'N Pedido',
@@ -454,7 +451,7 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 value: 'kilos'
             },{
                 label: 'Valor Unitario',
-                value: 'valor_unitario'
+                value: 'usuarioId.valor_unitario'
             },{
                 label: 'Valor Total', /// aun no esta
                 value: 'valor_total'

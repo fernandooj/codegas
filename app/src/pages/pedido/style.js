@@ -107,7 +107,7 @@ export const style = MediaQueryStyleSheet.create({
 	},	
 	titulo:{
 		fontFamily: "Comfortaa-Regular",
-		width:"62%",
+		width:"58%",
 		fontSize:22,
 		marginVertical:10,
 	},
@@ -239,17 +239,19 @@ export const style = MediaQueryStyleSheet.create({
 		top:0,
 		left:0,	
 	},
-	 
+	contenedorCerrarPedido:{
+		left:5
+	},
 	subContenedorModal:{
 		backgroundColor:"#ffffff",
 		height:size.height-100,
 		borderRadius:7,
-		padding:10,
+		padding:0,
 		alignItems:"center",
-		minWidth:size.width/1.5
+		minWidth:size.width/1.5,
 	},
 	containerTituloModal:{
-		minWidth:size.width/1.6
+		minWidth:size.width/1.5
 	},
 	subContenedorModal2:{
 		backgroundColor:"#ffffff",
@@ -329,9 +331,9 @@ export const style = MediaQueryStyleSheet.create({
 	btnGuardar2:{
 		backgroundColor: "#00218b",
 		paddingVertical:8,
-		width:size.width-150,
+		width:"80%",
 		marginVertical:20,
-		left:size.width/10,
+		left:"10%",
 		justifyContent:"center"
 	},
 	btnDisable2:{
@@ -375,6 +377,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	inputNovedad:{
 		borderColor:"#rgba(0,0,0,.2)",
+		textAlignVertical: 'top',
 		alignItems:"flex-start",
 		borderRadius:5,
 		marginTop:15,

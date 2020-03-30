@@ -12,24 +12,28 @@ let Schema = mongoose.Schema
 /********** genero la base la coleccion llamada users   ****************/
 /////////////////////////////////////////////////////////////////////////
 let UserSchema = mongoose.Schema({
-	created: 	 String,
-	razon_social:String,
-	cedula:    	 String,
-	direccion_factura:String,
-	email:       String,
-	nombre:      String,
-	password:    String,
-	celular:     String,
-	tipo:    	 String,
-	descuento  : String,
-	acceso	   : String,
-	tokenPhone :  String,
-	token	   :  String,
-	avatar	   : String,
-	codt	   : String,
-	activo     : Boolean,     //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
-	eliminado  : {type: Boolean, default:false},   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
-	idPadre    : {type: Schema.ObjectId, ref:'User'},
+	created			  : String,
+	razon_social	  : String,
+	cedula			  : String,
+	direccion_factura : String,
+	email			  : String,
+	nombre			  : String,
+	password		  : String,
+	celular		      : String,
+	tipo 			  : String,
+	descuento  		  : String,
+	acceso	   		  : String,
+	tokenPhone 		  : String,
+	token	   		  : String,
+	codMagister   	  : String,
+	avatar	   		  : String,
+	codt	   		  : String,
+	valorUnitario     : Number,
+	editado    		  : {type: Boolean, default:false},     //// es para verificar que ya edito la informacion, al momento del registro
+	activo     		  : Boolean,     						//// cuando se crea el usuario es innactivo, se activa al darle clikc al email
+	eliminado  		  : {type: Boolean, default:false},   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
+	idPadre    		  : {type: Schema.ObjectId, ref:'User'},
+	comercialAsignado : {type: Schema.ObjectId, ref:'User'},
 });
 
  
@@ -59,3 +63,4 @@ module.exports =  mongoose.model('User', UserSchema)
 // cliente
 // chat
 // pedidos
+// comercial

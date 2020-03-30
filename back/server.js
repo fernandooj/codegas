@@ -2,15 +2,14 @@
 /////////////////////////////////////////////////////////////////////////
 /***** librerias necesarias para el funcionamiento de la app  **********/
 /////////////////////////////////////////////////////////////////////////
-let express      = require('express') 
-let app          = express();
-let bodyParser   = require('body-parser');
-let morgan       = require('morgan');
-let mongoose     = require('mongoose');
-let cookieSession= require('cookie-session');
-let formidable   = require('express-form-data');
- 
-let fs = require('fs');
+let express       = require('express') 
+let app           = express();
+let bodyParser    = require('body-parser');
+let morgan        = require('morgan');
+let mongoose      = require('mongoose');
+let cookieSession = require('cookie-session');
+let formidable    = require('express-form-data');
+let fs            = require('fs');
 
 // importo las rutas
 let conversacionRutas = require('./routes/conversacion.js');
@@ -22,6 +21,9 @@ let calificacionRutas = require('./routes/calificacion.js');
 let zonaRutas         = require('./routes/zona.js');
 let puntoRutas        = require('./routes/punto.js');
 let informesRutas     = require('./routes/informes.js');
+let tanqueRutas       = require('./routes/tanque.js');
+let revisionRutas       = require('./routes/revision.js');
+let configuracionRutas       = require('./routes/configuracion.js');
 
 let SocketIO = require('./socket.js')
 const path   = require('path');
@@ -116,6 +118,9 @@ app.use('/x/v1/cal/calificacion', calificacionRutas)
 app.use('/x/v1/zon/zona',         zonaRutas) 
 app.use('/x/v1/pun/punto',        puntoRutas) 
 app.use('/x/v1/inf/informe',      informesRutas) 
+app.use('/x/v1/tan/tanque',       tanqueRutas) 
+app.use('/x/v1/rev/revision',     revisionRutas) 
+app.use('/x/v1/con/configuracion',configuracionRutas) 
 require('./routes/user.js')(app, passport);
 
 server.listen(port)

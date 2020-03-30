@@ -67,7 +67,9 @@ export const style = MediaQueryStyleSheet.create({
     },
     textInfo:{
         fontFamily: "Comfortaa-Regular",
-        color:"#ffffff"
+        color:"rgba(80,80,80,.9)",
+        left:26,
+        top:10
     },
     tituloContrasena:{
         fontFamily: "Comfortaa-Regular",
@@ -88,6 +90,24 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5,
         paddingLeft:10
     },
+    inputVeo:{
+        fontFamily: "Comfortaa-Regular",
+        borderColor:"rgba(0,0,0,.2)",
+        backgroundColor:"#ffffff",
+        borderWidth:1,
+        marginHorizontal:"6%",
+        width:"88%",
+        height:50,
+        marginTop:10,
+        marginBottom:10,
+        borderRadius:5,
+        paddingLeft:10
+    },
+    textVeo:{
+        fontFamily: "Comfortaa-Regular",
+        top:15,
+		color:"#000"
+    },
     btnGuardar:{
         flexDirection:"row",
         justifyContent:"center",
@@ -96,7 +116,7 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5,
         width:size.width/2,
         left:size.width/3.5,
-        marginBottom:70,
+        marginBottom:5,
         marginTop:20
 	},
 	textGuardar:{
@@ -120,8 +140,8 @@ export const style = MediaQueryStyleSheet.create({
         paddingLeft:10
     },
     contenedorPerfil:{
-        marginTop:100,
-        marginBottom:20
+        marginTop:Platform.OS==='android' ?100 :110,
+        marginBottom:90
     },
     /////////////////////////////////////////////////////////////////
     ////////////////////        PICKER
@@ -286,6 +306,14 @@ export const style = MediaQueryStyleSheet.create({
         left:20,
         marginBottom:50,
         marginTop:20
+    },
+    inputIOS: {
+        fontFamily: "Comfortaa-Regular",
+        color: 'black',   
+    },
+    inputAndroid: {
+        fontFamily: "Comfortaa-Regular",
+        color: 'black',   
     },
 
 })

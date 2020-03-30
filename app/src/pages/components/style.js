@@ -68,11 +68,6 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:9
 	},
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////			LOGIN
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	  
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////			TOMAR FOTO
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	contenedorPortada:{
@@ -86,10 +81,10 @@ export const style = MediaQueryStyleSheet.create({
 	iconPortada:{
 		backgroundColor:"#00218b",
 		color:"#ffffff",
-		paddingVertical:25,
-		paddingHorizontal:25,
-		borderRadius:50,
-		fontSize:40,
+		paddingVertical:22,
+		paddingHorizontal:22,
+		borderRadius:15,
+		fontSize:22,
 	},
 	textPortada:{
 		fontFamily: "Comfortaa-Regular",
@@ -146,6 +141,41 @@ export const style = MediaQueryStyleSheet.create({
 		height:100,
 		borderRadius:50
 	},
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////			SUBIR PDF
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	contenedorPdf:{
+        width:size.width/1.3,
+		paddingVertical:10,
+		paddingLeft:10,
+		fontFamily: "Comfortaa-Light",
+		backgroundColor:'#ffffff',
+		shadowColor: 'rgba(0,0,0, .4)', // IOS
+		borderColor:"rgba(0,0,0,0)",
+		shadowOffset: { height: 2, width: 2 }, // IOS
+		shadowOpacity: .5, // IOS
+		shadowRadius: 5, //IOS
+		backgroundColor: '#fff',
+		elevation: 7, // Android
+		marginLeft:10,
+		marginVertical:11,
+		borderRadius:5,
+		textAlignVertical:"center",
+		justifyContent:"center",
+		alignItems:"center",
+		flexDirection:"row",
+    },
+	iconTrashPdf:{
+		flexWrap: 'wrap',
+		 
+		paddingHorizontal:10,	
+		fontSize:17
+	},
+	textPdf:{
+		fontFamily: "Comfortaa-Light",
+	}
+
 },{
 	"@media (min-device-height: 812)": {
 		contenedorFooter:{

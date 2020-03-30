@@ -6,6 +6,7 @@ import { Route, Switch } from "react-router";
 import login          from "../pages/login/login";
 import pedido         from "../pages/pedido/pedido";
 import informe        from "../pages/informe/informe";
+import usuarios       from "../pages/usuarios/usuarios";
 import pedidoVehiculo from "../pages/pedidoVehiculo/pedidoVehiculo";
 import axios from "axios"
  
@@ -25,6 +26,7 @@ class MainRoutes extends React.Component {
         <Route exact path="/"   component={status ?pedido :login} />
         <Route path="/pedidos"  component={pedido} />
         <Route path="/informes" component={informe} />
+        <Route path="/usuarios" component={usuarios} />
         <Route path="/pedidoVehiculo/:ruta?" component={pedidoVehiculo} />
         
     
