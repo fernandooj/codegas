@@ -1,6 +1,7 @@
 import {StyleSheet, Dimensions, Platform} from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
 let Width = Dimensions.get('window').width;
+let Height = Dimensions.get('window').height;
 
 export const style = MediaQueryStyleSheet.create({
   container:{
@@ -175,6 +176,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontFamily: "Comfortaa-Regular",
 		textAlignVertical: 'top',
 		borderColor:"rgba(20,20,20,.1)",
+		backgroundColor:"#ffffff",
 		borderWidth:1,
 		width:Width/1.7,
 		marginVertical:5,
@@ -183,7 +185,7 @@ export const style = MediaQueryStyleSheet.create({
 		height:140,
 	},
 
-	/////////// LISTADO REVISIONES
+ 
 	containerTanque:{
 		flex:1,
 		backgroundColor:'#ffffff',
@@ -231,5 +233,54 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:20,
 		top:5,
 		color:"#002587",
-	}
+	},
+	//////////////////////////////////////////////////////////////////		
+	///////////				MODAL ALERTA
+	//////////////////////////////////////////////////////////////////
+	modal:{
+		position:Platform.OS==='android' ?"absolute" :"absolute",
+		backgroundColor:"#ffffff",
+		zIndex:100,
+		width:Width,
+		height:Height,
+	},
+	subContenedorModal:{
+		backgroundColor:"#e3e3e3",
+		marginHorizontal:12,
+        marginTop:40,
+        marginBottom:125,
+		width:"92%"
+	},
+	btnModalClose:{
+		position:"absolute",
+		zIndex:100,
+		right:3,
+		top:3
+	},	
+	iconCerrar:{
+		fontSize:30
+	},
+	inputAlerta:{
+		fontFamily: "Comfortaa-Regular",
+		textAlignVertical: 'top',
+		borderColor:"rgba(20,20,20,.1)",
+		backgroundColor:"#ffffff",
+		borderWidth:1,
+		width:"100%",
+		marginVertical:2,
+		paddingVertical:4,
+		fontSize:10,
+		height:140,
+	},
+	nuevaAlerta:{
+		flexDirection:"row",
+		backgroundColor:"#002587",
+		textAlign:"center",
+		alignItems:"center",
+		justifyContent:"center",
+		marginTop:10,
+		width:"100%",
+		padding:10,
+	}, 
+
 })

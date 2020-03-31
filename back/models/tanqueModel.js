@@ -25,7 +25,7 @@ let Tanque = new Schema({
 	placaText          : String,
 	placa              : [],
 	placaMantenimiento : [],
-	placaFabricante   : [],
+	placaFabricante    : [],
 	fabricante: 	    String,
 	ultimaRevisionPar  : String,
 	fechaUltimaRev     : String,
@@ -43,7 +43,7 @@ let Tanque = new Schema({
 	//tanques			   : [],
 	//imgInstalacion	   : [],
 	//imgCertificado	   : [],
-	//observaciones	   : String,
+
 	//compromisos		   : String,
     
 })

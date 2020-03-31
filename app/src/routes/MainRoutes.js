@@ -32,7 +32,7 @@ import chartComponent 			from '../pages/chart/chart';
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 	: {screen: homeComponent},	
+	Home  		 	 	: {screen: tanquesComponent},	
 	inicio 		 	 	: {screen: homeComponent},
 	perfil       		: {screen: perfilComponent},
 	verPerfil    		: {screen: verPerfilComponent},

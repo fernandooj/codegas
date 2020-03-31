@@ -7,6 +7,7 @@ let revisionServices = require('../services/revisionServices.js')
 let  moment = require('moment-timezone');
 let sizeOf    	   = promisify(require('image-size'));
 let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
+const htmlTemplate     = require('../notificaciones/template-email.js')
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS revisionS
 ////////////////////////////////////////////////////////////
@@ -170,6 +171,89 @@ router.put('/coordenadas/:idVehiculo/', (req,res)=>{
 })
 
 
+///////////////////////////////////////////////////////////////
+////////////      EDITAR INSTALACION
+//////////////////////////////////////////////////////////////
+router.put('/instalacion/:idVehiculo/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        let rutaImgIsometrico  = [];
+        if(req.files.imgIsometrico){
+            let esArrayIsometrico = Array.isArray(req.files.imgIsometrico)
+            if(esArrayIsometrico){
+                req.files.imgIsometrico.map(e=>{
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                    
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    rutaImgIsometrico.push(rutas)
+                    ///////////////////     envio la imagen al nuevo path
+                    
+                    let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                    resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                })
+            }else{
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgIsometrico  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ///////////////////     envio la imagen al nuevo path
+                
+                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                fs.rename(req.files.imgIsometrico.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+        }
+        rutaImgIsometrico   = rutaImgIsometrico.length==0   ?req.body.imgIsometrico :rutaImgIsometrico;
+        revisionServices.editarInstalacion(req.params.idVehiculo, rutaImgIsometrico, req.body, (err, revision)=>{
+            if (!err) {
+                res.json({ status:true, revision }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+///////////////////////////////////////////////////////////////
+////////////      SOLICITUD DE SERVICIO
+//////////////////////////////////////////////////////////////
+router.post('/solicitudServicio/:idVehiculo/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        revisionServices.solicitudServicio(req.params.idVehiculo, req.session.usuario._id,  req.body.solicitudServicio, (err, revision)=>{
+            if (!err) {
+                let userRegistrado = {email:"fernandooj@ymail.com"}
+                let userEnvia = "Enviado por:"+req.session.usuario.nombre
+                htmlTemplate(req, userRegistrado, "Nueva solicitud de servicio", req.body.solicitudServicio, userEnvia,  "Solicitud de servicio codegas")
+
+                res.json({ status:true, revision }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+
 
 ///////////////////////////////////////////////////////////////
 ////////////      GUARDAR IMAGEN
@@ -181,7 +265,7 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
         let rutaImgNMedidor  = [];
         let rutaImgNComodato = [];
         let rutaImgOtrosSi   = [];
-        let imgRetiroTanques = [];
+        let rutaImgRetiroTanque = [];
         
        
         if(req.files.imgNMedidor){

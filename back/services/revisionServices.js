@@ -66,7 +66,6 @@ class revisionServices{
 		newRevision.save(callback)	
 	}
 	editar(_id, data, callback){
- 
 		let editado = moment().subtract(5, 'hours');
     editado = moment(editado).format('YYYY-MM-DD h:mm');
 		revision.findByIdAndUpdate(_id, {$set: {
@@ -85,12 +84,39 @@ class revisionServices{
 		}}, callback);
   }
 	editarImagen(_id, nMedidor, nComodato, otrosSi, retiroTanques, callback){
-		console.log({_id, nMedidor, nComodato, otrosSi})
 		revision.findByIdAndUpdate(_id, {$set: {
 			nMedidor         : nMedidor  ?nMedidor  :[],
 			nComodato        : nComodato ?nComodato :[],
 			otrosSi          : otrosSi   ?otrosSi   :[],
-			retiroTanques     : retiroTanques   ?retiroTanques   :[],
+			retiroTanques    : retiroTanques   ?retiroTanques   :[],
+		}}, callback);
+	}
+
+	editarInstalacion(_id, isometrico, data, callback){
+		revision.findByIdAndUpdate(_id, {$set: {
+			isometrico        : isometrico  ?isometrico  :[],
+			observaciones     : data.observaciones,
+			avisos 			 			: data.avisos,
+			extintores 			  : data.extintores,
+			distancias 				: data.distancias,
+			electricas 				: data.electricas,
+		}}, callback);
+	}
+	
+	solicitudServicio(_id, usuarioSolicita, solicitudServicio, callback){
+		revision.findByIdAndUpdate(_id, {$set: {
+			solicitudServicio : solicitudServicio,
+			usuarioSolicita : usuarioSolicita,
+		}}, callback);
+	}
+	
+	
+	cerrarAlerta(_id, alerta, data, callback){
+		revision.findByIdAndUpdate(_id, {$set: {
+			alerta      : alerta    ?alerta  :[],
+			alertaText  : data.alertaText,
+			alertaFecha : data.alertaFecha,
+			nActa       : data.nActa
 		}}, callback);
 	}
 	

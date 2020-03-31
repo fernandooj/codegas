@@ -81,7 +81,7 @@ export default class tomarPhoto extends Component{
                 img.push({uri:img2})
             }
         })
-        
+        console.log({img})
         return  img.map((e, key)=>{
             return(
                 <Lightbox 
@@ -142,7 +142,7 @@ export default class tomarPhoto extends Component{
     render(){
         const {imagenes, showModal} = this.state
         const {width, avatar, limiteImagenes, tipoMensaje, titulo} = this.props
-        console.log({imagenes})
+     
         return(
             <View style={style.contenedorPortada}>
                 {

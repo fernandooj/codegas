@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Alert, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
+import {View, Text, TouchableOpacity, Switch, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
  
@@ -35,6 +35,7 @@ class Tanques extends Component{
             modalM3:false,
             modalPlacas:false,
             modalCapacidad:false,
+            modalAlerta:false,
             clientes:[],
             puntos:[],
             placas:[],
@@ -93,19 +94,10 @@ class Tanques extends Component{
                         sector            : revision.sector            ?revision.sector             :"",
                         m3                : revision.m3                ?revision.m3                 :"",
                         usuariosAtendidos : revision.usuariosAtendidos ?revision.usuariosAtendidos  :"",
-                        propiedad         : revision.propiedad           ?revision.propiedad            :"",
-                        lote              : revision.lote                ?revision.lote                 :"",
-                        nMedidorText      : revision.nMedidorText        ?revision.nMedidorText         :"",
+                        propiedad         : revision.propiedad         ?revision.propiedad          :"",
+                        lote              : revision.lote              ?revision.lote               :"",
+                        nMedidorText      : revision.nMedidorText      ?revision.nMedidorText       :"",
 
-                        /////////  step 3
-                        imgNMedidor     : revision.nMedidor      ?revision.nMedidor      :[],
-                        imgNComodato    : revision.nComodato     ?revision.nComodato     :[],
-                        imgOtrosSi      : revision.otrosSi       ?revision.otrosSi       :[],
-                        imgRetiroTanques: revision.retiroTanques ?revision.retiroTanques :[],
-                       
-                        
-                        
-                        /////////  step 4
                         usuarioId:                revision.usuarioId           ?revision.usuarioId._id                 :null,
                         cedulaCliente:            revision.usuarioId           ?revision.usuarioId.razon_social        :"",
                         razon_socialCliente:      revision.usuarioId           ?revision.usuarioId.cedula              :"",
@@ -116,6 +108,21 @@ class Tanques extends Component{
                         puntos:                   revision.puntoId             ?[revision.puntoId]                     :[],
                         puntoId:                  revision.puntoId             ?revision.puntoId._id                   :null,
                         zonaId:                   revision.zonaId               ?revision.zonaId._id                   :null,
+                        
+                        /////////  step 3
+                        imgNMedidor     : revision.nMedidor      ?revision.nMedidor      :[],
+                        imgNComodato    : revision.nComodato     ?revision.nComodato     :[],
+                        imgOtrosSi      : revision.otrosSi       ?revision.otrosSi       :[],
+                        imgRetiroTanques: revision.retiroTanques ?revision.retiroTanques :[],
+                        
+                        /////////  step 4
+                        imgIsometrico     : revision.isometrico        ?revision.isometrico        :[],
+                        observaciones     : revision.observaciones     ?revision.observaciones     :"",
+                        solicitudServicio : revision.solicitudServicio ?revision.solicitudServicio :"",
+                        avisos            : revision.avisos            ?revision.avisos            :"",
+                        extintores        : revision.extintores        ?revision.extintores        :"",
+                        distancias        : revision.distancias        ?revision.distancias        :"",
+                        electricas        : revision.electricas        ?revision.electricas        :"",
                     })
                 })
 
@@ -527,7 +534,7 @@ class Tanques extends Component{
     }
 
      
-    step3(){
+    step4(){
         let {imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques} = this.state
         
         return(
@@ -566,87 +573,101 @@ class Tanques extends Component{
             </View>
         )
     }
-    step4(){
-        const {usuarioId, modalCliente, clientes, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId} = this.state
+    step3(){
+        const {observaciones, imgIsometrico, avisos, extintores, distancias, electricas} = this.state
         return(
             <View>
-                <ModalFilterPicker
-					placeholderText="Filtrar ..."
-					visible={modalCliente}
-					onSelect={(e)=>this.filtroClientes(e)}
-					onCancel={()=>this.setState({modalCliente:false})}
-                    options={clientes}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
+                {/* PLACA */}
+                <TomarFoto 
+                    source={imgIsometrico}
+                    width={180}
+                    titulo="Isometrico"
+                    limiteImagenes={4}
+                    imagenes={(imgIsometrico) => {  this.setState({imgIsometrico}) }}
                 />
-                <TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.getClientes()}>
-                    <Icon name="plus" style={style.iconFrecuencia} />
-                    <Text style={style.textGuardar}>Asignar Cliente</Text>
+
+                {/* OBSERVACIONES */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Observaciones</Text>
+                    <TextInput
+                        placeholder="Observaciones"
+                        style={style.inputStep4}
+                        value={observaciones}
+                        onChangeText={(observaciones)=> this.setState({ observaciones })}
+                    />
+                </View>
+                <TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.setState({modalAlerta:true})}>
+                    <Text style={style.textGuardar}>Nueva Alerta</Text>
                 </TouchableOpacity>
-                {
-                    usuarioId
-                    &&<View style={style.contenedorUsuario}>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Identificación:</Text>
-                            <Text style={style.row2}>{cedulaCliente}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Razón Social:</Text>
-                            <Text style={style.row2}>{razon_socialCliente}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Dirección:</Text>
-                            <Text style={style.row2}>{direccion_facturaCliente}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Nombre:</Text>
-                            <Text style={style.row2}>{nombreCliente}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Celular:</Text>
-                            <Text style={style.row2}>{celularCliente}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Email:</Text>
-                            <Text style={style.row2}>{emailCliente}</Text>
-                        </View>
-                    </View>
-                } 
-                {
-                     puntos.length>1
-                     ?<View>
-                     <Text style={style.textZona}>Punto de entrega</Text>
-                         {
-                             puntos.map((e, key)=>{
-                                 return (
-                                     <TouchableOpacity key={key} style={puntoId==e._id ?style.btnZonaActiva :style.btnZona} onPress={()=>this.setState({puntoId:e._id, zonaId:e.idZona})}>
-                                         <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                                         <View>
-                                             <Text style={style.textZona}>{e.direccion}</Text>   
-                                             <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
-                                         </View>
-                                        
-                                     </TouchableOpacity>
-                                 )
-                             })
-                         }
-                     </View>
-                     :puntos.map((e, key)=>{
-                         return (
-                             <View key={key} style={style.btnZonaActiva} >
-                                <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                                <View>
-                                    <Text style={style.textZona}>{e.direccion}</Text>
-                                    <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
-                                </View>
-                             </View>    
-                         )
-                     })
-                }
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Avisos reglamentarios</Text>
+                    <Switch
+                        onValueChange = {(avisos)=>this.setState({avisos})}
+                        value = {avisos}
+                    />
+                </View>
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Extintores</Text>
+                    <Switch
+                        onValueChange = {(extintores)=>this.setState({extintores})}
+                        value = {extintores}
+                    />
+                </View>
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Distancias</Text>
+                    <Switch
+                        onValueChange = {(distancias)=>this.setState({distancias})}
+                        value = {distancias}
+                    />
+                </View>
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Condiciones electricas</Text>
+                    <Switch
+                        onValueChange = {(electricas)=>this.setState({electricas})}
+                        value = {electricas}
+                    />
+                </View>
+               
             </View>
         )
     }
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    modalAlerta(){
+        const {solicitudServicio} = this.state
+        return(
+            <View style={style.modal}>
+                <View style={style.subContenedorModal}>
+                    <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalAlerta:false})} style={style.btnModalClose}>
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                    </TouchableOpacity>
+                    <TextInput
+                        placeholder="Solicitud Servicio"
+                        style={style.inputAlerta}
+                        value={solicitudServicio}
+                        onChangeText={(solicitudServicio)=> this.setState({ solicitudServicio })}
+                    />
+                    <TouchableOpacity style={style.nuevaAlerta} onPress={()=>this.solicitudServicio()}>
+                        <Text style={style.textGuardar}>Enviar Alerta</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        )
+    }
+    solicitudServicio(){
+        const {solicitudServicio, revisionId} = this.state
+        axios.post(`rev/revision/solicitudServicio/${revisionId}`, {solicitudServicio})
+        .then((res)=>{
+            console.log(res.data)
+            if(res.data.status){
+                Toast.show("Solicitud enviada")
+                this.setState({modalAlerta:false, solicitudServicio:""})
+            }else{
+                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+            }
+        })
+    }
     step5(){
         let {x}= this.state
         return(
@@ -659,7 +680,7 @@ class Tanques extends Component{
     }
 
     renderSteps(){
-        let {tanqueIdArray, revisionId} = this.state
+        let {tanqueIdArray, revisionId, modalAlerta} = this.state
        
         return(
             <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" >
@@ -675,10 +696,11 @@ class Tanques extends Component{
                 </ProgressStep>
                 <ProgressStep label="Imagenes" nextBtnText="Siguiente"  onNext={()=>this.editarStep3()}>
                     <View style={{ alignItems: 'center' }}>
+                        {modalAlerta &&this.modalAlerta()}
                         {this.step3()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Usuario" nextBtnText="Siguiente"  onNext={()=>this.editarStep4()}>
+                <ProgressStep label="Instalación" nextBtnText="Siguiente"  onNext={()=>this.editarStep4()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step4()}
                     </View>
@@ -695,9 +717,10 @@ class Tanques extends Component{
 
 	render(){
         const {navigation} = this.props
-       
+        
         return (
             <>
+               
                 <View style={style.container}>
                     {this.renderSteps()}
                 </View>
@@ -799,10 +822,10 @@ class Tanques extends Component{
         imgRetiroTanques.forEach(e=>{
             data.append('imgRetiroTanques', e);
         })
-        data.append('imgNMedidor',  imgNMedidor);
-        data.append('imgNComodato', imgNComodato);
-        data.append('imgOtrosSi',   imgOtrosSi);
-        data.append('imgRetiroTanques',   imgRetiroTanques);
+        //data.append('imgNMedidor',  imgNMedidor);
+        //data.append('imgNComodato', imgNComodato);
+        //data.append('imgOtrosSi',   imgOtrosSi);
+        //data.append('imgRetiroTanques',   imgRetiroTanques);
         axios({
             method: 'PUT',   
             url: `rev/revision/guardarImagen/${revisionId}`,
@@ -822,17 +845,30 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 4
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep4(){
-        // const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray} = this.state
-        // console.log({zonaId, usuarioId, puntoId})
-        // axios.put(`rev/revision/${revisionId}`, {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, tanqueId:tanqueIdArray })
-        // .then((res)=>{
-        //     console.log(res.data)
-        //     if(res.data.status){
-                 
-        //     }else{
-        //         Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
-        //     }
-        // })
+        const {observaciones, imgIsometrico, avisos, extintores, distancias, electricas, revisionId} = this.state
+        console.log({observaciones, imgIsometrico, avisos, extintores, distancias, electricas})
+        let data = new FormData();
+        imgIsometrico.forEach(e=>{
+            data.append('imgIsometrico', e);
+        })
+        data.append('observaciones',  observaciones);
+        data.append('avisos', avisos);
+        data.append('extintores',   extintores);
+        data.append('distancias',   distancias);
+        data.append('electricas',   electricas);
+        axios({
+            method: 'PUT',   
+            url: `rev/revision/instalacion/${revisionId}`,
+            data: data,
+        })
+        .then((res)=>{
+            console.log(res.data)
+            
+        })
+        .catch(err=>{
+            console.log({err})
+            this.setState({cargando:false})
+        })
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
