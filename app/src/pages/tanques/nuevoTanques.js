@@ -21,6 +21,11 @@ let zonas       = [{key:"Urbana", label:"Urbana"},{key:"Rural", label:"Rural"},{
 let ubicaciones = [{key:"Azotea", label:"Azotea"},{key:"Enterrado", label:"Enterrado"},{key:"Piso", label:"Piso"}]
 let m3s         = [{key:"Si", label:"Si"},{key:"No", label:"No"}]
 let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
+let anosFabricacion = []
+ 
+for (var index = 1950; index < 2020; index++) {
+    anosFabricacion.push({"label":index, "value":index})
+}
 
 let size  = Dimensions.get('window');
 class Tanques extends Component{
@@ -283,7 +288,7 @@ class Tanques extends Component{
             })
     }
     step1(){
-        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, modalUbicacion, ubicacion, codigoActivo, serie, anoFabricacion} = this.state
+        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, modalUbicacion, ubicacion, serie, anoFabricacion} = this.state
          
         return(
             <View>
@@ -295,12 +300,12 @@ class Tanques extends Component{
 					onCancel={()=>this.setState({modalPlacas:false})}
 					crearPlaca={(e)=>this.setState({placaText:e, crearPlaca:true, modalPlacas:false})}
                     options={placas}
-                    placa
+                    tanque
                     cancelButtonText="CANCELAR"
                     optionTextStyle={style.filterText}
                 />
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Placa</Text>
+                    <Text style={style.row1Step2}>Codigo Activo</Text>
                     <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPlacas:true})}>
                         <Text style={placaText ?style.textBtnActive :style.textBtn}>{placaText ?placaText :"Placas"}</Text>
                     </TouchableOpacity>
@@ -388,12 +393,6 @@ class Tanques extends Component{
                     />
                 </View>
                   
-
-               
-
-
-               
-
                 {/* UBICACION */}
                 <ModalFilterPicker
 					placeholderText="Ubicacion ..."
@@ -413,7 +412,7 @@ class Tanques extends Component{
 
                   
                 {/* CODIGO ACTIVO */}
-                <View style={style.contenedorSetp2}>
+                {/* <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Codigo Activo</Text>
                     <TextInput
                         placeholder="Codigo Activo"
@@ -421,7 +420,7 @@ class Tanques extends Component{
                         style={style.inputStep2}
                         onChangeText={(codigoActivo)=> this.setState({ codigoActivo })}
                     />
-                </View>
+                </View> */}
 
                 {/* SERIE */}
                 <View style={style.contenedorSetp2}>
@@ -435,9 +434,9 @@ class Tanques extends Component{
                 </View>
 
                 {/* AÑO DE FABRICACIÓN */}
-                <View style={style.contenedorSetp2}>
-                <Text style={style.row1Step2}>Año de Fabricación</Text>
-                    <DatePicker
+            <View style={style.contenedorSetp2}>
+                
+                    {/* <DatePicker
                         customStyles={{
                             dateInput:style.btnDate,
                             placeholderText:anoFabricacion ?style.textBtnActive :style.textBtn,
@@ -451,13 +450,14 @@ class Tanques extends Component{
                         locale="es_co"
                         mode="date"
                         placeholder={anoFabricacion ?anoFabricacion :"Año de Fabricación"}
-                        format="YYYY-MMM-DD"
+                        format="YYYY"
                         showIcon={false}
                         confirmBtnText="Confirmar"
                         cancelBtnText="Cancelar"
                         androidMode='spinner'
                         onDateChange={(anoFabricacion) => {this.setState({anoFabricacion})}}
-                    />
+                    /> */}
+                    
                 </View>
 
                 
@@ -469,26 +469,6 @@ class Tanques extends Component{
      
     step2(){
         let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante} = this.state
-        let imgPlaca1              = []
-        let imgPlacaMantenimiento1 = []
-        let imgPlacaFabricante1    = []
-        // imgPlaca.map(e=>{
-        //   let img2 = e.split("-")
-        //   img2 = `${img2[0]}Resize${img2[2]}`
-        //   imgPlaca1.push(img2)
-        // })
-        // imgPlacaMantenimiento.map(e=>{
-        //     let img2 = e.split("-")
-        //     img2 = `${img2[0]}Resize${img2[2]}`
-        //     imgPlacaMantenimiento1.push(img2)
-        //   })
-        //   imgPlacaFabricante.map(e=>{
-        //     let img2 = e.split("-")
-        //     img2 = `${img2[0]}Resize${img2[2]}`
-        //     imgPlacaFabricante1.push(img2)
-        //   })
-        
-
         return(
             <View>
                

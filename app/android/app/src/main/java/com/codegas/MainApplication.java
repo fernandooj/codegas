@@ -3,6 +3,7 @@ package com.codegas;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnativecommunity.picker.RNCPickerPackage;
 import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 import org.wonday.pdf.RCTPdfView;
 import com.RNFetchBlob.RNFetchBlobPackage;
@@ -35,6 +36,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new RNCPickerPackage(),
             new DocumentPickerPackage(),
             new RCTPdfView(),
             new RNFetchBlobPackage(),

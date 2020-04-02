@@ -233,6 +233,7 @@ module.exports = function(app, passport){
         if(req.session.usuario){
             const {usuario} = req.session
             puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
+                console.log({ubicaciones:ubicaciones})
                 let nUbicaciones = ubicaciones.map(e=>{
                     let data = e.data[0] 
                     if(data.idCliente==usuario._id){
@@ -646,7 +647,7 @@ module.exports = function(app, passport){
         if(req.session.usuario){
             if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'|| req.session.usuario.acceso=='veo') {
                 userServices.getById(req.params.idUsuario, (err, usuario)=>{
-                    puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
+                    puntoServices.getByUser(req.params.idUsuario, (err2, ubicaciones)=>{
                         let nUbicaciones = ubicaciones.map(e=>{
                             let data = e.data[0] 
                             return {
@@ -795,6 +796,35 @@ module.exports = function(app, passport){
             }
         })
     })
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////     editar campos 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/editar_campos/', (req,res)=>{
+        userServices.getByCliente( (err, usuarios)=>{
+            if(!err){  
+                 usuarios.filter(e=>{
+                    
+                    // userServices.editarCampo(e._id, e.comercial, (err)=>{
+                         
+                    // })
+                    // let idZona = e.idZona1 
+                    // idZona = idZona.replace(/[')]+/g, '')
+                    // idZona = idZona.substring(9)
+                    let data = {direccion:e.direccion, capacidad: e.capacidad, idZona:e.zona__1}
+                    // console.log(data)
+                    puntoServices.create(data, e._id, e._id, (err2, puntos)=>{
+                        
+                    })
+
+                })
+                res.json({status:true, usuarios})
+            }else{
+                res.json({ status: false, err}) 
+            }
+        })
+    })
+    //mongoimport --db codegas --collection users --file clientes2.json --jsonArray
 
     ///////////////////////////////////////////////////////////////////////////
     //////////////////      TOMATELA TE DIGO

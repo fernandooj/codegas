@@ -80,7 +80,7 @@ export const style = MediaQueryStyleSheet.create({
 	contenedorSetp2:{
 		flexDirection:"row",
 		alignItems:"center",
-		width:Width-20
+		width:Width-20,
 	},
 	row1Step2:{
 		fontFamily: "Comfortaa-Regular",
@@ -216,5 +216,29 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:20,
 		top:5,
 		color:"#002587",
-	}
+	},
+	inputIOS: {
+		fontSize: 16,
+		paddingVertical: 12,
+		paddingHorizontal: 10,
+		borderWidth: 1,
+		borderColor: 'gray',
+		borderRadius: 4,
+		color: 'black',
+		paddingRight: 30, // to ensure the text is never behind the icon
+	  },
+	inputAndroid: {
+		width:300,
+		height:150,
+		backgroundColor:"red",
+		fontSize: 16,
+		paddingHorizontal: 10,
+		paddingVertical: 8,
+		borderWidth: 0.5,
+		borderColor: 'purple',
+		borderRadius: 8,
+		color: 'black',
+		paddingRight: 30, // to ensure the text is never behind the icon
+	  },
+
 })

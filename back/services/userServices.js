@@ -150,6 +150,13 @@ class userServices {
         }}, callback)
 	}
 
+	editarCampo(_id, comercialAsignado1, callback){
+		console.log({_id, comercialAsignado1})
+		User.findByIdAndUpdate(_id, {$set: {
+			comercialAsignado:comercialAsignado1
+		}}, callback);
+	}
+
 }
 
 module.exports = new userServices()

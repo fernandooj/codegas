@@ -83,6 +83,7 @@ class puntoServices{
 
 	getByUser(idCliente, callback){
 		idCliente = mongoose.Types.ObjectId(idCliente);	
+		console.log({id:idCliente})
 		punto.aggregate([
 			{
 				$lookup:{
@@ -268,6 +269,7 @@ class puntoServices{
 			idZona 		  : data.idZona,
 			idCliente   : idCliente,
 			idPadre 	  : idPadre,
+			activo:true,
 			creado     
 		})
 		newPunto.save(callback)	

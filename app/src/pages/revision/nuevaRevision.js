@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, Switch, TextInput, Modal, ScrollView, Imag
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
  
-import DatePicker 			           from 'react-native-datepicker'
+ 
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';  
 import axios                           from 'axios';
 import Icon                            from 'react-native-fa-icons';
@@ -242,9 +242,9 @@ class Tanques extends Component{
 					visible={modalPlacas}
 					onSelect={(e)=>this.buscarTanque(e)}
 					onCancel={()=>this.setState({modalPlacas:false})}
-					crearPlaca={(e)=>this.setState({placaText:e, crearPlaca:true, modalPlacas:false})}
+					crearTanque={(e)=>{this.props.navigation.navigate("nuevoTanque"), this.setState({modalPlacas:false}) }}
                     options={placas}
-                    placa
+                    revision 
                     cancelButtonText="CANCELAR"
                     optionTextStyle={style.filterText}
                 />

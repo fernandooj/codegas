@@ -451,7 +451,7 @@ class Nuevo_pedido extends Component{
         email = idCliente ?emailCliente :email
         forma=="monto" ?cantidad = this.campoMonto.getRawValue() :null
         let creado = moment().tz("America/Bogota").add(0, 'days').format('YYYY-MM-DD h:mm')
-        console.log({creado, forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona})
+        console.log({creado, forma, email, cantidad, dia1, dia2, frecuencia, idCliente, puntoId, fechaSolicitud, idZona, novedad})
         let data = new FormData();
         imagen.forEach(e=>{
             data.append('imagen', e);

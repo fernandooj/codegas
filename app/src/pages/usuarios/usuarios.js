@@ -45,6 +45,7 @@ class verPerfil extends Component{
                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
                     <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
                         <View style={{width:"90%"}}>
+                            {e.acceso=="cliente" &&<Text style={style.textUsers}>{e.razon_social}</Text>}
                             <Text style={style.textUsers}>{e.nombre}</Text>
                             <Text style={style.textUsers}>{e.email}</Text>
                             <Text style={style.textUsers}>{e.acceso}</Text>

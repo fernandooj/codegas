@@ -84,7 +84,7 @@ class verPerfil extends Component{
                 imagen:           user.avatar       ?user.avatar       :[],
                 codt:             user.codt         ?user.codt         :"",
                 idUsuario:        user._id          ?user._id          :"",
-                codMagister:      user.codMagister          ?user.codMagister          :"",
+                codMagister:      user.codMagister          ?user.codMagister          :"", 
                 editado:          user.editado      ?user.editado      :false,
                 ubicaciones:      user.ubicaciones  ?user.ubicaciones  :[],
                 direccion_factura:user.direccion_factura ?user.direccion_factura :"",
@@ -318,9 +318,9 @@ class verPerfil extends Component{
                                 color: '#00218b',
                             }}
                             items={[
-                                {label: 'Residencial', value: 'residencial',key: 'residencial'},
-                                {label: 'Comercial', value: 'comercial',key:   'comercial'},
-                                {label: 'Industrial',value: 'industrial',key:   'industrial'}
+                                {label: 'Residencial', value: 'Residencial',key: 'Residencial'},
+                                {label: 'Comercial', value: 'Comercial',key:   'Comercial'},
+                                {label: 'Industrial',value: 'Industrial',key:   'Industrial'}
                             ]}
                             onValueChange={tipo => { this.setState({tipo}); }}
                         

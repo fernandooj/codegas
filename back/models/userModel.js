@@ -30,10 +30,15 @@ let UserSchema = mongoose.Schema({
 	codt	   		  : String,
 	valorUnitario     : Number,
 	editado    		  : {type: Boolean, default:false},     //// es para verificar que ya edito la informacion, al momento del registro
-	activo     		  : Boolean,     						//// cuando se crea el usuario es innactivo, se activa al darle clikc al email
+	activo     		  : {type: Boolean, default:true},     						//// cuando se crea el usuario es innactivo, se activa al darle clikc al email
 	eliminado  		  : {type: Boolean, default:false},   //// cuando se crea el usuario es innactivo, se activa al darle clikc al email
 	idPadre    		  : {type: Schema.ObjectId, ref:'User'},
 	comercialAsignado : {type: Schema.ObjectId, ref:'User'},
+	comercial : String,
+	comercialAsignado1 : String,
+	direccion:String,
+	capacidad:String,
+	zona__1:String
 });
 
  
