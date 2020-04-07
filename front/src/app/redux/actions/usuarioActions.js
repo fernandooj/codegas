@@ -3,6 +3,7 @@ import {
   GET_USUARIOS,
   GET_USUARIO,
   GET_USUARIOS_ACCESO,
+  GET_USUARIOS_ZONAS
 } from "./constants/actionsTypes";
 import axios from "axios";
 
@@ -57,6 +58,23 @@ const getUsuarios = data => {
   };
 };
 
+const getUsuariosZonas = data => {
+  return dispatch => {
+    return axios
+      .get(`users/zonas`)
+      .then(res => {
+        dispatch({
+          type: GET_USUARIOS_ZONAS,
+          usuariosZonas: res.data.usuarios
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+};
+
+
 const getUsuariosAcceso = acceso => {
   console.log(acceso)
   return dispatch => {
@@ -81,4 +99,5 @@ export {
   getUsuarios,
   getUsuario,
   getUsuariosAcceso,
+  getUsuariosZonas
 };

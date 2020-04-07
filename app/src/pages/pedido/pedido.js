@@ -95,7 +95,7 @@ class Pedido extends Component{
         this.keyboardDidHideListener.remove();
     }
     reciveMensanje(messages) {
-        this.props.getPedidos()
+        //this.props.getPedidos()
 	}
     callObservaciones(id){
         axios.get(`nov/novedad/byPedido/${id}`)
@@ -163,7 +163,7 @@ class Pedido extends Component{
                     onPress={
                         ()=>{
                             this.callObservaciones(e._id);
-                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_unitarioUsuario:e.usuarioId.valorUnitario, valor_total:e.valor_total,  nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad, usuarioCrea:e.usuarioCrea.nombre, creado:e.creado })
+                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_unitarioUsuario:e.usuarioId.valorUnitario, valor_total:e.valor_total,  nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad, observacion:e.puntoId.observacion, usuarioCrea:e.usuarioCrea.nombre, creado:e.creado })
                         }                        
                     }
                 >
@@ -187,13 +187,7 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>CODT</Text>
                         <Text style={style.textPedido}>{e.usuarioId.codt}</Text>
                     </View>
-                    {/* {
-                        acceso!=="conductor"
-                        &&<View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>Fecha de creación </Text>
-                            <Text style={style.textPedido}>{e.creado}</Text>
-                        </View>
-                    } */}
+                   
                     
                     {   
                         acceso!=="conductor"
@@ -209,19 +203,20 @@ class Pedido extends Component{
                             <Text style={style.textPedido}>{ e.fechaEntrega ?e.fechaEntrega :"sin fecha"}</Text>
                         </View>
                     }
-                    {/* <View style={style.containerPedidos}>
-                        <Text style={style.textPedido}>Tipo de solicitud:</Text>
-                        <Text style={style.textPedido}>{e.forma} 
-                        {
-                            e.forma=="cantidad" 
-                            ?' '+Number(e.cantidadKl).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")+" KG" 
-                            :e.forma=="monto" ?'$ '+Number(e.cantidadPrecio).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,") :""}</Text>
-                    </View> */}
+                     
                     {
                         e.puntoId.capacidad
                         &&<View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>Almacenamiento </Text>
+                            <Text style={style.textPedido}>Almacenamiento galones </Text>
                             <Text style={style.textPedido}>{ e.puntoId.capacidad}</Text>
+                        </View>
+                    }
+
+                    {
+                        e.usuarioId.valorUnitario
+                        &&<View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Valor Unitario </Text>
+                            <Text style={style.textPedido}>{'$ '+Number(e.usuarioId.valorUnitario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}</Text>
                         </View>
                     }
                     
@@ -318,7 +313,7 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     editarPedido(){
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, valor_unitarioUsuario, usuarioCrea } = this.state
+        const {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, valor_unitarioUsuario, usuarioCrea, observacion } = this.state
     
         let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
@@ -339,10 +334,11 @@ class Pedido extends Component{
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Razón Social: {razon_social}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula/NIT: {cedula}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>N Pedido: {nPedido}</Text>
-                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma:  {forma}</Text>
-                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Fecha de creación:  {creado}</Text>
-                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Usuario crea:  {usuarioCrea}</Text>
-                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Almacenamiento:  {capacidad}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma: {forma}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Fecha de creación: {creado}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Usuario crea: {usuarioCrea}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Almacenamiento: {capacidad}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Observacion: {observacion}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>{cantidad &&`cantidad ${cantidad}`}</Text>
                                 <TouchableOpacity style={style.btnNovedad} onPress={()=>this.setState({showNovedades:true})} >
                                     <Text style={style.txtNovedad} >Novedades: {novedades.length} </Text>
@@ -362,12 +358,12 @@ class Pedido extends Component{
                                     {estado=="activo" &&<Icon name="check" style={style.iconEditar} />}
                                 </TouchableOpacity>
                                 <TouchableOpacity style={estado=="innactivo" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} 
-                                    onPress={()=>(entregado==true &&estado=="activo") ?null :this.setState({estado:"innactivo"})}>
+                                    onPress={()=>(entregado==true &&estado=="activo" && (acceso!=="admin")) ?null :this.setState({estado:"innactivo"})}>
                                     <Text style={style.textoEspera}>In activo</Text>
                                     {estado=="innactivo" &&<Icon name="check" style={style.iconEditar} />}
                                 </TouchableOpacity>
                                 <TouchableOpacity style={estado=="espera" ?[style.subContenedorEditar, style.activo] :style.subContenedorEditar} 
-                                    onPress={()=>(entregado==true &&estado=="activo") ?null :this.setState({estado:"espera"})}>
+                                    onPress={()=>(entregado==true &&estado=="activo"&& (acceso!=="admin")) ?null :this.setState({estado:"espera"})}>
                                     <Text style={style.textoEspera}>Espera</Text>
                                     {estado=="espera" &&<Icon name="check" style={style.iconEditar} />}
                                 </TouchableOpacity>
@@ -402,7 +398,7 @@ class Pedido extends Component{
                             </View>
                             :null
                         }
-                        {/* CERRAR PEDIDO  */}
+                        {/* MUESTRA LA NOTIFICACION DEL PEDIDO CERRADO */}
                         {
                             acceso=="cliente" && entregado
                             &&<View>
@@ -515,7 +511,7 @@ class Pedido extends Component{
                                             limiteImagenes={3}
                                             imagenes={(imagen) => {  this.setState({imagen}) }}
                                         /> 
-                                        <Text>Valor Unitario: {'$ '+Number(valor_unitarioUsuario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")} </Text>
+                                        {/* <Text>Valor Unitario: {'$ '+Number(valor_unitarioUsuario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")} </Text> */}
                                         <TextInput
                                             placeholder="N Kilos"
                                             autoCapitalize = 'none'

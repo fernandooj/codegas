@@ -10,6 +10,8 @@ import RNPickerSelect from 'react-native-picker-select';
 import Footer    from '../components/footer'
 import TomarFoto from "../components/tomarFoto";
 import Toast from 'react-native-simple-toast';
+import { createFilter }    from 'react-native-search-filter';
+const KEYS_TO_FILTERS = ['nombre'] 
  
 
 class verPerfil extends Component{
@@ -28,6 +30,7 @@ class verPerfil extends Component{
         password:"",
         codt:"",
         codMagister:"",
+        terminoBuscador:"",
         modalUbicacion:false,
         modalZona:false,
         modalCliente:false,
@@ -92,7 +95,7 @@ class verPerfil extends Component{
         })
         :params.tipoAcceso=="editar"
         ?axios.get(`/user/byId/${params.idUsuario}`).then(e=>{
-        
+            console.log(e.data)
             const {user} = e.data
             let ubicaciones =  user.ubicaciones  ?user.ubicaciones  :[]
             ubicaciones= ubicaciones.map(data=>{
@@ -105,6 +108,7 @@ class verPerfil extends Component{
                         idCliente: undefined,
                         idZona: data.idZona,
                         nombre: undefined,
+                        celular: undefined,
                         nombreZona: data.nombreZona,
                         observacion: data.observacion,
                         capacidad: data.capacidad,
@@ -112,15 +116,16 @@ class verPerfil extends Component{
                     }
                 }else{
                     return {
-                        direccion: data.direccion,
-                        email: data.email,
-                        idCliente: data.idCliente,
-                        idZona: data.idZona,
-                        nombre: data.nombre,
-                        nombreZona: data.nombreZona,
+                        direccion  : data.direccion,
+                        email      : data.email,
+                        idCliente  : data.idCliente,
+                        idZona     : data.idZona,
+                        nombre     : data.nombre,
+                        celular    : data.celular,
+                        nombreZona : data.nombreZona,
                         observacion: data.observacion,
-                        capacidad: data.capacidad,
-                        _id: data._id
+                        capacidad  : data.capacidad,
+                        _id        : data._id
                     }
                 }
             })  
@@ -148,7 +153,7 @@ class verPerfil extends Component{
     }
     renderPerfil(){
         const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
-
+        console.log({ubicaciones})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -482,22 +487,24 @@ class verPerfil extends Component{
         }
     }
     actualizaUbicacion(){
-        let {observacion, ubicaciones, direccion, emailUbicacion, nombreUbicacion, nombreZona} = this.state
-        let data = {direccion, email:emailUbicacion, nombre:nombreUbicacion, observacion, nombreZona, nuevo:true, acceso:"cliente"}
+        let {observacion, ubicaciones, direccion, emailUbicacion, celularUbicacion, nombreUbicacion, nombreZona} = this.state
+        let data = {direccion, email:emailUbicacion, celular:celularUbicacion, nombre:nombreUbicacion, observacion, nombreZona, nuevo:true, acceso:"cliente"}
         ubicaciones.push(data)
         this.setState({ubicaciones})
     }
     actualizaArrayUbicacion(type, value, key){
         let {ubicaciones} = this.state 
-        type == "direccion"     ?ubicaciones[key].direccion   = value 
-        :type=="observacion"    ?ubicaciones[key].observacion = value 
-        :type=="emailUbicacion" ?ubicaciones[key].email       = value 
-        :type=="capacidad"      ?ubicaciones[key].capacidad   = value 
+        type == "direccion"       ?ubicaciones[key].direccion   = value 
+        :type=="observacion"      ?ubicaciones[key].observacion = value 
+        :type=="emailUbicacion"   ?ubicaciones[key].email       = value 
+        :type=="celularUbicacion" ?ubicaciones[key].celular       = value 
+        :type=="capacidad"        ?ubicaciones[key].capacidad   = value 
         :ubicaciones[key].nombre = value
         this.setState({ubicaciones})
     }
     modalZonas(){
-        const {modalZona, zonas, idZona} = this.state
+        const {zonas, idZona, terminoBuscador} = this.state
+        let filtroZonas = zonas.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         return(
             <View  animationType="fade" >
                 <TouchableOpacity activeOpacity={1}  >   
@@ -506,10 +513,17 @@ class verPerfil extends Component{
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalZona:false})} style={style.btnModalClose}>
                                 <Icon name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
-                            <Text style={style.tituloModal}>Seleccione una Zona</Text>
+                            <TextInput
+                                type='outlined'
+                                label='Buscar Zona'
+                                placeholder="Buscar Zona"
+                                 
+                                onChangeText={terminoBuscador => this.setState({terminoBuscador})}
+                                style={style.inputZona}
+                            />
                             <ScrollView>
                                 {
-                                    zonas.map((e, key)=>{
+                                    filtroZonas.map((e, key)=>{
                                         return(
                                             <TouchableOpacity style={style.btnZona} key={key} onPress={()=>this.actualizaZona(e._id, e.nombre)}>
                                                 <Text style={style.textZona}>{e.nombre}</Text>
@@ -593,6 +607,17 @@ class verPerfil extends Component{
                                                                 placeholder="Email"
                                                                 value={e.email}
                                                                 onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
+                                                                style={style.input}
+                                                            />
+                                                        }
+                                                        {
+                                                            (e.nuevo || e.idCliente )
+                                                            &&<TextInput
+                                                                type='outlined'
+                                                                label='Celular'
+                                                                placeholder="Celular"
+                                                                value={e.celular}
+                                                                onChangeText={celularUbicacion => this.actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
                                                                 style={style.input}
                                                             />
                                                         }
@@ -859,10 +884,11 @@ class verPerfil extends Component{
             return e.email && !e.idCliente
         })
 
-        let puntos = ubicaciones.filter(e=>{
-            return !e.email 
-        })
-        puntos = puntos.map(e=>{
+        // let puntos = ubicaciones.filter(e=>{
+        //     return !e.email 
+        // })
+        
+        puntos = ubicaciones.map(e=>{
             return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, _id:e._id, capacidad:e.capacidad}
         })
         let puntosNuevos = puntos.filter(e=>{
@@ -871,7 +897,7 @@ class verPerfil extends Component{
         puntos = puntos.filter(e=>{
             return e._id
         })
-    
+        console.log({puntos})
         axios.put(`user/update/${idUsuario}`, {puntos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister})
         .then(e=>{
             console.log(e.data)
@@ -904,18 +930,18 @@ class verPerfil extends Component{
                     })
                 }
                 ////////////////////////////////////////////       EDITO LOS PUNTOS
-                if(puntos.length>0){
-                    axios.put("pun/punto/varios",{puntos, idPadre:idUsuario})
-                    .then(res=>{
-                        AsyncStorage.setItem('nombre', e.data.user.nombre)
-                        this.props.navigation.navigate("Home")
-                        Toast.show("Usuario guardado con exito")
-                    })
-                    .catch(err2=>{
-                        console.log(err2)
-                        this.setState({cargando:false})
-                    })
-                }
+                // if(puntos.length>0){
+                //     axios.put("pun/punto/varios",{puntos, idPadre:idUsuario})
+                //     .then(res=>{
+                //         AsyncStorage.setItem('nombre', e.data.user.nombre)
+                //         //this.props.navigation.navigate("Home")
+                //         Toast.show("Usuario guardado con exito")
+                //     })
+                //     .catch(err2=>{
+                //         console.log(err2)
+                //         this.setState({cargando:false})
+                //     })
+                // }
                 ////////////////////////////////////////////       INSERTO LOS PUNTOS
                 if(puntosNuevos.length>0){
                     axios.post("pun/punto/varios", {puntos:puntosNuevos, idPadre:idUsuario, idCliente:idUsuario})

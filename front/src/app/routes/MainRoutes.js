@@ -7,6 +7,7 @@ import login          from "../pages/login/login";
 import pedido         from "../pages/pedido/pedido";
 import informe        from "../pages/informe/informe";
 import usuarios       from "../pages/usuarios/usuarios";
+import zonas       from "../pages/zonas/zonas";
 import pedidoVehiculo from "../pages/pedidoVehiculo/pedidoVehiculo";
 import axios from "axios"
  
@@ -27,6 +28,7 @@ class MainRoutes extends React.Component {
         <Route path="/pedidos"  component={pedido} />
         <Route path="/informes" component={informe} />
         <Route path="/usuarios" component={usuarios} />
+        <Route path="/zonas"    component={zonas} />
         <Route path="/pedidoVehiculo/:ruta?" component={pedidoVehiculo} />
         
     

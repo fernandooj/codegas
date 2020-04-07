@@ -126,6 +126,7 @@ class puntoServices{
 					activo:1,
 					nombre:'$UserData.nombre',
 					email:'$UserData.email',
+					celular:'$UserData.celular',
 					nombreZona:'$ZonaData.nombre',
 				},
 			},
@@ -140,11 +141,72 @@ class puntoServices{
 			{
 			    $group:{
 						_id:'$_id',
-						data: { $addToSet: {_id:"$_id", observacion:"$observacion", direccion:"$direccion",  capacidad:"$capacidad", idZona:'$idZona',  activo:'$activo',  idCliente:'$idCliente', nombre:'$nombre', email:'$email', nombreZona:'$nombreZona' }                  },
+						data: { $addToSet: {_id:"$_id", observacion:"$observacion", direccion:"$direccion",  capacidad:"$capacidad", idZona:'$idZona',  activo:'$activo',  idCliente:'$idCliente', nombre:'$nombre', email:'$email', celular:'$celular', nombreZona:'$nombreZona' }},
 			    }
 			},
 		], callback)
 	}
+
+	usariosConZonas(callback){
+		punto.aggregate([
+			{
+				$lookup:{
+					from:"users",
+					localField:"idCliente",
+					foreignField:"_id",
+					as:"UserData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$UserData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			{
+				$lookup:{
+					from:"zonas",
+					localField:"idZona",
+					foreignField:"_id",
+					as:"ZonaData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$ZonaData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			 
+			{
+				$project:{
+					_id:1,
+					observacion:1,
+					capacidad:1,
+					direccion:1,
+					idZona:1,
+					idCliente:1,
+					idPadre:1,
+					activo:1,
+					codt:'$UserData.codt',
+					idPadre:'$UserData.idPadre',
+					nombre:'$UserData.nombre',
+					valorUnitario:'$UserData.valorUnitario',
+					razon_social:'$UserData.razon_social',
+					email:'$UserData.email',
+					celular:'$UserData.celular',
+					nombreZona:'$ZonaData.nombre',
+				},
+			},
+			{
+			    $group:{
+						_id:'$_id',
+						data: { $addToSet: { observacion:"$observacion", direccion:"$direccion", codt:'$codt', idPadre:'$idPadre', razon_social:'$razon_social', capacidad:"$capacidad",  activo:'$activo',  idCliente:'$idCliente', nombre:'$nombre', email:'$email', celular:'$celular', valorUnitario:'$valorUnitario', nombreZona:'$nombreZona', idZona:'$idZona'}},
+			    }
+			},
+		], callback)
+	}
+
 	getZonasFechaSolicitud(fecha, callback){
 		punto.aggregate([
 			{
@@ -274,11 +336,11 @@ class puntoServices{
 		})
 		newPunto.save(callback)	
 	}
-	editar(data, id, callback){
+	editar(data, _id, callback){
 		let creado = moment().subtract(5, 'hours');
     creado     = moment(creado).format('YYYY-MM-DD h:mm');
-		console.log(data)
-		punto.findByIdAndUpdate(id, {$set: {
+	 
+		punto.findByIdAndUpdate(_id, {$set: {
 			'direccion'  : data.direccion,
 			'capacidad'  : data.capacidad,
 			'observacion': data.observacion,

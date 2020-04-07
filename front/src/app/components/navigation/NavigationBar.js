@@ -106,6 +106,14 @@ class NavigationBar extends PureComponent {
                   </Link>
                 </li>
               }
+              {
+                perfil.acceso=="admin"
+                &&<li>
+                  <Link to="/zonas">
+                    Zonas
+                  </Link>
+                </li>
+              }
              
               <li>
                 <Link to="/ver_perfil" style={{background:"none"}}>

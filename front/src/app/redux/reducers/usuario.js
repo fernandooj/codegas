@@ -2,7 +2,8 @@ import {
   GET_PERFIL,
   GET_USUARIO,
   GET_USUARIOS,
-  GET_USUARIOS_ACCESO
+  GET_USUARIOS_ACCESO,
+  GET_USUARIOS_ZONAS
 } from "../actions/constants/actionsTypes";
  
  
@@ -31,6 +32,16 @@ const getUsuarios = (state = [], action) => {
       return state;
   }
 };
+
+const getUsuariosZonas = (state = [], action) => {
+  switch (action.type) {
+    case GET_USUARIOS_ZONAS:
+      return action.usuariosZonas;
+    default:
+      return state;
+  }
+};
+
 const getUsuariosAcceso = (state = [], action) => {
   switch (action.type) {
     case GET_USUARIOS_ACCESO:
@@ -47,5 +58,6 @@ export default function authServiceReducer(state = {}, action) {
     usuario:        getUsuario(state.usuario, action),
     usuarios:       getUsuarios(state.usuarios, action),
     perfil:         getPerfil(state.perfil, action),
+    usuariosZonas:  getUsuariosZonas(state.usuariosZonas, action),
   };
 }

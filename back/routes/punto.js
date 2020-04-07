@@ -13,7 +13,10 @@ router.get('/', (req,res)=>{
     })
 })
 
-router.get('/activos', (req,res)=>{
+
+
+
+router.get('/zonas', (req,res)=>{
     puntoServices.getActivos((err2, punto)=>{
         if (!err2) {
             res.json({ status: true, punto });	
@@ -22,6 +25,7 @@ router.get('/activos', (req,res)=>{
         }
     })
 })
+
 
 router.get('/byCliente/:idCliente', (req,res)=>{
     puntoServices.getCliente(req.params.idCliente, (err2, puntos)=>{

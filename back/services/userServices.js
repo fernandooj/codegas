@@ -5,7 +5,7 @@ let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD h:mm:ss')
 class userServices {
 	get(callback){
-		User.find().sort({_id: 'desc'}).exec(callback)
+		User.find().populate("idPadre").sort({_id: 'desc'}).exec(callback)
 	}
 	getEmail(user, callback){
 		let email = user.email.toLowerCase()
@@ -88,9 +88,10 @@ class userServices {
 	editVarios(user, id, callback){
 		console.log({user, id})
 		User.findByIdAndUpdate(id, {$set: {
-			'nombre':     	user.nombre,
-			'email':     	user.email,
-			'updatedAt':     moment(fecha).valueOf()
+			'nombre'   : user.nombre,
+			'email'	   : user.email,
+			'celular'  : user.celular,
+			'updatedAt': moment(fecha).valueOf()
 		}}, callback);
 	}
 	editarValorUnitario(valorUnitario, id, callback){

@@ -8,6 +8,7 @@ export const GET_PERFIL           = "GET_PERFIL";
 export const GET_USUARIOS         = "GET_USUARIOS";
 export const GET_USUARIO          = "GET_USUARIO";
 export const GET_USUARIOS_ACCESO  = "GET_USUARIOS_ACCESO";
+export const GET_USUARIOS_ZONAS   = "GET_USUARIOS_ZONAS";
 export const RECUPERAR_CONTRASENA = "RECUPERAR_CONTRASENA";
 export const CAMBIAR_CONTRASENA   = "CAMBIAR_CONTRASENA";
  

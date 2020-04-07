@@ -399,14 +399,20 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 e.usuarioId.cedula=e.usuarioId.cedula.replace(',', '')
                 return e
             })
-            /////// remplaza las comas por punto en valor unitario
-            pedido = pedido.filter(e=>{
-                return e.valor_unitario=e.valor_unitario.replace(',', '.')
-            })
             /////// remplaza las comas de los kilos por punto
             pedido = pedido.filter(e=>{
                 return e.kilos=e.kilos.replace(',', '.')
             })
+            /////// remplaza las comas por punto en valor unitario
+            pedido = pedido.filter(e=>{
+                if(e.valor_total&&e.kilos){
+                    e.valorUnitario=e.valor_total/e.kilos
+                }else{
+                    e.valorUnitario=e.usuarioId.valorUnitario
+                }
+                return e
+            })
+            
             /////// da el valor total
             // pedido.push({valor_total:0})
             // pedido = pedido.filter(e=>{
@@ -450,8 +456,11 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Kilos',
                 value: 'kilos'
             },{
+                label: 'Valor Unitario Usuario',
+                value: 'usuarioId.valorUnitario'
+            },{
                 label: 'Valor Unitario',
-                value: 'usuarioId.valor_unitario'
+                value: 'valorUnitario'
             },{
                 label: 'Valor Total', /// aun no esta
                 value: 'valor_total'

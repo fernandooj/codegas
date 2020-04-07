@@ -16,7 +16,7 @@ import {sendRemoteNotification} from '../push/envioNotificacion';
 import {getUsuariosAcceso}      from '../../redux/actions/usuarioActions' 
 import Footer                   from '../components/footer'
 import {style}                  from './style'
-import {URL} from "../../../App" 
+ 
 const frecuencias = [
     { key: "semanal",   label: 'Semanal' },
     { key: "quincenal", label: 'Quincenal' },
@@ -285,6 +285,7 @@ class Nuevo_pedido extends Component{
                                     <View>
                                         <Text style={style.textZona}>{e.direccion}</Text>   
                                         <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
+                                        {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion}</Text>}
                                     </View>
                                     {(puntoId==e._id) &&<Icon name="check" style={style.iconCheck} /> }
                                 </TouchableOpacity>
@@ -298,6 +299,7 @@ class Nuevo_pedido extends Component{
                             <Text style={style.textZona}>Punto de entrega</Text>
                             <Text style={style.textZona}>{e.direccion}</Text>
                             <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
+                            {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion}</Text>}
                         </View>    
                     )
                 })

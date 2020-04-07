@@ -103,6 +103,20 @@ export const style = MediaQueryStyleSheet.create({
         borderRadius:5,
         paddingLeft:10
     },
+    inputZona:{
+        fontFamily: "Comfortaa-Regular",
+        borderColor:"rgba(0,0,0,.2)",
+        backgroundColor:"#ffffff",
+        borderWidth:1,
+        marginHorizontal:"6%",
+        width:size.width/2,
+        height:40,
+        padding:0,
+        
+        marginBottom:10,
+        borderRadius:5,
+        paddingLeft:10
+    },
     textVeo:{
         fontFamily: "Comfortaa-Regular",
         top:15,
@@ -284,8 +298,8 @@ export const style = MediaQueryStyleSheet.create({
         borderColor:"rgba(0,0,0,.2)",
         backgroundColor:"#ffffff",
         borderWidth:1,
-        marginHorizontal:"6%",
-        width:180,
+    
+        width:size.width/2,
         marginVertical:5,
         borderRadius:5,
         paddingLeft:10,

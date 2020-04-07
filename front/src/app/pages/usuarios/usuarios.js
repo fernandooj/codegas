@@ -9,7 +9,7 @@ import {createFilter} from 'react-search-input'
 import { connect }         from "react-redux";
 import {getUsuarios} from '../../redux/actions/usuarioActions'  
 import style from "./style.scss"
-const KEYS_TO_FILTERS = ["nombre", "emai", 'codt'] 
+const KEYS_TO_FILTERS = ["nombre", "email",  "razon_social", 'codt'] 
 
 class Home extends PureComponent {
   constructor(props){
@@ -30,31 +30,19 @@ class Home extends PureComponent {
         console.log(props.usuarios)
         this.setState({usuarios:props.usuarios, usuariosFiltro:props.usuarios})
     }
-    cambiarValorUnitario(valor, id) {
-      console.log({valor:valor.target.value, id})
-      axios.get(`users/cambiarValor/${valor.target.value}/${id}`)
-      .then((res)=>{
-        console.log(res.dta)
-          if(res.data.status){
-              this.props.getUsuarios()
-              const openNotificationWithIcon = type => {
-                notification[type]({
-                  message: 'Valor unitario editado',
-                  duration: 8,
-                  description:
-                    ``,
-                });
-              };
-              // openNotificationWithIcon('success')
-          }else{
-            alert("Tenemos un problema, intentelo mas tarde")
-          }
-      })
-    }
+     
 
   renderTable(){
    
     const columns = [
+      {
+        title: 'CODT',
+        dataIndex: 'codt',
+      },
+      {
+        title: 'Razon Social',
+        dataIndex: 'razon_social',
+      },
       {
         title: 'Nombre',
         dataIndex: 'nombre',
@@ -64,34 +52,18 @@ class Home extends PureComponent {
         title: 'Email',
         dataIndex: 'email',
       },
-      {
-        title: 'acceso',
-        dataIndex: 'acceso',
-      },
-      {
-        title: 'CODT',
-        dataIndex: 'codt',
-      },
+       
+      
       {
         title: 'valor Uni.',
         dataIndex: 'valorUnitario',
-        render:(carro, e)=>(
-          <div>
-            <input
-              value={e.valorUnitario}
-              className={style.inputValue}
-              formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={value => value.replace(/\$\s?|(,*)/g, '')}
-              onChange={(a)=>this.cambiarValorUnitario(a, e._id)}
-            />
-          </div>
-        ),
+         
       },
        
     ];
     const {usuarios, terminoBuscador} = this.state
     let usuariosFiltro = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-    
+    console.log(terminoBuscador)
     return (<Table columns={columns} dataSource={usuariosFiltro}   />)
   }
   render() {
@@ -140,15 +112,15 @@ class Home extends PureComponent {
 
 const mapState = state => {
 	return {
-        usuarios:state.usuario.usuarios,
+    usuarios:state.usuario.usuarios,
 	};
 };
   
 const mapDispatch = dispatch => {
     return {
-        getUsuarios: () => {
-			dispatch(getUsuarios());
-        },
+      getUsuarios: () => {
+			  dispatch(getUsuarios());
+       },
     };
 };
   

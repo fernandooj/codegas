@@ -418,6 +418,7 @@ module.exports = function(app, passport){
                                    htmlTemplate(req, e, titulo, text1, text2,  asunto)
                                })
                             })
+                            /// edito los puntos 
                             req.body.puntos.map(e=>{
                                 puntoServices.editar(e, e._id, (err2, puntos)=>{
                                     // console.log(puntos)
@@ -612,6 +613,41 @@ module.exports = function(app, passport){
     })
 
     ///////////////////////////////////////////////////////////////////////////
+    //////////////////      lista USUARIOS CON ZONAS
+    ///////////////////////////////////////////////////////////////////////////
+    app.get('/x/v1/users/zonas', (req,res)=>{
+        puntoServices.usariosConZonas((err2, usuarios)=>{
+            if (!err2) {
+                usuarios = usuarios.map(e=>{
+                    return {
+                        observacion:e.data[0].observacion,
+                        codt:e.data[0].codt,
+                        razon_social:e.data[0].razon_social,
+                        capacidad:e.data[0].capacidad,
+                        activo:e.data[0].activo,
+                        idCliente:e.data[0].idCliente,
+                        nombre:e.data[0].nombre,
+                        email:e.data[0].email,
+                        nombreZona:e.data[0].nombreZona,
+                        celular:e.data[0].celular,
+                        idZona:e.data[0].idZona,
+                        idPadre:e.data[0].idPadre,
+                        valorUnitario:e.data[0].valorUnitario,
+                    }
+                })
+                usuarios = usuarios.filter(e=>{
+                    return e.idPadre==null
+                })
+                
+                res.json({ status: true, usuarios });	
+            }else{
+                res.json({ status: false });	    
+            }
+        })
+    })
+
+
+    ///////////////////////////////////////////////////////////////////////////
     //////////////////      lista conductores sin vehiculos asignados
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/conductores/sinVehiculo', (req,res)=>{
@@ -644,6 +680,7 @@ module.exports = function(app, passport){
     //////////////////      TRAE SOLO UN USUARIO
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/byId/:idUsuario', (req,res)=>{
+        console.log({donId:req.params.idUsuario})
         if(req.session.usuario){
             if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'|| req.session.usuario.acceso=='veo') {
                 userServices.getById(req.params.idUsuario, (err, usuario)=>{
@@ -652,14 +689,15 @@ module.exports = function(app, passport){
                             let data = e.data[0] 
                             return {
                                 direccion: data.direccion,
-                                email: data.email,
-                                idCliente: data.idCliente,
-                                idZona: data.idZona,
-                                nombre: data.nombre,
-                                capacidad:data.capacidad,
-                                nombreZona: data.nombreZona,
+                                email      : data.email,
+                                celular    : data.celular,
+                                idCliente  : data.idCliente,
+                                idZona     : data.idZona,
+                                nombre     : data.nombre,
+                                capacidad  : data.capacidad,
+                                nombreZona : data.nombreZona,
                                 observacion: data.observacion,
-                                _id: data._id
+                                _id        : data._id
                             }  
                         })  
                         if (!err2) {
@@ -754,11 +792,11 @@ module.exports = function(app, passport){
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////     CAMBIA EL VALOR UNITARIO DEL PRODUCTO
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    app.get('/x/v1/users/cambiarValorTodos/:valor', (req,res)=>{
+    app.put('/x/v1/users/cambiarValorTodos/', (req,res)=>{
         userServices.get((err, usuarios)=>{
             if(!err){  
-                usuarios.filter(e=>{
-                    userServices.editarValorUnitario(req.params.valor, e._id, (err2, user)=>{
+                req.body.seleccionados.filter(e=>{
+                    userServices.editarValorUnitario(e.valorUnitario, e._id, (err2, user)=>{
                         console.log(err2)
                     })
                 })

@@ -42,20 +42,15 @@ class Home extends PureComponent {
   }
   componentWillMount(){
     axios.get("zon/zona/activos")
-       .then(res=>{
-   
-          
-            let zonas=res.data.zona.map(e=>{
-              return{
-                text:e.nombre,
-                value:e.nombre
-              }
-            })
-            
-            this.setState({zonas})
-           
-       })
-    
+    .then(res=>{
+        let zonas=res.data.zona.map(e=>{
+          return{
+            text:e.nombre,
+            value:e.nombre
+          }
+        })
+        this.setState({zonas})  
+    })
     this.props.getVehiculos()
     this.socket = SocketIOClient(window.location.origin);
     this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));

@@ -30,7 +30,7 @@ class pedidoServices{
 		pedido.find({_id}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioId, callback){
-		pedido.find({usuarioId}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).populate("zonaId").populate("usuarioCrea").sort({_id: 'desc'}).exec(callback)
+		pedido.find({usuarioId, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion, valorUnitario').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).populate("zonaId").populate("usuarioCrea").sort({_id: 'desc'}).exec(callback)
 	}
 	getByConductor(conductorId, fecha, callback){
 		let fechaHoy = moment().subtract(5, 'hours');
@@ -39,15 +39,15 @@ class pedidoServices{
 	 
 		// let fechaEntrega = fecha==="undefined" ?"2019-07-03" :fecha
 		console.log({fechaEntrega, conductorId, fecha})
-		pedido.find({conductorId, fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion').populate("carroId").populate("puntoId").sort({orden: 'asc'}).populate("zonaId").populate("usuarioCrea").exec(callback)
+		pedido.find({conductorId, fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion, valorUnitario').populate("carroId").populate("puntoId").sort({orden: 'asc'}).populate("zonaId").populate("usuarioCrea").exec(callback)
 	}
 	getByFechaEntrega(fechaEntrega, limit, callback){
 		limit = parseInt(limit)
 		limit = limit*20
 		console.log({limit})
 		fechaEntrega!="undefined"
-		?pedido.find({fechaEntrega}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").limit(limit).sort({orden: 'asc'}).exec(callback)
-		:pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)
+		?pedido.find({fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").limit(limit).sort({orden: 'asc'}).exec(callback)
+		:pedido.find({eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)
 	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)
@@ -193,15 +193,17 @@ class pedidoServices{
 			'estado':estado,
 			'entregado':false,
 			'usuarioAsigna':idUsuario,
+			'kilos':null,
 		}}, callback);
   }
   finalizar(data, activo, imagen, orden_cerrado, callback){
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
+		let valor_total = data.valor_total.split('.').join("").split(',').join("") 
 		pedido.findByIdAndUpdate(data._id, {$set: {
 			'entregado'			: activo,
 			'kilos'	   			: data.kilos,
 			'factura'  			: data.factura,
-			'valor_total'	  : data.valor_total,
+			'valor_total'	  : valor_total,
 			'forma_pago'		: data.forma_pago,
 			'remision'			: data.remision,
 			'imagenCerrar'	: imagen,
