@@ -400,7 +400,7 @@ class Pedido extends Component{
                         }
                         {/* MUESTRA LA NOTIFICACION DEL PEDIDO CERRADO */}
                         {
-                            acceso=="cliente" && entregado
+                            (acceso=="cliente" || acceso=="veo") && entregado
                             &&<View>
                                 <View style={style.separador}></View>
                                 <Text style={style.tituloModal}>Pedido Cerrado</Text>

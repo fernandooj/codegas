@@ -81,9 +81,9 @@ class puntoServices{
 		], callback)
 	} 
 
-	getByUser(idCliente, callback){
-		idCliente = mongoose.Types.ObjectId(idCliente);	
-		console.log({id:idCliente})
+	getByUser(idUser, callback){
+		idUser = mongoose.Types.ObjectId(idUser);	
+		console.log({id:idUser})
 		punto.aggregate([
 			{
 				$lookup:{
@@ -133,8 +133,8 @@ class puntoServices{
 		 
 			{
 			$match: { $or: [
-						{ idCliente, activo:true }, 
-						{ idPadre: idCliente,  activo:true	 }
+						{ idCliente:idUser, activo:true }, 
+						{ idPadre: idUser,  activo:true	 }
 					] 
 				}
 			},
@@ -329,7 +329,7 @@ class puntoServices{
 			observacion : data.observacion,
 			capacidad 	: data.capacidad,
 			idZona 		  : data.idZona,
-			idCliente   : idCliente,
+			idCliente   : idCliente ?idCliente :idPadre,
 			idPadre 	  : idPadre,
 			activo:true,
 			creado     

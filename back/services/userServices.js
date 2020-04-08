@@ -40,23 +40,24 @@ class userServices {
 		let fecha2 = moment().subtract(5, 'hours');
         fecha2 = moment(fecha2).format('YYYY-MM-DD h:mm');
 		let newUsuario = new User() 
-		newUsuario.razon_social	=  user.razon_social,
-		newUsuario.cedula		=  user.cedula,
+		newUsuario.razon_social			=  user.razon_social,
+		newUsuario.cedula				=  user.cedula,
 		newUsuario.direccion_factura	=  user.direccion_factura,
-		newUsuario.tipo			=  user.tipo,		
-		newUsuario.codMagister	=  user.codMagister,		
-		newUsuario.cedula		=  user.cedula,
-		newUsuario.celular		=  user.celular,
-		newUsuario.codt		    =  user.codt,
-		newUsuario.nombre		=  user.nombre,
-		newUsuario.password		=  newUsuario.generateHash(token),
-		newUsuario.email		=  user.email ?user.email.toLowerCase() :"",
-		newUsuario.acceso		=  user.acceso,
-		newUsuario.tokenPhone	=  user.tokenPhone,
-		newUsuario.idPadre  	=  idPadre,
-		newUsuario.token  		=  token,
-		newUsuario.activo 		=  true,
-		newUsuario.created  	= fecha2;
+		newUsuario.tipo					=  user.tipo,		
+		newUsuario.codMagister			=  user.codMagister,		
+		newUsuario.cedula				=  user.cedula,
+		newUsuario.celular				=  user.celular,
+		newUsuario.codt		    		=  user.codt,
+		newUsuario.nombre				=  user.nombre,
+		newUsuario.password				=  newUsuario.generateHash(token),
+		newUsuario.email				=  user.email ?user.email.toLowerCase() :"",
+		newUsuario.acceso				=  user.acceso,
+		newUsuario.tokenPhone			=  user.tokenPhone,
+		newUsuario.valorUnitario  		=  user.valorUnitario;
+		newUsuario.idPadre  			=  idPadre,
+		newUsuario.token  				=  token,
+		newUsuario.created  			= fecha2;
+		newUsuario.activo 				= true,
 		newUsuario.save(callback);	 
 	}
  
@@ -76,13 +77,15 @@ class userServices {
 			'cedula'	  	   : user.cedula,
 			'codMagister'	   : user.codMagister,
 			'direccion_factura': user.direccion_factura,
-			'nombre':     	user.nombre,
-			'codt':     	user.codt,
-			'celular':  	user.celular,
-			// 'password':  	newUsuario.generateHash(user.password),
-			'tipo':   	    user.tipo,
-			'codt':   	    user.codt,
+			'nombre'		   : user.nombre,
+			'codt'			   : user.codt,
+			'celular'		   : user.celular,
+			'tipo'			   : user.tipo,
+			'email'			   : user.email,
+			'codt'			   : user.codt,
+			'valorUnitario'	   : user.valorUnitario,
 			'updatedAt':    fecha
+			// 'password':  	newUsuario.generateHash(user.password),
 		}, callback);
 	}
 	editVarios(user, id, callback){

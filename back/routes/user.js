@@ -424,6 +424,11 @@ module.exports = function(app, passport){
                                     // console.log(puntos)
                                 })
                             })
+                            req.body.puntosNuevos.map(e=>{
+                                puntoServices.create(e, req.params.idUsuario, req.params.idUsuario, (err2, punto)=>{
+
+                                })
+                            })
                             //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO
                             req.session.usuario=users
 
@@ -432,7 +437,7 @@ module.exports = function(app, passport){
                                 
                             //////////////////////////////  SI ENVIA UBICACIONES ELIMINADAS LAS DESACTIVA
                             req.body.ubicacionesEliminadas.length>0
-                            ?eliminarUibicaciones(req, res) :res.json({ status: true, user: users, message: 'Usuario Editado'});
+                            ?eliminarUibicaciones(req, res, users) :res.json({ status: true, user: users, message: 'Usuario Editado'});
                            
                         }
                     })   
@@ -440,13 +445,13 @@ module.exports = function(app, passport){
             })                 
         }
     })
-    const eliminarUibicaciones=(req, res)=>{
+    const eliminarUibicaciones=(req, res, user)=>{
         req.body.ubicacionesEliminadas.map(e=>{
             puntoServices.desactivar(e, (err, res)=>{
                 console.log(err)
                 console.log(res)
             })
-            res.json({ status: true,   message: 'Usuario Editado'});
+            res.json({ status: true,  user, message: 'Usuario Editado'});
         })
     }
 
@@ -680,7 +685,7 @@ module.exports = function(app, passport){
     //////////////////      TRAE SOLO UN USUARIO
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/byId/:idUsuario', (req,res)=>{
-        console.log({donId:req.params.idUsuario})
+       
         if(req.session.usuario){
             if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'|| req.session.usuario.acceso=='veo') {
                 userServices.getById(req.params.idUsuario, (err, usuario)=>{
@@ -717,6 +722,7 @@ module.exports = function(app, passport){
                                 avatar           : usuario.avatar, 
                                 ubicaciones      : nUbicaciones,
                                 codMagister      : usuario.codMagister, 
+                                valorUnitario      : usuario.valorUnitario, 
                                 veos             : usuario.comercialAsignado,
                             }
                             res.json({status:true, user})

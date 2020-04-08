@@ -54,7 +54,7 @@ export const style = MediaQueryStyleSheet.create({
     icon:{
        width:50,
        height:31,
-       marginRight:25
+       marginRight:15
     },
     iconCheck:{
         color:"#00218b",
@@ -173,6 +173,7 @@ export const style = MediaQueryStyleSheet.create({
 
     btnZona:{
         flexDirection:"row",
+        width:size.width-10,
         borderColor:'rgba(0,0,0, .2)',
         padding:10,
         borderWidth:1,
@@ -181,7 +182,10 @@ export const style = MediaQueryStyleSheet.create({
     },
     textZona:{
         fontFamily: "Comfortaa-Light",
-        width:"100%"
+        width:"100%",
+        fontSize:12,
+        alignItems:"flex-start",
+		flex: 1, flexWrap: 'wrap'
     },
 
 

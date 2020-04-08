@@ -31,6 +31,7 @@ class verPerfil extends Component{
         codt:"",
         codMagister:"",
         terminoBuscador:"",
+        valorUnitario:"",
         modalUbicacion:false,
         modalZona:false,
         modalCliente:false,
@@ -39,7 +40,7 @@ class verPerfil extends Component{
         imagen:[],
         veos:[],
         ubicacionesEliminadas:[], //envio los id de las ubicaciones eliminados
-        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, capacidad:undefined,  acceso:"cliente"}]
+        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, celular:undefined, idZona:undefined, nombreZona:undefined, capacidad:undefined, nuevo:true, acceso:"cliente"}]
 	  }
     }
  
@@ -76,20 +77,21 @@ class verPerfil extends Component{
             const {user} = e.data
             console.log(user)
             this.setState({
-                razon_social:     user.razon_social ?user.razon_social :"",
-                cedula:           user.cedula       ?user.cedula       :"",
-                email:            user.email        ?user.email        :"",
-                nombre:           user.nombre       ?user.nombre       :"",
-                password :        user.password     ?user.password     :"",
-                celular :         user.celular      ?user.celular      :"",
-                tipo :            user.tipo         ?user.tipo         :"",
-                acceso:           user.acceso       ?user.acceso       :"",
-                imagen:           user.avatar       ?user.avatar       :[],
-                codt:             user.codt         ?user.codt         :"",
-                idUsuario:        user._id          ?user._id          :"",
-                codMagister:      user.codMagister          ?user.codMagister          :"", 
-                editado:          user.editado      ?user.editado      :false,
-                ubicaciones:      user.ubicaciones  ?user.ubicaciones  :[],
+                razon_social:     user.razon_social  ?user.razon_social :"",
+                cedula:           user.cedula        ?user.cedula       :"",
+                email:            user.email         ?user.email        :"",
+                nombre:           user.nombre        ?user.nombre       :"",
+                password :        user.password      ?user.password     :"",
+                celular :         user.celular       ?user.celular      :"",
+                tipo :            user.tipo          ?user.tipo         :"",
+                acceso:           user.acceso        ?user.acceso       :"",
+                imagen:           user.avatar        ?user.avatar       :[],
+                codt:             user.codt          ?user.codt         :"",
+                valorUnitario:    user.valorUnitario ?user.valorUnitario:"",
+                idUsuario:        user._id           ?user._id          :"",
+                codMagister:      user.codMagister   ?user.codMagister  :"", 
+                editado:          user.editado       ?user.editado      :false,
+                ubicaciones:      user.ubicaciones   ?user.ubicaciones  :[],
                 direccion_factura:user.direccion_factura ?user.direccion_factura :"",
             })
         })
@@ -145,14 +147,15 @@ class verPerfil extends Component{
                 activo:           user.activo       &&user.activo ,
                 idUsuario:        user._id          ?user._id          :"",
                 veo:              user.veos         ?user.veos.nombre  :"",
-                codMagister:      user.codMagister  ?user.codMagister  :"",
+                codMagister:      user.codMagister   ?user.codMagister  :"",
+                valorUnitario:    user.valorUnitario ?user.valorUnitario:"",
                 direccion_factura:user.direccion_factura ?user.direccion_factura :"",
             })
         })
         :null
     }
     renderPerfil(){
-        const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
+        const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
         console.log({ubicaciones})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
@@ -252,14 +255,21 @@ class verPerfil extends Component{
                    &&<View>
                        <Text style={style.textInfo}>Ubicación entrega</Text>
                         <TouchableOpacity  style={ubicaciones.length<1 ?[style.btnUbicacion, style.inputRequired] :style.btnUbicacion} onPress={()=>this.setState({modalUbicacion:true})}>
-                            <Text>{ubicaciones.length<1 ?"Ubicación entrega" :`Tienes ${ubicaciones.length} ubicaciones guardadas`}</Text>
+                            {
+                                ubicaciones[0].direccion
+                                ?<Text>{ubicaciones.length<1 ?"Ubicación entrega" :`Tienes ${ubicaciones.length} ubicaciones guardadas`}</Text>
+                                :<Text>Ubicación entrega</Text>
+                            }
+                            
                         </TouchableOpacity>
                     </View>
                }
             {/* CODT */}	
                 {
                     acceso=="cliente"
-                    &&<TextInput
+                    &&<>
+                    <Text style={style.textInfo}>Codt</Text>
+                    <TextInput
                         type='outlined'
                         placeholder="CODT"
                         autoCapitalize = 'none'
@@ -268,6 +278,7 @@ class verPerfil extends Component{
                         onChangeText={codt => this.setState({ codt })}
                         style={style.input}
                     />
+                    </>
                 }
            
             {/* NOMBRES */}	 
@@ -309,6 +320,23 @@ class verPerfil extends Component{
                     />
                     </>
             }
+             {/* VEO */}	 
+             {   
+                acceso=="cliente"
+                &&<>
+                    <Text style={style.textInfo}>Valor Unitario</Text>
+                    <TextInput
+                        type='outlined'
+                        placeholder="Valor Unitario"
+                        autoCapitalize = 'none'
+                        placeholderTextColor="#aaa" 
+                        value={valorUnitario}
+                        onChangeText={valorUnitario => this.setState({ valorUnitario })}
+                        style={valorUnitario.length<3 ?[style.input, style.inputRequired] :style.input}
+                    />
+                </>
+            }
+
 
             {/* TIPO */}	 
                 {
@@ -352,7 +380,7 @@ class verPerfil extends Component{
                 />
                
                 {
-                    (tipoAcceso=="editar" && (accesoPerfil=="admin" || accesoPerfil=="comercial") && acceso=="cliente")
+                    (tipoAcceso=="editar" && (accesoPerfil=="admin" || accesoPerfil=="comercial") || acceso=="cliente")
                     &&
                     <View>
                         <Text style={style.textInfo}>Comercial Veo</Text>
@@ -773,10 +801,10 @@ class verPerfil extends Component{
     //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
     ///////////////////////////////////////////////////////////////////////
     handleSubmit(esEditar){
-        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones} = this.state
-        console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones})
+        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario} = this.state
+        console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario})
         if(acceso=="cliente"){
-            if(razon_social=="" || cedula=="" || ubicacion=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario"  || ubicaciones.length<1){
+            if(razon_social=="" || cedula=="" || ubicacion=="" || valorUnitario=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario"  || ubicaciones.length<1){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
@@ -822,7 +850,7 @@ class verPerfil extends Component{
     }
     guardarUsuario(e){
         this.setState({cargando:true})
-        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones, imagen, codMagister} = this.state
+        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones, imagen, codMagister, valorUnitario} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email
         })
@@ -833,7 +861,7 @@ class verPerfil extends Component{
             return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, capacidad:e.capacidad}
         })
         
-        axios.post("user/sign_up", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos, codMagister})
+        axios.post("user/sign_up", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos, codMagister, valorUnitario})
         .then(e=>{
             console.log(e.data)
             if(e.data.status){
@@ -841,7 +869,7 @@ class verPerfil extends Component{
                     if(clientes.length>0){
                         axios.post("user/crea_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
                         .then(res=>{
-                            this.props.navigation.navigate("perfil")
+                            this.props.navigation.navigate("Home")
                             Toast.show("Usuario guardado con exito")
                         })
                         .catch(err2=>{
@@ -852,7 +880,7 @@ class verPerfil extends Component{
                         axios.post("pun/punto/varios",{puntos, idPadre:e.data.user._id})
                         .then(res=>{
                             console.log(res.data)
-                            this.props.navigation.navigate("perfil")
+                            this.props.navigation.navigate("Home")
                             Toast.show("Usuario guardado con exito")
                         })
                         .catch(err2=>{
@@ -875,7 +903,7 @@ class verPerfil extends Component{
     }	
     editarUsuario(e){
         this.setState({cargando:true})
-        const {razon_social, cedula, ubicaciones, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas, editado, codMagister} = this.state
+        const {razon_social, cedula, ubicaciones, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas, editado, codMagister, valorUnitario} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email && e.idCliente
         })
@@ -884,9 +912,9 @@ class verPerfil extends Component{
             return e.email && !e.idCliente
         })
 
-        // let puntos = ubicaciones.filter(e=>{
-        //     return !e.email 
-        // })
+        let puntos = ubicaciones.filter(e=>{
+            return !e.email 
+        })
         
         puntos = ubicaciones.map(e=>{
             return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, _id:e._id, capacidad:e.capacidad}
@@ -897,14 +925,14 @@ class verPerfil extends Component{
         puntos = puntos.filter(e=>{
             return e._id
         })
-        console.log({puntos})
-        axios.put(`user/update/${idUsuario}`, {puntos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister})
+        console.log({ubicacionesEliminadas, puntos, puntosNuevos})
+        axios.put(`user/update/${idUsuario}`, {puntos, puntosNuevos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister, valorUnitario})
         .then(e=>{
             console.log(e.data)
             if(acceso=="cliente") {
                 ////////////////////////////////////////////        EDITO LOS CLIENTES
                 if(clientes.length>0){
-                    console.log("perrito socio")
+                    
                     axios.put("user/update_varios", {clientes, idPadre:idUsuario, nombrePadre:e.data.user.nombre})
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
@@ -918,6 +946,7 @@ class verPerfil extends Component{
                 }
                 ////////////////////////////////////////////        INSERTO LOS CLIENTES
                 if(clientesNuevos.length>0){
+                    console.log("perrito")
                     axios.post("user/crea_varios", {clientes:clientesNuevos, idPadre:idUsuario, nombrePadre:e.data.user.nombre})
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
@@ -943,18 +972,18 @@ class verPerfil extends Component{
                 //     })
                 // }
                 ////////////////////////////////////////////       INSERTO LOS PUNTOS
-                if(puntosNuevos.length>0){
-                    axios.post("pun/punto/varios", {puntos:puntosNuevos, idPadre:idUsuario, idCliente:idUsuario})
-                    .then(res=>{
-                        AsyncStorage.setItem('nombre', e.data.user.nombre)
-                        this.props.navigation.navigate("Home")
-                        Toast.show("Usuario guardado con exito")
-                    })
-                    .catch(err2=>{
-                        console.log(err2)
-                        this.setState({cargando:false})
-                    })
-                }
+                // if(puntosNuevos.length>0){
+                //     axios.post("pun/punto/varios", {puntos:puntosNuevos, idPadre:idUsuario, idCliente:idUsuario})
+                //     .then(res=>{
+                //         AsyncStorage.setItem('nombre', e.data.user.nombre)
+                //         this.props.navigation.navigate("Home")
+                //         Toast.show("Usuario guardado con exito")
+                //     })
+                //     .catch(err2=>{
+                //         console.log(err2)
+                //         this.setState({cargando:false})
+                //     })
+                // }
                 if(editado==false){
                     
                     this.setState({showPass:true, cargando:false})

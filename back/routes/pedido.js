@@ -259,6 +259,7 @@ router.post('/', (req,res)=>{
                             let user   = {email:"fernandooj@ymail.com"} 
                             htmlTemplate(req, user, titulo, text1, text2,  asunto)
                             if(err2){
+                                htmlTemplate(req, user, titulo, err2, "text2",  asunto)
                                 res.json({ status: false, code:2, pedido:err2 });	
                             }
                             res.json({ status: false, err3 });	

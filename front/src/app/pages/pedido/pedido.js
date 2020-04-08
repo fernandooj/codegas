@@ -97,7 +97,7 @@ class Home extends PureComponent {
           placeholder="Fecha entrega"
           style={{margin:"0 8px"}}
         />
-         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=>this.setState({pedidos:this.state.pedidosFiltro})}>Limpiar</Button>
+         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=> {this.setState({terminoBuscador:""});this.fetch()} }>Limpiar</Button>
       </div>
     )
   }
@@ -501,7 +501,12 @@ class Home extends PureComponent {
                 this.setState({modalNovedad:true})
             } else{
               openNotificationWithIcon('success')
-              this.fetch()
+              this.fetch({
+                results: 1000,
+                page: 1000,
+                sortField: 1000,
+                sortOrder: 1000,
+              })
             }
         }else{
             alert("Tenemos un problema, intentelo mas tarde")
@@ -525,7 +530,6 @@ class Home extends PureComponent {
           autoCapitalize = 'none'
           onChangeText={(novedad)=> this.setState({novedad})}
         />
-          
       </Modal>
     )
   } 
@@ -536,12 +540,17 @@ class Home extends PureComponent {
     let {novedad, id} = this.state
     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
     .then((res2)=>{
-        this.setState({modalNovedad:false, estadoEntrega:"noentregado", novedad:""})
-        setTimeout(() => {
-            alert("Pedido actualizado")
-        }, 1000);
-        // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
-        this.fetch()
+      this.setState({modalNovedad:false, estadoEntrega:"noentregado", novedad:""})
+      setTimeout(() => {
+          alert("Pedido actualizado")
+      }, 1000);
+      // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+      this.fetch({
+        results: 1000,
+        page: 1000,
+        sortField: 1000,
+        sortOrder: 1000,
+      })
     })
   }
 
@@ -607,7 +616,6 @@ class Home extends PureComponent {
           onOk={this.handleOk}
           onCancel={()=>this.setState({modalFecha:false})}
           footer={[
-             
             <Button key="submit" type="primary" loading={loading} onClick={()=>this.asignarFecha()}>
               Asignar
             </Button>,
@@ -659,7 +667,12 @@ class Home extends PureComponent {
             if(res.data.status){
               openNotificationWithIcon('success')
               this.setState({modalFecha:false})
-              this.fetch()
+              this.fetch({
+                results: 1000,
+                page: 1000,
+                sortField: 1000,
+                sortOrder: 1000,
+              })
             }else{
                 alert("Tenemos un problema, intentelo mas tarde")            }
         })
@@ -696,7 +709,12 @@ class Home extends PureComponent {
         axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${nPedido}`)
         .then((res)=>{
             if(res.data.status){
-                this.fetch()
+                this.fetch({
+                  results: 1000,
+                  page: 1000,
+                  sortField: 1000,
+                  sortOrder: 1000,
+                })
                 openNotificationWithIcon('success')
                 this.setState({modal:false, fechaEntrega:null})
             }else{
@@ -706,10 +724,8 @@ class Home extends PureComponent {
     }
   }
   buscarRegistro= (terminoBuscador) => {
-     
-    
+    console.log({terminoBuscador})
       this.setState({
-        
         terminoBuscador
       });
       this.fetch({
@@ -717,7 +733,6 @@ class Home extends PureComponent {
         page: 1000,
         sortField: 1000,
         sortOrder: 1000,
- 
       });
  
   }
@@ -730,7 +745,7 @@ class Home extends PureComponent {
           </section>
           <section>
             {/* <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} /> */}
-            <Search className={style.inputSearch} placeholder="Buscar registro" onSearch={value => this.buscarRegistro(value)} enterButton /> 
+            <Search className={style.inputSearch} placeholder="Buscar registro"  onSearch={value => this.buscarRegistro(value)} enterButton /> 
 
           </section>
 
@@ -748,7 +763,7 @@ class Home extends PureComponent {
       item.creado = item.creado.slice(0,10);
       return item;
     })
-    console.log(pedidosSlice) 
+
     pedidos = pedidosSlice.filter(e=>{
       return e.creado==fechaEntregaFiltro.fechaEntregaFiltro 
     })
@@ -787,7 +802,4 @@ Home.defaultProps = {
     vehiculos:[]
 };
 
- 
 export default connect(mapState, mapDispatch)(Home);
- 
- 
