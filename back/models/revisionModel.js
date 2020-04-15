@@ -25,7 +25,8 @@ let Revision = new Schema({
 	usuarioId		  :	{type: Schema.ObjectId, ref:'User'},
 	zonaId			  : {type: Schema.ObjectId, ref:'Zona'},
 	puntoId           : {type: Schema.ObjectId, ref:'Punto'},
-	//codigoInterno	   : String,
+	estado	   		  : {type:Number, default:1},
+	
 	sector            : String,
 	barrio            : String,
 	propiedad         : String,
@@ -57,6 +58,18 @@ let Revision = new Schema({
 	eliminado		  : {type:Boolean, default:false},
 	usuarioCrea		  : {type: Schema.ObjectId, ref:'User'},
 	tanqueId		  :	[{type: Schema.ObjectId, ref:'Tanque'}],
+
+	////////////////////////////////	CERRAR DEP TECNICO	
+	depTecnico		  :[],
+	depTecnicoText    :String,
+	depTecnicoEstado  : {type:Boolean, default:false},
 })
 
 module.exports = mongoose.model('Revision', Revision) 
+
+// estado 1--> no hay alerta
+// estado 2-->hay una alerta abierta
+// estado 3 --> la alerta se cerro
+
+// depTecnicoEstado --> si es true es por que ya se cerraron
+ 

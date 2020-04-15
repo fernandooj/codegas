@@ -2,11 +2,12 @@ import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Alert, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
- 
+import ModalSelector                   from 'react-native-modal-selector'
 import DatePicker 			           from 'react-native-datepicker'
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';  
 import axios                           from 'axios';
 import Icon                            from 'react-native-fa-icons';
+import SubirDocumento                  from "../components/subirDocumento";
 import TomarFoto                       from "../components/tomarFoto";
 import { connect }                     from "react-redux";
 import {getUsuariosAcceso}             from '../../redux/actions/usuarioActions'
@@ -23,8 +24,8 @@ let m3s         = [{key:"Si", label:"Si"},{key:"No", label:"No"}]
 let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
 let anosFabricacion = []
  
-for (var index = 1950; index < 2020; index++) {
-    anosFabricacion.push({"label":index, "value":index})
+for (var index = 1950; index < 2021; index++) {
+    anosFabricacion.push({key:index, label:index })
 }
 
 let size  = Dimensions.get('window');
@@ -46,6 +47,9 @@ class Tanques extends Component{
             imgPlaca:[],
             imgPlacaFabricante:[],
             imgPlacaMantenimiento:[],
+            imgDossier:[],
+            imgCerFabricante:[],
+            imgCerOnac:[],
             x: {
 				latitude: 4.597825,
 				longitude: -74.0755723,
@@ -94,9 +98,12 @@ class Tanques extends Component{
                         
     
                         //////  step 2
-                        imgPlaca:                 tanque.placa              ?tanque.placa           :[],
-                        imgPlacaFabricante:       tanque.placaFabricante    ?tanque.placaFabricante          :[],
-                        imgPlacaMantenimiento:    tanque.placaMantenimiento ?tanque.placaMantenimiento     :[],
+                        imgPlaca:              tanque.placa              ?tanque.placa               :[],
+                        imgPlacaFabricante:    tanque.placaFabricante    ?tanque.placaFabricante     :[],
+                        imgPlacaMantenimiento: tanque.placaMantenimiento ?tanque.placaMantenimiento  :[],
+                        imgDossier:            tanque.dossier            ?tanque.dossier             :[],
+                        imgCerFabricante:      tanque.cerFabricante      ?tanque.cerFabricante       :[],
+                        imgCerOnac:            tanque.cerOnac            ?tanque.cerOnac             :[],
                         
     
                         //////  step 3
@@ -280,7 +287,7 @@ class Tanques extends Component{
                     celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
                     emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
                     puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
-                    puntoId:                  tanque.puntoId             ?tanque.puntoId._id                   :[],
+                    puntoId:                  tanque.puntboId             ?tanque.puntoId._id                   :[],
                     zonaId:                  tanque.zonaId               ?tanque.zonaId._id                   :null,
                     modalPlacas:false    
                 })
@@ -435,7 +442,16 @@ class Tanques extends Component{
 
                 {/* AÑO DE FABRICACIÓN */}
             <View style={style.contenedorSetp2}>
-                
+                <Text style={style.row1Step2}>Año Fabricación</Text>
+                <ModalSelector
+                    style={style.btnFrecuencia}
+                    data={anosFabricacion}
+                    initValue="Frecuencia"
+                    cancelText="Cancelar"
+                    onChange={(option)=>{ this.setState({anoFabricacion:option.key}) }} 
+                    style={style.inputStep2}
+                    selectStyle={{borderWidth:0, padding:0, alignSelf:"stretch", textAlign: 'right'}}
+                />
                     {/* <DatePicker
                         customStyles={{
                             dateInput:style.btnDate,
@@ -468,7 +484,7 @@ class Tanques extends Component{
 
      
     step2(){
-        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante} = this.state
+        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgDossier, imgCerFabricante, imgCerOnac} = this.state
         return(
             <View>
                
@@ -497,6 +513,31 @@ class Tanques extends Component{
                     limiteImagenes={4}
                     imagenes={(imgPlacaFabricante) => {  this.setState({imgPlacaFabricante}) }}
                 />
+                {/* DOSSIER */}
+                <SubirDocumento 
+                    source={imgDossier}
+                    width={180}
+                    titulo="Dossier"
+                    limiteImagenes={4}
+                    imagenes={(imgDossier) => {  this.setState({imgDossier}) }}
+                />
+                {/* DOSSIER */}
+                <SubirDocumento 
+                    source={imgCerFabricante}
+                    width={180}
+                    titulo="Cer. Fabricante"
+                    limiteImagenes={4}
+                    imagenes={(imgCerFabricante) => {  this.setState({imgCerFabricante}) }}
+                />
+                {/* DOSSIER */}
+                <SubirDocumento 
+                    source={imgCerOnac}
+                    width={180}
+                    titulo="Cer. Onac"
+                    limiteImagenes={4}
+                    imagenes={(imgCerOnac) => {  this.setState({imgCerOnac}) }}
+                />
+
             </View>
         )
     }
@@ -600,7 +641,8 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 2
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep2(){
-        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, tanqueId} = this.state
+        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgDossier, imgCerFabricante, imgCerOnac, tanqueId} = this.state
+        console.log({imgDossier, imgCerFabricante, imgCerOnac})
         let data = new FormData();
         imgPlaca.forEach(e=>{
             data.append('imgPlaca', e);
@@ -611,9 +653,21 @@ class Tanques extends Component{
         imgPlacaFabricante.forEach(e=>{
             data.append('imgPlacaFabricante', e);
         })
+        imgDossier.forEach(e=>{
+            data.append('imgDossier', e);
+        })
+        imgCerFabricante.forEach(e=>{
+            data.append('imgCerFabricante', e);
+        })
+        imgCerOnac.forEach(e=>{
+            data.append('imgCerOnac', e);
+        })
         data.append('imgPlaca',              imgPlaca);
         data.append('imgPlacaMantenimiento', imgPlacaMantenimiento);
         data.append('imgPlacaFabricante',    imgPlacaFabricante);
+        data.append('imgDossier',            imgDossier);
+        data.append('imgCerFabricante',      imgCerFabricante);
+        data.append('imgCerOnac',            imgCerOnac);
         axios({
             method: 'put',   
             url: `tan/tanque/guardarImagen/${tanqueId}`,

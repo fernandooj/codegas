@@ -46,12 +46,12 @@ class Home extends PureComponent {
         this.setState({usuarios:props.usuarios, usuariosFiltro:props.usuarios})
     }
     cambiarValorUnitario(valor, id) {
-      console.log({valor:valor.target.value, id})
-      axios.get(`users/cambiarValor/${valor.target.value}/${id}`)
+      let valorUni = parseInt(valor.target.value)
+      axios.get(`users/cambiarValor/${valorUni}/${id}`)
       .then((res)=>{
-        console.log(res.dta)
+        
           if(res.data.status){
-              this.props.getUsuariosZonas()
+              
               const openNotificationWithIcon = type => {
                 notification[type]({
                   message: 'Valor unitario editado',
@@ -60,8 +60,14 @@ class Home extends PureComponent {
                     ``,
                 });
               };
-              // openNotificationWithIcon('success')
+              console.log({valorUni, id})
+              let usuarios = this.state.usuarios.filter(e=>{
+                  if(e.idCliente==id){e.valorUnitario=valorUni}
+                  return e
+              })
+              this.setState({usuarios})
           }else{
+            
             alert("Tenemos un problema, intentelo mas tarde")
           }
       })
@@ -110,11 +116,11 @@ class Home extends PureComponent {
             render:(carro, e)=>(
             <div>
                 <input
-                value={e.valorUnitario}
-                className={style.inputValue}
-                formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                onChange={(a)=>this.cambiarValorUnitario(a, e._id)}
+                    value={e.valorUnitario}
+                    className={style.inputValue}
+                    formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                    onChange={(a)=>this.cambiarValorUnitario(a, e.idCliente)}
                 />
             </div>
             ),
@@ -129,8 +135,8 @@ class Home extends PureComponent {
         this.setState({ selectedRowKeys, seleccionados });
     };
     render() {
-        const {showValorBase, tipo} = this.state 
-        console.log(showValorBase)
+        const {showValorBase, todos, tipo} = this.state 
+        console.log(todos)
         let icon = tipo=="porcentaje" ?"%" :"$"
         return (
         <div> 
@@ -157,6 +163,7 @@ class Home extends PureComponent {
                     placeholder="Valor Base"
                     
                 /> 
+                <Checkbox onChange={(todos)=>this.seleccionaTodos(todos.target.checked)} style={{ margin:"0 10px" }} >Cambiar a todos</Checkbox>
             <Button style={{backgroundColor:"#00218b"}} onClick={()=>this.handleSubmit()}>Guardar</Button>
             </section>
             <section>
@@ -166,6 +173,14 @@ class Home extends PureComponent {
         </div>
         );
   }
+  seleccionaTodos(todos){
+    let {seleccionados, usuarios} = this.state
+    if(todos){
+        this.setState({seleccionados:usuarios})
+        console.log({usuarios})
+    }
+    
+  } 
   handleSubmit = e => {
     let {valor, valor2, seleccionados, tipo, showValorBase} = this.state
     

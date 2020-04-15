@@ -295,11 +295,14 @@ class Nuevo_pedido extends Component{
                 </View>
                 :puntos.map((e, key)=>{
                     return (
-                        <View key={key} >
-                            <Text style={style.textZona}>Punto de entrega</Text>
-                            <Text style={style.textZona}>{e.direccion}</Text>
-                            <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
-                            {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion}</Text>}
+                        <View key={key} style={style.btnZona} >
+                            <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
+                            <View>
+                                <Text style={style.textZona}>Punto de entrega</Text>
+                                <Text style={style.textZona}>{e.direccion}</Text>   
+                                <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
+                                {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion}</Text>}
+                            </View>
                         </View>    
                     )
                 })
@@ -362,7 +365,7 @@ class Nuevo_pedido extends Component{
         this.setState({cliente:cliente[0].label, idCliente, emailCliente:cliente[0].email, modalCliente:false})
         axios.get(`pun/punto/byCliente/${idCliente}`)
         .then(e=>{
-            console.log(e.data.puntos[0])
+            console.log(e.data.puntos)
             if(e.data.status){
                 e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id, idZona:e.data.puntos[0].idZona}) :this.setState({puntos:e.data.puntos})
             }else{

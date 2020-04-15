@@ -18,7 +18,7 @@ export const style = MediaQueryStyleSheet.create({
 		textAlign:"center",
 		alignItems:"center",
 		justifyContent:"center",
-		marginTop:10,
+		marginVertical:10,
 		width:Width-60,
 		left:20,
 		padding:10,
@@ -182,9 +182,14 @@ export const style = MediaQueryStyleSheet.create({
 		marginVertical:5,
 		paddingVertical:4,
 		fontSize:10,
-		height:140,
+		height:100,
 	},
-
+	separador:{
+		width:Width,
+		height:1,
+		marginVertical:10,
+		backgroundColor:"rgba(50,50,50,.1)"
+	},
  
 	containerTanque:{
 		flex:1,
@@ -282,5 +287,19 @@ export const style = MediaQueryStyleSheet.create({
 		width:"100%",
 		padding:10,
 	}, 
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				CERRAR
+	//////////////////////////////////////////////////////////////////
+	cabezera1:{
+		width:Width,
+		height:110
+	},  
+	textCerrar:{
+		fontFamily: "Comfortaa-Regular",
+		marginVertical:2,
+		fontSize:15,
+		textAlign:"center"
+	}
 
 })

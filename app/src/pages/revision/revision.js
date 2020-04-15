@@ -4,7 +4,7 @@ import {style}           from './style'
 import {connect}         from 'react-redux' 
 import Icon              from 'react-native-fa-icons';
 import axios             from 'axios';
- 
+import AsyncStorage      from '@react-native-community/async-storage';
 import {getUsuarios}     from '../../redux/actions/usuarioActions'  
 import { createFilter }  from 'react-native-search-filter';
 import Footer            from '../components/footer'
@@ -23,7 +23,19 @@ class Revision extends Component{
         }
     }
  
-    componentWillMount(){
+    async componentWillMount(){
+        try{
+            const userId    = await AsyncStorage.getItem('userId')
+            const nombre    = await AsyncStorage.getItem('nombre')
+            const email 	= await AsyncStorage.getItem('email')
+            const avatar    = await AsyncStorage.getItem('avatar')
+            const acceso    = await AsyncStorage.getItem('acceso')
+            userId ?this.setState({userId, nombre, email, avatar, acceso}) :null
+        }catch(e){
+            console.log(e)
+        }
+         
+
         axios.get("rev/revision")
         .then(res=>{
             console.log(res.data)
@@ -45,17 +57,23 @@ class Revision extends Component{
     
     renderRevisiones(){
         const {navigation} = this.props
-        const {terminoBuscador, inicio, final, revisiones} = this.state
+        const {terminoBuscador, inicio, final, revisiones, acceso} = this.state
         let filtroRevisiones = revisiones.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newRevisiones = filtroRevisiones.slice(inicio, final) 
         return newRevisiones.map((e, key)=>{
             return(
-                <View style={[style.contenedorRevisiones, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
-                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("nuevaRevision", {revisionId:e._id})}>
+                <View style={[style.contenedorRevisiones, {backgroundColor: !e.activo ?"red" :(e.estado==2 ||e.avisos||e.distancias||e.electricas||e.extintores) ?"#e8a43d" :"white" }]} key={key}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {revisionId:e._id})}>
                         <View style={{width:"90%"}}>
                             <Text style={style.textUsers}>N Control: {e.nControl}</Text>
                             <Text style={style.textUsers}>Placa: {e.tanqueId ?e.tanqueId[0].placaText :""}</Text>
                             <Text style={style.textUsers}>Cliente:   {e.usuarioId &&e.usuarioId.razon_social}</Text>
+                            {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
+                            {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
+                            {e.avisos     &&<Text style={style.textUsers}>Avisos reglamentarios en mal estado</Text>}
+                            {e.distancias &&<Text style={style.textUsers}>Extintores en mal estado</Text>}
+                            {e.electricas &&<Text style={style.textUsers}>Distancias en mal estado</Text>}
+                            {e.extintores &&<Text style={style.textUsers}>Condicciones electricas en mal estado</Text>}
                         </View>
                         <View  style={{justifyContent:"center"}}>
                             <Icon name={'angle-right'} style={style.iconCerrar} />

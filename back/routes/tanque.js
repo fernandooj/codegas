@@ -207,7 +207,9 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
         let rutaImgPlaca              = [];
         let rutaImgPlacaMantenimiento = [];
         let rutaImgPlacaFabricante    = [];
-        
+        let rutaImgDossier            = []
+        let rutaImgCerFabricante      = []
+        let rutaImgCerOnac            = [] 
        
         if(req.files.imgPlaca){
             let esArrayInstalacion = Array.isArray(req.files.imgPlaca)
@@ -338,11 +340,95 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
-        rutaImgPlaca              = rutaImgPlaca.length==0  ?req.body.imgPlaca :rutaImgPlaca;
-        rutaImgPlacaMantenimiento = rutaImgPlacaMantenimiento.length==0 ?req.body.imgPlacaMantenimiento :rutaImgPlacaMantenimiento;
-        rutaImgPlacaFabricante    = rutaImgPlacaFabricante.length==0   ?req.body.imgPlacaFabricante :rutaImgPlacaFabricante;
 
-        tanqueServices.editarImagen(req.params.idTanque,  rutaImgPlaca, rutaImgPlacaMantenimiento, rutaImgPlacaFabricante, (err, tanque)=>{
+
+        if(req.files.imgDossier){
+            let esArrayimgDossier = Array.isArray(req.files.imgDossier)
+            if(esArrayimgDossier){
+                req.files.imgDossier.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+e.name
+                    rutaImgDossier.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgDossier.name
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgDossier  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgDossier.name
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(req.files.imgDossier.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+
+        if(req.files.imgCerFabricante){
+            let esArrayimgCerFabricante = Array.isArray(req.files.imgCerFabricante)
+            if(esArrayimgCerFabricante){
+                req.files.imgCerFabricante.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+e.name
+                    rutaImgCerFabricante.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerFabricante.name
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgCerFabricante  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerFabricante.name
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(req.files.imgCerFabricante.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+
+        if(req.files.imgCerOnac){
+            let esArrayimgCerOnac = Array.isArray(req.files.imgCerOnac)
+            if(esArrayimgCerOnac){
+                req.files.imgCerOnac.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+e.name
+                    rutaImgCerOnac.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerOnac.name
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgCerOnac  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerOnac.name
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(req.files.imgCerOnac.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+
+        
+        rutaImgPlaca              = rutaImgPlaca.length==0              ?req.body.imgPlaca              :rutaImgPlaca;
+        rutaImgPlacaMantenimiento = rutaImgPlacaMantenimiento.length==0 ?req.body.imgPlacaMantenimiento :rutaImgPlacaMantenimiento;
+        rutaImgPlacaFabricante    = rutaImgPlacaFabricante.length==0    ?req.body.imgPlacaFabricante    :rutaImgPlacaFabricante;
+        rutaImgDossier            = rutaImgDossier.length==0            ?req.body.imgPlacaFabricante    :rutaImgDossier;
+        rutaImgCerFabricante      = rutaImgCerFabricante.length==0      ?req.body.imgPlacaFabricante    :rutaImgCerFabricante;
+        rutaImgCerOnac            = rutaImgCerOnac.length==0            ?req.body.imgCerOnac            :rutaImgCerOnac;
+
+        tanqueServices.editarImagen(req.params.idTanque,  rutaImgPlaca, rutaImgPlacaMantenimiento, rutaImgPlacaFabricante, rutaImgDossier, rutaImgCerFabricante, rutaImgCerOnac, (err, tanque)=>{
             if (!err) {
                
                 res.json({ status:true, tanque }); 

@@ -69,3 +69,5 @@ module.exports =  mongoose.model('User', UserSchema)
 // chat
 // pedidos
 // comercial
+// depTecnico --> puede ver las alertas
+// insSeguridad --> puede ver las alertas de los estados 

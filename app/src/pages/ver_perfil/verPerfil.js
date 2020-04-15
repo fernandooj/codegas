@@ -12,7 +12,17 @@ import TomarFoto from "../components/tomarFoto";
 import Toast from 'react-native-simple-toast';
 import { createFilter }    from 'react-native-search-filter';
 const KEYS_TO_FILTERS = ['nombre'] 
- 
+const accesos=[
+    {label: 'Administrador',        value: 'admin',      key: 'administrador'},
+    {label: 'Solución Cliente',     value: 'solucion',   key: 'solucion'},
+    {label: 'Despachos',            value: 'despacho',   key: 'despacho'},
+    {label: 'Conductor',            value: 'conductor',  key: 'conductor'},
+    {label: 'Veo',                  value: 'veo',        key: 'veo'},
+    {label: 'Cliente',              value: 'cliente',    key: 'cliente'},
+    {label: 'Comercial',            value: 'comercial',  key: 'comercial'},
+    {label: 'Departamento Tecnico', value: 'depTecnico', key: 'depTecnico'},
+    {label: 'Inspector Seguridad',  value: 'insSeguridad', key: 'insSeguridad'}
+]
 
 class verPerfil extends Component{
 	constructor(props) {
@@ -132,6 +142,7 @@ class verPerfil extends Component{
                 }
             })  
            
+            console.log(user.valorUnitario)
             this.setState({
                 razon_social:     user.razon_social ?user.razon_social :"",
                 cedula:           user.cedula       ?user.cedula       :"",
@@ -148,15 +159,15 @@ class verPerfil extends Component{
                 idUsuario:        user._id          ?user._id          :"",
                 veo:              user.veos         ?user.veos.nombre  :"",
                 codMagister:      user.codMagister   ?user.codMagister  :"",
-                valorUnitario:    user.valorUnitario ?user.valorUnitario:"",
+                valorUnitario:    user.valorUnitario,
                 direccion_factura:user.direccion_factura ?user.direccion_factura :"",
             })
         })
         :null
     }
     renderPerfil(){
-        const {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
-        console.log({ubicaciones})
+        let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
+        valorUnitario = valorUnitario.toString()
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -170,15 +181,7 @@ class verPerfil extends Component{
                                 value: null,
                                 color: '#00218b',
                             }}
-                            items={[
-                                {label: 'Administrador',    value: 'admin',     key: 'administrador'},
-                                {label: 'Solución Cliente', value: 'solucion',  key: 'solucion'},
-                                {label: 'Despachos',        value: 'despacho',  key: 'despacho'},
-                                {label: 'Conductor',        value: 'conductor', key: 'conductor'},
-                                {label: 'Veo',             value: 'veo',       key: 'veo'},
-                                {label: 'Cliente',          value: 'cliente',   key: 'cliente'},
-                                {label: 'Comercial',        value: 'comercial', key: 'comercial'}
-                            ]}
+                            items={accesos}
                             onValueChange={acceso => {this.setState({ acceso })}}
                             mode="dropdown"
                             style={{
@@ -320,7 +323,7 @@ class verPerfil extends Component{
                     />
                     </>
             }
-             {/* VEO */}	 
+             {/* VALOR UNITARIO */}	 
              {   
                 acceso=="cliente"
                 &&<>

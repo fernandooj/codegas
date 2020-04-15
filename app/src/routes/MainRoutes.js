@@ -29,6 +29,8 @@ import nuevoTanqueComponent 	from '../pages/tanques/nuevoTanques';
 import revisionComponent 		from '../pages/revision/revision';
 import nuevaRevisionComponent 	from '../pages/revision/nuevaRevision';
 import chartComponent 			from '../pages/chart/chart';
+import cerrarRevisionComponent 	from '../pages/revision/cerrarRevision';
+import cerrarSeguridadComponent from '../pages/revision/cerrarSeguridad';
  
  
 const AppNavigator = createStackNavigator({
@@ -56,6 +58,8 @@ const AppNavigator = createStackNavigator({
 	nuevaRevision 		: {screen: nuevaRevisionComponent},
 	chart 				: {screen: chartComponent},
 	cambiar 			: {screen: cambiarComponent},
+	cerrarRevision 		: {screen: cerrarRevisionComponent},
+	cerrarSeguridad 	: {screen: cerrarSeguridadComponent},
   },{ headerMode: 'none'});
 
 export default createAppContainer(AppNavigator)

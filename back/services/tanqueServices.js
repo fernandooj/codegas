@@ -63,31 +63,30 @@ class tanqueServices{
 		newTanque.save(callback)	
 	}
 	editar(_id, data, callback){
-		console.log(data)
 		tanque.findByIdAndUpdate(_id, {$set: {
 			placaText       	: data.placaText,
 			capacidad         : data.capacidad,
 			fabricante        : data.fabricante,
 			ultimaRevisionPar : data.ultimaRevisionPar,
 			fechaUltimaRev    : data.fechaUltimaRev,
-		
 			ubicacion         : data.ubicacion,
 			codigoActivo      : data.codigoActivo,
 			serie       		  : data.serie,
 			anoFabricacion    : data.anoFabricacion,
-		
-		
 			puntoId           : data.puntoId,
 			zonaId            : data.zonaId,
 			usuarioId         : data.usuarioId,
 		}}, callback);
   }
-	editarImagen(_id, placa, placaMantenimiento, placaFabricante, callback){
-		console.log({placa, placaMantenimiento, placaFabricante})
+	editarImagen(_id, placa, placaMantenimiento, placaFabricante, dossier, cerFabricante, cerOnac, callback){
+		console.log({dossier, cerFabricante, cerOnac, placa, placaMantenimiento, placaFabricante})
 		tanque.findByIdAndUpdate(_id, {$set: {
-			'placa': placa,
-			'placaMantenimiento': placaMantenimiento,
-			'placaFabricante' : placaFabricante,
+			placa  				     : placa   						?placa   					  : [],
+			placaMantenimiento : placaMantenimiento ?placaMantenimiento : [],
+			placaFabricante    : placaFabricante   	?placaFabricante    : [],
+			dossier    			   : dossier   					?dossier   					: [],
+			cerFabricante      : cerFabricante   		?cerFabricante   		: [],
+			cerOnac    			   : cerOnac   			    ?cerOnac   					: [],
 		}}, callback);
 	}
 	

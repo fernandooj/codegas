@@ -2,8 +2,6 @@ import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Switch, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
- 
- 
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';  
 import axios                           from 'axios';
 import Icon                            from 'react-native-fa-icons';
@@ -39,6 +37,8 @@ class Tanques extends Component{
             clientes:[],
             puntos:[],
             placas:[],
+            imgAlerta:[],
+            imgDepTecnico:[],
             imgNMedidor:[],
             imgNComodato:[],
             imgOtrosSi:[],
@@ -118,11 +118,20 @@ class Tanques extends Component{
                         /////////  step 4
                         imgIsometrico     : revision.isometrico        ?revision.isometrico        :[],
                         observaciones     : revision.observaciones     ?revision.observaciones     :"",
+                        estado            : revision.estado            ?revision.estado            :"",
                         solicitudServicio : revision.solicitudServicio ?revision.solicitudServicio :"",
+                        imgAlerta            : revision.alerta         ?revision.alerta            :"",
+                        alertaText        : revision.alertaText        ?revision.alertaText        :"",
+                        alertaFecha       : revision.alertaFecha       ?revision.alertaFecha       :"",
+                        nActa             : revision.nActa             ?revision.nActa             :"",
                         avisos            : revision.avisos            ?revision.avisos            :"",
                         extintores        : revision.extintores        ?revision.extintores        :"",
                         distancias        : revision.distancias        ?revision.distancias        :"",
                         electricas        : revision.electricas        ?revision.electricas        :"",
+                        imgDepTecnico     : revision.depTecnico        ?revision.depTecnico        :[],
+                        depTecnicoText    : revision.depTecnicoText    ?revision.depTecnicoText    :"",
+                        depTecnicoEstado  : revision.depTecnicoEstado  ?revision.depTecnicoEstado  :"",
+                        
                     })
                 })
 
@@ -574,7 +583,7 @@ class Tanques extends Component{
         )
     }
     step3(){
-        const {observaciones, imgIsometrico, avisos, extintores, distancias, electricas} = this.state
+        const {observaciones, imgIsometrico, avisos, extintores, distancias, electricas, estado, solicitudServicio, imgAlerta, alertaText, alertaFecha, nActa, depTecnicoEstado, imgDepTecnico, depTecnicoText} = this.state
         return(
             <View>
                 {/* PLACA */}
@@ -596,37 +605,91 @@ class Tanques extends Component{
                         onChangeText={(observaciones)=> this.setState({ observaciones })}
                     />
                 </View>
-                <TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.setState({modalAlerta:true})}>
-                    <Text style={style.textGuardar}>Nueva Alerta</Text>
-                </TouchableOpacity>
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Avisos reglamentarios</Text>
-                    <Switch
-                        onValueChange = {(avisos)=>this.setState({avisos})}
-                        value = {avisos}
-                    />
-                </View>
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Extintores</Text>
-                    <Switch
-                        onValueChange = {(extintores)=>this.setState({extintores})}
-                        value = {extintores}
-                    />
-                </View>
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Distancias</Text>
-                    <Switch
-                        onValueChange = {(distancias)=>this.setState({distancias})}
-                        value = {distancias}
-                    />
-                </View>
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Condiciones electricas</Text>
-                    <Switch
-                        onValueChange = {(electricas)=>this.setState({electricas})}
-                        value = {electricas}
-                    />
-                </View>
+                <View style={style.separador}></View>
+                {
+                    estado==2
+                    ?<View style={style.contenedorSetp2}>
+                        <Text style={style.row1Step2}>Solicitud</Text>
+                        <Text style={style.row1Step2}>{solicitudServicio}</Text>
+                    </View>
+                    :estado==3
+                    ?<>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step2}>Solicitud</Text>
+                            <Text style={style.row1Step2}>{solicitudServicio}</Text>
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step2}>Comentario</Text>
+                            <Text style={style.row1Step2}>{alertaText}</Text>
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step2}>Fecha</Text>
+                            <Text style={style.row1Step2}>{alertaFecha}</Text>
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step2}>N Acta</Text>
+                            <Text style={style.row1Step2}>{nActa}</Text>
+                        </View>
+                        <TomarFoto 
+                            source={imgAlerta}
+                            width={180}
+                            titulo="Retiro de tanques"
+                            limiteImagenes={1}
+                            imagenes={(imgAlerta) => {  this.setState({imgAlerta}) }}
+                        /> 
+                    </>
+                    :<TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.setState({modalAlerta:true})}>
+                        <Text style={style.textGuardar}>Nueva Alerta</Text>
+                    </TouchableOpacity>
+                }
+                <View style={style.separador}></View>
+                {
+                    depTecnicoEstado
+                    ?<>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step2}>Observacion</Text>
+                            <Text style={style.row1Step2}>{depTecnicoText}</Text>
+                        </View>
+                        <TomarFoto 
+                            source={imgDepTecnico}
+                            width={180}
+                            titulo="Retiro de tanques"
+                            limiteImagenes={1}
+                            imagenes={(imgDepTecnico) => {  this.setState({imgDepTecnico}) }}
+                        /> 
+                    </>
+                    :<>
+                    <View style={style.contenedorSetp2}>
+                        <Text style={style.row1Step2}>Avisos reglamentarios</Text>
+                        <Switch
+                            onValueChange = {(avisos)=>this.setState({avisos})}
+                            value = {avisos}
+                        />
+                    </View>
+                    <View style={style.contenedorSetp2}>
+                        <Text style={style.row1Step2}>Extintores</Text>
+                        <Switch
+                            onValueChange = {(extintores)=>this.setState({extintores})}
+                            value = {extintores}
+                        />
+                    </View>
+                    <View style={style.contenedorSetp2}>
+                        <Text style={style.row1Step2}>Distancias</Text>
+                        <Switch
+                            onValueChange = {(distancias)=>this.setState({distancias})}
+                            value = {distancias}
+                        />
+                    </View>
+                    <View style={style.contenedorSetp2}>
+                        <Text style={style.row1Step2}>Condiciones electricas</Text>
+                        <Switch
+                            onValueChange = {(electricas)=>this.setState({electricas})}
+                            value = {electricas}
+                        />
+                    </View>
+                    </>
+                }
+                
                
             </View>
         )
@@ -896,11 +959,6 @@ class Tanques extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           EDITA EL STEP 3
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 }
 
 const mapState = state => {

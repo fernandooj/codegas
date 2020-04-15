@@ -175,7 +175,7 @@ class Home extends Component{
                         </TouchableOpacity>
                     }
                     {
-                         (acceso=="admin" || acceso=="comercial")
+                         (acceso=="admin" || acceso=="comercial" || acceso=="depTecnico" || acceso=="insSeguridad")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("revision")} >
                             <Text style={style.txtLista}>Revisiones</Text> 
                             <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />

@@ -21,6 +21,26 @@ class revisionServices{
 		.populate("tanqueId")
 		.sort({_id: 'desc'}).exec(callback)
 	}
+	getWithAlerta(callback){
+		revision.find({estado:2})
+		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
+		.populate("zonaId")
+		.populate("puntoId")
+		.populate("usuarioId")
+		.populate("tanqueId")
+		.populate("usuarioSolicita")
+		.sort({_id: 'desc'}).exec(callback)
+	}
+	getDepTecnico(callback){
+		revision.find({ $or: [ {avisos:true}, {extintores:true}, {distancias:true}, {electricas:true}]})
+		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
+		.populate("zonaId")
+		.populate("puntoId")
+		.populate("usuarioId")
+		.populate("tanqueId")
+		.populate("usuarioSolicita")
+		.sort({_id: 'desc'}).exec(callback)
+	}
 	getById(_id, callback){
 		revision.findOne({_id})
 		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
@@ -28,6 +48,7 @@ class revisionServices{
 		.populate("puntoId")
 		.populate("usuarioId")
 		.populate("tanqueId")
+		.populate("usuarioSolicita")
 		.sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioCrea, callback){
@@ -107,6 +128,7 @@ class revisionServices{
 		revision.findByIdAndUpdate(_id, {$set: {
 			solicitudServicio : solicitudServicio,
 			usuarioSolicita : usuarioSolicita,
+			estado:2
 		}}, callback);
 	}
 	
@@ -116,7 +138,20 @@ class revisionServices{
 			alerta      : alerta    ?alerta  :[],
 			alertaText  : data.alertaText,
 			alertaFecha : data.alertaFecha,
-			nActa       : data.nActa
+			nActa       : data.nActa,
+			estado:3
+		}}, callback);
+	}
+
+	cerrarDepTecnico(_id, depTecnico, data, callback){
+		revision.findByIdAndUpdate(_id, {$set: {
+			depTecnico     : depTecnico    ?depTecnico  :[],
+			depTecnicoText : data.depTecnicoText,
+			avisos         : data.avisos,
+			extintores 	   : data.extintores,
+			distancias     : data.distancias,
+			electricas     : data.electricas,
+			depTecnicoEstado:true
 		}}, callback);
 	}
 	
