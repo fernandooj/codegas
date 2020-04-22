@@ -167,7 +167,8 @@ class verPerfil extends Component{
     }
     renderPerfil(){
         let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
-        valorUnitario = valorUnitario.toString()
+        valorUnitario = valorUnitario ?valorUnitario.toString() :""
+        console.log({tipoAcceso})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -372,7 +373,7 @@ class verPerfil extends Component{
                     </View>
                     </View>
                 }
-
+            
                 <ModalFilterPicker
 					placeholderText="Filtrar ..."
 					visible={modalCliente}
@@ -452,23 +453,24 @@ class verPerfil extends Component{
         )
     }
     asignarVeo(idVeo){
-        const {idUsuario, veos} = this.state
+       
+        const {idUsuario, veos, tipoAcceso} = this.state
+  
+        console.log({tipoAcceso})
+        let veo = veos.filter(e=>{
+            return e.key==idVeo
+        }) 
+        this.setState({veo:veo[0].label, modalCliente:false, idVeo, modalCliente:tipoAcceso=="editar" ?true :false})   
         axios.get(`/users/asignarComercial/${idUsuario}/${idVeo}`)
         .then(res=>{
             if(res.data.status){
-                let veo = veos.filter(e=>{
-                    return e.key==idVeo
-                }) 
-      
-                
-                this.setState({veo:veo[0].label, modalCliente:false})   
                 setTimeout(() => {
                     Toast.show("Usuario asignado", Toast.LONG)
                 }, 300);
-
-
-
             }
+        })
+        .catch(err=>{
+            console.log(err)
         })
     }
     eliminarUsuario(){
@@ -853,7 +855,7 @@ class verPerfil extends Component{
     }
     guardarUsuario(e){
         this.setState({cargando:true})
-        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones, imagen, codMagister, valorUnitario} = this.state
+        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, ubicaciones, imagen, codMagister, valorUnitario, idVeo} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email
         })
@@ -866,6 +868,8 @@ class verPerfil extends Component{
         
         axios.post("user/sign_up", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos, codMagister, valorUnitario})
         .then(e=>{
+            
+            axios.get(`/users/asignarComercial/${e.data.user._id}/${idVeo}`)
             console.log(e.data)
             if(e.data.status){
                 if(acceso=="cliente") {

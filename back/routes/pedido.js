@@ -223,10 +223,9 @@ router.post('/', (req,res)=>{
                         }
                        
                     }
-        
-                    pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, ruta, (err2, pedido)=>{
-                        console.log("req.body")
-                        console.log(req.body)
+                    
+                    pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, ruta, clientes.valorUnitario, (err2, pedido)=>{
+                        
                         if (!err2) {
                             ////////////////////////        ENVIO EL CORREO AL USUARIO CLIENTE AVISANDOLE DEL NUEVO PEDIDO
                             const dia1       = req.body.dia1!=="undefined" ?`Dia 1: ${req.body.dia1}<br/>` :"" 

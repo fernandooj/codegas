@@ -196,7 +196,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.0</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3</Text> 
                     </TouchableOpacity> 
                     {
                         err
@@ -265,7 +265,7 @@ class Home extends Component{
         let acceso = "cliente";
         axios.post("user/sign_up", {email, acceso})
         .then(e=>{
-            console.log(e.data)
+            
             if(e.data.code==0){
                 Toast.show("Este email ya existe en el sistema")
             }else if(e.data.code==2){
@@ -282,7 +282,7 @@ class Home extends Component{
         })
     }
     async registroExitoso(email, code, id){
-        console.log({email, code, id})
+        
         AsyncStorage.setItem('idPerfilregistro', id) //// por que pongo este codigo aca?=>se coloca para que al editar el perfil, tenga el id Guardado, y se pueda editar, para nada mas sirve
         this.props.navigation.navigate("confirmar", {code, email})
     }
@@ -306,7 +306,7 @@ class Home extends Component{
         })
     }
     async loginExitoso(user){
-        console.log(user)
+        
         AsyncStorage.setItem('userId', user._id)
         AsyncStorage.setItem('nombre', user.nombre)
         AsyncStorage.setItem('email',  user.email)

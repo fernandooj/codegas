@@ -51,6 +51,7 @@
     "react-native-switch": "^1.5.0",
     "react-navigation": "^3.11.0",
     "react-redux": "^7.0.3",
+    "react-search-input": "^0.11.3",
     "redux": "^4.0.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",

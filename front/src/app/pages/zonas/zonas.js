@@ -2,14 +2,16 @@
 
 import React, { PureComponent } from "react";
  
-import { Table, Checkbox, Button, Avatar, notification, DatePicker, Select, InputNumber } from 'antd'; 
+import { Table, Checkbox, Button, Input, notification, DatePicker, Select, InputNumber } from 'antd'; 
 import 'antd/dist/antd.css';
 import axios from "axios";
 import {createFilter} from 'react-search-input'
 import { connect }         from "react-redux";
 import {getUsuariosZonas} from '../../redux/actions/usuarioActions'  
 import style from "./style.scss"
-const KEYS_TO_FILTERS = ["nombre", "email",  "razon_social", 'codt', "nombreZona"] 
+const KEYS_TO_FILTERS = ["nombre", "email",  "razon_social", 'codt', "valorUnitario","nombreZona"] 
+const { Search } = Input;
+
 const { Option } = Select;
 class Home extends PureComponent {
   constructor(props){
@@ -46,7 +48,9 @@ class Home extends PureComponent {
         this.setState({usuarios:props.usuarios, usuariosFiltro:props.usuarios})
     }
     cambiarValorUnitario(valor, id) {
-      let valorUni = parseInt(valor.target.value)
+    let valorUnis = parseInt(valor.target.value)
+    let valorUni = valorUnis===NaN ?0 :valorUnis
+ 
       axios.get(`users/cambiarValor/${valorUni}/${id}`)
       .then((res)=>{
         
@@ -60,20 +64,26 @@ class Home extends PureComponent {
                     ``,
                 });
               };
-              console.log({valorUni, id})
+              
               let usuarios = this.state.usuarios.filter(e=>{
                   if(e.idCliente==id){e.valorUnitario=valorUni}
                   return e
               })
               this.setState({usuarios})
+               
           }else{
-            
-            alert("Tenemos un problema, intentelo mas tarde")
+            let usuarios = this.state.usuarios.filter(e=>{
+                if(e.idCliente==id){e.valorUnitario=0}
+                return e
+            })
+            this.setState({usuarios})
+            openNotificationWithIcon('success')
+             
           }
       })
     }
     tableChange(a,e,i){
-        console.log(e.nombreZona[0])
+ 
         this.setState({terminoBuscador:e.nombreZona[0] ?e.nombreZona[0] :""})
     }
     renderTable(){
@@ -115,11 +125,12 @@ class Home extends PureComponent {
             dataIndex: 'valorUnitario',
             render:(carro, e)=>(
             <div>
-                <input
+                <Input
                     value={e.valorUnitario}
-                    className={style.inputValue}
+                    
                     formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                    enterButton
                     onChange={(a)=>this.cambiarValorUnitario(a, e.idCliente)}
                 />
             </div>
@@ -136,7 +147,7 @@ class Home extends PureComponent {
     };
     render() {
         const {showValorBase, todos, tipo} = this.state 
-        console.log(todos)
+     
         let icon = tipo=="porcentaje" ?"%" :"$"
         return (
         <div> 
@@ -167,7 +178,7 @@ class Home extends PureComponent {
             <Button style={{backgroundColor:"#00218b"}} onClick={()=>this.handleSubmit()}>Guardar</Button>
             </section>
             <section>
-                <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} />
+                <Search  allowClear enterButton  placeholder="Buscar registro" onSearch={(e)=>this.setState({terminoBuscador:e})} />
             </section>
             {this.renderTable()}
         </div>
@@ -183,7 +194,7 @@ class Home extends PureComponent {
   } 
   handleSubmit = e => {
     let {valor, valor2, seleccionados, tipo, showValorBase} = this.state
-    
+    console.log(valor2)
     showValorBase
     ?seleccionados = seleccionados.map(e=>{
         e.valorUnitario = tipo=="porcentaje" ?valor+(valor*(valor2/100)) :valor+valor2
@@ -199,7 +210,7 @@ class Home extends PureComponent {
             valorUnitario:e.valorUnitario
         }
     })
-    
+    console.log(seleccionados)
 
     if(!tipo && !showValorBase){
         alert("selecciona porcentaje o numerico")
@@ -209,7 +220,7 @@ class Home extends PureComponent {
     }else{
         axios.put(`users/cambiarValorTodos/`, {seleccionados})
         .then((res)=>{
-          console.log(res.data)
+        
             if(res.data.status){
               this.props.getUsuariosZonas()
               const openNotificationWithIcon = type => {

@@ -15,6 +15,7 @@ let Punto = new Schema({
 	activo      : Boolean,
 	creado      : String,
 	updated     : String,
+
     idZona      : {type: Schema.ObjectId, ref:'Zona'},
     idCliente   : {type: Schema.ObjectId, ref:'User'},
     idPadre     : {type: Schema.ObjectId, ref:'User'},

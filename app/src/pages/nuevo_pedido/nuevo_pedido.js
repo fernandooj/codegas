@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ScrollView, ImageBackground, Image} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage             from '@react-native-community/async-storage';
 import Icon                     from 'react-native-fa-icons';

@@ -323,7 +323,6 @@ class puntoServices{
 	create(data, idCliente, idPadre, callback){
 		let creado = moment().subtract(5, 'hours');
     creado     = moment(creado).format('YYYY-MM-DD h:mm');
-		console.log(data)
 		let newPunto = new punto({
 			direccion   : data.direccion,
 			observacion : data.observacion,

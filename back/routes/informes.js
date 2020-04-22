@@ -143,6 +143,9 @@ router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Zona',
                 value: 'ZonaData.nombre'
             },{
+                label: 'Valor Unitario',
+                value: 'UserData.valorUnitario'
+            },{
                 label: 'Direccion',
                 value: 'direccion'
             },{

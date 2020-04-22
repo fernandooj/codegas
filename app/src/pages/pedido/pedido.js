@@ -142,7 +142,7 @@ class Pedido extends Component{
         const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = pedidosFiltro.slice(inicio, final)
-        console.log({newPedidos})
+       
         return newPedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -163,7 +163,12 @@ class Pedido extends Component{
                     onPress={
                         ()=>{
                             this.callObservaciones(e._id);
-                            this.setState({openModal:true, elevation:0, placaPedido:e.carroId ?e.carroId.placa :null, conductorPedido:e.conductorId ?e.conductorId.nombre :null, imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_unitarioUsuario:e.usuarioId.valorUnitario, valor_total:e.valor_total,  nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad, observacion:e.puntoId.observacion, usuarioCrea:e.usuarioCrea.nombre, creado:e.creado })
+                            this.setState({
+                                openModal:true, elevation:0, 
+                                placaPedido:e.carroId ?e.carroId.placa :null, 
+                                conductorPedido:e.conductorId ?e.conductorId.nombre :null, 
+                                valor_unitarioUsuario:e.valorUnitario ?e.valorUnitario :e.usuarioId.valorUnitario, 
+                                imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_total:e.valor_total,  nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad, observacion:e.puntoId.observacion, usuarioCrea:e.usuarioCrea.nombre, creado:e.creado })
                         }                        
                     }
                 >
@@ -187,8 +192,6 @@ class Pedido extends Component{
                         <Text style={style.textPedido}>CODT</Text>
                         <Text style={style.textPedido}>{e.usuarioId.codt}</Text>
                     </View>
-                   
-                    
                     {   
                         acceso!=="conductor"
                         &&<View style={style.containerPedidos}>
@@ -216,7 +219,7 @@ class Pedido extends Component{
                         e.usuarioId.valorUnitario
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Valor Unitario </Text>
-                            <Text style={style.textPedido}>{'$ '+Number(e.usuarioId.valorUnitario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}</Text>
+                            <Text style={style.textPedido}>{'$ '+Number(e.valorUnitario ?e.valorUnitario :e.usuarioId.valorUnitario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}</Text>
                         </View>
                     }
                     
@@ -585,10 +588,10 @@ class Pedido extends Component{
                                         />
                                         <View style={style.contenedorConductor}>
                                             <TouchableOpacity 
-                                                style={kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<1 || novedad.length<1 || !imagen
+                                                style={remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<1 || novedad.length<1 || !imagen
                                                 ?style.btnDisable3 :style.btnGuardar3} 
                                                 onPress={
-                                                    kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_totalTexto.length<1  || novedad.length<1 || !imagen
+                                                    remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_totalTexto.length<1  || novedad.length<1 || !imagen
                                                     ?()=>alert("llene todos los campos")
                                                     :()=>this.cerrarPedido()
                                                 }
@@ -1175,7 +1178,8 @@ class Pedido extends Component{
     ////////////////////////           CERRAR PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
-        let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_totalTexto, id, tokenPhone, imagen, email, fechaEntrega, remisionTexto} = this.state
+        let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_totalTexto, id, tokenPhone, imagen, email, fechaEntrega, remisionTexto, valor_unitarioUsuario} = this.state
+        console.log({valor_unitarioUsuario})
         Alert.alert(
             `Seguro desea cerrar este pedido`,
             '',
@@ -1185,7 +1189,27 @@ class Pedido extends Component{
             ],
             {cancelable: false},
         );
-        const confirmar =()=>{
+
+        //////  verifica que el valortotal sea de acuerdo a la operacion
+        let valorDivision = valor_totalTexto/kilosTexto
+        let mayor = ((valor_unitarioUsuario*0.07)+valor_unitarioUsuario)
+        let menor = (valor_unitarioUsuario-(valor_unitarioUsuario*0.07))
+        const confirmar = ()=>{
+            if(valorDivision>mayor || valorDivision<menor ){
+                Alert.alert(
+                    `El valor total no corresponde, se espera valor total de ${valor_unitarioUsuario*kilosTexto}`,
+                    'deseas continuar',
+                    [
+                      {text: 'Confirmar', onPress: () => confirmar1()},
+                      {text: 'Cancelar', onPress: () => console.log("cerrado")},
+                    ],
+                    {cancelable: false},
+                );
+            }else{
+                confirmar1()
+            }
+        }
+        const confirmar1=()=>{
             let data = new FormData();
             imagen.forEach(e=>{
                 data.append('imagen', e);

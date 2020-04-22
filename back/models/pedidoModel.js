@@ -22,7 +22,7 @@ const Pedido = new Schema({
     factura       :String,
     valor_total   :String,
     remision      :String,
- 
+    valorUnitario : Number,
     orden         :Number,
     orden_cerrado :Number,
     motivo_no_cierre:String,
