@@ -173,7 +173,7 @@ export const style = MediaQueryStyleSheet.create({
 
     btnZona:{
         flexDirection:"row",
-        width:size.width-10,
+        width:size.width-20,
         borderColor:'rgba(0,0,0, .2)',
         padding:10,
         borderWidth:1,
@@ -182,7 +182,7 @@ export const style = MediaQueryStyleSheet.create({
     },
     textZona:{
         fontFamily: "Comfortaa-Light",
-        width:"100%",
+        width:size.width-150,
         fontSize:12,
         alignItems:"flex-start",
 		 

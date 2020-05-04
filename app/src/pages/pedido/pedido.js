@@ -1197,7 +1197,7 @@ class Pedido extends Component{
         const confirmar = ()=>{
             if(valorDivision>mayor || valorDivision<menor ){
                 Alert.alert(
-                    `El valor total no corresponde, se espera valor total de ${valor_unitarioUsuario*kilosTexto}`,
+                    `El valor total no corresponde, se espera valor total de ${'$ '+Number(valor_unitarioUsuario*kilosTexto).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")} `,
                     'deseas continuar',
                     [
                       {text: 'Confirmar', onPress: () => confirmar1()},

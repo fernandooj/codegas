@@ -88,12 +88,23 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	inputStep2:{
 		fontFamily: "Comfortaa-Regular",
+		borderColor:"rgba(20,20,20,.1)",
+		textAlign:"left",
 		borderWidth:1,
 		width:Width/1.7,
 		marginVertical:5,
 		paddingVertical:4,
 		fontSize:10,
-		borderColor:"rgba(20,20,20,.1)"
+	},
+	inputAno:{
+		fontFamily: "Comfortaa-Regular",
+		textAlign:"left",
+		width:Width/1.7,
+		marginVertical:5,
+		paddingVertical:1,
+		paddingHorizontal:4,
+		fontSize:10,
+		color:"#000000"
 	},
 	btnMultiple:{
 		borderWidth:1,

@@ -34,7 +34,7 @@ import cerrarSeguridadComponent from '../pages/revision/cerrarSeguridad';
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 	: {screen: homeComponent},	
+	Home  		 	 	: {screen: revisionComponent},	
 	inicio 		 	 	: {screen: homeComponent},
 	perfil       		: {screen: perfilComponent},
 	verPerfil    		: {screen: verPerfilComponent},

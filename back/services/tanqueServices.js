@@ -48,10 +48,11 @@ class tanqueServices{
 			ultimaRevisionPar : data.ultimaRevisionPar,
 			fechaUltimaRev    : data.fechaUltimaRev,
 		
-			ubicacion         : data.ubicacion,
+			nPlaca         	  : data.nPlaca,
 			codigoActivo      : data.codigoActivo,
 			serie       		  : data.serie,
 			anoFabricacion    : data.anoFabricacion,
+			existeTanque    	: data.existeTanque,
 		
 		
 			puntoId           : data.puntoId,
@@ -69,17 +70,18 @@ class tanqueServices{
 			fabricante        : data.fabricante,
 			ultimaRevisionPar : data.ultimaRevisionPar,
 			fechaUltimaRev    : data.fechaUltimaRev,
-			ubicacion         : data.ubicacion,
+			nPlaca         		: data.nPlaca,
 			codigoActivo      : data.codigoActivo,
 			serie       		  : data.serie,
 			anoFabricacion    : data.anoFabricacion,
+			existeTanque    	: data.existeTanque,
 			puntoId           : data.puntoId,
 			zonaId            : data.zonaId,
 			usuarioId         : data.usuarioId,
 		}}, callback);
   }
-	editarImagen(_id, placa, placaMantenimiento, placaFabricante, dossier, cerFabricante, cerOnac, callback){
-		console.log({dossier, cerFabricante, cerOnac, placa, placaMantenimiento, placaFabricante})
+	editarImagen(_id, placa, placaMantenimiento, placaFabricante, dossier, cerFabricante, cerOnac, visual, callback){
+		console.log({dossier, cerFabricante, cerOnac, placa, placaMantenimiento, visual, placaFabricante})
 		tanque.findByIdAndUpdate(_id, {$set: {
 			placa  				     : placa   						?placa   					  : [],
 			placaMantenimiento : placaMantenimiento ?placaMantenimiento : [],
@@ -87,6 +89,7 @@ class tanqueServices{
 			dossier    			   : dossier   					?dossier   					: [],
 			cerFabricante      : cerFabricante   		?cerFabricante   		: [],
 			cerOnac    			   : cerOnac   			    ?cerOnac   					: [],
+			visual    			   : visual   			    ?visual   					: [],
 		}}, callback);
 	}
 	

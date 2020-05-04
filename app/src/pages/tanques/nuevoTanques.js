@@ -20,12 +20,19 @@ let sectores    = [{key:"E2", label:"E2"},{key:"E3", label:"E3"},{key:"E4", labe
 let zonas       = [{key:"Urbana", label:"Urbana"},{key:"Rural", label:"Rural"},{key:"Zona Industrial", label:"Zona Industrial"}]
 
 let ubicaciones = [{key:"Azotea", label:"Azotea"},{key:"Enterrado", label:"Enterrado"},{key:"Piso", label:"Piso"}]
-let m3s         = [{key:"Si", label:"Si"},{key:"No", label:"No"}]
+
 let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
 let anosFabricacion = []
+let existeTanques   = [{key:"Si", label:"Si"},{key:"No", label:"No"}]
  
+//// devuelve el listado de años para el tanque
 for (var index = 1950; index < 2021; index++) {
     anosFabricacion.push({key:index, label:index })
+}
+
+//// convertir en mayusculas las primera letra al crear el tanque
+const capitalizeFirstLetter =(string)=>{
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 let size  = Dimensions.get('window');
@@ -45,6 +52,7 @@ class Tanques extends Component{
             puntos:[],
             placas:[],
             imgPlaca:[],
+            imgVisual:[],
             imgPlacaFabricante:[],
             imgPlacaMantenimiento:[],
             imgDossier:[],
@@ -91,16 +99,18 @@ class Tanques extends Component{
                         ultimaRevisionPar:      tanque.ultimaRevisionPar ?tanque.ultimaRevisionPar  :"",
                         fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
                         
-                        ubicacion:              tanque.ubicacion         ?tanque.ubicacion          :"",
+                        nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
                         codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
                         serie:                  tanque.serie             ?tanque.serie              :"",
                         anoFabricacion:         tanque.anoFabricacion    ?tanque.anoFabricacion     :"",
+                        existeTanque:           tanque.existeTanque      ?tanque.existeTanque       :"",
+
                         
-    
                         //////  step 2
                         imgPlaca:              tanque.placa              ?tanque.placa               :[],
                         imgPlacaFabricante:    tanque.placaFabricante    ?tanque.placaFabricante     :[],
                         imgPlacaMantenimiento: tanque.placaMantenimiento ?tanque.placaMantenimiento  :[],
+                        imgVisual:             tanque.visual             ?tanque.visual              :[],
                         imgDossier:            tanque.dossier            ?tanque.dossier             :[],
                         imgCerFabricante:      tanque.cerFabricante      ?tanque.cerFabricante       :[],
                         imgCerOnac:            tanque.cerOnac            ?tanque.cerOnac             :[],
@@ -116,7 +126,7 @@ class Tanques extends Component{
                         emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
                         puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
                         puntoId:                  tanque.puntoId             ?tanque.puntoId._id                   :null,
-                        zonaId:                  tanque.zonaId               ?tanque.zonaId._id                    :null,
+                        zonaId:                   tanque.zonaId               ?tanque.zonaId._id                    :null,
                         modalPlacas:false    
                     })
                 })
@@ -136,7 +146,7 @@ class Tanques extends Component{
 				latitudeDelta:0.15,
 				longitudeDelta:0.15
             }
-        console.log({x})
+ 
         this.setState({x})
         }, (error)=>this.watchID = navigator.geolocation.watchPosition(e=>{
             let lat =parseFloat(e.coords.latitude)
@@ -149,7 +159,7 @@ class Tanques extends Component{
                 latitudeDelta:0.15,
                 longitudeDelta:0.15
         }
-        console.log({x})
+ 
         this.setState({x})
        
             },
@@ -169,7 +179,331 @@ class Tanques extends Component{
             }
         })
     }
-    
+
+    buscarTanque(id){
+        console.log({id})
+        axios.get(`tan/tanque/byId/${id}`)
+            .then(res=>{
+                console.log(res.data)
+                const {tanque} = res.data
+                this.setState({
+                    /////// step 1
+                    tanqueId:  tanque._id,
+                    placaText :             tanque.placaText         ?tanque.placaText          :"",
+                    capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
+                    fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
+                    ultimaRevisionPar:      tanque.ultimaRevisionPar ?tanque.ultimaRevisionPar  :"",
+                    fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
+              
+                    nPlaca:                 tanque.nPlaca            ?tanque.nPlaca          :"",
+                    codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
+                    serie:                  tanque.serie             ?tanque.serie              :"",
+                    anoFabricacion:         tanque.anoFabricacion    ?tanque.anoFabricacion     :"",
+                 
+
+                    //////  step 2
+                    imgPlaca:                 tanque.placa              ?tanque.placa           :[],
+                    imgPlacaFabricante:       tanque.placaFabricante    ?tanque.placaFabricante          :[],
+                    imgPlacaMantenimiento:    tanque.placaMantenimiento ?tanque.placaMantenimiento     :[],
+                    
+
+                    //////  step 3
+                    usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
+                    cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
+                    razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
+                    direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
+                    nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre              :"",
+                    celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
+                    emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
+                    puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
+                    puntoId:                  tanque.puntboId            ?tanque.puntoId._id                   :[],
+                    zonaId:                   tanque.zonaId               ?tanque.zonaId._id                   :null,
+                    modalPlacas:false    
+                })
+                
+            })
+    }
+    step1(){
+        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, existeTanque, nPlaca, serie, anoFabricacion} = this.state
+         
+        return(
+            <View>
+                {/* PLACAS */}
+                <ModalFilterPicker
+					placeholderText="Placas ..."
+					visible={modalPlacas}
+					onSelect={(e)=>this.buscarTanque(e)}
+					onCancel={()=>this.setState({modalPlacas:false})}
+					crearPlaca={(e)=>this.setState({placaText:capitalizeFirstLetter(e), crearPlaca:true, modalPlacas:false})}
+                    options={placas}
+                    tanque
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Codigo Activo</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPlacas:true})}>
+                        <Text style={placaText ?style.textBtnActive :style.textBtn}>{placaText ?placaText :"Placas"}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                 {/* CAPACIDAD */}
+                 <ModalFilterPicker
+					placeholderText="Capacidad ..."
+					visible={modalCapacidad}
+					onSelect={(e)=>this.setState({capacidad:e, modalCapacidad:false})}
+					onCancel={()=>this.setState({modalCapacidad:false})}
+					 
+                    options={capacidades}
+                    
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Capacidad</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalCapacidad:true})}>
+                        <Text style={capacidad ?style.textBtnActive :style.textBtn}>{capacidad ?capacidad :"Capacidad"}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* FABRICANTE */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Fabricante</Text>
+                    <TextInput
+                        placeholder="Fabricante"
+                        style={style.inputStep2}
+                        value={fabricante}
+                        onChangeText={(fabricante)=> this.setState({ fabricante })}
+                    />
+                </View>
+
+                {/* FECHA ULTIMA REVISION */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Fecha Ult Rev</Text>
+                    <DatePicker
+                        customStyles={{
+                            dateInput:style.btnDate,
+                            placeholderText:fechaUltimaRev ?style.textBtnActive :style.textBtn,
+                            dateText: { 
+                                fontSize:14,
+                                color: '#000000'
+                            },
+                        }}
+                        style={style.btnDate2}
+                        
+                        locale="es_co"
+                        mode="date"
+                        placeholder={fechaUltimaRev ?fechaUltimaRev :"Ultima Revisión"}
+                        format="YYYY-MMM-DD"
+                        showIcon={false}
+                        confirmBtnText="Confirmar"
+                        cancelBtnText="Cancelar"
+                        androidMode='spinner'
+                        onDateChange={(fechaUltimaRev) => {this.setState({fechaUltimaRev})}}
+                    />
+                </View>
+
+                {/* ULTIMA REVISIÓN PARCIAL */}
+                <View style={[style.contenedorSetp2, {marginTop:10, marginBottom:5}]}>
+                    <Text style={style.row1Step2}>Ultima Rev Par</Text>
+                    <DatePicker
+                        customStyles={{
+                            dateInput:style.btnDate,
+                            placeholderText:ultimaRevisionPar ?style.textBtnActive :style.textBtn,
+                            dateText: { 
+                                fontSize:14,
+                                color: '#000000'
+                            },
+                        }}
+                        style={style.btnDate2}
+                        
+                        locale="es_co"
+                        mode="date"
+                        placeholder={ultimaRevisionPar ?ultimaRevisionPar :"Ultima Rev Par"}
+                        format="YYYY-MMM-DD"
+                        showIcon={false}
+                        confirmBtnText="Confirmar"
+                        cancelBtnText="Cancelar"
+                        androidMode='spinner'
+                        onDateChange={(ultimaRevisionPar) => {this.setState({ultimaRevisionPar})}}
+                    />
+                </View>
+                  
+                {/* NUMERO DE PLACA MANTENIMIENTO */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>N Placa Man</Text>
+                    <TextInput
+                        placeholder="N Placa Man"
+                        value={nPlaca}
+                        style={style.inputStep2}
+                        onChangeText={(nPlaca)=> this.setState({ nPlaca })}
+                    />
+                </View>
+                {/* <ModalFilterPicker
+					placeholderText="nPlaca ..."
+					visible={modalUbicacion}
+					onSelect={(e)=>this.setState({nPlaca:e, modalUbicacion:false})}
+					onCancel={()=>this.setState({modalUbicacion:false})}
+                    options={ubicaciones}
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Ubicación</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalUbicacion:true})}>
+                        <Text style={ubicacion ?style.textBtnActive :style.textBtn}>{ubicacion ?ubicacion :"Ubicación"}</Text>
+                    </TouchableOpacity>
+                </View> */}
+
+                  
+                {/* CODIGO ACTIVO */}
+                {/* <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Codigo Activo</Text>
+                    <TextInput
+                        placeholder="Codigo Activo"
+                        value={codigoActivo}
+                        style={style.inputStep2}
+                        onChangeText={(codigoActivo)=> this.setState({ codigoActivo })}
+                    />
+                </View> */}
+
+                {/* SERIE */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Serie</Text>
+                    <TextInput
+                        placeholder="Serie"
+                        value={serie}
+                        style={style.inputStep2}
+                        onChangeText={(serie)=> this.setState({ serie })}
+                    />
+                </View>
+
+                {/* AÑO DE FABRICACIÓN */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Año Fabricación</Text>
+                    <ModalSelector
+                        style={style.inputStep2}
+                        data={anosFabricacion}
+                        initValue={anoFabricacion ?anoFabricacion :"Año Fabricación"}
+                        cancelText="Cancelar"
+                        onChange={(option)=>{ this.setState({anoFabricacion:option.key}) }} 
+                    
+                        initValueTextStyle={style.inputAno}
+                        selectStyle={{borderWidth:0, padding:0, alignSelf:"stretch"  }}
+                    />
+                </View>
+                
+                {/* EXISTE PUNTO DE CONSUMO */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Existe P Consumo</Text>
+                    <ModalSelector
+                        style={style.inputStep2}
+                        data={existeTanques}
+                        initValue={existeTanque ?existeTanque :"Existe P Consumo"}
+                        cancelText="Cancelar"
+                        onChange={(option)=>{ this.setState({existeTanque:option.key}) }} 
+                        initValueTextStyle={style.inputAno}
+                        selectStyle={{borderWidth:0, padding:0, alignSelf:"stretch"  }}
+                    />
+                </View>
+                    {/* <DatePicker
+                        customStyles={{
+                            dateInput:style.btnDate,
+                            placeholderText:anoFabricacion ?style.textBtnActive :style.textBtn,
+                            dateText: { 
+                                fontSize:14,
+                                color: '#000000'
+                            },
+                        }}
+                        style={style.btnDate2}
+                        
+                        locale="es_co"
+                        mode="date"
+                        placeholder={anoFabricacion ?anoFabricacion :"Año de Fabricación"}
+                        format="YYYY"
+                        showIcon={false}
+                        confirmBtnText="Confirmar"
+                        cancelBtnText="Cancelar"
+                        androidMode='spinner'
+                        onDateChange={(anoFabricacion) => {this.setState({anoFabricacion})}}
+                    /> */}
+                    
+
+                
+                 
+            </View>
+        )
+    }
+
+     
+    step2(){
+        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgVisual, imgDossier, imgCerFabricante, imgCerOnac} = this.state
+        return(
+            <View>
+               
+
+                {/* PLACA */}
+                <TomarFoto 
+                    source={imgPlaca}
+                    width={180}
+                    titulo="Placa"
+                    limiteImagenes={4}
+                    imagenes={(imgPlaca) => {  this.setState({imgPlaca}) }}
+                />
+                {/* PLACA MANTENIMIENTO*/}
+                <TomarFoto 
+                    source={imgPlacaMantenimiento}
+                    width={180}
+                    titulo="Placa Mantenimiento"
+                    limiteImagenes={4}
+                    imagenes={(imgPlacaMantenimiento) => {  this.setState({imgPlacaMantenimiento}) }}
+                />
+                {/* PLACA FABRICANTE */}
+                <TomarFoto 
+                    source={imgPlacaFabricante}
+                    width={180}
+                    titulo="Placa fabricante"
+                    limiteImagenes={4}
+                    imagenes={(imgPlacaFabricante) => {  this.setState({imgPlacaFabricante}) }}
+                />
+                
+                {/* VISUAL */}
+                <TomarFoto 
+                    source={imgVisual}
+                    width={180}
+                    titulo="Visual Tanque"
+                    limiteImagenes={4}
+                    imagenes={(imgVisual) => {  this.setState({imgVisual}) }}
+                />
+
+                {/* DOSSIER */}
+                <SubirDocumento 
+                    source={imgDossier}
+                    width={180}
+                    titulo="Dossier"
+                    limiteImagenes={4}
+                    imagenes={(imgDossier) => {  this.setState({imgDossier}) }}
+                />
+                {/* DOSSIER */}
+                <SubirDocumento 
+                    source={imgCerFabricante}
+                    width={180}
+                    titulo="Cer. Fabricante"
+                    limiteImagenes={4}
+                    imagenes={(imgCerFabricante) => {  this.setState({imgCerFabricante}) }}
+                />
+                {/* DOSSIER */}
+                <SubirDocumento 
+                    source={imgCerOnac}
+                    width={180}
+                    titulo="Cer. Onac"
+                    limiteImagenes={4}
+                    imagenes={(imgCerOnac) => {  this.setState({imgCerOnac}) }}
+                />
+
+            </View>
+        )
+    }
     step3(){
         const {usuarioId, modalCliente, clientes, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId} = this.state
         return(
@@ -251,298 +585,6 @@ class Tanques extends Component{
         )
     }
 
-    buscarTanque(id){
-        console.log({id})
-        axios.get(`tan/tanque/byId/${id}`)
-            .then(res=>{
-                console.log(res.data)
-                const {tanque} = res.data
-                this.setState({
-                    /////// step 1
-                    tanqueId:  tanque._id,
-                    placaText :             tanque.placaText         ?tanque.placaText          :"",
-                    capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
-                    fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
-                    ultimaRevisionPar:      tanque.ultimaRevisionPar ?tanque.ultimaRevisionPar  :"",
-                    fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
-              
-                    ubicacion:              tanque.ubicacion         ?tanque.ubicacion          :"",
-                    codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
-                    serie:                  tanque.serie             ?tanque.serie              :"",
-                    anoFabricacion:         tanque.anoFabricacion    ?tanque.anoFabricacion     :"",
-                 
-
-                    //////  step 2
-                    imgPlaca:                 tanque.placa              ?tanque.placa           :[],
-                    imgPlacaFabricante:       tanque.placaFabricante    ?tanque.placaFabricante          :[],
-                    imgPlacaMantenimiento:    tanque.placaMantenimiento ?tanque.placaMantenimiento     :[],
-                    
-
-                    //////  step 3
-                    usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
-                    cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
-                    razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
-                    direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
-                    nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre              :"",
-                    celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
-                    emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
-                    puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
-                    puntoId:                  tanque.puntboId             ?tanque.puntoId._id                   :[],
-                    zonaId:                  tanque.zonaId               ?tanque.zonaId._id                   :null,
-                    modalPlacas:false    
-                })
-                
-            })
-    }
-    step1(){
-        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, modalUbicacion, ubicacion, serie, anoFabricacion} = this.state
-         
-        return(
-            <View>
-                {/* PLACAS */}
-                <ModalFilterPicker
-					placeholderText="Placas ..."
-					visible={modalPlacas}
-					onSelect={(e)=>this.buscarTanque(e)}
-					onCancel={()=>this.setState({modalPlacas:false})}
-					crearPlaca={(e)=>this.setState({placaText:e, crearPlaca:true, modalPlacas:false})}
-                    options={placas}
-                    tanque
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Codigo Activo</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPlacas:true})}>
-                        <Text style={placaText ?style.textBtnActive :style.textBtn}>{placaText ?placaText :"Placas"}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                 {/* CAPACIDAD */}
-                 <ModalFilterPicker
-					placeholderText="Capacidad ..."
-					visible={modalCapacidad}
-					onSelect={(e)=>this.setState({capacidad:e, modalCapacidad:false})}
-					onCancel={()=>this.setState({modalCapacidad:false})}
-					 
-                    options={capacidades}
-                    
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Capacidad</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalCapacidad:true})}>
-                        <Text style={capacidad ?style.textBtnActive :style.textBtn}>{capacidad ?capacidad :"Capacidad"}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* FABRICANTE */}
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Fabricante</Text>
-                    <TextInput
-                        placeholder="Fabricante"
-                        style={style.inputStep2}
-                        value={fabricante}
-                        onChangeText={(fabricante)=> this.setState({ fabricante })}
-                    />
-                </View>
-
-                {/* FECHA ULTIMA REVISION */}
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Fecha Ult Rev</Text>
-                    <DatePicker
-                        customStyles={{
-                            dateInput:style.btnDate,
-                            placeholderText:fechaUltimaRev ?style.textBtnActive :style.textBtn,
-                            dateText: { 
-                                fontSize:14,
-                                color: '#000000'
-                            },
-                        }}
-                        style={style.btnDate2}
-                        
-                        locale="es_co"
-                        mode="date"
-                        placeholder={fechaUltimaRev ?fechaUltimaRev :"Ultima Revisión"}
-                        format="YYYY-MMM-DD"
-                        showIcon={false}
-                        confirmBtnText="Confirmar"
-                        cancelBtnText="Cancelar"
-                        androidMode='spinner'
-                        onDateChange={(fechaUltimaRev) => {this.setState({fechaUltimaRev})}}
-                    />
-                </View>
-
-                {/* ULTIMA REVISIÓN PARCIAL */}
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Ultima Rev Par</Text>
-                    <DatePicker
-                        customStyles={{
-                            dateInput:style.btnDate,
-                            placeholderText:ultimaRevisionPar ?style.textBtnActive :style.textBtn,
-                            dateText: { 
-                                fontSize:14,
-                                color: '#000000'
-                            },
-                        }}
-                        style={style.btnDate2}
-                        
-                        locale="es_co"
-                        mode="date"
-                        placeholder={ultimaRevisionPar ?ultimaRevisionPar :"Ultima Rev Par"}
-                        format="YYYY-MMM-DD"
-                        showIcon={false}
-                        confirmBtnText="Confirmar"
-                        cancelBtnText="Cancelar"
-                        androidMode='spinner'
-                        onDateChange={(ultimaRevisionPar) => {this.setState({ultimaRevisionPar})}}
-                    />
-                </View>
-                  
-                {/* UBICACION */}
-                <ModalFilterPicker
-					placeholderText="Ubicacion ..."
-					visible={modalUbicacion}
-					onSelect={(e)=>this.setState({ubicacion:e, modalUbicacion:false})}
-					onCancel={()=>this.setState({modalUbicacion:false})}
-                    options={ubicaciones}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Ubicación</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalUbicacion:true})}>
-                        <Text style={ubicacion ?style.textBtnActive :style.textBtn}>{ubicacion ?ubicacion :"Ubicación"}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                  
-                {/* CODIGO ACTIVO */}
-                {/* <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Codigo Activo</Text>
-                    <TextInput
-                        placeholder="Codigo Activo"
-                        value={codigoActivo}
-                        style={style.inputStep2}
-                        onChangeText={(codigoActivo)=> this.setState({ codigoActivo })}
-                    />
-                </View> */}
-
-                {/* SERIE */}
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Serie</Text>
-                    <TextInput
-                        placeholder="Serie"
-                        value={serie}
-                        style={style.inputStep2}
-                        onChangeText={(serie)=> this.setState({ serie })}
-                    />
-                </View>
-
-                {/* AÑO DE FABRICACIÓN */}
-            <View style={style.contenedorSetp2}>
-                <Text style={style.row1Step2}>Año Fabricación</Text>
-                <ModalSelector
-                    style={style.btnFrecuencia}
-                    data={anosFabricacion}
-                    initValue="Frecuencia"
-                    cancelText="Cancelar"
-                    onChange={(option)=>{ this.setState({anoFabricacion:option.key}) }} 
-                    style={style.inputStep2}
-                    selectStyle={{borderWidth:0, padding:0, alignSelf:"stretch", textAlign: 'right'}}
-                />
-                    {/* <DatePicker
-                        customStyles={{
-                            dateInput:style.btnDate,
-                            placeholderText:anoFabricacion ?style.textBtnActive :style.textBtn,
-                            dateText: { 
-                                fontSize:14,
-                                color: '#000000'
-                            },
-                        }}
-                        style={style.btnDate2}
-                        
-                        locale="es_co"
-                        mode="date"
-                        placeholder={anoFabricacion ?anoFabricacion :"Año de Fabricación"}
-                        format="YYYY"
-                        showIcon={false}
-                        confirmBtnText="Confirmar"
-                        cancelBtnText="Cancelar"
-                        androidMode='spinner'
-                        onDateChange={(anoFabricacion) => {this.setState({anoFabricacion})}}
-                    /> */}
-                    
-                </View>
-
-                
-                 
-            </View>
-        )
-    }
-
-     
-    step2(){
-        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgDossier, imgCerFabricante, imgCerOnac} = this.state
-        return(
-            <View>
-               
-
-                {/* PLACA */}
-                <TomarFoto 
-                    source={imgPlaca}
-                    width={180}
-                    titulo="Placa"
-                    limiteImagenes={4}
-                    imagenes={(imgPlaca) => {  this.setState({imgPlaca}) }}
-                />
-                {/* PLACA */}
-                <TomarFoto 
-                    source={imgPlacaMantenimiento}
-                    width={180}
-                    titulo="Placa Mantenimiento"
-                    limiteImagenes={4}
-                    imagenes={(imgPlacaMantenimiento) => {  this.setState({imgPlacaMantenimiento}) }}
-                />
-                {/* PLACA */}
-                <TomarFoto 
-                    source={imgPlacaFabricante}
-                    width={180}
-                    titulo="Placa fabricante"
-                    limiteImagenes={4}
-                    imagenes={(imgPlacaFabricante) => {  this.setState({imgPlacaFabricante}) }}
-                />
-                {/* DOSSIER */}
-                <SubirDocumento 
-                    source={imgDossier}
-                    width={180}
-                    titulo="Dossier"
-                    limiteImagenes={4}
-                    imagenes={(imgDossier) => {  this.setState({imgDossier}) }}
-                />
-                {/* DOSSIER */}
-                <SubirDocumento 
-                    source={imgCerFabricante}
-                    width={180}
-                    titulo="Cer. Fabricante"
-                    limiteImagenes={4}
-                    imagenes={(imgCerFabricante) => {  this.setState({imgCerFabricante}) }}
-                />
-                {/* DOSSIER */}
-                <SubirDocumento 
-                    source={imgCerOnac}
-                    width={180}
-                    titulo="Cer. Onac"
-                    limiteImagenes={4}
-                    imagenes={(imgCerOnac) => {  this.setState({imgCerOnac}) }}
-                />
-
-            </View>
-        )
-    }
-  
-
 
     renderSteps(){
         let {placaText, crearPlaca} = this.state
@@ -606,9 +648,9 @@ class Tanques extends Component{
     ////////////////////////            CREAR TANQUE
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion})
-        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque})
+        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -623,9 +665,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 1
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId,} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion, tanqueId})
-        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId,})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque})
+        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -641,8 +683,8 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 2
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep2(){
-        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgDossier, imgCerFabricante, imgCerOnac, tanqueId} = this.state
-        console.log({imgDossier, imgCerFabricante, imgCerOnac})
+        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgVisual, imgDossier, imgCerFabricante, imgCerOnac, tanqueId} = this.state
+        console.log({imgVisual, imgCerFabricante, imgCerOnac})
         let data = new FormData();
         imgPlaca.forEach(e=>{
             data.append('imgPlaca', e);
@@ -652,6 +694,9 @@ class Tanques extends Component{
         })
         imgPlacaFabricante.forEach(e=>{
             data.append('imgPlacaFabricante', e);
+        })
+        imgVisual.forEach(e=>{
+            data.append('imgVisual', e);
         })
         imgDossier.forEach(e=>{
             data.append('imgDossier', e);
@@ -665,6 +710,7 @@ class Tanques extends Component{
         data.append('imgPlaca',              imgPlaca);
         data.append('imgPlacaMantenimiento', imgPlacaMantenimiento);
         data.append('imgPlacaFabricante',    imgPlacaFabricante);
+        data.append('imgVisual',             imgVisual);
         data.append('imgDossier',            imgDossier);
         data.append('imgCerFabricante',      imgCerFabricante);
         data.append('imgCerOnac',            imgCerOnac);
@@ -688,9 +734,9 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 3
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep3(){
-        const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion,  tanqueId} = this.state
+        const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, tanqueId} = this.state
         console.log({zonaId, usuarioId, puntoId})
-        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, ubicacion, codigoActivo, serie, anoFabricacion  })
+        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque  })
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

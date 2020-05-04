@@ -58,6 +58,7 @@ class Home extends PureComponent {
             </a>
           </Card>
         </Col>
+       
         <Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/vehiculos/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
@@ -104,6 +105,13 @@ class Home extends PureComponent {
           <Card>
             <a href="x/v1/inf/informe/pdf/chats/true/null/null" type="primary" htmlType="submit" className="login-form-button">
                 10.  Generar PDF chats
+            </a>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <a href={"x/v1/inf/informe/users/clientesVeos/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+                11.  Generar Clientes con Veos
             </a>
           </Card>
         </Col>

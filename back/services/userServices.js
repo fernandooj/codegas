@@ -22,7 +22,7 @@ class userServices {
 		User.findOne({'tokenPhone':tokenPhone, activo:true, acceso:null}).exec(callback)
 	}
 	getByCliente(callback){
-		User.find({'acceso':"cliente", activo:true, eliminado:false}).sort({_id: 'desc'}).exec(callback)
+		User.find({'acceso':"cliente", activo:true, eliminado:false}).populate("comercialAsignado").sort({_id: 'desc'}).exec(callback)
 	}
 	sinVehiculo(acceso, callback){
 		User.find({'acceso':acceso, activo:true}).exec(callback)

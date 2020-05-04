@@ -104,6 +104,53 @@ router.get('/users/corporativos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
+///////////////////////////////////////////////////   2.	USUARIOS CORPORATIVOS
+router.get('/users/clientesVeos/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    userServices.getByCliente((err, usuarios)=>{
+        if(!err){
+            usuarios = usuarios.filter(e=>{
+                return e.idPadre==null
+            })
+             
+            const fields = [{
+                label: 'Codt',
+                value: 'codt'
+            },{
+                label: 'Nit',
+                value: 'cedula'
+            },{
+                label: 'Razon Social',
+                value: 'razon_social'
+            },{
+                label: 'Nombre',
+                value: 'nombre'
+            },{
+                label: 'Veo',
+                value: 'comercialAsignado.nombre'
+            },{
+                label: 'Telefono',
+                value: 'celular'
+            },{
+                label: 'Avatar',
+                value: 'avatar'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(usuarios);
+                res.attachment('usuariosCorporativos.csv');
+                res.status(200).send(csv);
+              } catch (err) {
+                console.error(err);
+              }
+        }else{
+            console.log(err)
+        }
+    })
+})
+
 ///////////////////////////////////////////////////   3.	CLIENTES
 router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
@@ -151,6 +198,9 @@ router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Observacion',
                 value: 'observacion'
+            },{
+                label: 'Veo',
+                value: 'UserData.comercialAsignado'
             }];
 
             const opts = {fields};
@@ -458,6 +508,9 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Kilos',
                 value: 'kilos'
+            },{
+                label: 'Remision',
+                value: 'remision'
             },{
                 label: 'Valor Unitario Usuario',
                 value: 'usuarioId.valorUnitario'

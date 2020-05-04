@@ -26,10 +26,11 @@ let Tanque = new Schema({
 	fabricante		   : String,
 	ultimaRevisionPar  : String,
 	fechaUltimaRev     : String,
-	ubicacion          : String,
+	nPlaca         	   : String,
 	codigoActivo       : String,
 	serie              : String,
 	anoFabricacion	   : String,
+	existeTanque	   : String,
 	activo			   : {type:Boolean, default:true},
 	eliminado		   : {type:Boolean, default:false},
 	usuarioId		   : {type: Schema.ObjectId, ref:'User'},
@@ -43,9 +44,7 @@ let Tanque = new Schema({
 	dossier			   : [],
 	cerFabricante	   : [],
 	cerOnac	   		   : [],
-
-	//compromisos		   : String,
-    
+	visual	   		   : []    
 })
 
 module.exports = mongoose.model('Tanque', Tanque) 
