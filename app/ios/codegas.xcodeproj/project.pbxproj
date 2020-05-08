@@ -1579,7 +1579,7 @@
 				);
 				INFOPLIST_FILE = codegas/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 11.3.0;
+				MARKETING_VERSION = 11.3.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1607,7 +1607,7 @@
 				);
 				INFOPLIST_FILE = codegas/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 11.3.0;
+				MARKETING_VERSION = 11.3.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

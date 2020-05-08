@@ -2,15 +2,15 @@ import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, ImageBackground, ActivityIndicator, Alert, Modal} from 'react-native'
 import {style}   from './style'
 import {connect} from 'react-redux' 
-import axios from "axios"
-import Icon from 'react-native-fa-icons';
-import AsyncStorage from '@react-native-community/async-storage';
-import ModalFilterPicker        from 'react-native-modal-filter-picker'
-import RNPickerSelect from 'react-native-picker-select';
-import Footer    from '../components/footer'
-import TomarFoto from "../components/tomarFoto";
-import Toast from 'react-native-simple-toast';
-import { createFilter }    from 'react-native-search-filter';
+import axios             from "axios"
+import Icon              from 'react-native-fa-icons';
+import AsyncStorage      from '@react-native-community/async-storage';
+import ModalFilterPicker from 'react-native-modal-filter-picker'
+import RNPickerSelect    from 'react-native-picker-select';
+import Footer            from '../components/footer'
+import TomarFoto         from "../components/tomarFoto";
+import Toast             from 'react-native-simple-toast';
+import { createFilter }  from 'react-native-search-filter';
 const KEYS_TO_FILTERS = ['nombre'] 
 const accesos=[
     {label: 'Administrador',        value: 'admin',      key: 'administrador'},
@@ -260,9 +260,11 @@ class verPerfil extends Component{
                        <Text style={style.textInfo}>Ubicación entrega</Text>
                         <TouchableOpacity  style={ubicaciones.length<1 ?[style.btnUbicacion, style.inputRequired] :style.btnUbicacion} onPress={()=>this.setState({modalUbicacion:true})}>
                             {
-                                ubicaciones[0].direccion
+                                ubicaciones[0] 
+                                ?ubicaciones[0].direccion
                                 ?<Text>{ubicaciones.length<1 ?"Ubicación entrega" :`Tienes ${ubicaciones.length} ubicaciones guardadas`}</Text>
                                 :<Text>Ubicación entrega</Text>
+                                :null
                             }
                             
                         </TouchableOpacity>
@@ -453,10 +455,7 @@ class verPerfil extends Component{
         )
     }
     asignarVeo(idVeo){
-       
         const {idUsuario, veos, tipoAcceso} = this.state
-  
-        console.log({tipoAcceso})
         let veo = veos.filter(e=>{
             return e.key==idVeo
         }) 

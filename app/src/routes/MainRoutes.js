@@ -20,6 +20,7 @@ import nuevoPedidoComponent	 	from '../pages/nuevo_pedido/nuevo_pedido';
 import recuperarComponent	 	from '../pages/recuperar_pass/recuperar_pass';
 import cambiarComponent	 		from '../pages/recuperar_pass/cambiar_pass';
 import usuariosComponent	 	from '../pages/usuarios/usuarios';
+import puntosComponent	 		from '../pages/puntos/puntos';
 import calificacionComponent 	from '../pages/calificacion/calificacion';
 import verCalificacionComponent from '../pages/calificacion/verCalificacion';
 import privacidadComponent 		from '../pages/privacidad/privacidad';
@@ -34,7 +35,7 @@ import cerrarSeguridadComponent from '../pages/revision/cerrarSeguridad';
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 	: {screen: revisionComponent},	
+	Home  		 	 	: {screen: homeComponent},	
 	inicio 		 	 	: {screen: homeComponent},
 	perfil       		: {screen: perfilComponent},
 	verPerfil    		: {screen: verPerfilComponent},
@@ -49,6 +50,7 @@ const AppNavigator = createStackNavigator({
 	conversacion 		: {screen: conversacionComponent},
 	recuperar 	 		: {screen: recuperarComponent},
 	usuarios 	 	 	: {screen: usuariosComponent},
+	puntos 	 	 		: {screen: puntosComponent},
 	calificacion 		: {screen: calificacionComponent},
 	verCalificacion 	: {screen: verCalificacionComponent},
 	frecuencia 			: {screen: frecuenciaComponent},

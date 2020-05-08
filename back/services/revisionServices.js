@@ -52,7 +52,7 @@ class revisionServices{
 		.sort({_id: 'desc'}).exec(callback)
 	}
 	getByUser(usuarioCrea, callback){
-		revision.findOne({usuarioCrea})
+		revision.find({usuarioCrea})
 		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
 		.populate("zonaId")
 		.populate("puntoId")
@@ -60,7 +60,16 @@ class revisionServices{
 		.populate("tanqueId")
 		.sort({_id: 'desc'}).exec(callback)
 	}
-	 
+	getByPunto(puntoId, callback){
+		revision.find({puntoId})
+		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
+		.populate("zonaId")
+		.populate("puntoId")
+		.populate("usuarioId")
+		.populate("tanqueId")
+		.sort({_id: 'desc'}).exec(callback)
+	}
+
 	create(nControl, data, usuarioCrea, callback){
     let creado = moment().subtract(5, 'hours');
     creado = moment(creado).format('YYYY-MM-DD h:mm');
@@ -79,6 +88,8 @@ class revisionServices{
 			nMedidorText      : data.nMedidorText,
 			nMedidor          : data.nMedidor,
 			nComodato         : data.nComodato,
+			nComodatoText     : data.nComodatoText,
+			ubicacion         : data.ubicacion,
 			coordenadas       : data.coordenadas,
 			otrosSi						:data.otrosSi,
 			usuarioCrea,
@@ -101,15 +112,22 @@ class revisionServices{
 			usuariosAtendidos  : data.usuariosAtendidos,
 			m3                 : data.m3,
 			nMedidorText       : data.nMedidorText,
+			nComodatoText     : data.nComodatoText,
+			ubicacion         : data.ubicacion,
 			coordenadas        : data.coordenadas,
 		}}, callback);
   }
-	editarImagen(_id, nMedidor, nComodato, otrosSi, retiroTanques, callback){
+	editarImagen(_id, nMedidor, nComodato, otrosSi, retiroTanques, puntoConsumo, visual, protocoloLlenado, hojaSeguridad, callback){
+		console.log({nMedidor, nComodato, otrosSi, retiroTanques, puntoConsumo, visual, protocoloLlenado, hojaSeguridad})
 		revision.findByIdAndUpdate(_id, {$set: {
-			nMedidor         : nMedidor  ?nMedidor  :[],
-			nComodato        : nComodato ?nComodato :[],
-			otrosSi          : otrosSi   ?otrosSi   :[],
-			retiroTanques    : retiroTanques   ?retiroTanques   :[],
+			nMedidor         : nMedidor  			  ?nMedidor  			  :[],
+			nComodato        : nComodato 			  ?nComodato 			  :[],
+			otrosSi          : otrosSi   		    ?otrosSi   		    :[],
+			retiroTanques    : retiroTanques    ?retiroTanques    :[],
+			puntoConsumo     : puntoConsumo     ?puntoConsumo     :[],
+			visual    		   : visual   		    ?visual   			  :[],
+			protocoloLlenado : protocoloLlenado ?protocoloLlenado :[],
+			hojaSeguridad    : hojaSeguridad    ?hojaSeguridad    :[],
 		}}, callback);
 	}
 
@@ -176,13 +194,13 @@ class revisionServices{
 		}}, callback);
 	}
 	geo(_id, data, callback){
-		let coordenadas = {'type':'Point', "coordinates": [parseFloat(data.lng), parseFloat(data.lat)] }
+		let lng=parseFloat(data.lng)
+		let lat=parseFloat(data.lat)
+		let coordenadas = {'type':'Point', "coordinates": [lng, lat] }
 		revision.findByIdAndUpdate(_id, {$set: {
 			'coordenadas':coordenadas
 		}}, callback);
 	}
-
-
 }
 
 module.exports = new revisionServices();

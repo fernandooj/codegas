@@ -176,8 +176,8 @@ class Home extends Component{
                     }
                     {
                          (acceso=="admin" || acceso=="comercial" || acceso=="depTecnico" || acceso=="insSeguridad")
-                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("revision")} >
-                            <Text style={style.txtLista}>Revisiones</Text> 
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios", {revision:true})} >
+                            <Text style={style.txtLista}>Revision y control tanques</Text> 
                             <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
@@ -196,7 +196,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.1</Text> 
                     </TouchableOpacity> 
                     {
                         err

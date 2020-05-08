@@ -246,8 +246,7 @@ class Home extends Component{
 	}
 	render(){
 		const {navigation} = this.props
-		const {acceso, userId, nombre} = this.state
-		console.log({userId, nombre, acceso})
+		const {acceso} = this.state
 	    return (
 				<ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
 					{this.renderFormulario()}

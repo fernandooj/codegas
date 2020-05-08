@@ -81,7 +81,7 @@ export default class tomarPhoto extends Component{
                 img.push({uri:img2})
             }
         })
-        console.log({img})
+      
         return  img.map((e, key)=>{
             return(
                 <Lightbox 

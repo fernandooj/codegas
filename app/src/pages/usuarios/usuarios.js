@@ -41,11 +41,11 @@ class verPerfil extends Component{
         const {terminoBuscador, inicio, final} = this.state
         let filtroUsuarios = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newUsuarios = filtroUsuarios.slice(inicio, final) 
-        console.log({newUsuarios})
+       
         return newUsuarios.map((e, key)=>{
             return(
                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
-                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params.revision ?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
                         <View style={{width:"90%"}}>
                             
                             {e.acceso=="cliente" &&<Text style={style.textUsers}>{e.idPadre ?"Punto consumo: "+e.idPadre.razon_social :e.razon_social}</Text>}

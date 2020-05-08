@@ -101,6 +101,10 @@ export const style = MediaQueryStyleSheet.create({
 		fontFamily: "Comfortaa-Regular",
 		width:Width/3,
 	},
+	row1Step3:{
+		fontFamily: "Comfortaa-Regular",
+		width:Width/1.5,
+	},
 	inputStep2:{
 		fontFamily: "Comfortaa-Regular",
 		borderWidth:1,
@@ -171,6 +175,18 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:10,
 		textAlign:"center"
 	},
+	
+	//// STEP 3
+	switchEnableBorder: {
+		borderColor: '#8e0303',
+		borderWidth: 1
+	},
+		
+	switchDisableBorder: {
+		borderColor: '#f2f2f2',
+		borderWidth: 1,  
+	},
+
 	//// STEP 4
 	inputStep4:{
 		fontFamily: "Comfortaa-Regular",

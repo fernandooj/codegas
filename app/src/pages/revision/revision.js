@@ -36,7 +36,7 @@ class Revision extends Component{
         }
          
 
-        axios.get("rev/revision")
+        axios.get(`rev/revision/byPunto/${this.props.navigation.state.params.puntoId}`)
         .then(res=>{
             console.log(res.data)
             this.setState({revisiones:res.data.revision})
@@ -86,6 +86,7 @@ class Revision extends Component{
   
 	render(){
         const {navigation} = this.props
+        const {puntoId, clienteId, direccion, capacidad, observacion} = this.props.navigation.state.params
         const {terminoBuscador} = this.state
         return (
             <View style={style.containerTanque}>
@@ -98,7 +99,7 @@ class Revision extends Component{
                         value={terminoBuscador}
                         style={[style.inputCabezera]}
                     />
-                    <TouchableOpacity  onPress={()=>this.nuevaRevision()}>
+                    <TouchableOpacity  onPress={()=>navigation.navigate("nuevaRevision", {puntoId, clienteId, direccion, capacidad, observacion} )}>
                         <Icon name='plus' style={style.iconAdd} />
                     </TouchableOpacity>
                 </View>
@@ -110,11 +111,7 @@ class Revision extends Component{
             </View>
         )
     }
-    nuevaRevision(){
-        const {navigation} = this.props
-       
-        navigation.navigate("nuevaRevision")
-    }
+   
 }
 const mapState = state => {
 	return {

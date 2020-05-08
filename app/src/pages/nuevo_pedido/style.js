@@ -185,7 +185,6 @@ export const style = MediaQueryStyleSheet.create({
         width:size.width-150,
         fontSize:12,
         alignItems:"flex-start",
-		 
     },
 
 

@@ -98,6 +98,26 @@ router.get('/byUsuario/:idCliente', (req,res)=>{
     }
 })
 
+
+///////////////////////////////////////////////////////////////
+////////////        OBTENGO UN revision POR UN PUNTO
+//////////////////////////////////////////////////////////////
+router.get('/byPunto/:idPunto', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        revisionServices.getByPunto(req.params.idPunto, (err, revision)=>{
+            console.log(revision)
+            if (!err) {
+                res.json({ status:true, revision }); 
+            }else{
+                res.json({ status:false, message: err, revision:[] }); 
+            }
+        })
+    }
+})
+
+
 ///////////////////////////////////////////////////////////////
 ////////////       CAMBIAR ESTADO
 //////////////////////////////////////////////////////////////
@@ -257,7 +277,7 @@ router.post('/solicitudServicio/:idVehiculo/', (req,res)=>{
 	}else{
         revisionServices.solicitudServicio(req.params.idVehiculo, req.session.usuario._id,  req.body.solicitudServicio, (err, revision)=>{
             if (!err) {
-                let userRegistrado = {email:"fernandooj@ymail.com"}
+                let userRegistrado = {email:"fernandooj@ymail.com, dpto@codegascolombia.com, gerencia@codegascolombia.com, directa.comercial@codegascolombia.com "}
                 let userEnvia = "Enviado por:"+req.session.usuario.nombre
                 htmlTemplate(req, userRegistrado, "Nueva solicitud de servicio", req.body.solicitudServicio, userEnvia,  "Solicitud de servicio codegas")
 
@@ -404,6 +424,11 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
         let rutaImgOtrosSi   = [];
         let rutaImgRetiroTanque = [];
         
+        let rutaImgPuntoConsumo = [];
+        let rutaImgVisual = [];
+        let rutaImgProtocoloLlenado = [];
+        let rutaImgHojaSeguridad = [];
+        
        
         if(req.files.imgNMedidor){
             let esArrayNMedidor = Array.isArray(req.files.imgNMedidor)
@@ -491,6 +516,93 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
             }
         }
 
+        if(req.files.imgPuntoConsumo){
+            let esArrayPuntoConsumo = Array.isArray(req.files.imgPuntoConsumo)
+            if(esArrayPuntoConsumo){
+                req.files.imgPuntoConsumo.map(e=>{
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                    
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    rutaImgPuntoConsumo.push(rutas)
+                    ///////////////////     envio la imagen al nuevo path
+                    
+                    let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                    resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                })
+            }else{
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgPuntoConsumo  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ///////////////////     envio la imagen al nuevo path
+                
+                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                fs.rename(req.files.imgPuntoConsumo.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+        }
+
+        if(req.files.imgVisual){
+            let esArrayVisual = Array.isArray(req.files.imgVisual)
+            if(esArrayVisual){
+                req.files.imgVisual.map(e=>{
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                    
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    rutaImgVisual.push(rutas)
+                    ///////////////////     envio la imagen al nuevo path
+                    
+                    let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                    resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                })
+            }else{
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgVisual  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ///////////////////     envio la imagen al nuevo path
+                
+                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                fs.rename(req.files.imgVisual.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+        }
+
+
  
         if(req.files.imgNComodato){
             let esArrayComodato = Array.isArray(req.files.imgNComodato)
@@ -546,13 +658,71 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                 fs.rename(req.files.imgOtrosSi.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
             }
         }
+
+        if(req.files.imgProtocoloLlenado){
+            let esArrayimgProtocoloLlenado = Array.isArray(req.files.imgProtocoloLlenado)
+            if(esArrayimgProtocoloLlenado){
+                req.files.imgProtocoloLlenado.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    rutaImgProtocoloLlenado.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgProtocoloLlenado.name
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgProtocoloLlenado  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgProtocoloLlenado.name
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(req.files.imgProtocoloLlenado.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+
+        if(req.files.imgHojaSeguridad){
+            let esArrayimgHojaSeguridad = Array.isArray(req.files.imgHojaSeguridad)
+            if(esArrayimgHojaSeguridad){
+                req.files.imgHojaSeguridad.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    rutaImgHojaSeguridad.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgHojaSeguridad.name
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgHojaSeguridad  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgHojaSeguridad.name
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(req.files.imgHojaSeguridad.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+        
         rutaImgNMedidor  = rutaImgNMedidor.length==0  ?req.body.imgNMedidor :rutaImgNMedidor;
         rutaImgNComodato = rutaImgNComodato.length==0 ?req.body.imgNComodato :rutaImgNComodato;
         rutaImgOtrosSi   = rutaImgOtrosSi.length==0   ?req.body.imgOtrosSi :rutaImgOtrosSi;
         rutaImgRetiroTanque   = rutaImgRetiroTanque.length==0   ?req.body.imgOtrosSi :rutaImgRetiroTanque;
         
+        rutaImgPuntoConsumo     = rutaImgPuntoConsumo.length==0    ?req.body.imgOtrosSi :rutaImgPuntoConsumo;
+        rutaImgVisual           = rutaImgVisual.length==0           ?req.body.imgOtrosSi :rutaImgVisual;
+        rutaImgProtocoloLlenado = rutaImgProtocoloLlenado.length==0 ?req.body.imgOtrosSi :rutaImgProtocoloLlenado;
+        rutaImgHojaSeguridad    = rutaImgHojaSeguridad.length==0    ?req.body.imgOtrosSi :rutaImgHojaSeguridad;
+        
 
-        revisionServices.editarImagen(req.params.idRevision, rutaImgNMedidor, rutaImgNComodato, rutaImgOtrosSi, rutaImgRetiroTanque, (err, revision)=>{
+        revisionServices.editarImagen(req.params.idRevision, rutaImgNMedidor, rutaImgNComodato, rutaImgOtrosSi, rutaImgRetiroTanque, rutaImgPuntoConsumo, rutaImgVisual, rutaImgProtocoloLlenado, rutaImgHojaSeguridad, (err, revision)=>{
             if (!err) {
                
                 res.json({ status:true, revision }); 

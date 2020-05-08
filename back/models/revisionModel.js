@@ -34,10 +34,16 @@ let Revision = new Schema({
 	usuariosAtendidos : String,
 	m3                : String,
 	nMedidorText      : String,     
+	ubicacion      	  : String,     
+	nComodatoText     : String,     
     nMedidor		  : [],
 	nComodato		  : [],
 	otrosSi	   		  : [],
 	retiroTanques	  : [],
+	puntoConsumo	  : [],
+	visual	  		  : [],
+	protocoloLlenado  : [],
+	hojaSeguridad  	  : [],
 	
 	////////////////////////////////	INSTALACION
 	isometrico        : [],

@@ -71,7 +71,7 @@ export default class subirDocumento extends Component{
                 img.push({name:img2})
             }
         })
-        console.log({img})
+   
  
         return  img.map((e, key)=>{
             return(

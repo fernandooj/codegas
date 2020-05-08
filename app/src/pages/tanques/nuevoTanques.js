@@ -19,11 +19,11 @@ import {style}                         from './style'
 let sectores    = [{key:"E2", label:"E2"},{key:"E3", label:"E3"},{key:"E4", label:"E4"},{key:"E5", label:"E5"},{key:"E6", label:"E6"},{key:"O", label:"O"},{key:"C", label:"C"},{key:"I", label:"I"},{key:"OT", label:"OT"}]
 let zonas       = [{key:"Urbana", label:"Urbana"},{key:"Rural", label:"Rural"},{key:"Zona Industrial", label:"Zona Industrial"}]
 
-let ubicaciones = [{key:"Azotea", label:"Azotea"},{key:"Enterrado", label:"Enterrado"},{key:"Piso", label:"Piso"}]
+
 
 let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
 let anosFabricacion = []
-let existeTanques   = [{key:"Si", label:"Si"},{key:"No", label:"No"}]
+let existeTanques   = [{key:"Bodega", label:"Bodega"},{key:"PuntoConsumo", label:"Punto Consumo"}]
  
 //// devuelve el listado de años para el tanque
 for (var index = 1950; index < 2021; index++) {
@@ -279,7 +279,7 @@ class Tanques extends Component{
 
                 {/* FECHA ULTIMA REVISION */}
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Fecha Ult Rev</Text>
+                    <Text style={style.row1Step2}>Mto total</Text>
                     <DatePicker
                         customStyles={{
                             dateInput:style.btnDate,
@@ -293,7 +293,7 @@ class Tanques extends Component{
                         
                         locale="es_co"
                         mode="date"
-                        placeholder={fechaUltimaRev ?fechaUltimaRev :"Ultima Revisión"}
+                        placeholder={fechaUltimaRev ?fechaUltimaRev :"Mto total"}
                         format="YYYY-MMM-DD"
                         showIcon={false}
                         confirmBtnText="Confirmar"
@@ -331,42 +331,15 @@ class Tanques extends Component{
                   
                 {/* NUMERO DE PLACA MANTENIMIENTO */}
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>N Placa Man</Text>
+                    <Text style={style.row1Step2}>No placa Mto</Text>
                     <TextInput
-                        placeholder="N Placa Man"
+                        placeholder="No placa Mto"
                         value={nPlaca}
                         style={style.inputStep2}
                         onChangeText={(nPlaca)=> this.setState({ nPlaca })}
                     />
                 </View>
-                {/* <ModalFilterPicker
-					placeholderText="nPlaca ..."
-					visible={modalUbicacion}
-					onSelect={(e)=>this.setState({nPlaca:e, modalUbicacion:false})}
-					onCancel={()=>this.setState({modalUbicacion:false})}
-                    options={ubicaciones}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Ubicación</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalUbicacion:true})}>
-                        <Text style={ubicacion ?style.textBtnActive :style.textBtn}>{ubicacion ?ubicacion :"Ubicación"}</Text>
-                    </TouchableOpacity>
-                </View> */}
-
-                  
-                {/* CODIGO ACTIVO */}
-                {/* <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Codigo Activo</Text>
-                    <TextInput
-                        placeholder="Codigo Activo"
-                        value={codigoActivo}
-                        style={style.inputStep2}
-                        onChangeText={(codigoActivo)=> this.setState({ codigoActivo })}
-                    />
-                </View> */}
-
+                
                 {/* SERIE */}
                 <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Serie</Text>
@@ -395,42 +368,17 @@ class Tanques extends Component{
                 
                 {/* EXISTE PUNTO DE CONSUMO */}
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Existe P Consumo</Text>
+                    <Text style={style.row1Step2}>Ubicación tanque</Text>
                     <ModalSelector
                         style={style.inputStep2}
                         data={existeTanques}
-                        initValue={existeTanque ?existeTanque :"Existe P Consumo"}
+                        initValue={existeTanque ?existeTanque :"Ubicación del tanque"}
                         cancelText="Cancelar"
-                        onChange={(option)=>{ this.setState({existeTanque:option.key}) }} 
+                        onChange={(option)=>{ this.setState({existeTanque:option.label}) }} 
                         initValueTextStyle={style.inputAno}
                         selectStyle={{borderWidth:0, padding:0, alignSelf:"stretch"  }}
                     />
-                </View>
-                    {/* <DatePicker
-                        customStyles={{
-                            dateInput:style.btnDate,
-                            placeholderText:anoFabricacion ?style.textBtnActive :style.textBtn,
-                            dateText: { 
-                                fontSize:14,
-                                color: '#000000'
-                            },
-                        }}
-                        style={style.btnDate2}
-                        
-                        locale="es_co"
-                        mode="date"
-                        placeholder={anoFabricacion ?anoFabricacion :"Año de Fabricación"}
-                        format="YYYY"
-                        showIcon={false}
-                        confirmBtnText="Confirmar"
-                        cancelBtnText="Cancelar"
-                        androidMode='spinner'
-                        onDateChange={(anoFabricacion) => {this.setState({anoFabricacion})}}
-                    /> */}
-                    
-
-                
-                 
+                </View>              
             </View>
         )
     }
@@ -440,8 +388,6 @@ class Tanques extends Component{
         let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgVisual, imgDossier, imgCerFabricante, imgCerOnac} = this.state
         return(
             <View>
-               
-
                 {/* PLACA */}
                 <TomarFoto 
                     source={imgPlaca}

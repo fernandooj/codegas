@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Switch, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
+import {View, Text, TouchableOpacity, Switch, TextInput, Platform, Image, Dimensions, AsyncStorage} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';  
@@ -15,7 +15,7 @@ import {style}                         from './style'
  
 
 let sectores    = [{key:"E2", label:"E2"},{key:"E3", label:"E3"},{key:"E4", label:"E4"},{key:"E5", label:"E5"},{key:"E6", label:"E6"},{key:"O", label:"O"},{key:"C", label:"C"},{key:"I", label:"I"},{key:"OT", label:"OT"}]
-let zonas       = [{key:"Urbana", label:"Urbana"},{key:"Rural", label:"Rural"},{key:"Zona Industrial", label:"Zona Industrial"}]
+let ubicaciones = [{key:"Azotea", label:"Azotea"},{key:"Enterrado", label:"Enterrado"},{key:"Piso", label:"Piso"}]
 let propiedades = [{key:"Usuario", label:"Usuario"},{key:"Propio", label:"Propio"}]
 let m3s         = [{key:"Si", label:"Si"},{key:"No", label:"No"}]
 
@@ -37,23 +37,26 @@ class Tanques extends Component{
             clientes:[],
             puntos:[],
             placas:[],
+            imgIsometrico:[],
             imgAlerta:[],
             imgDepTecnico:[],
             imgNMedidor:[],
             imgNComodato:[],
             imgOtrosSi:[],
             imgRetiroTanques:[],
+            imgPuntoConsumo:[],
+            imgProtocoloLlenado:[],
+            imgHojaSeguridad:[],
+            imgVisual:[],
             tanqueArray:[],
-            tanqueIdArray:[],
-            x: {
-				latitude: 4.597825,
-				longitude: -74.0755723,
-				latitudeDelta: 0.046002887451081165,
-				longitudeDelta: 0.05649235099555483,
-		    },
+            tanqueIdArray:[],  
+            lat:4.597825,
+            lng:-74.0755723
 	    }
     }
     async componentWillMount(){
+        const accesoPerfil = await AsyncStorage.getItem('acceso')
+        this.setState({accesoPerfil})
             axios.get(`tan/tanque`)
             .then(res=>{
                 console.log(res.data)
@@ -66,10 +69,16 @@ class Tanques extends Component{
                 }) 
                 this.setState({placas})
             })
-            
             let revisionId = this.props.navigation.state.params ?this.props.navigation.state.params.revisionId :null
+            let puntoId = this.props.navigation.state.params.puntoId  
+            let usuarioId = this.props.navigation.state.params.clienteId 
+            let capacidad = this.props.navigation.state.params.capacidad 
+            let direccion = this.props.navigation.state.params.direccion 
+            let observacion = this.props.navigation.state.params.observacion 
+    
+            this.filtroClientes(usuarioId)
             
-            this.setState({revisionId})
+            this.setState({revisionId, puntoId, usuarioId, capacidad, direccion, observacion})
             if(revisionId){
                 axios.get(`rev/revision/byId/${revisionId}`)
                 .then(res => {
@@ -95,11 +104,13 @@ class Tanques extends Component{
                         m3                : revision.m3                ?revision.m3                 :"",
                         usuariosAtendidos : revision.usuariosAtendidos ?revision.usuariosAtendidos  :"",
                         propiedad         : revision.propiedad         ?revision.propiedad          :"",
-                        lote              : revision.lote              ?revision.lote               :"",
                         nMedidorText      : revision.nMedidorText      ?revision.nMedidorText       :"",
+                        ubicacion         : revision.ubicacion         ?revision.ubicacion          :"",
+                        nComodatoText     : revision.nComodatoText     ?revision.nComodatoText      :"",
 
                         usuarioId:                revision.usuarioId           ?revision.usuarioId._id                 :null,
                         cedulaCliente:            revision.usuarioId           ?revision.usuarioId.razon_social        :"",
+                        codtCliente:              revision.usuarioId           ?revision.usuarioId.codt        :"",
                         razon_socialCliente:      revision.usuarioId           ?revision.usuarioId.cedula              :"",
                         direccion_facturaCliente: revision.usuarioId           ?revision.usuarioId.direccion_factura   :"",
                         nombreCliente:            revision.usuarioId           ?revision.usuarioId.nombre              :"",
@@ -110,24 +121,29 @@ class Tanques extends Component{
                         zonaId:                   revision.zonaId               ?revision.zonaId._id                   :null,
                         
                         /////////  step 3
-                        imgNMedidor     : revision.nMedidor      ?revision.nMedidor      :[],
-                        imgNComodato    : revision.nComodato     ?revision.nComodato     :[],
-                        imgOtrosSi      : revision.otrosSi       ?revision.otrosSi       :[],
-                        imgRetiroTanques: revision.retiroTanques ?revision.retiroTanques :[],
+                        imgNMedidor     :    revision.nMedidor         ?revision.nMedidor      :[],
+                        imgNComodato    :    revision.nComodato        ?revision.nComodato     :[],
+                        imgOtrosSi      :    revision.otrosSi          ?revision.otrosSi       :[],
+                        imgRetiroTanques:    revision.retiroTanques    ?revision.retiroTanques :[],
+                        imgPuntoConsumo:     revision.puntoConsumo     ?revision.puntoConsumo :[],
+                        imgVisual:           revision.visual           ?revision.visual :[],
+                        imgProtocoloLlenado: revision.protocoloLlenado ?revision.protocoloLlenado :[],
+                        imgHojaSeguridad:    revision.hojaSeguridad    ?revision.hojaSeguridad :[],
+                        
                         
                         /////////  step 4
                         imgIsometrico     : revision.isometrico        ?revision.isometrico        :[],
                         observaciones     : revision.observaciones     ?revision.observaciones     :"",
                         estado            : revision.estado            ?revision.estado            :"",
                         solicitudServicio : revision.solicitudServicio ?revision.solicitudServicio :"",
-                        imgAlerta            : revision.alerta         ?revision.alerta            :"",
+                        imgAlerta         : revision.alerta            ?revision.alerta            :[],
                         alertaText        : revision.alertaText        ?revision.alertaText        :"",
                         alertaFecha       : revision.alertaFecha       ?revision.alertaFecha       :"",
                         nActa             : revision.nActa             ?revision.nActa             :"",
-                        avisos            : revision.avisos            ?revision.avisos            :"",
-                        extintores        : revision.extintores        ?revision.extintores        :"",
-                        distancias        : revision.distancias        ?revision.distancias        :"",
-                        electricas        : revision.electricas        ?revision.electricas        :"",
+                        avisos            : revision.avisos            ?revision.avisos            :false,
+                        extintores        : revision.extintores        ?revision.extintores        :false,
+                        distancias        : revision.distancias        ?revision.distancias        :false,
+                        electricas        : revision.electricas        ?revision.electricas        :false,
                         imgDepTecnico     : revision.depTecnico        ?revision.depTecnico        :[],
                         depTecnicoText    : revision.depTecnicoText    ?revision.depTecnicoText    :"",
                         depTecnicoEstado  : revision.depTecnicoEstado  ?revision.depTecnicoEstado  :"",
@@ -138,49 +154,55 @@ class Tanques extends Component{
             }
         
         navigator.geolocation.getCurrentPosition(e=>{
+            console.log({e})
 			let lat = parseFloat(e.coords.latitude)
 			let lng = parseFloat(e.coords.longitude)
-			let latitude =  lat ?lat :4.597825;
-			let longitude = lng ?lng :-74.0755723;
-			let x = {
-				latitude:latitude,
-				longitude:longitude,
-				latitudeDelta:0.15,
-				longitudeDelta:0.15
-            }
-        console.log({x})
-        this.setState({x})
+            lat =  lat ?lat :4.597825;
+            lng =  lng ?lng :-74.0755723;
+            console.log({lat, lng})
+            this.setState({lat, lng})
         }, (error)=>this.watchID = navigator.geolocation.watchPosition(e=>{
+            console.log({e})
             let lat =parseFloat(e.coords.latitude)
             let lng = parseFloat(e.coords.longitude)
-            let latitude =  lat ?lat :4.597825;
-            let longitude =  lng ?lng :-74.0755723;
-            let x = {
-                latitude:latitude,
-                longitude:longitude,
-                latitudeDelta:0.15,
-                longitudeDelta:0.15
-        }
-        console.log({x})
-        this.setState({x})
-       
-            },
+            lat =  lat ?lat :4.597825;
+            lng =  lng ?lng :-74.0755723;            
+            this.setState({lat, lng})
+        },
             (error) => console.log('error'),
             {enableHighAccuracy: true, timeout:5000, maximumAge:0})
         )
     }
-    getClientes(){
+    filtroClientes(idCliente){
         axios.get(`users/clientes`)
         .then(res => {
-            console.log(res.data.usuarios)
+            console.log(res.data)
             if(res.data.status){
-                let clientes = res.data.usuarios.map(e=>{
-                    return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular }
+                let clientes1 = res.data.usuarios.map(e=>{
+                    return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular, codt:e.codt }
                 }) 
-                this.setState({clientes, modalCliente:true, puntoId:undefined})
+                let cliente = clientes1.filter(e=>{ return e.key==idCliente })
+                this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, codtCliente:cliente[0].codt, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular,nombreCliente:cliente[0].nombre, modalCliente:false})
+                
             }
         })
+
+
+		
     }
+
+    // getClientes(){
+    //     axios.get(`users/clientes`)
+    //     .then(res => {
+    //         console.log(res.data)
+    //         if(res.data.status){
+    //             let clientes = res.data.usuarios.map(e=>{
+    //                 return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular, codt:e.codt }
+    //             }) 
+    //             // this.setState({clientes, modalCliente:true, puntoId:undefined})
+    //         }
+    //     })
+    // }
     
     
 
@@ -215,6 +237,7 @@ class Tanques extends Component{
 
                     //////  step 3
                     usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
+                    codtCliente:              tanque.usuarioId           ?tanque.usuarioId.codt              :"",
                     cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
                     razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
                     direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
@@ -225,16 +248,23 @@ class Tanques extends Component{
                     puntoId:                  tanque.puntoId             ?tanque.puntoId._id                   :[],
                     zonaId:                   tanque.zonaId              ?tanque.zonaId._id                    :null,
                 }
-                tanqueArray.push(infoTanque)
-                tanqueIdArray.push(tanque._id)
-                console.log(tanqueIdArray)
-                this.setState({tanqueArray, tanqueIdArray, modalPlacas:false})
+                
+                if(tanqueIdArray.includes(tanque._id)){
+                    alert("Este tanque ya esta agregado")
+                }else{
+                    tanqueArray.push(infoTanque)
+                    tanqueIdArray.push(tanque._id)
+                 
+                    this.setState({tanqueArray, tanqueIdArray, modalPlacas:false})
+
+                }
             })
         }
     eliminarTanque(tanqueId){
+        console.log(tanqueId)
         let {tanqueIdArray, tanqueArray} = this.state
         tanqueArray= tanqueArray.filter(e=>{
-            return e.tanqueId!=tanqueId 
+            return e._id!=tanqueId 
         })
         tanqueIdArray= tanqueIdArray.filter(e=>{
             return e!=tanqueId 
@@ -243,6 +273,7 @@ class Tanques extends Component{
     }
     step1(){
         const {tanqueArray, modalPlacas, placas, placaText} = this.state
+       
         return(
             <View>
                 {/* PLACAS */}
@@ -283,7 +314,7 @@ class Tanques extends Component{
                                                 <Text style={style.row2}>{e.razon_socialCliente}</Text>
                                             </View>
                                         </View>
-                                        <TouchableOpacity onPress={()=>this.eliminarTanque(e.tanqueId)}>
+                                        <TouchableOpacity onPress={()=>this.eliminarTanque(e._id)}>
                                             <Icon name="trash" style={style.iconTrash} />
                                         </TouchableOpacity>
 
@@ -292,76 +323,15 @@ class Tanques extends Component{
                             )
                         })
                     }
-                
-                {/* {
-                    tanqueId
-                    &&<View style={style.contenedorUsuario}>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Placa:</Text>
-                            <Text style={style.row2}>{placaText}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Capacidad:</Text>
-                            <Text style={style.row2}>{capacidad}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Fabricante:</Text>
-                            <Text style={style.row2}>{fabricante}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Ultima Revision Parcial:</Text>
-                            <Text style={style.row2}>{ultimaRevisionPar}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Ultima Revisión:</Text>
-                            <Text style={style.row2}>{fechaUltimaRev}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Propiedad:</Text>
-                            <Text style={style.row2}>{propiedad}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Ubicacion:</Text>
-                            <Text style={style.row2}>{ubicacion}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Codigo Activo:</Text>
-                            <Text style={style.row2}>{codigoActivo}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Serie:</Text>
-                            <Text style={style.row2}>{serie}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Año Fabricación:</Text>
-                            <Text style={style.row2}>{anoFabricacion}</Text>
-                        </View>
-                        <View style={style.subContenedorUsuario}>
-                            <Text style={style.row1}>Lote:</Text>
-                            <Text style={style.row2}>{lote}</Text>
-                        </View>
-                    </View>
-                }  */}
             </View>
         )
     }
 
     step2(){
-        const {modalSectores, sector, barrio, usuariosAtendidos, modalM3, m3, usuarioId, modalCliente, clientes, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, modalPropiedad, propiedad, lote, nMedidorText} = this.state
-      
+        const {modalSectores, sector, barrio, usuariosAtendidos, modalM3, m3, usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, modalPropiedad, propiedad, nComodatoText, nMedidorText, ubicacion, modalUbicacion, capacidad, direccion, observacion} = this.state
+        console.log({puntos})
         return(
             <View>
-                {/* CODIGO INTERNO */}
-                {/* <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Cod Interno</Text>
-                    <TextInput
-                        placeholder="Codigo Interno"
-                        style={style.inputStep2}
-                        value={codigoInterno}
-                        onChangeText={(codigoInterno)=> this.setState({ codigoInterno })}
-                    />
-                </View> */}
-
                  {/* SECTORES */}
                  <ModalFilterPicker
 					placeholderText="Sectores ..."
@@ -450,16 +420,33 @@ class Tanques extends Component{
                     </TouchableOpacity>
                 </View>
 
-                {/* LOTE */}
+                {/* UBICACIONES */}
+                <ModalFilterPicker
+					placeholderText="ubicaciones ..."
+					visible={modalUbicacion}
+					onSelect={(e)=>this.setState({ubicacion:e, modalUbicacion:false})}
+					onCancel={()=>this.setState({modalUbicacion:false})}
+                    options={ubicaciones}
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Lote</Text>
+                    <Text style={style.row1Step2}>Ubicación</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalUbicacion:true})}>
+                        <Text style={ubicacion ?style.textBtnActive :style.textBtn}>{ubicacion ?ubicacion :"Ubicación"}</Text>
+                    </TouchableOpacity>
+                </View> 
+
+                {/* NUMERO DE COMODATO */}
+                 <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>N Comodato</Text>
                     <TextInput
-                        placeholder="Lote"
-                        value={lote}
+                        placeholder="N Comodato"
+                        value={nComodatoText}
                         style={style.inputStep2}
-                        onChangeText={(lote)=> this.setState({ lote })}
+                        onChangeText={(nComodatoText)=> this.setState({ nComodatoText })}
                     />
-                </View>
+                </View>  
                 
 
                 {/* USUARIO */}
@@ -473,16 +460,20 @@ class Tanques extends Component{
                     cancelButtonText="CANCELAR"
                     optionTextStyle={style.filterText}
                 />
-                <TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.getClientes()}>
+                {/* <TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.getClientes()}>
                     <Icon name="plus" style={style.iconFrecuencia} />
                     <Text style={style.textGuardar}>Asignar Cliente</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 {
                     usuarioId
                     &&<View style={style.contenedorUsuario}>
                         <View style={style.subContenedorUsuario}>
                             <Text style={style.row1}>Identificación:</Text>
                             <Text style={style.row2}>{cedulaCliente}</Text>
+                        </View>
+                        <View style={style.subContenedorUsuario}>
+                            <Text style={style.row1}>CODT:</Text>
+                            <Text style={style.row2}>{codtCliente}</Text>
                         </View>
                         <View style={style.subContenedorUsuario}>
                             <Text style={style.row1}>Razón Social:</Text>
@@ -506,94 +497,55 @@ class Tanques extends Component{
                         </View>
                     </View>
                 } 
+                    <View style={style.btnZonaActiva} >
+                        <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
+                        <View>
+                            <Text style={style.textZona}>{direccion}</Text>
+                            <Text style={style.textZona}>Almacenamiento: {capacidad}</Text>
+                            <Text style={style.textZona}>Observacion: {observacion}</Text>
+                        </View>
+                    </View>    
                 {
-                     puntos.length>1
-                     ?<View>
-                     <Text style={style.textZona}>Punto de entrega</Text>
-                         {
-                             puntos.map((e, key)=>{
-                                 return (
-                                     <TouchableOpacity key={key} style={puntoId==e._id ?style.btnZonaActiva :style.btnZona} onPress={()=>this.setState({puntoId:e._id, zonaId:e.idZona})}>
-                                         <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                                         <View>
-                                             <Text style={style.textZona}>{e.direccion}</Text>   
-                                             <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
-                                         </View>
+                    //  puntos.length>1
+                    //  ?<View>
+                    //  <Text style={style.textZona}>Punto de entrega</Text>
+                    //      {
+                    //          puntos.map((e, key)=>{
+                    //              return (
+                    //                  <TouchableOpacity key={key} style={puntoId==e._id ?style.btnZonaActiva :style.btnZona} onPress={()=>this.setState({puntoId:e._id, zonaId:e.idZona})}>
+                    //                      <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
+                    //                      <View>
+                    //                          <Text style={style.textZona}>{e.direccion}</Text>   
+                    //                          <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
+                    //                      </View>
                                         
-                                     </TouchableOpacity>
-                                 )
-                             })
-                         }
-                     </View>
-                     :puntos.map((e, key)=>{
-                         return (
-                             <View key={key} style={style.btnZonaActiva} >
-                                <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                                <View>
-                                    <Text style={style.textZona}>{e.direccion}</Text>
-                                    <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
-                                </View>
-                             </View>    
-                         )
-                     })
+                    //                  </TouchableOpacity>
+                    //              )
+                    //          })
+                    //      }
+                    //  </View>
+                    //  :puntos.map((e, key)=>{
+                    //      return (
+                    //          <View key={key} style={style.btnZonaActiva} >
+                    //             <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
+                    //             <View>
+                    //                 <Text style={style.textZona}>{e.direccion}</Text>
+                    //                 <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
+                    //             </View>
+                    //          </View>    
+                    //      )
+                    //  })
                 }
 
             </View>
         )
     }
 
-     
-    step4(){
-        let {imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques} = this.state
-        
-        return(
-            <View>
-                {/* PLACA */}
-                <TomarFoto 
-                    source={imgNMedidor}
-                    width={180}
-                    titulo="Medidor"
-                    limiteImagenes={4}
-                    imagenes={(imgNMedidor) => {  this.setState({imgNMedidor}) }}
-                />
-                {/* PLACA */}
-                <TomarFoto 
-                    source={imgRetiroTanques}
-                    width={180}
-                    titulo="Retiro de tanques"
-                    limiteImagenes={4}
-                    imagenes={(imgRetiroTanques) => {  this.setState({imgRetiroTanques}) }}
-                /> 
-                <SubirDocumento 
-                    source={imgNComodato}
-                    width={180}
-                    titulo="N. Comodato"
-                    limiteImagenes={4}
-                    imagenes={(imgNComodato) => {  this.setState({imgNComodato}) }}
-                />
-                {/* OTROS SI */}
-                <SubirDocumento 
-                    source={imgOtrosSi}
-                    width={180}
-                    titulo="Otros si"
-                    limiteImagenes={4}
-                    imagenes={(imgOtrosSi) => {  this.setState({imgOtrosSi}) }}
-                />
-            </View>
-        )
-    }
+   
     step3(){
-        const {observaciones, imgIsometrico, avisos, extintores, distancias, electricas, estado, solicitudServicio, imgAlerta, alertaText, alertaFecha, nActa, depTecnicoEstado, imgDepTecnico, depTecnicoText} = this.state
+        const {observaciones, avisos, extintores, distancias, electricas, estado, solicitudServicio, imgAlerta, alertaText, alertaFecha, nActa, depTecnicoEstado, imgDepTecnico, depTecnicoText} = this.state
         return(
             <View>
-                {/* PLACA */}
-                <TomarFoto 
-                    source={imgIsometrico}
-                    width={180}
-                    titulo="Isometrico"
-                    limiteImagenes={4}
-                    imagenes={(imgIsometrico) => {  this.setState({imgIsometrico}) }}
-                />
 
                 {/* OBSERVACIONES */}
                 <View style={style.contenedorSetp2}>
@@ -660,29 +612,46 @@ class Tanques extends Component{
                     </>
                     :<>
                     <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step2}>Avisos reglamentarios</Text>
+                        <Text style={style.row1Step3}>Falta de Avisos reglamentarios</Text>
                         <Switch
-                            onValueChange = {(avisos)=>this.setState({avisos})}
-                            value = {avisos}
+                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(avisos ?'#d60606':'#ffffff')]}
+                            ios_backgroundColor="#fbfbfb"
+                            style={[avisos ?style.switchEnableBorder:style.switchDisableBorder]}
+                            value={avisos}
+                            onValueChange={(avisos) =>this.setState({avisos})}
                         />
+                        
                     </View>
                     <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step2}>Extintores</Text>
+                        <Text style={style.row1Step3}>Falta extintores</Text>
                         <Switch
+                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(extintores ?'#d60606':'#ffffff')]}
+                            ios_backgroundColor="#fbfbfb"
+                            style={[extintores ?style.switchEnableBorder:style.switchDisableBorder]}
                             onValueChange = {(extintores)=>this.setState({extintores})}
-                            value = {extintores}
+                            value = {extintores}  
                         />
                     </View>
                     <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step2}>Distancias</Text>
+                        <Text style={style.row1Step3}>No cumple distancias</Text>
                         <Switch
+                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(distancias ?'#d60606':'#ffffff')]}
+                            ios_backgroundColor="#fbfbfb"
+                            style={[distancias ?style.switchEnableBorder:style.switchDisableBorder]}
                             onValueChange = {(distancias)=>this.setState({distancias})}
                             value = {distancias}
                         />
                     </View>
                     <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step2}>Condiciones electricas</Text>
+                        <Text style={style.row1Step3}>Fuentes ignición cerca</Text>
                         <Switch
+                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(electricas ?'#d60606':'#ffffff')]}
+                            ios_backgroundColor="#fbfbfb"
+                            style={[electricas ?style.switchEnableBorder:style.switchDisableBorder]}
                             onValueChange = {(electricas)=>this.setState({electricas})}
                             value = {electricas}
                         />
@@ -694,6 +663,126 @@ class Tanques extends Component{
             </View>
         )
     }
+      
+    step4(){
+        let {imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, imgIsometrico} = this.state
+        
+        return(
+            <View>
+                {/* ISOMETRICO */}
+                <TomarFoto 
+                    source={imgIsometrico}
+                    width={180}
+                    titulo="Isometrico"
+                    limiteImagenes={4}
+                    imagenes={(imgIsometrico) => {  this.setState({imgIsometrico}) }}
+                />
+
+                {/* PLACA */}
+                <TomarFoto 
+                    source={imgNMedidor}
+                    width={180}
+                    titulo="Otros Comodatos"
+                    limiteImagenes={4}
+                    imagenes={(imgNMedidor) => {  this.setState({imgNMedidor}) }}
+                />
+                
+                {/* PLACA */}
+                <TomarFoto 
+                    source={imgRetiroTanques}
+                    width={180}
+                    titulo="Acta de recibido"
+                    limiteImagenes={4}
+                    imagenes={(imgRetiroTanques) => {  this.setState({imgRetiroTanques}) }}
+                /> 
+                {/* PLACA */}
+                 <TomarFoto 
+                    source={imgPuntoConsumo}
+                    width={180}
+                    titulo="Punto Consumo"
+                    limiteImagenes={4}
+                    imagenes={(imgPuntoConsumo) => {  this.setState({imgPuntoConsumo}) }}
+                /> 
+                {/* PLACA */}
+                 <TomarFoto 
+                    source={imgVisual}
+                    width={180}
+                    titulo="Visual Tanque"
+                    limiteImagenes={4}
+                    imagenes={(imgVisual) => {  this.setState({imgVisual}) }}
+                /> 
+
+                
+                {/* NO COMODATO */}
+                <SubirDocumento 
+                    source={imgProtocoloLlenado}
+                    width={180}
+                    titulo="Protocolo de llenado"
+                    limiteImagenes={4}
+                    imagenes={(imgProtocoloLlenado) => {  this.setState({imgProtocoloLlenado}) }}
+                />
+
+                {/* NO COMODATO */}
+                <SubirDocumento 
+                    source={imgHojaSeguridad}
+                    width={180}
+                    titulo="Hoja de seguridad"
+                    limiteImagenes={4}
+                    imagenes={(imgHojaSeguridad) => {  this.setState({imgHojaSeguridad}) }}
+                />
+                {/* NO COMODATO */}
+                <SubirDocumento 
+                    source={imgNComodato}
+                    width={180}
+                    titulo="Doc. de comodato"
+                    limiteImagenes={4}
+                    imagenes={(imgNComodato) => {  this.setState({imgNComodato}) }}
+                />
+                {/* OTROS SI */}
+                <SubirDocumento 
+                    source={imgOtrosSi}
+                    width={180}
+                    titulo="Otros si"
+                    limiteImagenes={4}
+                    imagenes={(imgOtrosSi) => {  this.setState({imgOtrosSi}) }}
+                />
+            </View>
+        )
+    }
+    step5(){
+        let {lat, lng, accesoPerfil}= this.state
+        console.log({lat, lng})
+        return(
+            <View>
+                {
+                    accesoPerfil=="admin"
+                    ?<>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step2}>Latitud</Text>
+                            <TextInput
+                                placeholder="Latitud"
+                                style={style.inputStep2}
+                                value={lat ?lat.toString() :""}
+                                onChangeText={(lat)=> this.setState({ lat })}
+                            />
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step2}>Longitud</Text>
+                            <TextInput
+                                placeholder="Longitud"
+                                style={style.inputStep2}
+                                value={lng ?lng.toString() :""}
+                                onChangeText={(lng)=> this.setState({ lng })}
+                            />
+                        </View>
+                    </>
+                    :<><Text>Lat: {lat}</Text>
+                     <Text>Lng: {lng}</Text></>
+                }
+            </View>
+        )
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -731,16 +820,7 @@ class Tanques extends Component{
             }
         })
     }
-    step5(){
-        let {x}= this.state
-        return(
-            <View>
-                <Text>Lat: {x.latitude}</Text>
-                <Text>Lng: {x.longitude}</Text>
-                <Text></Text>
-            </View>
-        )
-    }
+
 
     renderSteps(){
         let {tanqueIdArray, revisionId, modalAlerta} = this.state
@@ -757,13 +837,13 @@ class Tanques extends Component{
                         {this.step2()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Imagenes" nextBtnText="Siguiente"  onNext={()=>this.editarStep3()}>
+                <ProgressStep label="Instalación" nextBtnText="Siguiente"  onNext={()=>this.editarStep3()}>
                     <View style={{ alignItems: 'center' }}>
                         {modalAlerta &&this.modalAlerta()}
                         {this.step3()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Instalación" nextBtnText="Siguiente"  onNext={()=>this.editarStep4()}>
+                <ProgressStep label="Documetos adicionales" nextBtnText="Siguiente"  onNext={()=>this.editarStep4()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step4()}
                     </View>
@@ -780,10 +860,8 @@ class Tanques extends Component{
 
 	render(){
         const {navigation} = this.props
-        
         return (
             <>
-               
                 <View style={style.container}>
                     {this.renderSteps()}
                 </View>
@@ -792,18 +870,7 @@ class Tanques extends Component{
         )
     }
      
-    filtroClientes(idCliente){
-		let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
-        this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular,nombreCliente:cliente[0].nombre, modalCliente:false})
-        axios.get(`pun/punto/byCliente/${idCliente}`)
-        .then(e=>{
-            if(e.data.status){
-                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id, zonaId:e.data.puntos[0].idZona, usuarioId:idCliente}) :this.setState({puntos:e.data.puntos, usuarioId:idCliente })
-            }else{
-                Toast.show("Tuvimos un problema, intentele mas tarde")
-            }
-        })
-    }
+
     
     addTanque(nombre, cantidad){
         let tanques = this.state.tanques.filter(e=>{
@@ -834,9 +901,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 1
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
-        const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, lote, nMedidorText} = this.state
+        const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion} = this.state
         console.log({puntoId})
-        axios.put(`rev/revision/${revisionId}`, {tanqueId:tanqueIdArray, sector, barrio, usuariosAtendidos, m3, zonaId, usuarioId, puntoId, propiedad, lote, nMedidorText})
+        axios.put(`rev/revision/${revisionId}`, {tanqueId:tanqueIdArray, sector, barrio, usuariosAtendidos, m3, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -852,9 +919,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 2
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep2(){
-        const {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, lote, nMedidorText} = this.state
-        console.log({zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, lote, nMedidorText})
-        axios.put(`rev/revision/${revisionId}`, {sector, barrio, usuariosAtendidos, m3, tanqueId:tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, lote, nMedidorText})
+        const {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion} = this.state
+        console.log({zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion})
+        axios.put(`rev/revision/${revisionId}`, {sector, barrio, usuariosAtendidos, m3, tanqueId:tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -867,53 +934,13 @@ class Tanques extends Component{
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////           EDITA EL STEP 3, IMAGENES Y DOCUMENTOS 
+    ////////////////////////           EDITA EL STEP 3
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep3(){
-        let {imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, revisionId} = this.state
-        console.log({imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, revisionId})
+        const {observaciones, avisos, extintores, distancias, electricas, revisionId} = this.state
+        console.log({observaciones, avisos, extintores, distancias, electricas})
         let data = new FormData();
-        imgNMedidor.forEach(e=>{
-            data.append('imgNMedidor', e);
-        })
-        imgNComodato.forEach(e=>{
-            data.append('imgNComodato', e);
-        })
-        imgOtrosSi.forEach(e=>{
-            data.append('imgOtrosSi', e);
-        })
-        imgRetiroTanques.forEach(e=>{
-            data.append('imgRetiroTanques', e);
-        })
-        //data.append('imgNMedidor',  imgNMedidor);
-        //data.append('imgNComodato', imgNComodato);
-        //data.append('imgOtrosSi',   imgOtrosSi);
-        //data.append('imgRetiroTanques',   imgRetiroTanques);
-        axios({
-            method: 'PUT',   
-            url: `rev/revision/guardarImagen/${revisionId}`,
-            data: data,
-        })
-        .then((res)=>{
-            console.log(res.data)
-            
-        })
-        .catch(err=>{
-            console.log({err})
-            this.setState({cargando:false})
-        })
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////           EDITA EL STEP 4
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    editarStep4(){
-        const {observaciones, imgIsometrico, avisos, extintores, distancias, electricas, revisionId} = this.state
-        console.log({observaciones, imgIsometrico, avisos, extintores, distancias, electricas})
-        let data = new FormData();
-        imgIsometrico.forEach(e=>{
-            data.append('imgIsometrico', e);
-        })
+        
         data.append('observaciones',  observaciones);
         data.append('avisos', avisos);
         data.append('extintores',   extintores);
@@ -935,13 +962,65 @@ class Tanques extends Component{
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           EDITA EL STEP 4, IMAGENES Y DOCUMENTOS 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    editarStep4(){
+        let {imgIsometrico, imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, revisionId} = this.state
+        console.log({imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, revisionId})
+        let data = new FormData();
+        imgIsometrico.forEach(e=>{
+            data.append('imgIsometrico', e);
+        })
+        imgNMedidor.forEach(e=>{
+            data.append('imgNMedidor', e);
+        })
+        imgNComodato.forEach(e=>{
+            data.append('imgNComodato', e);
+        })
+        imgOtrosSi.forEach(e=>{
+            data.append('imgOtrosSi', e);
+        })
+        imgRetiroTanques.forEach(e=>{
+            data.append('imgRetiroTanques', e);
+        })
+        imgPuntoConsumo.forEach(e=>{
+            data.append('imgPuntoConsumo', e);
+        })
+        imgVisual.forEach(e=>{
+            data.append('imgVisual', e);
+        })
+        imgProtocoloLlenado.forEach(e=>{
+            data.append('imgProtocoloLlenado', e);
+        })
+        imgHojaSeguridad.forEach(e=>{
+            data.append('imgHojaSeguridad', e);
+        })
+        axios({
+            method: 'PUT',   
+            url: `rev/revision/guardarImagen/${revisionId}`,
+            data: data,
+        })
+        .then((res)=>{
+            console.log(res.data)
+            
+        })
+        .catch(err=>{
+            console.log({err})
+            this.setState({cargando:false})
+        })
+    }
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           EDITA EL STEP 5
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep5(){
-        const {x, revisionId} = this.state
-        console.log({x})
-        let lat=x.latitude
-        let lng=x.longitude
+        let {lat, lng, revisionId} = this.state
+        lat =  lat ?lat :4.597825;
+        lng =  lng ?lng :-74.0755723;
+        console.log({lat, lng})
+        
         axios.put(`rev/revision/coordenadas/${revisionId}`, {lat, lng})
         .then((res)=>{
             console.log(res.data)

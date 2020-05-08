@@ -139,6 +139,7 @@ class Nuevo_pedido extends Component{
  
 	renderPedido(){
         const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud, guardando} = this.state
+        console.log(puntos)
         return(
             <View style={style.subContainerNuevo}>
                 <View style={style.contenedorMonto}>
@@ -269,7 +270,7 @@ class Nuevo_pedido extends Component{
                     </View>
                 }
                 {
-                    acceso=="admin" || acceso=="solucion" || acceso=="veo"
+                    acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial"
                     ?this.renderCliente()
                     :null
                 }
@@ -285,7 +286,7 @@ class Nuevo_pedido extends Component{
                                     <View>
                                         <Text style={style.textZona}>{e.direccion}</Text>   
                                         <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
-                                        {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion}</Text>}
+                                        {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion=="" ?"&nbsp;" :e.observacion }</Text>}
                                     </View>
                                     {(puntoId==e._id) &&<Icon name="check" style={style.iconCheck} /> }
                                 </TouchableOpacity>
@@ -301,7 +302,7 @@ class Nuevo_pedido extends Component{
                                 <Text style={style.textZona}>Punto de entrega</Text>
                                 <Text style={style.textZona}>{e.direccion}</Text>   
                                 <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
-                                {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion}</Text>}
+                                {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion=="" ?"&nbsp;" :e.observacion }</Text>}
                             </View>
                         </View>    
                     )

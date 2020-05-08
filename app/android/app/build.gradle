@@ -32,8 +32,8 @@ android {
         applicationId "com.codegas"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 113
-        versionName "11.3"
+        versionCode 1131
+        versionName "11.3.1"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
