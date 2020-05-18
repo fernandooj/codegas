@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, ActivityIndicator, Alert} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput} from 'react-native'
 import {style}           from './style'
 import {connect}         from 'react-redux' 
 import Icon              from 'react-native-fa-icons';
@@ -34,11 +34,9 @@ class Revision extends Component{
         }catch(e){
             console.log(e)
         }
-         
 
         axios.get(`rev/revision/byPunto/${this.props.navigation.state.params.puntoId}`)
         .then(res=>{
-            console.log(res.data)
             this.setState({revisiones:res.data.revision})
         })
        
@@ -63,17 +61,17 @@ class Revision extends Component{
         return newRevisiones.map((e, key)=>{
             return(
                 <View style={[style.contenedorRevisiones, {backgroundColor: !e.activo ?"red" :(e.estado==2 ||e.avisos||e.distancias||e.electricas||e.extintores) ?"#e8a43d" :"white" }]} key={key}>
-                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {revisionId:e._id})}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:navigation.state.params.puntoId, clienteId:navigation.state.params.clienteId, revisionId:e._id})}>
                         <View style={{width:"90%"}}>
                             <Text style={style.textUsers}>N Control: {e.nControl}</Text>
-                            <Text style={style.textUsers}>Placa: {e.tanqueId ?e.tanqueId[0].placaText :""}</Text>
-                            <Text style={style.textUsers}>Cliente:   {e.usuarioId &&e.usuarioId.razon_social}</Text>
+                            <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
+                            
                             {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
                             {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
-                            {e.avisos     &&<Text style={style.textUsers}>Avisos reglamentarios en mal estado</Text>}
-                            {e.distancias &&<Text style={style.textUsers}>Extintores en mal estado</Text>}
-                            {e.electricas &&<Text style={style.textUsers}>Distancias en mal estado</Text>}
-                            {e.extintores &&<Text style={style.textUsers}>Condicciones electricas en mal estado</Text>}
+                            {e.avisos     &&<Text style={style.textUsers}>Falta de Avisos reglamentarios en mal estado</Text>}
+                            {e.extintores &&<Text style={style.textUsers}>Falta extintores en mal estado</Text>}
+                            {e.distancias &&<Text style={style.textUsers}>No cumple distancias en mal estado</Text>}
+                            {e.electricas &&<Text style={style.textUsers}>Fuentes ignición cerca en mal estado</Text>}
                         </View>
                         <View  style={{justifyContent:"center"}}>
                             <Icon name={'angle-right'} style={style.iconCerrar} />
@@ -88,6 +86,7 @@ class Revision extends Component{
         const {navigation} = this.props
         const {puntoId, clienteId, direccion, capacidad, observacion} = this.props.navigation.state.params
         const {terminoBuscador} = this.state
+  
         return (
             <View style={style.containerTanque}>
                 <View style={{flexDirection:"row"}}>

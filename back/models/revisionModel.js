@@ -36,17 +36,18 @@ let Revision = new Schema({
 	nMedidorText      : String,     
 	ubicacion      	  : String,     
 	nComodatoText     : String,     
-    nMedidor		  : [],
-	nComodato		  : [],
-	otrosSi	   		  : [],
-	retiroTanques	  : [],
+	isometrico        : [],
+    otrosComodat	  : [],
+	soporteEntrega	  : [],
 	puntoConsumo	  : [],
 	visual	  		  : [],
+
 	protocoloLlenado  : [],
 	hojaSeguridad  	  : [],
-	
+	nComodato		  : [],
+	otrosSi	   		  : [],
+	   
 	////////////////////////////////	INSTALACION
-	isometrico        : [],
 	observaciones	  : String,
 	solicitudServicio : String,	
 	usuarioSolicita	  : {type: Schema.ObjectId, ref:'User'},

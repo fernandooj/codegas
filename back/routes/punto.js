@@ -38,6 +38,17 @@ router.get('/byCliente/:idCliente', (req,res)=>{
 })
 
 
+router.get('/byId/:idPunto', (req,res)=>{
+    puntoServices.getById(req.params.idPunto, (err2, punto)=>{
+        if (!err2) {
+            res.json({ status: true, punto });	
+        }else{
+            res.json({ status: false });	    
+        }
+    })
+})
+
+
 
 ///////////////////////////////////////////////////////////////
 ////////////       GUARDO UN PUNTO
@@ -87,6 +98,19 @@ router.put('/varios', (req,res)=>{
             // console.log(puntos)
         })
     })
+    res.json({ status: true });	
+})
+
+
+///////////////////////////////////////////////////////////////
+////////////       EDITO CAPACIDAD
+//////////////////////////////////////////////////////////////
+router.put('/editaAlmacenamiento/:idPunto/:capacidad', (req,res)=>{
+    
+        puntoServices.editarAlmacenamiento(req.params.idPunto, req.params.capacidad, (err2, puntos)=>{
+            // console.log(puntos)
+        })
+    
     res.json({ status: true });	
 })
 

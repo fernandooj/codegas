@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Switch, TextInput, Platform, Image, Dimensions, AsyncStorage} from 'react-native'
+import {View, Text, TouchableOpacity, Switch, TextInput, Platform, Image, Dimensions, Alert, AsyncStorage, ActivityIndicator} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';  
@@ -34,6 +34,10 @@ class Tanques extends Component{
             modalPlacas:false,
             modalCapacidad:false,
             modalAlerta:false,
+            extintores:false,
+            avisos:false,
+            distancias:false,
+            electricas:false,
             clientes:[],
             puntos:[],
             placas:[],
@@ -42,8 +46,9 @@ class Tanques extends Component{
             imgDepTecnico:[],
             imgNMedidor:[],
             imgNComodato:[],
+            otrosComodato:[],
             imgOtrosSi:[],
-            imgRetiroTanques:[],
+            soporteEntrega:[],
             imgPuntoConsumo:[],
             imgProtocoloLlenado:[],
             imgHojaSeguridad:[],
@@ -54,115 +59,134 @@ class Tanques extends Component{
             lng:-74.0755723
 	    }
     }
+     
+
     async componentWillMount(){
         const accesoPerfil = await AsyncStorage.getItem('acceso')
-        this.setState({accesoPerfil})
-            axios.get(`tan/tanque`)
+        //////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////        LISTA TODOS LOS TANQUES
+        axios.get(`tan/tanque`)
+        .then(res=>{
+           
+            let placas = res.data.tanque
+            placas = placas.map(e=>{
+                return{
+                    key:e._id,
+                    label:e.placaText
+                }
+            }) 
+            this.setState({placas})
+        })
+        let revisionId = this.props.navigation.state.params ?this.props.navigation.state.params.revisionId :null
+        let puntoId = this.props.navigation.state.params.puntoId  
+        let usuarioId = this.props.navigation.state.params.clienteId 
+ 
+        this.filtroClientes(usuarioId)
+ 
+        this.setState({revisionId, puntoId, usuarioId, accesoPerfil})
+ 
+        //////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////        LISTA SOLO LOS TANQUES DE ESTE USUARIO
+        if(usuarioId){
+            axios.get(`tan/tanque/byPunto/${puntoId}`)
             .then(res=>{
-                console.log(res.data)
-                let placas = res.data.tanque
-                placas = placas.map(e=>{
-                    return{
-                        key:e._id,
-                        label:e.placaText
-                    }
-                }) 
-                this.setState({placas})
-            })
-            let revisionId = this.props.navigation.state.params ?this.props.navigation.state.params.revisionId :null
-            let puntoId = this.props.navigation.state.params.puntoId  
-            let usuarioId = this.props.navigation.state.params.clienteId 
-            let capacidad = this.props.navigation.state.params.capacidad 
-            let direccion = this.props.navigation.state.params.direccion 
-            let observacion = this.props.navigation.state.params.observacion 
-    
-            this.filtroClientes(usuarioId)
-            
-            this.setState({revisionId, puntoId, usuarioId, capacidad, direccion, observacion})
-            if(revisionId){
-                axios.get(`rev/revision/byId/${revisionId}`)
-                .then(res => {
-                    console.log(res.data)
-                    const {revision} = res.data
-                    let tanqueIdArray = []
-                    revision.tanqueId.map(e=>{
-                        tanqueIdArray.push(e._id)
-                    })
-                    
-                    this.setState({
-                        /////// step 1
-                        revisionId:    revision._id,
-                        tanqueArray:   revision.tanqueId   ?revision.tanqueId      :[],
-                        tanqueIdArray: tanqueIdArray       ?tanqueIdArray :[],
-                        
-                        /////////  step 2
-                        //codigoInterno:     revision.codigoInterno ?revision.codigoInterno           :"",
-                        capacidad         : revision.capacidad         ?revision.capacidad          :"",
-                        fabricante        : revision.fabricante        ?revision.fabricante         :"",
-                        barrio            : revision.barrio            ?revision.barrio             :"",
-                        sector            : revision.sector            ?revision.sector             :"",
-                        m3                : revision.m3                ?revision.m3                 :"",
-                        usuariosAtendidos : revision.usuariosAtendidos ?revision.usuariosAtendidos  :"",
-                        propiedad         : revision.propiedad         ?revision.propiedad          :"",
-                        nMedidorText      : revision.nMedidorText      ?revision.nMedidorText       :"",
-                        ubicacion         : revision.ubicacion         ?revision.ubicacion          :"",
-                        nComodatoText     : revision.nComodatoText     ?revision.nComodatoText      :"",
-
-                        usuarioId:                revision.usuarioId           ?revision.usuarioId._id                 :null,
-                        cedulaCliente:            revision.usuarioId           ?revision.usuarioId.razon_social        :"",
-                        codtCliente:              revision.usuarioId           ?revision.usuarioId.codt        :"",
-                        razon_socialCliente:      revision.usuarioId           ?revision.usuarioId.cedula              :"",
-                        direccion_facturaCliente: revision.usuarioId           ?revision.usuarioId.direccion_factura   :"",
-                        nombreCliente:            revision.usuarioId           ?revision.usuarioId.nombre              :"",
-                        celularCliente :          revision.usuarioId           ?revision.usuarioId.celular             :"",
-                        emailCliente:             revision.usuarioId           ?revision.usuarioId.email               :"",
-                        puntos:                   revision.puntoId             ?[revision.puntoId]                     :[],
-                        puntoId:                  revision.puntoId             ?revision.puntoId._id                   :null,
-                        zonaId:                   revision.zonaId               ?revision.zonaId._id                   :null,
-                        
-                        /////////  step 3
-                        imgNMedidor     :    revision.nMedidor         ?revision.nMedidor      :[],
-                        imgNComodato    :    revision.nComodato        ?revision.nComodato     :[],
-                        imgOtrosSi      :    revision.otrosSi          ?revision.otrosSi       :[],
-                        imgRetiroTanques:    revision.retiroTanques    ?revision.retiroTanques :[],
-                        imgPuntoConsumo:     revision.puntoConsumo     ?revision.puntoConsumo :[],
-                        imgVisual:           revision.visual           ?revision.visual :[],
-                        imgProtocoloLlenado: revision.protocoloLlenado ?revision.protocoloLlenado :[],
-                        imgHojaSeguridad:    revision.hojaSeguridad    ?revision.hojaSeguridad :[],
-                        
-                        
-                        /////////  step 4
-                        imgIsometrico     : revision.isometrico        ?revision.isometrico        :[],
-                        observaciones     : revision.observaciones     ?revision.observaciones     :"",
-                        estado            : revision.estado            ?revision.estado            :"",
-                        solicitudServicio : revision.solicitudServicio ?revision.solicitudServicio :"",
-                        imgAlerta         : revision.alerta            ?revision.alerta            :[],
-                        alertaText        : revision.alertaText        ?revision.alertaText        :"",
-                        alertaFecha       : revision.alertaFecha       ?revision.alertaFecha       :"",
-                        nActa             : revision.nActa             ?revision.nActa             :"",
-                        avisos            : revision.avisos            ?revision.avisos            :false,
-                        extintores        : revision.extintores        ?revision.extintores        :false,
-                        distancias        : revision.distancias        ?revision.distancias        :false,
-                        electricas        : revision.electricas        ?revision.electricas        :false,
-                        imgDepTecnico     : revision.depTecnico        ?revision.depTecnico        :[],
-                        depTecnicoText    : revision.depTecnicoText    ?revision.depTecnicoText    :"",
-                        depTecnicoEstado  : revision.depTecnicoEstado  ?revision.depTecnicoEstado  :"",
-                        
-                    })
+                let tanqueIdArray = []
+                res.data.tanque.map(e=>{
+                    tanqueIdArray.push(e._id)
                 })
+    
+                this.setState({tanqueArray:res.data.tanque, tanqueIdArray})
+            })
+            axios.get(`pun/punto/byId/${puntoId}`)
+            .then(res => {
+                let {capacidad, direccion, observacion} = res.data.punto[0]
+                this.setState({ capacidad, direccion, observacion })
+            })
 
-            }
+        }
+       
+        if(revisionId){
+            axios.get(`rev/revision/byId/${revisionId}`)
+            .then(res => {
+       
+                const {revision} = res.data
+                let tanqueIdArray = []
+                revision.tanqueId.map(e=>{
+                    tanqueIdArray.push(e._id)
+                })
+               
+                this.setState({
+                    /////// step 1
+                    revisionId:    revision._id,
+ 
+                    
+                    /////////  step 2
+ 
+                    capacidad         : revision.capacidad         ?revision.capacidad          :"",
+                    fabricante        : revision.fabricante        ?revision.fabricante         :"",
+                    barrio            : revision.barrio            ?revision.barrio             :"",
+                    sector            : revision.sector            ?revision.sector             :"",
+                    m3                : revision.m3                ?revision.m3                 :"",
+                    usuariosAtendidos : revision.usuariosAtendidos ?revision.usuariosAtendidos  :"",
+                    propiedad         : revision.propiedad         ?revision.propiedad          :"",
+                    nMedidorText      : revision.nMedidorText      ?revision.nMedidorText       :"",
+                    ubicacion         : revision.ubicacion         ?revision.ubicacion          :"",
+                    nComodatoText     : revision.nComodatoText     ?revision.nComodatoText      :"",
+
+                    usuarioId:                revision.usuarioId           ?revision.usuarioId._id                 :null,
+                    cedulaCliente:            revision.usuarioId           ?revision.usuarioId.razon_social        :"",
+                    codtCliente:              revision.usuarioId           ?revision.usuarioId.codt        :"",
+                    razon_socialCliente:      revision.usuarioId           ?revision.usuarioId.cedula              :"",
+                    direccion_facturaCliente: revision.usuarioId           ?revision.usuarioId.direccion_factura   :"",
+                    nombreCliente:            revision.usuarioId           ?revision.usuarioId.nombre              :"",
+                    celularCliente :          revision.usuarioId           ?revision.usuarioId.celular             :"",
+                    emailCliente:             revision.usuarioId           ?revision.usuarioId.email               :"",
+                    puntos:                   revision.puntoId             ?[revision.puntoId]                     :[],
+                    puntoId:                  revision.puntoId             ?revision.puntoId._id                   :null,
+                    zonaId:                   revision.zonaId               ?revision.zonaId._id                   :null,
+                    
+                    /////////  step 3
+                    observaciones     : revision.observaciones     ?revision.observaciones     :"",
+                    estado            : revision.estado            ?revision.estado            :"",
+                    solicitudServicio : revision.solicitudServicio ?revision.solicitudServicio :"",
+                    imgAlerta         : revision.alerta            ?revision.alerta            :[],
+                    alertaText        : revision.alertaText        ?revision.alertaText        :"",
+                    alertaFecha       : revision.alertaFecha       ?revision.alertaFecha       :"",
+                    nActa             : revision.nActa             ?revision.nActa             :"",
+                    avisos            : revision.avisos            ?revision.avisos            :false,
+                    extintores        : revision.extintores        ?revision.extintores        :false,
+                    distancias        : revision.distancias        ?revision.distancias        :false,
+                    electricas        : revision.electricas        ?revision.electricas        :false,
+                    imgDepTecnico     : revision.depTecnico        ?revision.depTecnico        :[],
+                    depTecnicoText    : revision.depTecnicoText    ?revision.depTecnicoText    :"",
+                    depTecnicoEstado  : revision.depTecnicoEstado  ?revision.depTecnicoEstado  :"",  
+
+
+                    /////////  step 4
+                    imgIsometrico      : revision.isometrico      ?revision.isometrico     :[],
+                    imgOtrosComodato   : revision.otrosComodato   ?revision.otrosComodato  :[],
+                    imgSoporteEntrega  : revision.soporteEntrega  ?revision.soporteEntrega :[],
+                    imgPuntoConsumo    : revision.puntoConsumo    ?revision.puntoConsumo   :[],
+                    imgVisual          : revision.visual          ?revision.visual         :[],
+                    
+                    imgProtocoloLlenado: revision.protocoloLlenado ?revision.protocoloLlenado :[],
+                    imgHojaSeguridad:    revision.hojaSeguridad    ?revision.hojaSeguridad :[],
+                    imgNComodato    :    revision.nComodato        ?revision.nComodato     :[],
+                    imgOtrosSi      :    revision.otrosSi          ?revision.otrosSi       :[],
+                })
+            })
+        }
         
         navigator.geolocation.getCurrentPosition(e=>{
-            console.log({e})
+     
 			let lat = parseFloat(e.coords.latitude)
 			let lng = parseFloat(e.coords.longitude)
             lat =  lat ?lat :4.597825;
             lng =  lng ?lng :-74.0755723;
-            console.log({lat, lng})
+ 
             this.setState({lat, lng})
         }, (error)=>this.watchID = navigator.geolocation.watchPosition(e=>{
-            console.log({e})
+ 
             let lat =parseFloat(e.coords.latitude)
             let lng = parseFloat(e.coords.longitude)
             lat =  lat ?lat :4.597825;
@@ -175,105 +199,77 @@ class Tanques extends Component{
     }
     filtroClientes(idCliente){
         axios.get(`users/clientes`)
-        .then(res => {
-            console.log(res.data)
+        .then(res => { 
             if(res.data.status){
                 let clientes1 = res.data.usuarios.map(e=>{
                     return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular, codt:e.codt }
                 }) 
                 let cliente = clientes1.filter(e=>{ return e.key==idCliente })
                 this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, codtCliente:cliente[0].codt, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular,nombreCliente:cliente[0].nombre, modalCliente:false})
-                
             }
-        })
-
-
-		
+        })	
     }
-
-    // getClientes(){
-    //     axios.get(`users/clientes`)
-    //     .then(res => {
-    //         console.log(res.data)
-    //         if(res.data.status){
-    //             let clientes = res.data.usuarios.map(e=>{
-    //                 return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular, codt:e.codt }
-    //             }) 
-    //             // this.setState({clientes, modalCliente:true, puntoId:undefined})
-    //         }
-    //     })
-    // }
-    
     
 
     buscarTanque(id){
-        
-        let {tanqueArray, tanqueIdArray} = this.state
+        let {tanqueArray, tanqueIdArray, usuarioId, puntoId} = this.state
         axios.get(`tan/tanque/byId/${id}`)
-            .then(res=>{
-                console.log(res.data)
-                const {tanque} = res.data
-                let infoTanque={
-                    /////// step 1
-                    _id:                tanque._id,
-                    placaText :         tanque.placaText         ?tanque.placaText          :"",
-                    sector:             tanque.sector         ?tanque.sector          :"",
-                    barrio:             tanque.barrio        ?tanque.barrio         :"",
-                    usuariosAtendidos:  tanque.usuariosAtendidos ?tanque.usuariosAtendidos  :"",
-                    
-                    //////  step 2
-                    m3:                 tanque.m3             ?tanque.m3             :"",
-                    ubicacion:          tanque.ubicacion      ?tanque.ubicacion      :"",
-                    codigoActivo:       tanque.codigoActivo   ?tanque.codigoActivo   :"",
-                    serie:              tanque.serie          ?tanque.serie          :"",
-                    anoFabricacion:     tanque.anoFabricacion ?tanque.anoFabricacion :"",
-                     
-
-                    //////  step 3
-                    imgNMedidor:        tanque.imgNMedidor     ?tanque.imgNMedidor   :[],
-                    imgNComodato:       tanque.imgNComodato    ?tanque.imgNComodato  :[],
-                    imgOtrosSi:         tanque.imgOtrosSi      ?tanque.imgOtrosSi    :[],
-                    
-
-                    //////  step 3
-                    usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
-                    codtCliente:              tanque.usuarioId           ?tanque.usuarioId.codt              :"",
-                    cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
-                    razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
-                    direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
-                    nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre              :"",
-                    celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
-                    emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
-                    puntos:                   tanque.puntoId             &&[tanque.puntoId]                       ,
-                    puntoId:                  tanque.puntoId             ?tanque.puntoId._id                   :[],
-                    zonaId:                   tanque.zonaId              ?tanque.zonaId._id                    :null,
-                }
+        .then(res=>{
+ 
+            const {tanque} = res.data
+            let infoTanque={
+                _id:                tanque._id,
+                placaText :         tanque.placaText ?tanque.placaText :"",
+                barrio:             tanque.barrio    ?tanque.barrio    :"",
+                capacidad:          tanque.capacidad ?tanque.capacidad :"",
+            }
+            
+            if(tanqueIdArray.includes(tanque._id)){
+                alert("Este tanque ya esta agregado")
+            }else{
+                axios.get(`tan/tanque/asignarPunto/${id}/${usuarioId}/${puntoId}`)
+                .then(res => { 
+                    if(res.data.status){
+                        tanqueArray.push(infoTanque)
+                        tanqueIdArray.push(tanque._id)
+                        this.setState({tanqueArray, tanqueIdArray, modalPlacas:false})
+                    }
+                })
                 
-                if(tanqueIdArray.includes(tanque._id)){
-                    alert("Este tanque ya esta agregado")
-                }else{
-                    tanqueArray.push(infoTanque)
-                    tanqueIdArray.push(tanque._id)
-                 
-                    this.setState({tanqueArray, tanqueIdArray, modalPlacas:false})
-
-                }
-            })
-        }
-    eliminarTanque(tanqueId){
-        console.log(tanqueId)
+            }
+        })
+    }
+    eliminarTanque(tanqueId, placaText){
         let {tanqueIdArray, tanqueArray} = this.state
-        tanqueArray= tanqueArray.filter(e=>{
-            return e._id!=tanqueId 
+        Alert.alert(
+            `Seguro desea remover este tanque`,
+            `${placaText}`,
+            [
+                {text: 'Confirmar', onPress: () => confirmar()},
+                {text: 'Cancelar', onPress: () => console.log("e")},
+            ],
+            {cancelable: false},
+    )
+    const confirmar = ()=>{
+        axios.get(`tan/tanque/desvincularUsuario/${tanqueId}`)
+        .then(res => { 
+            if(res.data.status){
+                tanqueArray= tanqueArray.filter(e=>{
+                    return e._id!=tanqueId 
+                })
+                tanqueIdArray= tanqueIdArray.filter(e=>{
+                    return e!=tanqueId 
+                })
+                console.log(tanqueArray, tanqueIdArray)
+                this.setState({tanqueArray, tanqueIdArray})
+            }
         })
-        tanqueIdArray= tanqueIdArray.filter(e=>{
-            return e!=tanqueId 
-        })
-        this.setState({tanqueArray, tanqueIdArray})
+    }
+       
+
     }
     step1(){
-        const {tanqueArray, modalPlacas, placas, placaText} = this.state
-       
+        const {tanqueArray, modalPlacas, placas, placaText, puntoId, usuarioId} = this.state
         return(
             <View>
                 {/* PLACAS */}
@@ -282,7 +278,7 @@ class Tanques extends Component{
 					visible={modalPlacas}
 					onSelect={(e)=>this.buscarTanque(e)}
 					onCancel={()=>this.setState({modalPlacas:false})}
-					crearTanque={(e)=>{this.props.navigation.navigate("nuevoTanque"), this.setState({modalPlacas:false}) }}
+					crearTanque={(e)=>{this.props.navigation.navigate("nuevoTanque", {placaText:e, puntoId, usuarioId}), this.setState({modalPlacas:false}) }}
                     options={placas}
                     revision 
                     cancelButtonText="CANCELAR"
@@ -300,7 +296,7 @@ class Tanques extends Component{
                             return(
                                 <View style={style.contenedorUsuario} key={key}>
                                     <View style={{flexDirection:"row", alignItems:"center"}}>
-                                        <View style={{width:"90%", alignItems:"center"}}>
+                                        <TouchableOpacity style={{width:"90%", alignItems:"center"}} onPress={()=>this.props.navigation.navigate("nuevoTanque", {tanqueId:e._id})}>
                                             <View style={style.subContenedorUsuario}>
                                                 <Text style={style.row1}>Placa:</Text>
                                                 <Text style={style.row2}>{e.placaText}</Text>
@@ -309,12 +305,9 @@ class Tanques extends Component{
                                                 <Text style={style.row1}>Capacidad:</Text>
                                                 <Text style={style.row2}>{e.capacidad}</Text>
                                             </View>
-                                            <View style={style.subContenedorUsuario}>
-                                                <Text style={style.row1}>Cliente:</Text>
-                                                <Text style={style.row2}>{e.razon_socialCliente}</Text>
-                                            </View>
-                                        </View>
-                                        <TouchableOpacity onPress={()=>this.eliminarTanque(e._id)}>
+                                            
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={()=>this.eliminarTanque(e._id, e.placaText)}>
                                             <Icon name="trash" style={style.iconTrash} />
                                         </TouchableOpacity>
 
@@ -329,7 +322,7 @@ class Tanques extends Component{
 
     step2(){
         const {modalSectores, sector, barrio, usuariosAtendidos, modalM3, m3, usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, modalPropiedad, propiedad, nComodatoText, nMedidorText, ubicacion, modalUbicacion, capacidad, direccion, observacion} = this.state
-        console.log({puntos})
+        console.log({capacidad})
         return(
             <View>
                  {/* SECTORES */}
@@ -665,8 +658,8 @@ class Tanques extends Component{
     }
       
     step4(){
-        let {imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, imgIsometrico} = this.state
-        
+        let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, imgNComodato, imgOtrosSi} = this.state
+    
         return(
             <View>
                 {/* ISOMETRICO */}
@@ -677,24 +670,25 @@ class Tanques extends Component{
                     limiteImagenes={4}
                     imagenes={(imgIsometrico) => {  this.setState({imgIsometrico}) }}
                 />
-
+                <View style={style.separador}></View>
                 {/* PLACA */}
                 <TomarFoto 
-                    source={imgNMedidor}
+                    source={imgOtrosComodato}
                     width={180}
                     titulo="Otros Comodatos"
                     limiteImagenes={4}
-                    imagenes={(imgNMedidor) => {  this.setState({imgNMedidor}) }}
-                />
-                
+                    imagenes={(imgOtrosComodato) => {  this.setState({imgOtrosComodato}) }}
+                />  
+                <View style={style.separador}></View>
                 {/* PLACA */}
                 <TomarFoto 
-                    source={imgRetiroTanques}
+                    source={imgSoporteEntrega}
                     width={180}
-                    titulo="Acta de recibido"
+                    titulo="Soporte de entrega"
                     limiteImagenes={4}
-                    imagenes={(imgRetiroTanques) => {  this.setState({imgRetiroTanques}) }}
+                    imagenes={(imgSoporteEntrega) => {  this.setState({imgSoporteEntrega}) }}
                 /> 
+                <View style={style.separador}></View>
                 {/* PLACA */}
                  <TomarFoto 
                     source={imgPuntoConsumo}
@@ -703,15 +697,17 @@ class Tanques extends Component{
                     limiteImagenes={4}
                     imagenes={(imgPuntoConsumo) => {  this.setState({imgPuntoConsumo}) }}
                 /> 
+                <View style={style.separador}></View>
+                
                 {/* PLACA */}
-                 <TomarFoto 
+                <TomarFoto 
                     source={imgVisual}
                     width={180}
-                    titulo="Visual Tanque"
+                    titulo="Visual instalación"
                     limiteImagenes={4}
                     imagenes={(imgVisual) => {  this.setState({imgVisual}) }}
                 /> 
-
+                <View style={style.separador}></View>
                 
                 {/* NO COMODATO */}
                 <SubirDocumento 
@@ -719,39 +715,106 @@ class Tanques extends Component{
                     width={180}
                     titulo="Protocolo de llenado"
                     limiteImagenes={4}
-                    imagenes={(imgProtocoloLlenado) => {  this.setState({imgProtocoloLlenado}) }}
+                    imagenes={(imgProtocoloLlenado) => {  this.uploadPdf(imgProtocoloLlenado, 1) }}
                 />
-
+                <View style={style.separador}></View>
+                
                 {/* NO COMODATO */}
                 <SubirDocumento 
                     source={imgHojaSeguridad}
                     width={180}
                     titulo="Hoja de seguridad"
                     limiteImagenes={4}
-                    imagenes={(imgHojaSeguridad) => {  this.setState({imgHojaSeguridad}) }}
+                    imagenes={(imgHojaSeguridad) => {  this.uploadPdf(imgHojaSeguridad, 2) }}
                 />
+                <View style={style.separador}></View>
+                
                 {/* NO COMODATO */}
                 <SubirDocumento 
                     source={imgNComodato}
                     width={180}
                     titulo="Doc. de comodato"
                     limiteImagenes={4}
-                    imagenes={(imgNComodato) => {  this.setState({imgNComodato}) }}
+                    imagenes={(imgNComodato) => {  this.uploadPdf(imgNComodato, 3) }}
                 />
+                <View style={style.separador}></View>
+                
                 {/* OTROS SI */}
                 <SubirDocumento 
                     source={imgOtrosSi}
                     width={180}
                     titulo="Otros si"
                     limiteImagenes={4}
-                    imagenes={(imgOtrosSi) => {  this.setState({imgOtrosSi}) }}
+                    imagenes={(imgOtrosSi) => {  this.uploadPdf(imgOtrosSi, 4) }}
                 />
             </View>
         )
     }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           SUBE LOS PDF
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    uploadPdf(pdf, tipo){
+        this.setState({loading:true})
+        let {revisionId, imgProtocoloLlenado, imgHojaSeguridad, imgNComodato, imgOtrosSi} = this.state
+        let data = new FormData();
+        let protocoloLlenado = imgProtocoloLlenado.filter(e=>{
+            return !e.uri
+        })
+        imgProtocoloLlenado = imgProtocoloLlenado.filter(e=>{
+            return e.uri
+        })
+        let hojaSeguridad = imgHojaSeguridad.filter(e=>{
+            return !e.uri
+        })
+        imgHojaSeguridad = imgHojaSeguridad.filter(e=>{
+            return e.uri
+        })
+        let nComodato = imgNComodato.filter(e=>{
+            return !e.uri
+        })
+        imgNComodato = imgNComodato.filter(e=>{
+            return e.uri
+        })
+        let otrosSi = imgOtrosSi.filter(e=>{
+            return !e.uri
+        })
+        imgOtrosSi = imgOtrosSi.filter(e=>{
+            return e.uri
+        })
+        tipo === 1
+        ?pdf.forEach(e=>{
+            data.append('imgProtocoloLlenado', e);
+        })
+        :tipo === 2
+        ?pdf.forEach(e=>{
+            data.append('imgHojaSeguridad', e);
+        })
+        :tipo === 3
+        ?pdf.forEach(e=>{
+            data.append('imgNComodato', e);
+        })
+        :pdf.forEach(e=>{
+            data.append('imgOtrosSi', e);
+        })
+        data.append('protocoloLlenado',JSON.stringify(protocoloLlenado));
+        data.append('hojaSeguridad',   JSON.stringify(hojaSeguridad));
+        data.append('nComodato',       JSON.stringify(nComodato));
+        data.append('otrosSi',         JSON.stringify(otrosSi));
+        console.log({imgNComodato, imgHojaSeguridad, imgProtocoloLlenado, imgOtrosSi})
+        axios({ method: 'put',    url: `rev/revision/uploadPdf/${revisionId}`, data: data })
+        .then((res)=>{
+            if(res.data.status){
+                this.setState({loading:false})
+            }
+        })
+        .catch(err=>{
+            this.setState({loading:false})
+            alert("No pudimos subir el archivo")
+        })
+    }
+
     step5(){
         let {lat, lng, accesoPerfil}= this.state
-        console.log({lat, lng})
         return(
             <View>
                 {
@@ -832,23 +895,23 @@ class Tanques extends Component{
                         {this.step1()}    
                     </View>
                 </ProgressStep> 
-                <ProgressStep label="Información" nextBtnText="Siguiente"   onNext={()=>this.editarStep2()}>
+                <ProgressStep label="Información" nextBtnText="Siguiente"   previousBtnText="Anterior"  onNext={()=>this.editarStep2()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step2()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Instalación" nextBtnText="Siguiente"  onNext={()=>this.editarStep3()}>
+                <ProgressStep label="Instalación" nextBtnText="Siguiente"  previousBtnText="Anterior"  onNext={()=>this.editarStep3()}>
                     <View style={{ alignItems: 'center' }}>
                         {modalAlerta &&this.modalAlerta()}
                         {this.step3()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Documetos adicionales" nextBtnText="Siguiente"  onNext={()=>this.editarStep4()}>
+                <ProgressStep label="Doc. adicionales" nextBtnText="Siguiente"  previousBtnText="Anterior"  onNext={()=>this.editarStep4()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step4()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Coordenadas" finishBtnText="Guardar"  onSubmit={()=>this.editarStep5()}>
+                <ProgressStep label="Coordenadas" finishBtnText="Guardar" previousBtnText="Anterior" onSubmit={()=>this.editarStep5()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step5()}
                     </View>
@@ -864,6 +927,12 @@ class Tanques extends Component{
             <>
                 <View style={style.container}>
                     {this.renderSteps()}
+                    {
+                        this.state.loading
+                        &&<View style={style.loadingContain}>
+                            <ActivityIndicator color="#00218b" size={'large'} />
+                        </View>
+                    }
                 </View>
                 <Footer navigation={navigation} />
             </>
@@ -884,13 +953,24 @@ class Tanques extends Component{
     ////////////////////////            CREAR TANQUE
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearStep1(){
-        const {tanqueIdArray} = this.state
+        const {tanqueIdArray, tanqueArray} = this.state
         console.log({tanqueIdArray})
         axios.post(`rev/revision/`, {tanqueId:tanqueIdArray})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
                 this.setState({revisionId:res.data.revision._id})
+                let totalCapacidad = []
+                tanqueArray.map(e=>{
+                    e.capacidad = e.capacidad.replace( /^\D+/g, ''); 
+                    e.capacidad = parseInt(e.capacidad)
+                    totalCapacidad.push(e.capacidad)
+                })
+                totalCapacidad = totalCapacidad.reduce((a, b) => a + b)
+
+           
+                this.setState({capacidad:totalCapacidad})
+
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }
@@ -901,14 +981,21 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 1
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
-        const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion} = this.state
-        console.log({puntoId})
+        const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion, tanqueArray} = this.state
+        console.log({tanqueArray})
         axios.put(`rev/revision/${revisionId}`, {tanqueId:tanqueIdArray, sector, barrio, usuariosAtendidos, m3, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
-            console.log(res.data)
             if(res.data.status){
-                // AsyncStorage.setItem('tanqueId', res.data.tanque._id)
-                // this.setState({tanqueId:res.data.tanque._id})
+                let totalCapacidad = []
+                tanqueArray.map(e=>{
+                    e.capacidad = e.capacidad.replace( /^\D+/g, ''); 
+                    e.capacidad = parseInt(e.capacidad)
+                    totalCapacidad.push(e.capacidad)
+                })
+                totalCapacidad = totalCapacidad.reduce((a, b) => a + b)
+
+                console.log({totalCapacidad})
+                this.setState({capacidad:totalCapacidad})
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }
@@ -919,14 +1006,16 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 2
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep2(){
-        const {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion} = this.state
-        console.log({zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion})
+        const {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion, capacidad} = this.state
+        console.log({capacidad, zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion})
         axios.put(`rev/revision/${revisionId}`, {sector, barrio, usuariosAtendidos, m3, tanqueId:tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                // AsyncStorage.setItem('tanqueId', res.data.tanque._id)
-                // this.setState({tanqueId:res.data.tanque._id})
+                axios.put(`pun/punto/editaAlmacenamiento/${puntoId}/${capacidad}`)
+                .then((res)=>{
+                    console.log(res.data)
+                })
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }
@@ -965,23 +1054,49 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 4, IMAGENES Y DOCUMENTOS 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep4(){
-        let {imgIsometrico, imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, revisionId} = this.state
-        console.log({imgNMedidor, imgNComodato, imgOtrosSi, imgRetiroTanques, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, revisionId})
+        let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId} = this.state
+
         let data = new FormData();
+        let isometrico = imgIsometrico.filter(e=>{
+            return !e.uri
+        })
+        imgIsometrico = imgIsometrico.filter(e=>{
+            return e.uri
+        })
+        let otrosComodato = imgOtrosComodato.filter(e=>{
+            return !e.uri
+        })
+        imgOtrosComodato = imgOtrosComodato.filter(e=>{
+            return e.uri
+        })
+        let soporteEntrega = imgSoporteEntrega.filter(e=>{
+            return !e.uri
+        })
+        imgSoporteEntrega = imgSoporteEntrega.filter(e=>{
+            return e.uri
+        })
+        let puntoConsumo = imgPuntoConsumo.filter(e=>{
+            return !e.uri
+        })
+        imgPuntoConsumo = imgPuntoConsumo.filter(e=>{
+            return e.uri
+        })
+        let visual = imgVisual.filter(e=>{
+            return !e.uri
+        })
+        imgVisual = imgVisual.filter(e=>{
+            return e.uri
+        })
+
         imgIsometrico.forEach(e=>{
             data.append('imgIsometrico', e);
         })
-        imgNMedidor.forEach(e=>{
-            data.append('imgNMedidor', e);
+        imgOtrosComodato.forEach(e=>{
+            data.append('imgOtrosComodato', e);
         })
-        imgNComodato.forEach(e=>{
-            data.append('imgNComodato', e);
-        })
-        imgOtrosSi.forEach(e=>{
-            data.append('imgOtrosSi', e);
-        })
-        imgRetiroTanques.forEach(e=>{
-            data.append('imgRetiroTanques', e);
+       
+        imgSoporteEntrega.forEach(e=>{
+            data.append('imgSoporteEntrega', e);
         })
         imgPuntoConsumo.forEach(e=>{
             data.append('imgPuntoConsumo', e);
@@ -989,12 +1104,13 @@ class Tanques extends Component{
         imgVisual.forEach(e=>{
             data.append('imgVisual', e);
         })
-        imgProtocoloLlenado.forEach(e=>{
-            data.append('imgProtocoloLlenado', e);
-        })
-        imgHojaSeguridad.forEach(e=>{
-            data.append('imgHojaSeguridad', e);
-        })
+        console.log({imgIsometrico, imgOtrosComodato, imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId})
+        
+        data.append('isometrico',JSON.stringify(isometrico));
+        data.append('otrosComodato',JSON.stringify(otrosComodato));
+        data.append('soporteEntrega',JSON.stringify(soporteEntrega));
+        data.append('puntoConsumo',JSON.stringify(puntoConsumo));
+        data.append('visual',JSON.stringify(visual));
         axios({
             method: 'PUT',   
             url: `rev/revision/guardarImagen/${revisionId}`,

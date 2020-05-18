@@ -18,6 +18,9 @@ class puntoServices{
 	getCliente(idCliente, callback){
 		punto.find({ $or: [ {idCliente, activo:true}, {idPadre:idCliente, activo:true}]}).exec(callback)
 	}
+	getById(_id, callback){
+		punto.find({_id}).exec(callback)
+	}
 	getZonas(fecha, callback){
 		punto.aggregate([
 			{
@@ -347,6 +350,13 @@ class puntoServices{
 			'updated':   creado
 		}}, callback);
 	}
+
+	editarAlmacenamiento(_id, capacidad, callback){
+		punto.findByIdAndUpdate(_id, {$set: {
+			'capacidad'  : capacidad,
+		}}, callback);
+	}
+	
 	desactivar(id, callback){
 		let creado = moment().subtract(5, 'hours');
     creado     = moment(creado).format('YYYY-MM-DD h:mm');

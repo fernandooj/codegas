@@ -410,8 +410,7 @@ router.put('/cerrarDepTecnico/:revisionId/', (req,res)=>{
         })
     }
 })
-
-
+ 
 ///////////////////////////////////////////////////////////////
 ////////////      GUARDAR IMAGEN
 //////////////////////////////////////////////////////////////
@@ -419,21 +418,17 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
     if (!req.session.usuario) {
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
-        let rutaImgNMedidor  = [];
-        let rutaImgNComodato = [];
-        let rutaImgOtrosSi   = [];
-        let rutaImgRetiroTanque = [];
-        
-        let rutaImgPuntoConsumo = [];
-        let rutaImgVisual = [];
-        let rutaImgProtocoloLlenado = [];
-        let rutaImgHojaSeguridad = [];
-        
-       
-        if(req.files.imgNMedidor){
-            let esArrayNMedidor = Array.isArray(req.files.imgNMedidor)
+        let rutaImgIsometrico     = [];
+        let rutaImgOtrosComodato  = [];
+        let rutaImgSoporteEntrega = [];
+        let rutaImgPuntoConsumo   = [];
+        let rutaImgVisual         = [];
+
+        let {imgIsometrico} = req.files
+        if(imgIsometrico){
+            let esArrayNMedidor = Array.isArray(imgIsometrico)
             if(esArrayNMedidor){
-                req.files.imgNMedidor.map(e=>{
+                imgIsometrico.map(e=>{
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
@@ -443,7 +438,7 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                     
                     ////////////////////    ruta que se va a guardar en la base de datos
                     let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
-                    rutaImgNMedidor.push(rutas)
+                    rutaImgIsometrico.push(rutas)
                     ///////////////////     envio la imagen al nuevo path
                     
                     let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
@@ -461,22 +456,65 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                 let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
                 
                 ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgNMedidor  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                rutaImgIsometrico  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
                 
                 ///////////////////     envio la imagen al nuevo path
                 
                 let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
-                fs.rename(req.files.imgNMedidor.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgIsometrico.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }
+        }        
+        
+        if(req.files.imgOtrosComodato){
+            let esArrayNMedidor = Array.isArray(req.files.imgOtrosComodato)
+            if(esArrayNMedidor){
+                req.files.imgOtrosComodato.map(e=>{
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                    
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    rutaImgOtrosComodato.push(rutas)
+                    ///////////////////     envio la imagen al nuevo path
+                    
+                    let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                    resizeImagenes(rutaJim, randonNumber, "jpg", res) 
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                })
+            }else{
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+                
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgOtrosComodato  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                
+                ///////////////////     envio la imagen al nuevo path
+                
+                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                fs.rename(req.files.imgOtrosComodato.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
                 resizeImagenes(rutaJim, randonNumber, "jpg", res) 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
-
-        if(req.files.imgRetiroTanques){
-            let esArrayRetiroTanque = Array.isArray(req.files.imgRetiroTanques)
+        let {imgSoporteEntrega} = req.files
+        if(imgSoporteEntrega){
+            let esArrayRetiroTanque = Array.isArray(imgSoporteEntrega)
             if(esArrayRetiroTanque){
-                req.files.imgRetiroTanques.map(e=>{
+                imgSoporteEntrega.map(e=>{
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
@@ -486,7 +524,7 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                     
                     ////////////////////    ruta que se va a guardar en la base de datos
                     let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
-                    rutaImgRetiroTanque.push(rutas)
+                    rutaImgSoporteEntrega.push(rutas)
                     ///////////////////     envio la imagen al nuevo path
                     
                     let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
@@ -504,22 +542,22 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                 let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
                 
                 ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgRetiroTanque  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
+                rutaImgSoporteEntrega  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
                 
                 ///////////////////     envio la imagen al nuevo path
                 
                 let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
-                fs.rename(req.files.imgRetiroTanques.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgSoporteEntrega.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
                 resizeImagenes(rutaJim, randonNumber, "jpg", res) 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
-
-        if(req.files.imgPuntoConsumo){
-            let esArrayPuntoConsumo = Array.isArray(req.files.imgPuntoConsumo)
+        let {imgPuntoConsumo} = req.files
+        if(imgPuntoConsumo){
+            let esArrayPuntoConsumo = Array.isArray(imgPuntoConsumo)
             if(esArrayPuntoConsumo){
-                req.files.imgPuntoConsumo.map(e=>{
+                imgPuntoConsumo.map(e=>{
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
@@ -552,17 +590,18 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                 ///////////////////     envio la imagen al nuevo path
                 
                 let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/--'+fechaImagen+'_'+randonNumber+'.jpg'
-                fs.rename(req.files.imgPuntoConsumo.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgPuntoConsumo.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
                 resizeImagenes(rutaJim, randonNumber, "jpg", res) 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
-
+        let imgVisual = req.files
+        console.log(req.files)
         if(req.files.imgVisual){
-            let esArrayVisual = Array.isArray(req.files.imgVisual)
+            let esArrayVisual = Array.isArray(imgVisual)
             if(esArrayVisual){
-                req.files.imgVisual.map(e=>{
+                imgVisual.map(e=>{
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
@@ -604,65 +643,50 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
 
 
  
-        if(req.files.imgNComodato){
-            let esArrayComodato = Array.isArray(req.files.imgNComodato)
-            if(esArrayComodato){
-                req.files.imgNComodato.map(e=>{
-                    ////////////////////    ruta que se va a guardar en el folder
-                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
-                    
-                    ////////////////////    ruta que se va a guardar en la base de datos
-                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+e.name
-                    rutaImgNComodato.push(rutas)
-                    
-                    ///////////////////     envio la imagen al nuevo path
-                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
-                })
-            }else{
-                ////////////////////    ruta que se va a guardar en el folder
-                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgNComodato.name
-                
-                ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgNComodato  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgNComodato.name
-               
-                ///////////////////     envio la imagen al nuevo path                
-                fs.rename(req.files.imgNComodato.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
-                
-                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            }  
-        }
+        let isometrico     = req.body.isometrico     ?JSON.parse(req.body.isometrico)    :[]
+        let otrosComodato  = req.body.otrosComodato  ?JSON.parse(req.body.otrosComodato) :[]
+        let soporteEntrega = req.body.soporteEntrega ?JSON.parse(req.body.soporteEntrega):[]   
+        let puntoConsumo   = req.body.puntoConsumo   ?JSON.parse(req.body.puntoConsumo)  :[]   
+        let visual         = req.body.visual         ?JSON.parse(req.body.visual)        :[]   
         
-        if(req.files.imgOtrosSi){
-            let esArrayimgOtrosSi = Array.isArray(req.files.imgOtrosSi)
-            if(esArrayimgOtrosSi){
-                req.files.imgOtrosSi.map(e=>{
-                    ////////////////////    ruta que se va a guardar en el folder
-                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
-                    
-                    ////////////////////    ruta que se va a guardar en la base de datos
-                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+e.name
-                    rutaImgOtrosSi.push(rutas)
-                    
-                    ///////////////////     envio la imagen al nuevo path
-                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
-                })
-            }else{
-                ////////////////////    ruta que se va a guardar en el folder
-                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgOtrosSi.name
-                
-                ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgOtrosSi  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgOtrosSi.name
-               
-                ///////////////////     envio la imagen al nuevo path                
-                fs.rename(req.files.imgOtrosSi.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
-            }
-        }
+        rutaImgIsometrico      = rutaImgIsometrico.length==0     ?isometrico :rutaImgIsometrico.concat(isometrico);
+        rutaImgOtrosComodato   = rutaImgOtrosComodato.length==0  ?otrosComodato :rutaImgOtrosComodato.concat(otrosComodato);
+        rutaImgSoporteEntrega  = rutaImgSoporteEntrega.length==0 ?soporteEntrega :rutaImgSoporteEntrega.concat(soporteEntrega);
+        rutaImgPuntoConsumo    = rutaImgPuntoConsumo.length==0   ?puntoConsumo :rutaImgPuntoConsumo.concat(puntoConsumo);
+        rutaImgVisual          = rutaImgVisual.length==0         ?visual :rutaImgVisual.concat(visual);
+        
 
-        if(req.files.imgProtocoloLlenado){
-            let esArrayimgProtocoloLlenado = Array.isArray(req.files.imgProtocoloLlenado)
-            if(esArrayimgProtocoloLlenado){
-                req.files.imgProtocoloLlenado.map(e=>{
+        
+
+        revisionServices.editarImagen(req.params.idRevision, rutaImgIsometrico, rutaImgOtrosComodato, rutaImgSoporteEntrega, rutaImgPuntoConsumo, rutaImgVisual, (err, revision)=>{
+            if (!err) {
+               
+                res.json({ status:true, revision }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
+
+///////////////////////////////////////////////////////////////
+////////////      GUARDAR PDF
+//////////////////////////////////////////////////////////////
+router.put('/uploadPdf/:idRevision/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        
+        let rutaImgProtocoloLlenado = [];
+        let rutaImgHojaSeguridad = [];
+        let rutaImgNComodato = [];
+        let rutaImgOtrosSi   = [];
+
+        let {imgProtocoloLlenado} = req.files
+        if(imgProtocoloLlenado){
+            let esArrayProtocoloLlenado = Array.isArray(imgProtocoloLlenado)
+            if(esArrayProtocoloLlenado){
+                imgProtocoloLlenado.map(e=>{
                     ////////////////////    ruta que se va a guardar en el folder
                     let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
                     
@@ -675,20 +699,22 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                 })
             }else{
                 ////////////////////    ruta que se va a guardar en el folder
-                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgProtocoloLlenado.name
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+imgProtocoloLlenado.name
                 
                 ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgProtocoloLlenado  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgProtocoloLlenado.name
+                let rutas = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+imgProtocoloLlenado.name
+                rutaImgProtocoloLlenado.push(rutas)
                
                 ///////////////////     envio la imagen al nuevo path                
-                fs.rename(req.files.imgProtocoloLlenado.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgProtocoloLlenado.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
             }
         }
 
-        if(req.files.imgHojaSeguridad){
-            let esArrayimgHojaSeguridad = Array.isArray(req.files.imgHojaSeguridad)
+        let {imgHojaSeguridad} = req.files
+        if(imgHojaSeguridad){
+            let esArrayimgHojaSeguridad = Array.isArray(imgHojaSeguridad)
             if(esArrayimgHojaSeguridad){
-                req.files.imgHojaSeguridad.map(e=>{
+                imgHojaSeguridad.map(e=>{
                     ////////////////////    ruta que se va a guardar en el folder
                     let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
                     
@@ -701,28 +727,88 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
                 })
             }else{
                 ////////////////////    ruta que se va a guardar en el folder
-                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgHojaSeguridad.name
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+imgHojaSeguridad.name
                 
                 ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgHojaSeguridad  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+req.files.imgHojaSeguridad.name
+                let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+imgHojaSeguridad.name
+                rutaImgHojaSeguridad.push(rutas) 
                
                 ///////////////////     envio la imagen al nuevo path                
-                fs.rename(req.files.imgHojaSeguridad.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgHojaSeguridad.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
             }
         }
-        
-        rutaImgNMedidor  = rutaImgNMedidor.length==0  ?req.body.imgNMedidor :rutaImgNMedidor;
-        rutaImgNComodato = rutaImgNComodato.length==0 ?req.body.imgNComodato :rutaImgNComodato;
-        rutaImgOtrosSi   = rutaImgOtrosSi.length==0   ?req.body.imgOtrosSi :rutaImgOtrosSi;
-        rutaImgRetiroTanque   = rutaImgRetiroTanque.length==0   ?req.body.imgOtrosSi :rutaImgRetiroTanque;
-        
-        rutaImgPuntoConsumo     = rutaImgPuntoConsumo.length==0    ?req.body.imgOtrosSi :rutaImgPuntoConsumo;
-        rutaImgVisual           = rutaImgVisual.length==0           ?req.body.imgOtrosSi :rutaImgVisual;
-        rutaImgProtocoloLlenado = rutaImgProtocoloLlenado.length==0 ?req.body.imgOtrosSi :rutaImgProtocoloLlenado;
-        rutaImgHojaSeguridad    = rutaImgHojaSeguridad.length==0    ?req.body.imgOtrosSi :rutaImgHojaSeguridad;
-        
 
-        revisionServices.editarImagen(req.params.idRevision, rutaImgNMedidor, rutaImgNComodato, rutaImgOtrosSi, rutaImgRetiroTanque, rutaImgPuntoConsumo, rutaImgVisual, rutaImgProtocoloLlenado, rutaImgHojaSeguridad, (err, revision)=>{
+        let {imgNComodato} = req.files
+        if(imgNComodato){
+            let esArrayComodato = Array.isArray(imgNComodato)
+            if(esArrayComodato){
+                imgNComodato.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    rutaImgNComodato.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+imgNComodato.name
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                let rutas = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+imgNComodato.name
+                rutaImgNComodato.push(rutas) 
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(imgNComodato.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }  
+        }     
+
+        let {imgOtrosSi} = req.files
+        if(imgOtrosSi){
+            let esArrayimgOtrosSi = Array.isArray(imgOtrosSi)
+            if(esArrayimgOtrosSi){
+                imgOtrosSi.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    rutaImgOtrosSi.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+imgOtrosSi.name
+                
+                ////////////////////    ruta que se va a guardar en la base de datos
+                let rutas = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+imgOtrosSi.name
+                rutaImgOtrosSi.push(rutas)
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(imgOtrosSi.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+
+        let protocoloLlenado = req.body.protocoloLlenado ?JSON.parse(req.body.protocoloLlenado) :[]
+        let hojaSeguridad    = req.body.hojaSeguridad    ?JSON.parse(req.body.hojaSeguridad)    :[]
+        let nComodato        = req.body.nComodato        ?JSON.parse(req.body.nComodato)        :[]   
+        let otrosSi          = req.body.otrosSi          ?JSON.parse(req.body.otrosSi)          :[]   
+
+     
+        rutaImgProtocoloLlenado = rutaImgProtocoloLlenado.length==0 ?protocoloLlenado :rutaImgProtocoloLlenado.concat(protocoloLlenado);
+        rutaImgHojaSeguridad    = rutaImgHojaSeguridad.length==0    ?hojaSeguridad    :rutaImgHojaSeguridad.concat(hojaSeguridad);
+        rutaImgNComodato        = rutaImgNComodato.length==0        ?nComodato        :rutaImgNComodato.concat(nComodato);
+        rutaImgOtrosSi          = rutaImgOtrosSi.length==0          ?otrosSi          :rutaImgOtrosSi.concat(otrosSi);
+
+        revisionServices.subirPdf(req.params.idRevision, rutaImgProtocoloLlenado, rutaImgHojaSeguridad, rutaImgNComodato, rutaImgOtrosSi, (err, revision)=>{
             if (!err) {
                
                 res.json({ status:true, revision }); 
@@ -732,8 +818,6 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
         })
     }
 })
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////// CAMBIO LOS TAMAÑOS DE LAS IMAGENES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -316,6 +316,13 @@ export const style = MediaQueryStyleSheet.create({
 		marginVertical:2,
 		fontSize:15,
 		textAlign:"center"
+	},
+	loadingContain:{
+		position:"absolute",
+		backgroundColor:"rgba(100,100,100,.1)",
+		justifyContent:"center",
+		width:"100%",
+		height:"100%",
+		zIndex:100,
 	}
-
 })

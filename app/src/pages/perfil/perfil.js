@@ -96,7 +96,7 @@ class Home extends Component{
     renderPerfil(){
         const {navigation} = this.props
         const {nombre, idUsuario, avatar, email, err, acceso} = this.state
-        console.log(idUsuario)
+ 
         return (
             <ScrollView style={style.containerRegistro}> 
                 <View style={style.perfilContenedor}>
@@ -196,7 +196,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.1</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.2</Text> 
                     </TouchableOpacity> 
                     {
                         err

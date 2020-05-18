@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Alert, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
+import {View, Text, TouchableOpacity, Alert, TextInput, Modal, ActivityIndicator, Image, Dimensions, Animated} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
 import ModalSelector                   from 'react-native-modal-selector'
@@ -23,7 +23,7 @@ let zonas       = [{key:"Urbana", label:"Urbana"},{key:"Rural", label:"Rural"},{
 
 let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
 let anosFabricacion = []
-let existeTanques   = [{key:"Bodega", label:"Bodega"},{key:"PuntoConsumo", label:"Punto Consumo"}]
+let existeTanques   = [{key:"Bodega", label:"Bodega"},{key:"Usuario", label:"Usuario"}]
  
 //// devuelve el listado de años para el tanque
 for (var index = 1950; index < 2021; index++) {
@@ -82,9 +82,30 @@ class Tanques extends Component{
             })
  
             
-            let tanqueId = this.props.navigation.state.params ?this.props.navigation.state.params.tanqueId :null
-            console.log({tanqueId})
-            this.setState({tanqueId})
+            let tanqueId  = this.props.navigation.state.params.tanqueId ?this.props.navigation.state.params.tanqueId :null
+            let placaText = this.props.navigation.state.params.placaText ?this.props.navigation.state.params.placaText :null
+            let puntoId   = this.props.navigation.state.params.puntoId ?this.props.navigation.state.params.puntoId :null
+            let usuarioId = this.props.navigation.state.params.usuarioId ?this.props.navigation.state.params.usuarioId :null
+
+            if(usuarioId){
+                axios.get(`user/byId/${usuarioId}`)
+                .then(res => {
+                    const {cedula, razon_social, direccion_factura, nombre, celular, email} = res.data.user
+                    this.setState({
+                        cedulaCliente:cedula, razon_socialCliente:razon_social, direccion_facturaCliente: direccion_factura, nombreCliente:nombre, celularCliente: celular, emailCliente: email
+
+                    })
+                })
+                axios.get(`pun/punto/byId/${puntoId}`)
+                .then(res => {
+                    console.log(res.data)
+                    this.setState({
+                        puntos:res.data.punto
+                    })
+                })
+            }
+            console.log({tanqueId, placaText, puntoId, usuarioId})
+            this.setState({placaText, puntoId, usuarioId})
             if(tanqueId){
                 axios.get(`tan/tanque/byId/${tanqueId}`)
                 .then(res => {
@@ -130,8 +151,9 @@ class Tanques extends Component{
                         modalPlacas:false    
                     })
                 })
-
-            }
+            }else{
+                this.setState({crearPlaca:true})    /// esta linea es para cuando creo la placa desde revision, el crear placa sera verdadero, o de lo contrario editara un tanque que aun no existe
+            }   
         }catch(e){
             console.log(e)
         }    
@@ -195,7 +217,7 @@ class Tanques extends Component{
                     ultimaRevisionPar:      tanque.ultimaRevisionPar ?tanque.ultimaRevisionPar  :"",
                     fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
               
-                    nPlaca:                 tanque.nPlaca            ?tanque.nPlaca          :"",
+                    nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
                     codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
                     serie:                  tanque.serie             ?tanque.serie              :"",
                     anoFabricacion:         tanque.anoFabricacion    ?tanque.anoFabricacion     :"",
@@ -396,6 +418,8 @@ class Tanques extends Component{
                     limiteImagenes={4}
                     imagenes={(imgPlaca) => {  this.setState({imgPlaca}) }}
                 />
+                <View style={style.separador}></View>
+
                 {/* PLACA MANTENIMIENTO*/}
                 <TomarFoto 
                     source={imgPlacaMantenimiento}
@@ -404,6 +428,8 @@ class Tanques extends Component{
                     limiteImagenes={4}
                     imagenes={(imgPlacaMantenimiento) => {  this.setState({imgPlacaMantenimiento}) }}
                 />
+                <View style={style.separador}></View>
+
                 {/* PLACA FABRICANTE */}
                 <TomarFoto 
                     source={imgPlacaFabricante}
@@ -412,7 +438,8 @@ class Tanques extends Component{
                     limiteImagenes={4}
                     imagenes={(imgPlacaFabricante) => {  this.setState({imgPlacaFabricante}) }}
                 />
-                
+                <View style={style.separador}></View>
+
                 {/* VISUAL */}
                 <TomarFoto 
                     source={imgVisual}
@@ -421,6 +448,7 @@ class Tanques extends Component{
                     limiteImagenes={4}
                     imagenes={(imgVisual) => {  this.setState({imgVisual}) }}
                 />
+                <View style={style.separador}></View>
 
                 {/* DOSSIER */}
                 <SubirDocumento 
@@ -428,27 +456,82 @@ class Tanques extends Component{
                     width={180}
                     titulo="Dossier"
                     limiteImagenes={4}
-                    imagenes={(imgDossier) => {  this.setState({imgDossier}) }}
+                    imagenes={(imgDossier) => {  this.uploadPdf(imgDossier, 1) }}
                 />
-                {/* DOSSIER */}
+                <View style={style.separador}></View>
+
+                {/* CER FABRICANTE */}
                 <SubirDocumento 
                     source={imgCerFabricante}
                     width={180}
                     titulo="Cer. Fabricante"
                     limiteImagenes={4}
-                    imagenes={(imgCerFabricante) => {  this.setState({imgCerFabricante}) }}
+                    imagenes={(imgCerFabricante) => {  this.uploadPdf(imgCerFabricante, 2) }}
                 />
-                {/* DOSSIER */}
+                <View style={style.separador}></View>
+                
+                {/* CER ONAC */}
                 <SubirDocumento 
                     source={imgCerOnac}
                     width={180}
                     titulo="Cer. Onac"
                     limiteImagenes={4}
-                    imagenes={(imgCerOnac) => {  this.setState({imgCerOnac}) }}
+                    imagenes={(imgCerOnac) => {  this.uploadPdf(imgCerOnac, 3) }}
                 />
 
             </View>
         )
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           SUBE LOS PDF
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    uploadPdf(pdf, tipo){
+        this.setState({loading:true})
+        let {tanqueId, imgDossier, imgCerFabricante, imgCerOnac} = this.state
+        let data = new FormData();
+        let dossier = imgDossier.filter(e=>{
+            return !e.uri
+        })
+        imgDossier = imgDossier.filter(e=>{
+            return e.uri
+        })
+        let cerFabricante = imgCerFabricante.filter(e=>{
+            return !e.uri
+        })
+        imgCerFabricante = imgCerFabricante.filter(e=>{
+            return e.uri
+        })
+        let cerOnac = imgCerOnac.filter(e=>{
+            return !e.uri
+        })
+        imgCerOnac = imgCerOnac.filter(e=>{
+            return e.uri
+        })
+        tipo === 1
+        ?pdf.forEach(e=>{
+            data.append('imgDossier', e);
+        })
+        :tipo === 2
+        ?pdf.forEach(e=>{
+            data.append('imgCerFabricante', e);
+        })
+        :pdf.forEach(e=>{
+            data.append('imgCerOnac', e);
+        })
+        data.append('dossier',       JSON.stringify(dossier));
+        data.append('cerFabricante', JSON.stringify(cerFabricante));
+        data.append('cerOnac',       JSON.stringify(cerOnac));
+        
+        axios({ method: 'put',    url: `tan/tanque/uploadPdf/${tanqueId}`, data: data })
+        .then((res)=>{
+            if(res.data.status){
+                this.setState({loading:false})
+            }
+        })
+        .catch(err=>{
+            this.setState({loading:false})
+            alert("No pudimos subir el archivo")
+        })
     }
     step3(){
         const {usuarioId, modalCliente, clientes, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId} = this.state
@@ -542,12 +625,12 @@ class Tanques extends Component{
                         {this.step1()}    
                     </View>
                 </ProgressStep> 
-                <ProgressStep label="Imagenes" nextBtnText="Siguiente"   onNext={()=>this.editarStep2()}>
+                <ProgressStep label="Imagenes" nextBtnText="Siguiente"  previousBtnText="Anterior"  onNext={()=>this.editarStep2()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step2()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Usuario" finishBtnText="Guardar"  onSubmit={()=>this.editarStep3()}>
+                <ProgressStep label="Usuario" finishBtnText="Guardar" previousBtnText="Anterior"  onSubmit={()=>this.editarStep3()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step3()}
                     </View>
@@ -559,10 +642,18 @@ class Tanques extends Component{
 
 	render(){
         const {navigation} = this.props
+       
+       
         return (
             <>
                 <View style={style.container}>
                     {this.renderSteps()}
+                    {
+                        this.state.loading
+                        &&<View style={style.loadingContain}>
+                            <ActivityIndicator color="#00218b" size={'large'} />
+                        </View>
+                    }
                 </View>
                 <Footer navigation={navigation} />
             </>
@@ -644,22 +735,10 @@ class Tanques extends Component{
         imgVisual.forEach(e=>{
             data.append('imgVisual', e);
         })
-        imgDossier.forEach(e=>{
-            data.append('imgDossier', e);
-        })
-        imgCerFabricante.forEach(e=>{
-            data.append('imgCerFabricante', e);
-        })
-        imgCerOnac.forEach(e=>{
-            data.append('imgCerOnac', e);
-        })
         data.append('imgPlaca',              imgPlaca);
         data.append('imgPlacaMantenimiento', imgPlacaMantenimiento);
         data.append('imgPlacaFabricante',    imgPlacaFabricante);
         data.append('imgVisual',             imgVisual);
-        data.append('imgDossier',            imgDossier);
-        data.append('imgCerFabricante',      imgCerFabricante);
-        data.append('imgCerOnac',            imgCerOnac);
         axios({
             method: 'put',   
             url: `tan/tanque/guardarImagen/${tanqueId}`,

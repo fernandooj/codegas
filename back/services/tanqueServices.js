@@ -36,6 +36,11 @@ class tanqueServices{
 		.populate("usuarioId")
 		.sort({_id: 'desc'}).exec(callback)
 	}
+	getByPunto(puntoId, callback){
+		console.log({puntoId})
+		tanque.find({puntoId})
+		.sort({_id: 'desc'}).exec(callback)
+	}
 	 
 	create(data, usuarioCrea, callback){
     let creado = moment().subtract(5, 'hours');
@@ -80,16 +85,21 @@ class tanqueServices{
 			usuarioId         : data.usuarioId,
 		}}, callback);
   }
-	editarImagen(_id, placa, placaMantenimiento, placaFabricante, dossier, cerFabricante, cerOnac, visual, callback){
-		console.log({dossier, cerFabricante, cerOnac, placa, placaMantenimiento, visual, placaFabricante})
+	editarImagen(_id, placa, placaMantenimiento, placaFabricante,  visual, callback){
 		tanque.findByIdAndUpdate(_id, {$set: {
 			placa  				     : placa   						?placa   					  : [],
 			placaMantenimiento : placaMantenimiento ?placaMantenimiento : [],
 			placaFabricante    : placaFabricante   	?placaFabricante    : [],
+ 
+			visual    			   : visual   			    ?visual   					: [],
+		}}, callback);
+	}
+
+	subirPdf(_id, dossier, cerFabricante, cerOnac, callback){
+		tanque.findByIdAndUpdate(_id, {$set: {
 			dossier    			   : dossier   					?dossier   					: [],
 			cerFabricante      : cerFabricante   		?cerFabricante   		: [],
 			cerOnac    			   : cerOnac   			    ?cerOnac   					: [],
-			visual    			   : visual   			    ?visual   					: [],
 		}}, callback);
 	}
 	
@@ -108,8 +118,17 @@ class tanqueServices{
 			'usuarioId':usuarioId
 		}}, callback);
 	}
+
+	asignarPunto(_id, usuarioId, puntoId, callback){
+		tanque.findByIdAndUpdate(_id, {$set: {
+			'usuarioId':usuarioId,
+			'puntoId':puntoId
+		}}, callback);
+	}
+
 	desvincularUsuario(_id, callback){
 		tanque.findByIdAndUpdate(_id, {$set: {
+			'puntoId':null,
 			'usuarioId':null
 		}}, callback);
 	}

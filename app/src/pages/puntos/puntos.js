@@ -42,7 +42,7 @@ class Puntos extends Component{
       
         return filtroPuntos.map((e, key)=>{
             return(
-                <View>
+                <View key={key}>
                     <TouchableOpacity key={key} style={style.btnZona} onPress={()=>navigation.navigate("revision", { direccion:e.direccion, capacidad:e.capacidad, observacion:e.observacion, puntoId:e._id, clienteId:e.idPadre}) }>
                         <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
                         <View>

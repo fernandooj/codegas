@@ -558,7 +558,7 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/clientes', (req,res)=>{
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion'|| req.session.usuario.acceso=='comercial') {
                 userServices.getByCliente((err, usuarios)=>{
                     if(!err){
                         usuarios = usuarios.filter(e=>{
@@ -685,9 +685,7 @@ module.exports = function(app, passport){
     //////////////////      TRAE SOLO UN USUARIO
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/user/byId/:idUsuario', (req,res)=>{
-       
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'|| req.session.usuario.acceso=='veo') {
                 userServices.getById(req.params.idUsuario, (err, usuario)=>{
                     puntoServices.getByUser(req.params.idUsuario, (err2, ubicaciones)=>{
                         let nUbicaciones = ubicaciones.map(e=>{
@@ -732,9 +730,6 @@ module.exports = function(app, passport){
                         }
                     })
                 })
-            }else{
-                res.json({ status: false, message:'No tienes acceso'})
-            }
         }else{
             res.json({ status: false, message:'usuario no logueado'})  
         }

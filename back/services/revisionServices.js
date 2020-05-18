@@ -117,17 +117,24 @@ class revisionServices{
 			coordenadas        : data.coordenadas,
 		}}, callback);
   }
-	editarImagen(_id, nMedidor, nComodato, otrosSi, retiroTanques, puntoConsumo, visual, protocoloLlenado, hojaSeguridad, callback){
-		console.log({nMedidor, nComodato, otrosSi, retiroTanques, puntoConsumo, visual, protocoloLlenado, hojaSeguridad})
+	editarImagen(_id,  isometrico, otrosComodato, soporteEntrega, puntoConsumo, visual, callback){
+		console.log({isometrico, otrosComodato, soporteEntrega, puntoConsumo, visual})
 		revision.findByIdAndUpdate(_id, {$set: {
-			nMedidor         : nMedidor  			  ?nMedidor  			  :[],
-			nComodato        : nComodato 			  ?nComodato 			  :[],
-			otrosSi          : otrosSi   		    ?otrosSi   		    :[],
-			retiroTanques    : retiroTanques    ?retiroTanques    :[],
-			puntoConsumo     : puntoConsumo     ?puntoConsumo     :[],
-			visual    		   : visual   		    ?visual   			  :[],
-			protocoloLlenado : protocoloLlenado ?protocoloLlenado :[],
-			hojaSeguridad    : hojaSeguridad    ?hojaSeguridad    :[],
+			isometrico     : isometrico  		?isometrico  		:[],
+			otrosComodato  : otrosComodato  ?otrosComodato  :[],
+			soporteEntrega : soporteEntrega ?soporteEntrega :[],
+			puntoConsumo   : puntoConsumo   ?puntoConsumo   :[],
+			visual    		 : visual   		  ?visual   			:[],
+		}}, callback);
+	}
+
+	subirPdf(_id, protocoloLlenado, hojaSeguridad, nComodato, otrosSi, callback){
+	
+		revision.findByIdAndUpdate(_id, {$set: {
+			protocoloLlenado : protocoloLlenado ?protocoloLlenado : [],
+			hojaSeguridad    : hojaSeguridad    ?hojaSeguridad    : [],
+			nComodato        : nComodato   		  ?nComodato   		  : [],
+			otrosSi    			 : otrosSi   			  ?otrosSi   				: [],
 		}}, callback);
 	}
 

@@ -316,8 +316,13 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     editarPedido(){
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, valor_unitarioUsuario, usuarioCrea, observacion } = this.state
-    
+        let {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, valor_unitarioUsuario, usuarioCrea, observacion } = this.state
+        console.log({valor_totalTexto})
+        valor_totalTexto =valor_totalTexto.replace(/[A-Za-z$-]/g, "");
+		valor_totalTexto=valor_totalTexto.replace(",", "");
+		valor_totalTexto=parseInt(valor_totalTexto).toFixed(0);
+		valor_totalTexto = valor_totalTexto==="NaN" ?"" :valor_totalTexto
+
         let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
         let imagenCerrar1 = imagenCerrar ?imagenCerrar.split("-") :""
@@ -532,7 +537,7 @@ class Pedido extends Component{
                                             style={style.inputTerminarPedido}
                                         />
                                         <TextInput
-                                            placeholder="Valor Total"
+                                            placeholder="Valor total factura"
                                             autoCapitalize = 'none'
                                             keyboardType='numeric'
                                             placeholderTextColor="#aaa" 
@@ -588,11 +593,13 @@ class Pedido extends Component{
                                         />
                                         <View style={style.contenedorConductor}>
                                             <TouchableOpacity 
-                                                style={remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<1 || novedad.length<1 || !imagen
+                                                style={remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<2 || novedad.length<1 || !imagen
                                                 ?style.btnDisable3 :style.btnGuardar3} 
                                                 onPress={
-                                                    remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1  || valor_totalTexto.length<1  || novedad.length<1 || !imagen
+                                                    remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || novedad.length<1 || !imagen
                                                     ?()=>alert("llene todos los campos")
+                                                    :valor_totalTexto<100
+                                                    ?()=>alert("Valor total debe ser mayor a 100")
                                                     :()=>this.cerrarPedido()
                                                 }
                                             >

@@ -252,4 +252,19 @@ export const style = MediaQueryStyleSheet.create({
 		paddingRight: 30, // to ensure the text is never behind the icon
 	  },
 
+	////////////////////////////
+	loadingContain:{
+		position:"absolute",
+		backgroundColor:"rgba(100,100,100,.1)",
+		justifyContent:"center",
+		width:"100%",
+		height:"100%",
+		zIndex:100,
+	},
+	separador:{
+		width:Width,
+		height:1,
+		marginVertical:10,
+		backgroundColor:"rgba(50,50,50,.1)"
+	},
 })

@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {View, Text, Image, TouchableOpacity, Modal} from 'react-native'
 import DocumentPicker from 'react-native-document-picker';
 import Icon           from 'react-native-fa-icons' 
-import Lightbox 	  from 'react-native-lightbox';
+ 
 import {style}        from './style'
  
 export default class subirDocumento extends Component{
@@ -24,7 +24,7 @@ export default class subirDocumento extends Component{
                 name: response.name,
                 path: response.uri
             };
-           
+            
             imagenes.push(imagen)
             this.setState({ imagenes, showModal:false, isAndroidShareOpen:false });
             this.props.imagenes(imagenes)

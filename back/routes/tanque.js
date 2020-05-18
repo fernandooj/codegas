@@ -8,7 +8,7 @@ let  moment = require('moment-timezone');
 let sizeOf    	   = promisify(require('image-size'));
 let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
 ////////////////////////////////////////////////////////////
-////////////        OBTENGO TODOS LOS tanqueS
+////////////        OBTENGO TODOS LOS TANQUES
 ////////////////////////////////////////////////////////////
 router.get('/', (req,res)=>{
     if (!req.session.usuario) {
@@ -45,8 +45,8 @@ router.get('/no_eliminados', (req,res)=>{
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN tanque POR SU ID
 ////////////////////////////////////////////////////////////
-router.get('/byId/:tanqueId', (req,res)=>{
-	tanqueServices.getById(req.params.tanqueId, (err, tanque)=>{
+router.get('/byId/:revisionId', (req,res)=>{
+	tanqueServices.getById(req.params.revisionId, (err, tanque)=>{
 		if (err) {
 			res.json({ status:false, message: err, tanque:[] }); 
 		}else{
@@ -74,6 +74,24 @@ router.get('/byUsuario/:idCliente', (req,res)=>{
     }
 })
 
+
+///////////////////////////////////////////////////////////////
+////////////        OBTENGO LOS TANQUES POR SU PUNTO
+//////////////////////////////////////////////////////////////
+router.get('/byPunto/:idPunto', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        tanqueServices.getByPunto(req.params.idPunto, (err, tanque)=>{
+            if (!err) {
+                res.json({ status:true, tanque }); 
+            }else{
+                res.json({ status:false, message: err, tanque:[] }); 
+            }
+        })
+    }
+})
+
 ///////////////////////////////////////////////////////////////
 ////////////      ASIGNA UN Usuario
 //////////////////////////////////////////////////////////////
@@ -82,6 +100,24 @@ router.get('/asignarUsuario/:idtanque/:idCliente', (req,res)=>{
 		res.json({ status:false, message: 'No hay un usuario logueado' }); 
 	}else{
         tanqueServices.asignarUsuario(req.params.idtanque, req.params.idCliente, (err, tanque)=>{
+            if (!err) {
+                res.json({ status:true, tanque }); 
+            }else{
+                res.json({ status:false, message: err,  tanque:[] }); 
+            }
+        })
+    }
+})
+
+
+///////////////////////////////////////////////////////////////
+////////////      LO REASIGNO A UN NUEVO PUNTO Y USUARIO
+//////////////////////////////////////////////////////////////
+router.get('/asignarPunto/:idtanque/:idCliente/:idPunto', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        tanqueServices.asignarPunto(req.params.idtanque, req.params.idCliente, req.params.idPunto, (err, tanque)=>{
             if (!err) {
                 res.json({ status:true, tanque }); 
             }else{
@@ -207,11 +243,9 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
         let rutaImgPlaca              = [];
         let rutaImgPlacaMantenimiento = [];
         let rutaImgPlacaFabricante    = [];
-        let rutaImgDossier            = []
-        let rutaImgCerFabricante      = []
-        let rutaImgCerOnac            = [] 
         let rutaImgVisual             = [] 
-       
+ 
+        
         if(req.files.imgPlaca){
             let esArrayInstalacion = Array.isArray(req.files.imgPlaca)
             if(esArrayInstalacion){
@@ -384,13 +418,33 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
+        rutaImgPlaca              = rutaImgPlaca.length==0              ?req.body.imgPlaca              :rutaImgPlaca;
+        rutaImgPlacaMantenimiento = rutaImgPlacaMantenimiento.length==0 ?req.body.imgPlacaMantenimiento :rutaImgPlacaMantenimiento;
+        rutaImgVisual             = rutaImgVisual.length==0             ?req.body.rutaImgVisual         :rutaImgVisual;
+        tanqueServices.editarImagen(req.params.idTanque,  rutaImgPlaca, rutaImgPlacaMantenimiento, rutaImgPlacaFabricante, rutaImgVisual, (err, tanque)=>{
+            if (!err) {
+               
+                res.json({ status:true, tanque }); 
+            }else{
+                res.json({ status:false, message: err }); 
+            }
+        })
+    }
+})
 
-
-
-        if(req.files.imgDossier){
-            let esArrayimgDossier = Array.isArray(req.files.imgDossier)
+router.put('/uploadPdf/:idTanque/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        let rutaImgDossier            = []
+        let rutaImgCerFabricante      = []
+        let rutaImgCerOnac            = [] 
+   
+        let {imgDossier} = req.files
+        if(imgDossier){
+            let esArrayimgDossier = Array.isArray(imgDossier)
             if(esArrayimgDossier){
-                req.files.imgDossier.map(e=>{
+                imgDossier.map(e=>{
                     ////////////////////    ruta que se va a guardar en el folder
                     let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+e.name
                     
@@ -403,20 +457,20 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
                 })
             }else{
                 ////////////////////    ruta que se va a guardar en el folder
-                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgDossier.name
-                
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+imgDossier.name
+                let rutas = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+imgDossier.name
                 ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgDossier  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgDossier.name
+                rutaImgDossier.push(rutas)
                
                 ///////////////////     envio la imagen al nuevo path                
-                fs.rename(req.files.imgDossier.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgDossier.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
             }
         }
-
-        if(req.files.imgCerFabricante){
-            let esArrayimgCerFabricante = Array.isArray(req.files.imgCerFabricante)
+        let {imgCerFabricante} = req.files
+        if(imgCerFabricante){
+            let esArrayimgCerFabricante = Array.isArray(imgCerFabricante)
             if(esArrayimgCerFabricante){
-                req.files.imgCerFabricante.map(e=>{
+                imgCerFabricante.map(e=>{
                     ////////////////////    ruta que se va a guardar en el folder
                     let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+e.name
                     
@@ -429,20 +483,22 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
                 })
             }else{
                 ////////////////////    ruta que se va a guardar en el folder
-                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerFabricante.name
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+imgCerFabricante.name
                 
                 ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgCerFabricante  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerFabricante.name
+                let ruta =req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+imgCerFabricante.name 
+                rutaImgCerFabricante.push(ruta)
                
                 ///////////////////     envio la imagen al nuevo path                
-                fs.rename(req.files.imgCerFabricante.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgCerFabricante.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
             }
         }
 
-        if(req.files.imgCerOnac){
-            let esArrayimgCerOnac = Array.isArray(req.files.imgCerOnac)
+        let {imgCerOnac} = req.files
+        if(imgCerOnac){
+            let esArrayimgCerOnac = Array.isArray(imgCerOnac)
             if(esArrayimgCerOnac){
-                req.files.imgCerOnac.map(e=>{
+                imgCerOnac.map(e=>{
                     ////////////////////    ruta que se va a guardar en el folder
                     let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+e.name
                     
@@ -455,25 +511,25 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
                 })
             }else{
                 ////////////////////    ruta que se va a guardar en el folder
-                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerOnac.name
-                
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/tanques/'+fechaImagen+'--'+imgCerOnac.name
+                let rutas =  req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+imgCerOnac.name
                 ////////////////////    ruta que se va a guardar en la base de datos
-                rutaImgCerOnac  = req.protocol+'://'+req.get('Host') + '/public/uploads/tanques/'+fechaImagen+'--'+req.files.imgCerOnac.name
+                rutaImgCerOnac.push(rutas)
                
                 ///////////////////     envio la imagen al nuevo path                
-                fs.rename(req.files.imgCerOnac.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                fs.rename(imgCerOnac.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
             }
         }
-
-        
-        rutaImgPlaca              = rutaImgPlaca.length==0              ?req.body.imgPlaca              :rutaImgPlaca;
-        rutaImgPlacaMantenimiento = rutaImgPlacaMantenimiento.length==0 ?req.body.imgPlacaMantenimiento :rutaImgPlacaMantenimiento;
-        rutaImgVisual             = rutaImgVisual.length==0             ?req.body.rutaImgVisual         :rutaImgVisual;
-        rutaImgDossier            = rutaImgDossier.length==0            ?req.body.imgPlacaFabricante    :rutaImgDossier;
-        rutaImgCerFabricante      = rutaImgCerFabricante.length==0      ?req.body.imgPlacaFabricante    :rutaImgCerFabricante;
-        rutaImgCerOnac            = rutaImgCerOnac.length==0            ?req.body.imgCerOnac            :rutaImgCerOnac;
-
-        tanqueServices.editarImagen(req.params.idTanque,  rutaImgPlaca, rutaImgPlacaMantenimiento, rutaImgPlacaFabricante, rutaImgDossier, rutaImgCerFabricante, rutaImgCerOnac, rutaImgVisual, (err, tanque)=>{
+        let dossier          = req.body.dossier        ?JSON.parse(req.body.dossier)       :[]
+        let cerFabricante    = req.body.cerFabricante  ?JSON.parse(req.body.cerFabricante) :[]
+        let cerOnac          = req.body.cerOnac        ?JSON.parse(req.body.cerOnac)       :[]     
+       
+        rutaImgDossier            = rutaImgDossier.length==0        ?dossier        :rutaImgDossier.concat(dossier);
+        rutaImgCerFabricante      = rutaImgCerFabricante.length==0  ?cerFabricante  :rutaImgCerFabricante.concat(cerFabricante);
+        rutaImgCerOnac            = rutaImgCerOnac.length==0        ?cerOnac        :rutaImgCerOnac.concat(cerOnac);
+  
+       
+        tanqueServices.subirPdf(req.params.idTanque,   rutaImgDossier, rutaImgCerFabricante, rutaImgCerOnac, (err, tanque)=>{
             if (!err) {
                
                 res.json({ status:true, tanque }); 

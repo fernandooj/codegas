@@ -41,11 +41,11 @@ class verPerfil extends Component{
         const {terminoBuscador, inicio, final} = this.state
         let filtroUsuarios = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newUsuarios = filtroUsuarios.slice(inicio, final) 
-       
+ 
         return newUsuarios.map((e, key)=>{
             return(
                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
-                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params.revision ?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
                         <View style={{width:"90%"}}>
                             
                             {e.acceso=="cliente" &&<Text style={style.textUsers}>{e.idPadre ?"Punto consumo: "+e.idPadre.razon_social :e.razon_social}</Text>}
@@ -62,7 +62,7 @@ class verPerfil extends Component{
         })
     }    
 	render(){
-        const {navigation} = this.props
+        const {navigation, usuarios} = this.props
         const {terminoBuscador} = this.state
         return (
             <View style={style.container}>
@@ -76,7 +76,11 @@ class verPerfil extends Component{
                     style={[style.inputCabezera]}
                 />
                 <ScrollView style={{ marginBottom:85}} onScroll={(e)=>this.onScroll(e)}  keyboardDismissMode="on-drag">
-                    {this.renderUsuarios()}
+                    {
+                        usuarios.length==0
+                        ?<ActivityIndicator color="#00218b" />
+                        :this.renderUsuarios()
+                    }
                 </ScrollView>
                 <Footer navigation={navigation} />
             </View>
