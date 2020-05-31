@@ -38,6 +38,7 @@ class Tanques extends Component{
             avisos:false,
             distancias:false,
             electricas:false,
+            accesorios:false,
             clientes:[],
             puntos:[],
             placas:[],
@@ -157,6 +158,7 @@ class Tanques extends Component{
                     extintores        : revision.extintores        ?revision.extintores        :false,
                     distancias        : revision.distancias        ?revision.distancias        :false,
                     electricas        : revision.electricas        ?revision.electricas        :false,
+                    accesorios        : revision.accesorios        ?revision.accesorios        :false,
                     imgDepTecnico     : revision.depTecnico        ?revision.depTecnico        :[],
                     depTecnicoText    : revision.depTecnicoText    ?revision.depTecnicoText    :"",
                     depTecnicoEstado  : revision.depTecnicoEstado  ?revision.depTecnicoEstado  :"",  
@@ -239,37 +241,31 @@ class Tanques extends Component{
             }
         })
     }
-    eliminarTanque(tanqueId, placaText){
-        let {tanqueIdArray, tanqueArray} = this.state
+    eliminarTanque(tanqueId, placaText, codt, razon_social){
         Alert.alert(
-            `Seguro desea remover este tanque`,
+            `Vas a enviar una notificacion, para eliminar este tanque a este usuario`,
             `${placaText}`,
             [
                 {text: 'Confirmar', onPress: () => confirmar()},
                 {text: 'Cancelar', onPress: () => console.log("e")},
             ],
             {cancelable: false},
-    )
-    const confirmar = ()=>{
-        axios.get(`tan/tanque/desvincularUsuario/${tanqueId}`)
-        .then(res => { 
-            if(res.data.status){
-                tanqueArray= tanqueArray.filter(e=>{
-                    return e._id!=tanqueId 
-                })
-                tanqueIdArray= tanqueIdArray.filter(e=>{
-                    return e!=tanqueId 
-                })
-                console.log(tanqueArray, tanqueIdArray)
-                this.setState({tanqueArray, tanqueIdArray})
-            }
-        })
+        )
+        const confirmar = ()=>{
+            axios.get(`tan/tanque/notificacionDesvincularUsuario/${placaText}/${codt}/${razon_social}`)
+            .then(res => { 
+                console.log(res.data)
+                if(res.data.status){
+                   alert("Notificacion enviada")
+                }
+            })
+        }
     }
-       
 
-    }
+
     step1(){
         const {tanqueArray, modalPlacas, placas, placaText, puntoId, usuarioId} = this.state
+        console.log({tanqueArray})
         return(
             <View>
                 {/* PLACAS */}
@@ -307,7 +303,7 @@ class Tanques extends Component{
                                             </View>
                                             
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={()=>this.eliminarTanque(e._id, e.placaText)}>
+                                        <TouchableOpacity onPress={()=>this.eliminarTanque(e._id, e.placaText, e.usuarioId.codt, e.usuarioId.razon_social)}>
                                             <Icon name="trash" style={style.iconTrash} />
                                         </TouchableOpacity>
 
@@ -536,10 +532,9 @@ class Tanques extends Component{
 
    
     step3(){
-        const {observaciones, avisos, extintores, distancias, electricas, estado, solicitudServicio, imgAlerta, alertaText, alertaFecha, nActa, depTecnicoEstado, imgDepTecnico, depTecnicoText} = this.state
+        const {observaciones, avisos, extintores, distancias, electricas, accesorios, estado, solicitudServicio, imgAlerta, alertaText, alertaFecha, nActa, depTecnicoEstado, imgDepTecnico, depTecnicoText} = this.state
         return(
             <View>
-
                 {/* OBSERVACIONES */}
                 <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Observaciones</Text>
@@ -604,55 +599,64 @@ class Tanques extends Component{
                         /> 
                     </>
                     :<>
-                    <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step3}>Falta de Avisos reglamentarios</Text>
-                        <Switch
-                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
-                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(avisos ?'#d60606':'#ffffff')]}
-                            ios_backgroundColor="#fbfbfb"
-                            style={[avisos ?style.switchEnableBorder:style.switchDisableBorder]}
-                            value={avisos}
-                            onValueChange={(avisos) =>this.setState({avisos})}
-                        />
-                        
-                    </View>
-                    <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step3}>Falta extintores</Text>
-                        <Switch
-                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
-                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(extintores ?'#d60606':'#ffffff')]}
-                            ios_backgroundColor="#fbfbfb"
-                            style={[extintores ?style.switchEnableBorder:style.switchDisableBorder]}
-                            onValueChange = {(extintores)=>this.setState({extintores})}
-                            value = {extintores}  
-                        />
-                    </View>
-                    <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step3}>No cumple distancias</Text>
-                        <Switch
-                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
-                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(distancias ?'#d60606':'#ffffff')]}
-                            ios_backgroundColor="#fbfbfb"
-                            style={[distancias ?style.switchEnableBorder:style.switchDisableBorder]}
-                            onValueChange = {(distancias)=>this.setState({distancias})}
-                            value = {distancias}
-                        />
-                    </View>
-                    <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step3}>Fuentes ignición cerca</Text>
-                        <Switch
-                            trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
-                            thumbColor={[Platform.OS=='ios'?'#FFFFFF':(electricas ?'#d60606':'#ffffff')]}
-                            ios_backgroundColor="#fbfbfb"
-                            style={[electricas ?style.switchEnableBorder:style.switchDisableBorder]}
-                            onValueChange = {(electricas)=>this.setState({electricas})}
-                            value = {electricas}
-                        />
-                    </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step3}>Falta de Avisos reglamentarios</Text>
+                            <Switch
+                                trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                                thumbColor={[Platform.OS=='ios'?'#FFFFFF':(avisos ?'#d60606':'#ffffff')]}
+                                ios_backgroundColor="#fbfbfb"
+                                style={[avisos ?style.switchEnableBorder:style.switchDisableBorder]}
+                                value={avisos}
+                                onValueChange={(avisos) =>this.setState({avisos})}
+                            />
+                            
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step3}>Falta extintores</Text>
+                            <Switch
+                                trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                                thumbColor={[Platform.OS=='ios'?'#FFFFFF':(extintores ?'#d60606':'#ffffff')]}
+                                ios_backgroundColor="#fbfbfb"
+                                style={[extintores ?style.switchEnableBorder:style.switchDisableBorder]}
+                                onValueChange = {(extintores)=>this.setState({extintores})}
+                                value = {extintores}  
+                            />
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step3}>No cumple distancias</Text>
+                            <Switch
+                                trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                                thumbColor={[Platform.OS=='ios'?'#FFFFFF':(distancias ?'#d60606':'#ffffff')]}
+                                ios_backgroundColor="#fbfbfb"
+                                style={[distancias ?style.switchEnableBorder:style.switchDisableBorder]}
+                                onValueChange = {(distancias)=>this.setState({distancias})}
+                                value = {distancias}
+                            />
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step3}>Fuentes ignición cerca</Text>
+                            <Switch
+                                trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                                thumbColor={[Platform.OS=='ios'?'#FFFFFF':(electricas ?'#d60606':'#ffffff')]}
+                                ios_backgroundColor="#fbfbfb"
+                                style={[electricas ?style.switchEnableBorder:style.switchDisableBorder]}
+                                onValueChange = {(electricas)=>this.setState({electricas})}
+                                value = {electricas}
+                            />
+                        </View>
+                        <View style={style.contenedorSetp2}>
+                            <Text style={style.row1Step3}>Cumple accesorios y materiales</Text>
+                            <Switch
+                                trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                                thumbColor={[Platform.OS=='ios'?'#FFFFFF':(accesorios ?'#d60606':'#ffffff')]}
+                                ios_backgroundColor="#fbfbfb"
+                                style={[accesorios ?style.switchEnableBorder:style.switchDisableBorder]}
+                                onValueChange = {(accesorios)=>this.setState({accesorios})}
+                                value = {accesorios}
+                            />
+                        </View>
                     </>
                 }
-                
-               
             </View>
         )
     }
@@ -1026,8 +1030,8 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 3
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep3(){
-        const {observaciones, avisos, extintores, distancias, electricas, revisionId} = this.state
-        console.log({observaciones, avisos, extintores, distancias, electricas})
+        const {observaciones, avisos, extintores, distancias, electricas, accesorios, revisionId} = this.state
+        console.log({observaciones, avisos, extintores, distancias, electricas, accesorios})
         let data = new FormData();
         
         data.append('observaciones',  observaciones);
@@ -1035,6 +1039,7 @@ class Tanques extends Component{
         data.append('extintores',   extintores);
         data.append('distancias',   distancias);
         data.append('electricas',   electricas);
+        data.append('accesorios',   accesorios);
         axios({
             method: 'PUT',   
             url: `rev/revision/instalacion/${revisionId}`,

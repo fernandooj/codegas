@@ -24,7 +24,7 @@ let Tanque = new Schema({
 	capacidad          : String,
 	placaText          : String,
 	fabricante		   : String,
-	ultimaRevisionPar  : String,
+	registroOnac  	   : String,
 	fechaUltimaRev     : String,
 	nPlaca         	   : String,
 	codigoActivo       : String,

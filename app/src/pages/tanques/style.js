@@ -1,6 +1,7 @@
 import {StyleSheet, Dimensions, Platform} from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
-let Width = Dimensions.get('window').width;
+let Width  = Dimensions.get('window').width;
+let Height = Dimensions.get('window').height;
 
 export const style = MediaQueryStyleSheet.create({
   container:{
@@ -17,7 +18,14 @@ export const style = MediaQueryStyleSheet.create({
 		width:"70%",
 		padding:10
 	}, 
-	iconFrecuencia:{
+	nuevoUsuario:{
+		flexDirection:"row",
+		backgroundColor:"#002587",
+		width:"45%",
+		marginHorizontal:5,
+		padding:10
+	}, 
+	iconUsuario:{
 		color:"#ffffff",
 		top:3,
 		marginRight:10
@@ -266,5 +274,107 @@ export const style = MediaQueryStyleSheet.create({
 		height:1,
 		marginVertical:10,
 		backgroundColor:"rgba(50,50,50,.1)"
+	},
+	imagen:{
+		width:80,
+		height:80,
+		resizeMode:"contain",
+		
+		marginBottom:5
+	},
+	contenedorRevision:{
+		flexDirection:"row",
+		justifyContent:"center",
+		marginVertical:4
+	},
+	txtUltimaRevTit:{
+		width:"33%",
+		fontFamily: "Comfortaa-Bold",
+		fontSize:17,
+		textAlign:"center",
+		justifyContent:"center"
+	},
+	txtUltimaRev:{
+		width:"33%",
+		fontFamily: "Comfortaa-Regular",
+		fontSize:15,
+		justifyContent:"center"
+	},
+	iconFrecuencia:{
+		color:"#002587"
+	},
+	//////////////////////////////////////////////////////////////////		
+	///////////				MODAL
+	//////////////////////////////////////////////////////////////////
+	alertaTit:{
+		width:"25%",
+		fontFamily: "Comfortaa-Bold",
+		fontSize:17,
+		textAlign:"center",
+		justifyContent:"center"
+	},
+	alertaText:{
+		width:"24.5%",
+		fontFamily: "Comfortaa-Regular",
+		fontSize:15,
+		justifyContent:"center"
+	},
+	//////////////////////////////////////////////////////////////////		
+	///////////				MODAL
+	//////////////////////////////////////////////////////////////////
+	contenedorModal:{
+		alignItems:"center",
+		justifyContent: 'center',
+		backgroundColor:"rgba(0,0,0,.5)",
+		height:Height,
+		zIndex:100,
+		width:"100%",
+		bottom:50,
+		top:0,
+		left:0,	
+		padding:40,
+	},
+	subContenedorModal:{
+		backgroundColor:"#ffffff",
+		borderRadius:7,
+		padding:20,
+		alignItems:"center"
+	},
+	subContenedorModalUbicacion:{
+		backgroundColor:"#ffffff",
+		borderRadius:7,
+		padding:10,
+		width:Width-70
+	},
+	btnModalClose:{
+		position:"absolute",
+		right:Platform.OS=='android' ?3 :-10,
+		top:Platform.OS=='android' ?0 :-10,
+		zIndex:100
+	},
+	iconCerrar:{
+		fontSize:30
+	},
+	btnIconPass:{
+		position:"absolute",
+		top:10,
+		right:15
+	},
+	err:{
+		fontFamily:"Muli-Light",
+		color:'red',
+		top:-2,
+		left:12,
+		fontSize:9
+	},
+	nuevaRevision:{
+		backgroundColor:"#002587",
+		alignItems:"center",
+		width:"100%",
+		padding:10
+	}, 
+	btnDate3:{
+		marginTop:30,
+		width:"100%",
 	},
 })

@@ -3,10 +3,12 @@ let router = express.Router();
 let fs 		   = require('fs');
 let Jimp       = require("jimp");
 let {promisify} = require('util');
-let tanqueServices = require('../services/tanqueServices.js') 
-let  moment = require('moment-timezone');
-let sizeOf    	   = promisify(require('image-size'));
-let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
+let tanqueServices  = require('../services/tanqueServices.js') 
+let userServices    = require('./../services/userServices.js') 
+let  moment         = require('moment-timezone');
+let sizeOf    	    = promisify(require('image-size'));
+let fechaImagen     = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
+const htmlTemplate     = require('../notificaciones/template-email.js')
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS TANQUES
 ////////////////////////////////////////////////////////////
@@ -14,7 +16,15 @@ router.get('/', (req,res)=>{
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado', tanque:[] }); 
     }else{
-       tanqueServices.get((err, tanque)=>{
+        req.session.usuario.acceso=="admin" || req.session.usuario.acceso=="adminTanque"
+        ?tanqueServices.get((err, tanque)=>{
+            if (!err) {
+                res.json({ status: true, tanque }); 
+            }else{
+                res.json({ status:false, message: err,  tanque:[] }); 
+            }
+        })
+        :tanqueServices.getAlerta((err, tanque)=>{
             if (!err) {
                 res.json({ status: true, tanque }); 
             }else{
@@ -129,6 +139,27 @@ router.get('/asignarPunto/:idtanque/:idCliente/:idPunto', (req,res)=>{
 
 
 ///////////////////////////////////////////////////////////////
+////////////      ENVIAR NOTIFICACION DE QUE EL TANQUE NO ESTA PARA 
+//////////////////////////////////////////////////////////////
+router.get('/notificacionDesvincularUsuario/:placaText/:codtCliente/:razon_socialCliente/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        userServices.getByAcceso("adminTanque", (err, usuarios)=>{
+            usuarios.map(e=>{
+                let titulo = `<font size="5">El tanque con codigo activo :<b>${req.params.placaText}</b> no se encontro </font>`
+                let text1  = `Cliente asignado actualmente :<b>codt:${req.params.codtCliente}, razon social: ${req.params.razon_socialCliente} </b>`
+                let text2  = `Usuario que genero información: ${req.session.usuario.nombre}`
+                let asunto =  "Tanque no se encontro en el cliente"  
+                htmlTemplate(req, e, titulo, text1, text2,  asunto)
+            })
+         })
+         res.json({ status:true }); 
+    }
+})
+
+
+///////////////////////////////////////////////////////////////
 ////////////      DESVINCULA UN Usuario
 //////////////////////////////////////////////////////////////
 router.get('/desvincularUsuario/:idTanque/', (req,res)=>{
@@ -144,6 +175,8 @@ router.get('/desvincularUsuario/:idTanque/', (req,res)=>{
         })
     }
 })
+
+
 
 ///////////////////////////////////////////////////////////////
 ////////////       CAMBIAR ESTADO

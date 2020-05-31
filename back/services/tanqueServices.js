@@ -37,22 +37,77 @@ class tanqueServices{
 		.sort({_id: 'desc'}).exec(callback)
 	}
 	getByPunto(puntoId, callback){
-		console.log({puntoId})
 		tanque.find({puntoId})
+		.populate("usuarioId")
 		.sort({_id: 'desc'}).exec(callback)
 	}
-	 
+	getAlerta(callback){
+		tanque.aggregate([
+			{
+				$lookup:{
+					from:"alertatanques",
+					localField:"_id",
+					foreignField:"tanqueId",
+					as:"TanqueData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$TanqueData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+			{
+				$lookup:{
+					from:"users",
+					localField:"usuarioId",
+					foreignField:"_id",
+					as:"UserData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$UserData',
+					preserveNullAndEmptyArrays: false
+				}
+			},
+		 
+			{
+				$project:{
+					_id:1,
+					placaText:1,
+					capacidad:1,
+					usuario:'$UserData.nombre',
+					texto:'$TanqueData.alertaText',
+				},
+			},
+			{
+			    $group:{
+			 
+						_id:{
+							_id:'$_id',
+							capacidad:'$capacidad',
+							placaText:'$placaText',
+							usuario:'$usuario',
+						},
+						data: { $addToSet: {texto:"$texto"}},
+						total:{ $sum :1},
+			    }
+			},
+		], callback)
+	}  
+
+	
 	create(data, usuarioCrea, callback){
     let creado = moment().subtract(5, 'hours');
     creado = moment(creado).format('YYYY-MM-DD h:mm');
 		let newTanque = new tanque({
-		 
 			placaText       	: data.placaText,
 			capacidad         : data.capacidad,
 			fabricante        : data.fabricante,
-			ultimaRevisionPar : data.ultimaRevisionPar,
+			registroOnac 		  : data.registroOnac,
 			fechaUltimaRev    : data.fechaUltimaRev,
-		
+
 			nPlaca         	  : data.nPlaca,
 			codigoActivo      : data.codigoActivo,
 			serie       		  : data.serie,
@@ -73,7 +128,7 @@ class tanqueServices{
 			placaText       	: data.placaText,
 			capacidad         : data.capacidad,
 			fabricante        : data.fabricante,
-			ultimaRevisionPar : data.ultimaRevisionPar,
+			registroOnac : data.registroOnac,
 			fechaUltimaRev    : data.fechaUltimaRev,
 			nPlaca         		: data.nPlaca,
 			codigoActivo      : data.codigoActivo,

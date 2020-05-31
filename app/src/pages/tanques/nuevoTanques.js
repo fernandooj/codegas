@@ -6,6 +6,7 @@ import ModalSelector                   from 'react-native-modal-selector'
 import DatePicker 			           from 'react-native-datepicker'
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';  
 import axios                           from 'axios';
+import Lightbox 					   from 'react-native-lightbox';
 import Icon                            from 'react-native-fa-icons';
 import SubirDocumento                  from "../components/subirDocumento";
 import TomarFoto                       from "../components/tomarFoto";
@@ -58,19 +59,16 @@ class Tanques extends Component{
             imgDossier:[],
             imgCerFabricante:[],
             imgCerOnac:[],
-            x: {
-				latitude: 4.597825,
-				longitude: -74.0755723,
-				latitudeDelta: 0.046002887451081165,
-				longitudeDelta: 0.05649235099555483,
-		    },
+            imgUltimaRev:[],
+            revisiones:[],
+            alertas:[],
+            alertaText:""
 	    }
     }
     async componentWillMount(){
         try{
             axios.get(`tan/tanque`)
             .then(res=>{
-                console.log(res.data)
                 let placas = res.data.tanque
                 placas = placas.map(e=>{
                     return{
@@ -80,6 +78,7 @@ class Tanques extends Component{
                 }) 
                 this.setState({placas})
             })
+            
  
             
             let tanqueId  = this.props.navigation.state.params.tanqueId ?this.props.navigation.state.params.tanqueId :null
@@ -103,10 +102,22 @@ class Tanques extends Component{
                         puntos:res.data.punto
                     })
                 })
+               
             }
-            console.log({tanqueId, placaText, puntoId, usuarioId})
+ 
             this.setState({placaText, puntoId, usuarioId})
             if(tanqueId){
+                axios.get(`ult/ultimaRev/byTanque/${tanqueId}`)
+                .then(res=>{
+                    console.log(res.data.revision)
+                    this.setState({revisiones:res.data.revision})
+                })
+                axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
+                .then(res=>{
+                    console.log(res.data.alerta)
+                    this.setState({alertas:res.data.alerta})
+                })
+
                 axios.get(`tan/tanque/byId/${tanqueId}`)
                 .then(res => {
                     console.log(res.data)
@@ -117,7 +128,7 @@ class Tanques extends Component{
                         placaText :             tanque.placaText         ?tanque.placaText          :"",
                         capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
                         fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
-                        ultimaRevisionPar:      tanque.ultimaRevisionPar ?tanque.ultimaRevisionPar  :"",
+                        registroOnac:           tanque.registroOnac ?tanque.registroOnac  :"",
                         fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
                         
                         nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
@@ -147,7 +158,7 @@ class Tanques extends Component{
                         emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
                         puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
                         puntoId:                  tanque.puntoId             ?tanque.puntoId._id                   :null,
-                        zonaId:                   tanque.zonaId               ?tanque.zonaId._id                    :null,
+                        zonaId:                   tanque.zonaId              ?tanque.zonaId._id                    :null,
                         modalPlacas:false    
                     })
                 })
@@ -157,37 +168,7 @@ class Tanques extends Component{
         }catch(e){
             console.log(e)
         }    
-        navigator.geolocation.getCurrentPosition(e=>{
-			let lat = parseFloat(e.coords.latitude)
-			let lng = parseFloat(e.coords.longitude)
-			let latitude =  lat ?lat :4.597825;
-			let longitude = lng ?lng :-74.0755723;
-			let x = {
-				latitude:latitude,
-				longitude:longitude,
-				latitudeDelta:0.15,
-				longitudeDelta:0.15
-            }
- 
-        this.setState({x})
-        }, (error)=>this.watchID = navigator.geolocation.watchPosition(e=>{
-            let lat =parseFloat(e.coords.latitude)
-            let lng = parseFloat(e.coords.longitude)
-            let latitude =  lat ?lat :4.597825;
-            let longitude =  lng ?lng :-74.0755723;
-            let x = {
-                latitude:latitude,
-                longitude:longitude,
-                latitudeDelta:0.15,
-                longitudeDelta:0.15
-        }
- 
-        this.setState({x})
-       
-            },
-            (error) => console.log('error'),
-            {enableHighAccuracy: true, timeout:5000, maximumAge:0})
-        )
+        
     }
     getClientes(){
         axios.get(`users/clientes`)
@@ -201,7 +182,26 @@ class Tanques extends Component{
             }
         })
     }
-
+    eliminarTanque(){
+        let {tanqueId} = this.state
+        Alert.alert(
+            `Seguro desea remover este cliente`,
+            ``,
+            [
+                {text: 'Confirmar', onPress: () => confirmar()},
+                {text: 'Cancelar', onPress: () => console.log("e")},
+            ],
+            {cancelable: false},
+        )
+    const confirmar = ()=>{
+        axios.get(`tan/tanque/desvincularUsuario/${tanqueId}`)
+        .then(res => { 
+            if(res.data.status){
+                this.setState({ usuarioId:null, puntos:[]})
+            }
+        })
+    }
+    }
     buscarTanque(id){
         console.log({id})
         axios.get(`tan/tanque/byId/${id}`)
@@ -214,7 +214,7 @@ class Tanques extends Component{
                     placaText :             tanque.placaText         ?tanque.placaText          :"",
                     capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
                     fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
-                    ultimaRevisionPar:      tanque.ultimaRevisionPar ?tanque.ultimaRevisionPar  :"",
+                    registroOnac:           tanque.registroOnac      ?tanque.registroOnac       :"",
                     fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
               
                     nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
@@ -224,32 +224,106 @@ class Tanques extends Component{
                  
 
                     //////  step 2
-                    imgPlaca:                 tanque.placa              ?tanque.placa           :[],
-                    imgPlacaFabricante:       tanque.placaFabricante    ?tanque.placaFabricante          :[],
-                    imgPlacaMantenimiento:    tanque.placaMantenimiento ?tanque.placaMantenimiento     :[],
+                    // imgPlaca:                 tanque.placa              ?tanque.placa           :[],
+                    // imgPlacaFabricante:       tanque.placaFabricante    ?tanque.placaFabricante          :[],
+                    // imgPlacaMantenimiento:    tanque.placaMantenimiento ?tanque.placaMantenimiento     :[],
                     
 
-                    //////  step 3
-                    usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
-                    cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
-                    razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
-                    direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
-                    nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre              :"",
-                    celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
-                    emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
-                    puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
-                    puntoId:                  tanque.puntboId            ?tanque.puntoId._id                   :[],
-                    zonaId:                   tanque.zonaId               ?tanque.zonaId._id                   :null,
+                    // //////  step 3
+                    // usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
+                    // cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
+                    // razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
+                    // direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
+                    // nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre              :"",
+                    // celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
+                    // emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
+                    // puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
+                    // puntoId:                  tanque.puntboId            ?tanque.puntoId._id                   :[],
+                    // zonaId:                   tanque.zonaId              ?tanque.zonaId._id                   :null,
                     modalPlacas:false    
                 })
                 
             })
     }
+    renderModalUltimaRev(){
+        let {ultimaRevisionPar, imgUltimaRev, loading, err1, err2} = this.state
+		return(
+			<Modal transparent visible={true} animationType="fade" >
+				<TouchableOpacity activeOpacity={1} >
+					<View style={style.contenedorModal}>
+						<View style={style.subContenedorModalUbicacion}>
+							<TouchableOpacity activeOpacity={1} onPress={() => this.setState({showModal:false})} style={style.btnModalClose}>
+								<Icon name={'times-circle'} style={style.iconCerrar} />
+							</TouchableOpacity>
+                            <DatePicker
+                                customStyles={{
+                                    dateInput:style.btnDate,
+                                    placeholderText:ultimaRevisionPar ?style.textBtnActive :style.textBtn,
+                                    dateText: { 
+                                        fontSize:14,
+                                        color: '#000000'
+                                    },
+                                }}
+                                style={style.btnDate3}
+                                
+                                locale="es_co"
+                                mode="date"
+                                placeholder={ultimaRevisionPar ?ultimaRevisionPar :"Ultima Rev Par"}
+                                format="YYYY-MMM-DD"
+                                showIcon={false}
+                                confirmBtnText="Confirmar"
+                                cancelBtnText="Cancelar"
+                                androidMode='spinner'
+                                onDateChange={(ultimaRevisionPar) => {this.setState({ultimaRevisionPar})}}
+                            />
+                            <TomarFoto 
+                                source={imgUltimaRev}
+                                width={180}
+                                titulo="Ultima Rev Par"
+                                limiteImagenes={4}
+                                imagenes={(imgUltimaRev) => {  this.setState({imgUltimaRev}) }}
+                            />
+                            <TouchableOpacity style={style.nuevaRevision} onPress={()=>ultimaRevisionPar ?this.saveRevision() :alert("Inserte una fecha") }>
+                                <Text style={style.textGuardar}>Guardar</Text>
+                            </TouchableOpacity>
+                            
+						</View>
+					</View>
+				</TouchableOpacity>
+			</Modal>
+		)
+    }
+    saveRevision(){
+        let {ultimaRevisionPar, imgUltimaRev, tanqueId} = this.state
+        let data = new FormData();
+        imgUltimaRev.forEach(e=>{
+            data.append('imgUltimaRev', e);
+        })
+        data.append('fecha',    ultimaRevisionPar);
+        data.append('tanqueId', tanqueId);
+        
+        axios({ method: 'post',    url: `ult/ultimaRev/`, data: data })
+        .then((res)=>{
+            if(res.data.status){
+                axios.get(`ult/ultimaRev/byTanque/${tanqueId}`)
+                .then(res=>{
+                   this.setState({revisiones:res.data.revision, showModal:false, ultimaRevisionPar:null, imgUltimaRev:[]})
+                })
+            }
+        })
+        .catch(err=>{
+            alert("Error intentalo mas tarde")
+        }) 
+        axios.post("")
+    }
     step1(){
-        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, existeTanque, nPlaca, serie, anoFabricacion} = this.state
+        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, showModal, fechaUltimaRev, existeTanque, nPlaca, serie, anoFabricacion, revisiones, registroOnac, tanqueId} = this.state
          
         return(
             <View>
+                {
+                    showModal &&this.renderModalUltimaRev()
+                }
                 {/* PLACAS */}
                 <ModalFilterPicker
 					placeholderText="Placas ..."
@@ -299,8 +373,8 @@ class Tanques extends Component{
                     />
                 </View>
 
-                {/* FECHA ULTIMA REVISION */}
-                <View style={style.contenedorSetp2}>
+                {/* FECHA MANTENIMIENTO TOTAL */}
+                <View style={[style.contenedorSetp2, {marginTop:6}]}>
                     <Text style={style.row1Step2}>Mto total</Text>
                     <DatePicker
                         customStyles={{
@@ -314,7 +388,7 @@ class Tanques extends Component{
                         style={style.btnDate2}
                         
                         locale="es_co"
-                        mode="date"
+                        mode="date" 
                         placeholder={fechaUltimaRev ?fechaUltimaRev :"Mto total"}
                         format="YYYY-MMM-DD"
                         showIcon={false}
@@ -322,34 +396,10 @@ class Tanques extends Component{
                         cancelBtnText="Cancelar"
                         androidMode='spinner'
                         onDateChange={(fechaUltimaRev) => {this.setState({fechaUltimaRev})}}
-                    />
+                    /> 
                 </View>
 
-                {/* ULTIMA REVISIÓN PARCIAL */}
-                <View style={[style.contenedorSetp2, {marginTop:10, marginBottom:5}]}>
-                    <Text style={style.row1Step2}>Ultima Rev Par</Text>
-                    <DatePicker
-                        customStyles={{
-                            dateInput:style.btnDate,
-                            placeholderText:ultimaRevisionPar ?style.textBtnActive :style.textBtn,
-                            dateText: { 
-                                fontSize:14,
-                                color: '#000000'
-                            },
-                        }}
-                        style={style.btnDate2}
-                        
-                        locale="es_co"
-                        mode="date"
-                        placeholder={ultimaRevisionPar ?ultimaRevisionPar :"Ultima Rev Par"}
-                        format="YYYY-MMM-DD"
-                        showIcon={false}
-                        confirmBtnText="Confirmar"
-                        cancelBtnText="Cancelar"
-                        androidMode='spinner'
-                        onDateChange={(ultimaRevisionPar) => {this.setState({ultimaRevisionPar})}}
-                    />
-                </View>
+              
                   
                 {/* NUMERO DE PLACA MANTENIMIENTO */}
                 <View style={style.contenedorSetp2}>
@@ -400,16 +450,77 @@ class Tanques extends Component{
                         initValueTextStyle={style.inputAno}
                         selectStyle={{borderWidth:0, padding:0, alignSelf:"stretch"  }}
                     />
-                </View>              
+                </View>    
+
+                {/* REGISTRO ONAC */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Registro onac</Text>
+                    <TextInput
+                        placeholder="Registro onac"
+                        style={style.inputStep2}
+                        value={registroOnac}
+                        onChangeText={(registroOnac)=> this.setState({ registroOnac })}
+                    />
+                </View>
+
+                <View style={[style.separador, {width:size.width-30}]}></View>
+                
+                {/* ULTIMA REVISIÓN PARCIAL */}
+                {
+                    tanqueId
+                    &&<View style={[style.contenedorSetp2, {marginTop:10, marginBottom:5}]}>
+                        <Text style={style.row1Step2}>Ultima Rev Par</Text>
+                        <TouchableOpacity onPress={()=>this.setState({showModal:true})}>
+                            <Icon name="plus" style={style.iconFrecuencia} />
+                        </TouchableOpacity>    
+                    </View>  
+                }
+                {
+                    revisiones.length>0
+                    &&
+                    <View>
+                        <View style={style.contenedorRevision}>
+                            <Text style={style.txtUltimaRevTit}>Fecha</Text>
+                            <Text style={style.txtUltimaRevTit}>Usuario</Text>
+                            <Text style={style.txtUltimaRevTit}>Imagen</Text>
+                        </View>       
+                        {
+                            revisiones.map(e=>{
+                                let imagen = e.ruta[0]
+                                imagen = imagen ?imagen.split("-") :""
+                                imagen = `${imagen[0]}Resize${imagen[2]}`
+                                return(
+                                    <View style={style.contenedorRevision}>
+                                        <Text style={style.txtUltimaRev}>{e.fecha}</Text>
+                                        <Text style={style.txtUltimaRev}>{e.usuarioId.nombre}</Text>
+                                        <Lightbox 
+                                            backgroundColor="#fff"
+                                            renderContent={() => (
+                                                <Image
+                                                    source={{uri: imagen }}
+                                                    style={{ width:"100%", height:400, resizeMode:"contain" }}
+                                                />
+                                                )}
+                                        >
+                                            <Image
+                                                source={{ uri: imagen  }}
+                                                style={style.imagen}
+                                            />
+                                        </Lightbox>	  
+                                    </View>
+                                )
+                            })
+                        }
+                    </View>    
+                }
             </View>
         )
-    }
-
-     
+    } 
     step2(){
         let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgVisual, imgDossier, imgCerFabricante, imgCerOnac} = this.state
         return(
             <View>
+                
                 {/* PLACA */}
                 <TomarFoto 
                     source={imgPlaca}
@@ -546,10 +657,16 @@ class Tanques extends Component{
                     cancelButtonText="CANCELAR"
                     optionTextStyle={style.filterText}
                 />
-                <TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.getClientes()}>
-                    <Icon name="plus" style={style.iconFrecuencia} />
-                    <Text style={style.textGuardar}>Asignar Cliente</Text>
-                </TouchableOpacity>
+                <View style={{flexDirection:"row"}}>
+                    <TouchableOpacity style={style.nuevoUsuario} onPress={()=>this.getClientes()}>
+                        <Icon name="plus" style={style.iconUsuario} />
+                        <Text style={style.textGuardar}>Asignar Cliente</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={style.nuevoUsuario} onPress={()=>this.eliminarTanque()}>
+                        <Icon name="minus" style={style.iconUsuario} />
+                        <Text style={style.textGuardar}>Remover Cliente</Text>
+                    </TouchableOpacity>
+                </View>
                 {
                     usuarioId
                     &&<View style={style.contenedorUsuario}>
@@ -613,11 +730,104 @@ class Tanques extends Component{
             </View>
         )
     }
-
-
+    renderModaAlerta(){
+        let {alertaText} = this.state
+		return(
+			<Modal transparent visible={true} animationType="fade" >
+				<TouchableOpacity activeOpacity={1} >
+					<View style={style.contenedorModal}>
+						<View style={style.subContenedorModalUbicacion}>
+							<TouchableOpacity activeOpacity={1} onPress={() => this.setState({showAlerta:false})} style={style.btnModalClose}>
+								<Icon name={'times-circle'} style={style.iconCerrar} />
+							</TouchableOpacity>
+                            <TextInput
+                                placeholder="Comentarios"
+                                value={alertaText}
+                                style={style.inputStep4}
+                                onChangeText={(alertaText)=> this.setState({ alertaText })}
+                            />
+                            <TouchableOpacity style={style.nuevaRevision} onPress={()=>alertaText.length>5 ?this.enviarAlerta() :alert("Inserte una alerta") }>
+                                <Text style={style.textGuardar}>Guardar</Text>
+                            </TouchableOpacity>
+                            
+						</View>
+					</View>
+				</TouchableOpacity>
+			</Modal>
+		)
+    }
+    enviarAlerta(){
+        const { alertaText, tanqueId } = this.state
+        axios.post(`ale/alertaTanque/`, {alertaText, tanqueId})
+        .then((res)=>{
+            if(res.data.status){
+                alert("Alerta Enviada")
+             
+                axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
+                .then(res=>{
+                    console.log(res.data.alerta)
+                    this.setState({alertaText:"", showAlerta:false, alertas:res.data.alerta })
+                })
+            }
+        })
+        .catch(err=>{
+            this.setState({loading:false})
+            alert("No pudimos subir el archivo")
+        })
+    }
+    step4(){
+        const {alertas, showAlerta} = this.state
+        return(
+            <View>
+                {showAlerta &&this.renderModaAlerta()}
+                <View style={[style.contenedorSetp2, {marginTop:10, marginBottom:5}]} > 
+                    <Text style={style.row1Step2}>Nueva alerta</Text>
+                    <TouchableOpacity onPress={()=>this.setState({showAlerta:true})}>
+                        <Icon name="plus" style={style.iconFrecuencia} />
+                    </TouchableOpacity>    
+                </View>
+                <View style={[style.separador]}></View> 
+                <View>
+                    <View style={style.contenedorRevision}>
+                        <Text style={style.alertaTit}>Alerta</Text>
+                        <Text style={style.alertaTit}>Crea</Text>
+                        <Text style={style.alertaTit}>Cierra</Text>
+                        <Text style={style.alertaTit}>Imagen</Text>
+                    </View>   
+                    {
+                        alertas.map(e=>{
+                            let imagen = e.alertaImagen[0]
+                            imagen = imagen ?imagen.split("-") :""
+                            imagen = `${imagen[0]}Resize${imagen[2]}`
+                            return(
+                                <View style={[style.contenedorRevision, {backgroundColor: e.activo ?"#F96D6C" :"#e8a43d"} ]}>
+                                    <Text style={style.alertaText}>{e.alertaText}</Text>
+                                    <Text style={style.alertaText}>{e.usuarioCrea.nombre}</Text>
+                                    <Text style={style.alertaText}>{e.usuarioCierra ?e.usuarioCierra.nombre :""}</Text>
+                                    <Lightbox 
+                                        backgroundColor="#fff"
+                                        renderContent={() => (
+                                            <Image
+                                                source={{uri: imagen }}
+                                                style={{ width:"100%", height:400, resizeMode:"contain" }}
+                                            />
+                                            )}
+                                    >
+                                        <Image
+                                            source={{ uri: imagen  }}
+                                            style={style.imagen}
+                                        />
+                                    </Lightbox>
+                                </View>
+                            )
+                        })
+                    }
+                </View>
+            </View> 
+        )
+    }
     renderSteps(){
         let {placaText, crearPlaca} = this.state
-       
         return(
             <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" >
                 <ProgressStep label="Datos"  nextBtnDisabled={placaText ?false :true} nextBtnText="Siguiente" onNext={()=>crearPlaca ?this.crearStep1() :this.editarStep1()}>
@@ -630,9 +840,14 @@ class Tanques extends Component{
                         {this.step2()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Usuario" finishBtnText="Guardar" previousBtnText="Anterior"  onSubmit={()=>this.editarStep3()}>
+                <ProgressStep label="Usuario" finishBtnText="Siguiente" previousBtnText="Anterior"  onNext={()=>this.editarStep3()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step3()}
+                    </View>
+                </ProgressStep>
+                <ProgressStep label="Alerta" finishBtnText="Guardar" previousBtnText="Anterior"  onSubmit={()=>this.editarStep4()}>
+                    <View style={{ alignItems: 'center' }}>
+                        {this.step4()}
                     </View>
                 </ProgressStep>
                  
@@ -642,8 +857,6 @@ class Tanques extends Component{
 
 	render(){
         const {navigation} = this.props
-       
-       
         return (
             <>
                 <View style={style.container}>
@@ -685,9 +898,9 @@ class Tanques extends Component{
     ////////////////////////            CREAR TANQUE
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque})
-        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac})
+        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -702,9 +915,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 1
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque})
-        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque, registroOnac} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque, registroOnac})
+        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque, registroOnac})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -763,47 +976,43 @@ class Tanques extends Component{
         console.log({zonaId, usuarioId, puntoId})
         axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque  })
         .then((res)=>{
-            console.log(res.data)
             if(res.data.status){
-                alert("Tanque Guardado")
-                const {navigation} = this.props
-                navigation.navigate("Home")
+                console.log(res.data)
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }
         })
     }
-
+    editarStep4(){
+        alert("Tanque Guardado")
+        const {navigation} = this.props
+        navigation.navigate("Home")
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           EDITA EL STEP 5
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    editarStep5(){
-        const {x, tanqueId} = this.state
-        console.log({x})
-        let lat=x.latitude
-        let lng=x.longitude
-        axios.put(`tan/tanque/coordenadas/${tanqueId}`, {lat, lng})
-        .then((res)=>{
-            console.log(res.data)
-            if(res.data.status){
+    // editarStep5(){
+    //     const {x, tanqueId} = this.state
+    //     console.log({x})
+    //     let lat=x.latitude
+    //     let lng=x.longitude
+    //     axios.put(`tan/tanque/coordenadas/${tanqueId}`, {lat, lng})
+    //     .then((res)=>{
+    //         console.log(res.data)
+    //         if(res.data.status){
                  
-                alert("Tanque Guardado")
-                const {navigation} = this.props
-                navigation.navigate("Home")
-            }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
-            }
-        })
-    }
+    //             alert("Tanque Guardado")
+    //             const {navigation} = this.props
+    //             navigation.navigate("Home")
+    //         }else{
+    //             Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+    //         }
+    //     })
+    // }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           EDITA EL STEP 3
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
 }
 
 const mapState = state => {

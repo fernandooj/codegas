@@ -48,7 +48,7 @@ export default class Privacidad extends Component<{}> {
                 se requieran para prevenir y auto controlar el Lavado de Activos y la Financiación del Terrorismo como
                 persona natural o de la persona jurídica que represento.
             </Text>
-            <TouchableOpacity style={style.aceptoTerminosBtn} onPress={()=>this.props.navigation.navigate("registro")}>
+            <TouchableOpacity style={style.aceptoTerminosBtn} onPress={()=>this.props.navigation.navigate("registro", {email:this.props.navigation.state.params.email})}>
                 <Text style={style.textAcepto}>Acepto los terminos</Text>
             </TouchableOpacity>
         </ScrollView>

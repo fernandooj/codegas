@@ -1,0 +1,19 @@
+//////////////////////////////////////////////////////////////////////
+////////***********     llamo a las librerias        ****////////////
+//////////////////////////////////////////////////////////////////////
+let mongoose = require('mongoose')
+let Schema   = mongoose.Schema;
+ 
+//////////////////////////////////////////////////////////////////////////////
+////////***********     creo el esquema / ciudad        ****//////////////
+//////////////////////////////////////////////////////////////////////////////
+let UltimaRev = new Schema({
+    creado     : String,
+    fecha     : String,
+    ruta	  : [],
+    usuarioId : {type: Schema.ObjectId, ref:'User'},
+    tanqueId  : {type: Schema.ObjectId, ref:'Tanque'},
+	eliminado : {type:Boolean, default:false},
+})
+
+module.exports = mongoose.model('UltimaRev', UltimaRev)

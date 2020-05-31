@@ -8,7 +8,6 @@ import Icon from 'react-native-fa-icons';
 import FCM from "react-native-fcm";
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
-import {URL} from "../../../App" 
 import {style} from './style'
 
 class Home extends Component{
@@ -45,14 +44,14 @@ class Home extends Component{
                     <Text style={style.titulo}>Crear Nueva Cuenta</Text>
                     <TextInput
                         style={email.length<2 ?[style.input, style.inputInvalid] :style.input}
-                        placeholder="Email / CODT"
+                        placeholder="Email / Codigo registro"
                         onChangeText={(email) => this.setState({email})}
                         value={email}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         placeholderTextColor="#aaa" 
                     />
-                     <TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
+                     <TouchableOpacity style={style.btnGuardar} onPress={()=>email.length<2 ?alert("Inserte su email o codigo de registro") :this.handleSubmit()}>
                         <Text style={style.textGuardar}>Registrarme</Text>
                     </TouchableOpacity>
                 </View>
@@ -168,7 +167,7 @@ class Home extends Component{
                         </TouchableOpacity>
                     }
                     {
-                         (acceso=="admin" || acceso=="comercial")
+                         (acceso=="admin" || acceso=="comercial" || acceso=="depTecnico" || acceso=="adminTanque")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("tanques")} >
                             <Text style={style.txtLista}>Tanques</Text> 
                             <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />

@@ -135,7 +135,7 @@ export default class FooterComponent extends Component{
 							}
 						</TouchableOpacity>
 					 }
-				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('perfil')}>
+				<TouchableOpacity style={style.subContenedorFooter} onPress={()=>navigation.navigate('perfil', {userId})}>
 				<Image source={require('../../assets/img/footer/img4.png')} style={style.icon}  resizeMode={'contain'} />	
 					<Text style={style.textFooter}>Perfil</Text>
 				</TouchableOpacity>

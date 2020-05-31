@@ -201,6 +201,9 @@ router.get('/users/clientes/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Veo',
                 value: 'UserData.comercialAsignado'
+            },{
+                label: 'Codigo Registro',
+                value: 'UserData.codigoRegistro'
             }];
 
             const opts = {fields};

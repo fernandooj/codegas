@@ -12,18 +12,20 @@ let formidable    = require('express-form-data');
 let fs            = require('fs');
 
 // importo las rutas
-let conversacionRutas = require('./routes/conversacion.js');
-let mensajeRutas      = require('./routes/mensaje.js');
-let pedidoRutas       = require('./routes/pedido.js');
-let novedadRutas      = require('./routes/novedad.js');
-let carroRutas        = require('./routes/carro.js');
-let calificacionRutas = require('./routes/calificacion.js');
-let zonaRutas         = require('./routes/zona.js');
-let puntoRutas        = require('./routes/punto.js');
-let informesRutas     = require('./routes/informes.js');
-let tanqueRutas       = require('./routes/tanque.js');
-let revisionRutas       = require('./routes/revision.js');
-let configuracionRutas       = require('./routes/configuracion.js');
+let conversacionRutas  = require('./routes/conversacion.js');
+let mensajeRutas       = require('./routes/mensaje.js');
+let pedidoRutas        = require('./routes/pedido.js');
+let novedadRutas       = require('./routes/novedad.js');
+let carroRutas         = require('./routes/carro.js');
+let calificacionRutas  = require('./routes/calificacion.js');
+let zonaRutas          = require('./routes/zona.js');
+let puntoRutas         = require('./routes/punto.js');
+let informesRutas      = require('./routes/informes.js');
+let tanqueRutas        = require('./routes/tanque.js');
+let revisionRutas      = require('./routes/revision.js');
+let ultimaRevRutas     = require('./routes/ultimaRev.js');
+let alertaTanqueRutas  = require('./routes/alertaTanque.js');
+let configuracionRutas = require('./routes/configuracion.js');
 
 let SocketIO = require('./socket.js')
 const path   = require('path');
@@ -120,6 +122,8 @@ app.use('/x/v1/pun/punto',        puntoRutas)
 app.use('/x/v1/inf/informe',      informesRutas) 
 app.use('/x/v1/tan/tanque',       tanqueRutas) 
 app.use('/x/v1/rev/revision',     revisionRutas) 
+app.use('/x/v1/ult/ultimaRev',    ultimaRevRutas) 
+app.use('/x/v1/ale/alertaTanque', alertaTanqueRutas) 
 app.use('/x/v1/con/configuracion',configuracionRutas) 
 require('./routes/user.js')(app, passport);
 

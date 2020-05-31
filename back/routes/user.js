@@ -18,8 +18,8 @@ module.exports = function(app, passport){
     app.post('/x/v1/user/sign_up', (req, res)=>{
         let token = Math.floor(1000 + Math.random() * 9000);
         let tokens = token
-        console.log("fer")
-                    console.log(req.body)
+        
+                    
         userServices.registro(req.body, (err, users)=>{
             let titulo = req.body.acceso=="cliente" 
                         ?`<font size="5">Verificación de Email</font>`
@@ -232,8 +232,9 @@ module.exports = function(app, passport){
         
         if(req.session.usuario){
             const {usuario} = req.session
+            
             puntoServices.getByUser(usuario._id, (err2, ubicaciones)=>{
-                console.log({ubicaciones:ubicaciones})
+               
                 let nUbicaciones = ubicaciones.map(e=>{
                     let data = e.data[0] 
                     if(data.idCliente==usuario._id){
@@ -404,7 +405,8 @@ module.exports = function(app, passport){
             res.json({ status: false, message: 'Usuario Innactivo'}) 
         } else{
             userServices.edit(req.body, req.params.idUsuario, req.session.usuario.acceso, (err, user)=>{ 
-                 
+                
+                
                 if(!err){
                     userServices.getEmail(req.session.usuario, (err2, users)=>{    
                         if(!err2){
@@ -431,10 +433,11 @@ module.exports = function(app, passport){
                             })
                             //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO
                             req.session.usuario=users
-
+                            console.log("users")
+                            console.log(users)
                             //////////////////////////////  SI ENVIA PASSWORD LO EDITA
                             req.body.password ?userServices.editPassword(req.params.idUsuario, req.body.password, (err, res)=>{}) :null
-                                
+                           
                             //////////////////////////////  SI ENVIA UBICACIONES ELIMINADAS LAS DESACTIVA
                             req.body.ubicacionesEliminadas.length>0
                             ?eliminarUibicaciones(req, res, users) :res.json({ status: true, user: users, message: 'Usuario Editado'});
@@ -558,7 +561,7 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/clientes', (req,res)=>{
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion'|| req.session.usuario.acceso=='comercial') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'  || req.session.usuario.acceso=='adminTanque') {
                 userServices.getByCliente((err, usuarios)=>{
                     if(!err){
                         usuarios = usuarios.filter(e=>{
@@ -840,22 +843,14 @@ module.exports = function(app, passport){
     //////////////////     editar campos 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/editar_campos/', (req,res)=>{
+        let token = Math.floor(1000 + Math.random() * 9000);
         userServices.getByCliente( (err, usuarios)=>{
+            
             if(!err){  
-                 usuarios.filter(e=>{
-                    
-                    // userServices.editarCampo(e._id, e.comercial, (err)=>{
-                         
-                    // })
-                    // let idZona = e.idZona1 
-                    // idZona = idZona.replace(/[')]+/g, '')
-                    // idZona = idZona.substring(9)
-                    let data = {direccion:e.direccion, capacidad: e.capacidad, idZona:e.zona__1}
-                    // console.log(data)
-                    puntoServices.create(data, e._id, e._id, (err2, puntos)=>{
+                usuarios.filter(e=>{
+                    userServices.editarCampo(e._id, e.codt+token, (err2, puntos)=>{
                         
                     })
-
                 })
                 res.json({status:true, usuarios})
             }else{

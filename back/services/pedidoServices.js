@@ -32,19 +32,17 @@ class pedidoServices{
 	getByUser(usuarioId, callback){
 		pedido.find({usuarioId, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion, valorUnitario').populate("carroId").populate("puntoId").populate("conductorId").limit(1000).populate("zonaId").populate("usuarioCrea").sort({_id: 'desc'}).exec(callback)
 	}
+	getByUserPuntoDate(usuarioId, puntoId, callback){
+		pedido.find({usuarioId, puntoId, eliminado:false}).exec(callback)
+	}
 	getByConductor(conductorId, fecha, callback){
 		let fechaHoy = moment().subtract(5, 'hours');
 		let fechaEntrega = 	fecha==="undefined" ?moment(fechaHoy).format('YYYY-MM-DD') :fecha
-	
-	 
-		// let fechaEntrega = fecha==="undefined" ?"2019-07-03" :fecha
-		console.log({fechaEntrega, conductorId, fecha})
 		pedido.find({conductorId, fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion, valorUnitario').populate("carroId").populate("puntoId").sort({orden: 'asc'}).populate("zonaId").populate("usuarioCrea").exec(callback)
 	}
 	getByFechaEntrega(fechaEntrega, limit, callback){
 		limit = parseInt(limit)
 		limit = limit*20
-		console.log({limit})
 		fechaEntrega!="undefined"
 		?pedido.find({fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").limit(limit).sort({orden: 'asc'}).exec(callback)
 		:pedido.find({eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)

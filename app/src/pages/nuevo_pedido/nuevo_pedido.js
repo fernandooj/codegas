@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage             from '@react-native-community/async-storage';
 import Icon                     from 'react-native-fa-icons';
@@ -111,10 +111,7 @@ class Nuevo_pedido extends Component{
         idUsuario = idUsuario ?idUsuario : "FAIL"
         axios.get(`pun/punto/byCliente/${idUsuario}`)
         .then(e=>{
-            
             if(e.data.status){
-                console.log("e.data")
-                console.log(e.data)
                 e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, idZona:e.data.puntos[0].idZona, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
             }else{
                 Toast.show("Tuvimos un problema, intentele mas tarde")
@@ -350,7 +347,7 @@ class Nuevo_pedido extends Component{
                     ?alert("Inserta un dia de frecuencia")
                     :frecuencia=="quincenal"  &&(!dia1 ||!dia2)
                     ?alert("Inserta los dias de frecuencia")
-                    :!guardando &&this.handleSubmit()
+                    :!guardando &&this.verificaPedido()
                 }>
                     {/* <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text> */}
                     {/* <Image source={require('../../assets/img/pg3/btnEnviar.png')} style={style.btnEnviar}  resizeMode={'contain'} /> */}
@@ -450,7 +447,34 @@ class Nuevo_pedido extends Component{
                 </ImageBackground>
             </View>
         )
-	}
+    }
+    //// verifica si se creo un pedido ese dia
+    verificaPedido(){
+        // this.setState({guardando:true})
+        let {idCliente, puntoId} = this.state
+        axios.get(`ped/pedido/listadoDia/${idCliente}/${puntoId}`)
+        .then(res=>{
+            const {status, pedido} = res.data
+            console.log(pedido)
+            if (status){
+                if(pedido.length>0){
+                    Alert.alert(
+                        `hay ${pedido.length} pedidos creados hoy para este cliente`,
+                        `desea crearlo`,
+                        [
+                            {text: 'Confirmar', onPress: () => this.handleSubmit()},
+                            {text: 'Cancelar', onPress: () => console.log("e")},
+                        ],
+                        {cancelable: false},
+                    )
+                }else{
+                    this.handleSubmit()
+                }
+            }else{
+                alert("tenemos un problema intentalo nuevamente")
+            }
+        })
+    }
     handleSubmit(){
         this.setState({guardando:true})
         let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud, idZona, imagen, cliente} = this.state

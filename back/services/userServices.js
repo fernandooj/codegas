@@ -13,7 +13,7 @@ class userServices {
 	}
 	registro(user, callback){
 		let email = user.email.toLowerCase()
-		User.findOne({ $or: [ {email: email}, {codt: email}]}).exec(callback)
+		User.findOne({ $or: [ {email: email}, {codigoRegistro: email}]}).exec(callback)
 	}
 	getByAcceso(acceso, callback){
 		User.find({'acceso':acceso, activo:true, eliminado:false}).populate("comercialAsignado").exec(callback)
@@ -69,7 +69,7 @@ class userServices {
 		}}, callback);
 	}
 	edit(user, _id, acceso, callback){
-		 
+		console.log(acceso)
 		User.findByIdAndUpdate(_id,   {
 			'acceso'	  	   : acceso=="cliente" ?"cliente" :user.acceso,
 			'editado'	  	   : acceso=="cliente" &&true,
@@ -83,7 +83,7 @@ class userServices {
 			'tipo'			   : user.tipo,
 			'email'			   : user.email,
 			'codt'			   : user.codt,
-			'valorUnitario'	   : user.valorUnitario,
+			'valorUnitario'	   : user.valorUnitario ?user.valorUnitario :0,
 			'updatedAt':    fecha
 			// 'password':  	newUsuario.generateHash(user.password),
 		}, callback);
@@ -154,10 +154,10 @@ class userServices {
         }}, callback)
 	}
 
-	editarCampo(_id, comercialAsignado1, callback){
-		console.log({_id, comercialAsignado1})
+	editarCampo(_id, codigoRegistro, callback){
+		console.log({_id, codigoRegistro})
 		User.findByIdAndUpdate(_id, {$set: {
-			comercialAsignado:comercialAsignado1
+			codigoRegistro:codigoRegistro
 		}}, callback);
 	}
 

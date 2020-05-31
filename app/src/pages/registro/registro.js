@@ -34,7 +34,7 @@ class Home extends Component{
         modalZona:false,
         zonas:[],
         ubicacionesEliminadas:[],
-        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, idZona:undefined, nombreZona:undefined, acceso:"cliente"}]
+        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, celular:undefined, idZona:undefined, nombreZona:undefined, capacidad:undefined, nuevo:true, acceso:"cliente"}]
 	  }
 	}
 	 
@@ -43,7 +43,7 @@ class Home extends Component{
         this.setState({idUsuario})
         axios.get("zon/zona/activos")
         .then(res=>{
-            console.log(res.data)
+            
             res.data.status &&this.setState({zonas:res.data.zona})
         })	
     }
@@ -54,9 +54,13 @@ class Home extends Component{
         this.setState({ubicaciones})
     }
     actualizaArrayUbicacion(type, value, key){
-        console.log({type, value, key})
         let {ubicaciones} = this.state 
-        type == "direccion" ?ubicaciones[key].direccion = value :type=="observacion" ?ubicaciones[key].observacion = value :type=="emailUbicacion" ?ubicaciones[key].email = value :ubicaciones[key].nombre = value
+        type == "direccion"       ?ubicaciones[key].direccion   = value 
+        :type=="observacion"      ?ubicaciones[key].observacion = value 
+        :type=="emailUbicacion"   ?ubicaciones[key].email       = value 
+        :type=="celularUbicacion" ?ubicaciones[key].celular       = value 
+        :type=="capacidad"        ?ubicaciones[key].capacidad   = value 
+        :ubicaciones[key].nombre = value
         this.setState({ubicaciones})
     }
     modalZonas(){
@@ -131,6 +135,14 @@ class Home extends Component{
                                                             </TouchableOpacity>
                                                             <Text style={style.asterisco}>*</Text>
                                                         </View>
+                                                        <TextInput
+                                                            type='outlined'
+                                                            label='capacidad'
+                                                            placeholder="Capacidad almacenamiento"
+                                                            value={e.capacidad}
+                                                            onChangeText={capacidad => this.actualizaArrayUbicacion("capacidad", capacidad, key)}
+                                                            style={style.inputUbicacion}
+                                                        />
                                                         <TextInput
                                                             type='outlined'
                                                             label='observacion al momento de ingresar el vehiculo'
@@ -253,7 +265,7 @@ class Home extends Component{
                         placeholderTextColor="#aaa" 
                         value={direccion_factura}
                         onChangeText={direccion_factura => this.setState({ direccion_factura })}
-                        style={direccion_factura.length<3 ?[style.input, style.inputRequired] :style.input}
+                        style={direccion_factura.length<3 ?[style.input, style.inputInvalid] :style.input}
                     />
                    
                     <TouchableOpacity style={!ubicaciones[0].idZona ?[style.btnUbicacion, style.inputInvalid] :style.btnUbicacion} onPress={()=>this.setState({modalUbicacion:true})}>
@@ -312,7 +324,7 @@ class Home extends Component{
                         />
                     </View>
                     <TouchableOpacity style={style.btnGuardar} 
-                        onPress={()=> razon_social.length<2 || cedula.length<2 || direccion_factura.length<2 || nombre.length<2 || password.length<2 || celular.length<2 || tipo.length<2 || !ubicaciones[0].idZona
+                        onPress={()=> razon_social.length<2 || cedula.length<2 || direccion_factura.length<3 || nombre.length<2 || password.length<2 || celular.length<2 || tipo.length<2 || !ubicaciones[0].idZona
                         ?alert("Todos los campos son obligatorios") :this.handleSubmit()}>
                         <Text style={style.textGuardar}>Guardar</Text>
                     </TouchableOpacity>
@@ -340,44 +352,51 @@ class Home extends Component{
 	}
     handleSubmit(e){
         this.setState({cargando:true})
-        const {razon_social, cedula, direccion_factura, nombre,  email, celular, password, tipo, acceso, codt, ubicaciones, idUsuario, ubicacionesEliminadas} = this.state
+        const {razon_social, cedula, direccion_factura, nombre,  celular, password, tipo, acceso, codt, ubicaciones, idUsuario, ubicacionesEliminadas} = this.state
         let clientes = ubicaciones.filter(e=>{
             return e.email
         })
         let puntos = ubicaciones.filter(e=>{
             return !e.email 
         })
-        puntos = puntos.map(e=>{
-            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion}
+        
+        puntos = ubicaciones.map(e=>{
+            return {direccion:e.direccion, idZona:e.idZona, observacion:e.observacion, _id:e._id, capacidad:e.capacidad}
         })
- 
-        axios.put(`user/update/${idUsuario}`, {razon_social, cedula, direccion_factura, nombre, email, password, celular, tipo, acceso, codt, puntos, idUsuario, ubicacionesEliminadas, registro:true})
+        let puntosNuevos = puntos.filter(e=>{
+            return !e._id
+        })
+        puntos = puntos.filter(e=>{
+            return e._id
+        })
+        let email = this.props.navigation.state.params.email
+        axios.put(`user/update/${idUsuario}`, {puntos, puntosNuevos, email, razon_social, cedula, direccion_factura, nombre, password, celular, tipo, acceso, codt, puntos, idUsuario, ubicacionesEliminadas, registro:true})
         .then(e=>{
            
             if(e.data.status){
                 
-                    if(clientes.length>0){
-                        axios.post("user/crea_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
-                        .then(res=>{
-                            // this.loginExitoso(idUsuario, nombre, email, "cliente", "null")
-                            // this.props.navigation.navigate("Home")
-                            // Toast.show("Usuario editado")
-                        })
-                        .catch(err2=>{
-                            console.log(err2)
-                            this.setState({cargando:false})
-                        })
-                    }else{
-                        axios.post("pun/punto/varios",{puntos, id:e.data.user._id})
-                        .then(res=>{
+                    // if(clientes.length>0){
+                    //     axios.post("user/crea_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
+                    //     .then(res=>{
+                    //         // this.loginExitoso(idUsuario, nombre, email, "cliente", "null")
+                    //         // this.props.navigation.navigate("Home")
+                    //         // Toast.show("Usuario editado")
+                    //     })
+                    //     .catch(err2=>{
+                    //         console.log(err2)
+                    //         this.setState({cargando:false})
+                    //     })
+                    // }else{
+                    //     axios.post("pun/punto/varios",{puntos, id:e.data.user._id})
+                    //     .then(res=>{
                              
                            
-                        })
-                        .catch(err2=>{
-                            console.log(err2)
-                            this.setState({cargando:false})
-                        })
-                    }
+                    //     })
+                    //     .catch(err2=>{
+                    //         console.log(err2)
+                    //         this.setState({cargando:false})
+                    //     })
+                    // }
                     this.loginExitoso(idUsuario, nombre, email, "cliente", "null")
             }else{
                 this.setState({cargando:false})
@@ -391,13 +410,14 @@ class Home extends Component{
     }	
     async loginExitoso(_id, nombre, email, acceso, avatar){
         console.log({_id, nombre, email, acceso, avatar})
+        
         AsyncStorage.setItem('userId', _id)
         AsyncStorage.setItem('nombre', nombre)
         AsyncStorage.setItem('email',  email)
         AsyncStorage.setItem('acceso', acceso)
         AsyncStorage.setItem('avatar', avatar)
-        // AsyncStorage.setItem('tokenPhone', this.state.tokenPhone)
-        this.props.navigation.navigate("Home")
+ 
+        this.props.navigation.navigate("inicio")
     }
 
 }

@@ -28,6 +28,7 @@ let UserSchema = mongoose.Schema({
 	codMagister   	  : String,
 	avatar	   		  : String,
 	codt	   		  : String,
+	codigoRegistro    : String,
 	valorUnitario     : Number,
 	editado    		  : {type: Boolean, default:false},     //// es para verificar que ya edito la informacion, al momento del registro
 	activo     		  : {type: Boolean, default:true},     						//// cuando se crea el usuario es innactivo, se activa al darle clikc al email
@@ -38,7 +39,7 @@ let UserSchema = mongoose.Schema({
 	comercialAsignado1 : String,
 	direccion:String,
 	capacidad:String,
-	zona__1:String
+	zona__1:String,
 });
 
  
@@ -69,5 +70,6 @@ module.exports =  mongoose.model('User', UserSchema)
 // chat
 // pedidos
 // comercial
-// depTecnico --> puede ver las alertas
-// insSeguridad --> puede ver las alertas de los estados 
+// depTecnico   ---> puede ver las alertas
+// insSeguridad ---> puede ver las alertas de los estados 
+// adminTanque  ---> puede reasignar tanques 

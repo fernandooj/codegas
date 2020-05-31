@@ -177,6 +177,7 @@ export const style = MediaQueryStyleSheet.create({
     },  
 	
 	inputUbicacion:{
+		fontFamily: "Comfortaa-Regular",
 		borderColor:"rgba(0,0,0,.2)",
 		backgroundColor:"#ffffff",
 		borderWidth:1,

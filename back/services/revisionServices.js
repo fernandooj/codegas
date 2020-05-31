@@ -32,7 +32,7 @@ class revisionServices{
 		.sort({_id: 'desc'}).exec(callback)
 	}
 	getDepTecnico(callback){
-		revision.find({ $or: [ {avisos:true}, {extintores:true}, {distancias:true}, {electricas:true}]})
+		revision.find({ $or: [ {avisos:true}, {extintores:true}, {distancias:true}, {electricas:true}, {accesorios:true}]})
 		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
 		.populate("zonaId")
 		.populate("puntoId")
@@ -146,6 +146,7 @@ class revisionServices{
 			extintores 			  : data.extintores,
 			distancias 				: data.distancias,
 			electricas 				: data.electricas,
+			accesorios 				: data.accesorios,
 		}}, callback);
 	}
 	
@@ -176,6 +177,7 @@ class revisionServices{
 			extintores 	   : data.extintores,
 			distancias     : data.distancias,
 			electricas     : data.electricas,
+			accesorios     : data.accesorios,
 			depTecnicoEstado:true
 		}}, callback);
 	}

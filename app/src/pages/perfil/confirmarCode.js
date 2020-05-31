@@ -34,7 +34,7 @@ export default class ConfirmarComponent extends Component{
                 {/* <TouchableOpacity onPress={()=>this.props.navigation.navigate("perfil")} style={style.btnRegresar}>
                     <Icon name={'arrow-left'} allowFontScaling style={style.iconRegresar} />
                 </TouchableOpacity> */}
-                <Text style={style.tituloRegresar}>Hemos enviado un correo con un codigo de verificación</Text>
+                <Text style={style.tituloRegresar}>Hemos enviado un correo con un codigo de verificación a {this.props.navigation.state.params.email}</Text>
             </View>
 		)
     }
@@ -67,7 +67,7 @@ export default class ConfirmarComponent extends Component{
             axios.post("user/verificaToken", {token:code, email})
             .then(res=>{
                 alert("tu usuario ha sido activado")
-                res.data.status ?this.props.navigation.navigate("privacidad") : Toast.show("Tenemos un problema intentalo mas tarde")
+                res.data.status ?this.props.navigation.navigate("privacidad", {email}) : Toast.show("Tenemos un problema intentalo mas tarde")
             })
         }else{
             Toast.show("Codigo Incorrecto")

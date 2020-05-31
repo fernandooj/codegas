@@ -21,7 +21,8 @@ const accesos=[
     {label: 'Cliente',              value: 'cliente',    key: 'cliente'},
     {label: 'Comercial',            value: 'comercial',  key: 'comercial'},
     {label: 'Departamento Tecnico', value: 'depTecnico', key: 'depTecnico'},
-    {label: 'Inspector Seguridad',  value: 'insSeguridad', key: 'insSeguridad'}
+    {label: 'Inspector Seguridad',  value: 'insSeguridad', key: 'insSeguridad'},
+    {label: 'Administrador Tanques',value: 'adminTanque', key: 'adminTanque'}
 ]
 
 class verPerfil extends Component{
@@ -168,7 +169,7 @@ class verPerfil extends Component{
     renderPerfil(){
         let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
         valorUnitario = valorUnitario ?valorUnitario.toString() :""
-        console.log({tipoAcceso})
+        console.log({imagen})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -868,9 +869,9 @@ class verPerfil extends Component{
         axios.post("user/sign_up", {razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos, codMagister, valorUnitario})
         .then(e=>{
             
-            axios.get(`/users/asignarComercial/${e.data.user._id}/${idVeo}`)
             console.log(e.data)
             if(e.data.status){
+            axios.get(`/users/asignarComercial/${e.data.user._id}/${idVeo}`)
                 if(acceso=="cliente") {
                     if(clientes.length>0){
                         axios.post("user/crea_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
@@ -895,7 +896,12 @@ class verPerfil extends Component{
                         })
                     }
                 }else{
-                    this.avatar(imagen, e.data.user._id)
+                    if(imagen.length===0){
+                        this.props.navigation.navigate("Home")
+                        Toast.show("Usuario eliminado con exito")
+                    }else{
+                        this.avatar(imagen, e.data.user._id)
+                    }
                 }
             }else{
                 this.setState({cargando:false})
@@ -1003,7 +1009,12 @@ class verPerfil extends Component{
 
             }else{
                 if(editaAvatar){
-                    this.avatar(imagen, e.data.user._id)
+                    if(imagen.length===0){
+                        this.props.navigation.navigate("Home")
+                        Toast.show("Usuario eliminado con exito")
+                    }else{
+                        this.avatar(imagen, e.data.user._id)
+                    }
                 }else{
                     this.edicionExitosa(nombre)
                 }

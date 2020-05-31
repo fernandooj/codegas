@@ -23,11 +23,12 @@ class verPerfil extends Component{
         }
     }
  
-    componentWillMount(){
+    async componentWillMount(){
+        const acceso    = await AsyncStorage.getItem('acceso')
         axios.get("tan/tanque")
         .then(res=>{
-            console.log(res.data)
-            this.setState({tanques:res.data.tanque})
+            console.log({acceso})
+            this.setState({tanques:res.data.tanque, acceso})
         })
        
     }
@@ -45,17 +46,18 @@ class verPerfil extends Component{
     
     renderTanques(){
         const {navigation} = this.props
-        const {terminoBuscador, inicio, final, tanques} = this.state
+        const {terminoBuscador, inicio, final, tanques, acceso} = this.state
         let filtroTanques = tanques.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newTanques = filtroTanques.slice(inicio, final) 
         return newTanques.map((e, key)=>{
             return(
-                <View style={[style.contenedorTanques, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
-                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("nuevoTanque", {tanqueId:e._id})}>
+                <View style={[style.contenedorTanques, {backgroundColor: e.total ?"#F96D6C" :"white" }]} key={key}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarTanque" :"nuevoTanque", {tanqueId:acceso=="depTecnico"?e._id._id :e._id})}>
                         <View style={{width:"90%"}}>
-                            <Text style={style.textUsers}>Placa: {e.placaText}</Text>
-                            <Text style={style.textUsers}>Capacidad: {e.capacidad}</Text>
-                            <Text style={style.textUsers}>Cliente:   {e.usuarioId &&e.usuarioId.razon_social}</Text>
+                            <Text style={style.textUsers}>Placa:     {e.placaText ?e.placaText :e._id.placaText}</Text>
+                            <Text style={style.textUsers}>Capacidad: {e.capacidad ?e.capacidad :e._id.capacidad}</Text>
+                            <Text style={style.textUsers}>Cliente:   {e.usuarioId ?e.usuarioId.razon_social :e._id.usuario}</Text>
+                            {e.total &&<Text style={style.textUsers}>Total alertas: {e.total}</Text>}
                         </View>
                         <View  style={{justifyContent:"center"}}>
                             <Icon name={'angle-right'} style={style.iconCerrar} />

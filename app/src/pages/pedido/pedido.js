@@ -211,7 +211,7 @@ class Pedido extends Component{
                         e.puntoId.capacidad
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Almacenamiento galones </Text>
-                            <Text style={style.textPedido}>{ e.puntoId.capacidad}</Text>
+                            <Text style={style.textPedido}>{ e.puntoId.capacidad ?e.puntoId.capacidad :"0"}</Text>
                         </View>
                     }
 

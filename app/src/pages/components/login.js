@@ -11,11 +11,7 @@ import axios from 'axios'
 import CodeInput from 'react-native-confirmation-code-input';
  
  
-const {
-	GraphRequest, GraphRequestManager,
-	LoginManager,
-	AccessToken
-  } = FBSDK;
+ 
 
   class Login extends Component{
 	constructor(props) {
@@ -29,7 +25,7 @@ const {
 	  }
 	}
 	async componentWillMount(){
-		GoogleSignin.configure()
+	 
 		
 	}
 	 

@@ -55,6 +55,7 @@ let Revision = new Schema({
 	extintores		  : Boolean,
 	distancias 		  : Boolean,
 	electricas		  : Boolean, 
+	accesorios		  : Boolean, 
 	////////////////////////////////	CERRAR ALERTA	
 	alerta        	  : [],
 	alertaText		  : String,
