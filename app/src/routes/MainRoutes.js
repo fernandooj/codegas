@@ -32,7 +32,9 @@ import nuevaRevisionComponent 	from '../pages/revision/nuevaRevision';
 import chartComponent 			from '../pages/chart/chart';
 import cerrarRevisionComponent 	from '../pages/revision/cerrarRevision';
 import cerrarSeguridadComponent from '../pages/revision/cerrarSeguridad';
-import cerrarTanqueComponent 	from '../pages/tanques/cerrarTanque';
+import cerrarTanqueComponent 	  from '../pages/tanques/cerrarTanque';
+import reporteEmergenciaComponent from '../pages/reporteEmergencia/reporteEmergencia';
+import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoReporteEmergencia';
  
  
 const AppNavigator = createStackNavigator({
@@ -64,6 +66,8 @@ const AppNavigator = createStackNavigator({
 	cerrarRevision 		: {screen: cerrarRevisionComponent},
 	cerrarSeguridad 	: {screen: cerrarSeguridadComponent},
 	cerrarTanque 		: {screen: cerrarTanqueComponent},
+	reporteEmergencia	: {screen: reporteEmergenciaComponent},
+	nuevoReporteEmergencia : {screen: nuevoReporteEmergenciaComponent},
   },{ headerMode: 'none'});
 
 export default createAppContainer(AppNavigator)

@@ -25,15 +25,16 @@ let tanqueRutas        = require('./routes/tanque.js');
 let revisionRutas      = require('./routes/revision.js');
 let ultimaRevRutas     = require('./routes/ultimaRev.js');
 let alertaTanqueRutas  = require('./routes/alertaTanque.js');
+let reporteEmergenciaRutas  = require('./routes/reporteEmergencia.js');
 let configuracionRutas = require('./routes/configuracion.js');
 
 let SocketIO = require('./socket.js')
 const path   = require('path');
 
-let https = require('http')
+let https = require('https')
 var options = {
-  // cert: fs.readFileSync('/home/certificados/bundle.crt', 'utf8'),
-  // key: fs.readFileSync('/home/certificados/appcodegas.com.pem', 'utf8')
+  cert: fs.readFileSync('/home/certificados/bundle.crt', 'utf8'),
+  key: fs.readFileSync('/home/certificados/appcodegas.com.pem', 'utf8')
 };
 let server = https.Server(options, app)
 SocketIO(server)
@@ -124,6 +125,7 @@ app.use('/x/v1/tan/tanque',       tanqueRutas)
 app.use('/x/v1/rev/revision',     revisionRutas) 
 app.use('/x/v1/ult/ultimaRev',    ultimaRevRutas) 
 app.use('/x/v1/ale/alertaTanque', alertaTanqueRutas) 
+app.use('/x/v1/rep/reporteEmergenciaRutas', reporteEmergenciaRutas) 
 app.use('/x/v1/con/configuracion',configuracionRutas) 
 require('./routes/user.js')(app, passport);
 

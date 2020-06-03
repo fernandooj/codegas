@@ -278,7 +278,7 @@ router.post('/solicitudServicio/:idVehiculo/', (req,res)=>{
         revisionServices.solicitudServicio(req.params.idVehiculo, req.session.usuario._id,  req.body.solicitudServicio, (err, revision)=>{
             if (!err) {
                 let userRegistrado = {email:"fernandooj@ymail.com, dpto@codegascolombia.com, gerencia@codegascolombia.com, directa.comercial@codegascolombia.com "}
-                let userEnvia = "Enviado por:"+req.session.usuario.nombre
+                let userEnvia = `N Control:${req.body.nControl} <br />Cliente:${req.body.codtCliente} <br />Punto:${req.body.direccion} <br />Enviado por: " ${req.session.usuario.nombre}<br />`
                 htmlTemplate(req, userRegistrado, "Nueva solicitud de servicio", req.body.solicitudServicio, userEnvia,  "Solicitud de servicio codegas")
 
                 res.json({ status:true, revision }); 

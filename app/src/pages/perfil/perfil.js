@@ -95,7 +95,7 @@ class Home extends Component{
     renderPerfil(){
         const {navigation} = this.props
         const {nombre, idUsuario, avatar, email, err, acceso} = this.state
- 
+        console.log({acceso})
         return (
             <ScrollView style={style.containerRegistro}> 
                 <View style={style.perfilContenedor}>
@@ -118,14 +118,14 @@ class Home extends Component{
                     </TouchableOpacity>
                     
                     {
-                        acceso=="admin"
+                        (acceso=="admin" || acceso=="despacho")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"admin"})} >
                             <Text style={style.txtLista}>Crear Usuario</Text> 
                             <Image source={require('../../assets/img/pg1/icon1.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
                     {
-                        (acceso=="admin" || acceso=="solucion" || acceso=="comercial" || acceso=="veo")
+                        (acceso=="admin" || acceso=="solucion" || acceso=="comercial" || acceso=="veo" || acceso=="despacho")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios")} >
                             <Text style={style.txtLista}>Usuarios</Text> 
                             <Image source={require('../../assets/img/pg1/icon3.png')} style={style.icon} />
@@ -177,6 +177,13 @@ class Home extends Component{
                          (acceso=="admin" || acceso=="comercial" || acceso=="depTecnico" || acceso=="insSeguridad")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios", {revision:true})} >
                             <Text style={style.txtLista}>Revision y control tanques</Text> 
+                            <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
+                        </TouchableOpacity>
+                    }
+                    {
+                        (acceso=="admin" || acceso=="comercial" || acceso=="depTecnico" || acceso=="insSeguridad" || acceso=="veo" || acceso=="cliente")
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("reporteEmergencia", {revision:true})} >
+                            <Text style={style.txtLista}>Reporte de emergencia</Text> 
                             <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
                         </TouchableOpacity>
                     }

@@ -99,7 +99,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	row1Step2:{
 		fontFamily: "Comfortaa-Regular",
-		width:Width/3,
+		width:Width/2.5,
 	},
 	row1Step3:{
 		fontFamily: "Comfortaa-Regular",
@@ -108,7 +108,7 @@ export const style = MediaQueryStyleSheet.create({
 	inputStep2:{
 		fontFamily: "Comfortaa-Regular",
 		borderWidth:1,
-		width:Width/1.7,
+		width:Width/1.8,
 		marginVertical:5,
 		paddingVertical:Platform.OS==='android' ?4 :10,
 		paddingRight:12,
@@ -117,7 +117,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnMultiple:{
 		borderWidth:1,
-		width:Width/1.7,
+		width:Width/1.8,
 		marginVertical:5,
 		paddingVertical:10,
 		alignItems: 'flex-start',

@@ -34,8 +34,12 @@ class Revision extends Component{
         }catch(e){
             console.log(e)
         }
-
-        axios.get(`rev/revision/byPunto/${this.props.navigation.state.params.puntoId}`)
+        this.props.navigation.state.params
+        ?axios.get(`rev/revision/byPunto/${this.props.navigation.state.params.puntoId}`)
+        .then(res=>{
+            this.setState({revisiones:res.data.revision})
+        })
+        :axios.get(`rev/revision/`)
         .then(res=>{
             this.setState({revisiones:res.data.revision})
         })
@@ -61,8 +65,27 @@ class Revision extends Component{
         return newRevisiones.map((e, key)=>{
             return(
                 <View style={[style.contenedorRevisiones, {backgroundColor: !e.activo ?"#F96D6C" :(e.estado==2 ||e.avisos||e.distancias||e.electricas||e.extintores||e.accesorios) ?"#e8a43d" :"white" }]} key={key}>
-                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:navigation.state.params.puntoId, clienteId:navigation.state.params.clienteId, revisionId:e._id})}>
-                        <View style={{width:"90%"}}>
+                    {
+                        navigation.state.params
+                        ?<TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:navigation.state.params.puntoId, clienteId:navigation.state.params.clienteId, revisionId:e._id})}>
+                             <View style={{width:"90%"}}>
+                                <Text style={style.textUsers}>N Control: {e.nControl}</Text>
+                                <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
+                                
+                                {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
+                                {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
+                                {e.avisos     &&<Text style={style.textUsers}>Falta de Avisos reglamentarios en mal estado</Text>}
+                                {e.extintores &&<Text style={style.textUsers}>Falta extintores en mal estado</Text>}
+                                {e.distancias &&<Text style={style.textUsers}>No cumple distancias en mal estado</Text>}
+                                {e.electricas &&<Text style={style.textUsers}>Fuentes ignición cerca en mal estado</Text>}
+                                {e.accesorios &&<Text style={style.textUsers}>No cumple accesorios y materiales</Text>}
+                            </View>
+                            <View  style={{justifyContent:"center"}}>
+                                <Icon name={'angle-right'} style={style.iconCerrar} />
+                            </View>
+                        </TouchableOpacity>
+                        :<TouchableOpacity style={{flexDirection:"row"}}>
+                             <View style={{width:"90%"}}>
                             <Text style={style.textUsers}>N Control: {e.nControl}</Text>
                             <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
                             
@@ -78,6 +101,9 @@ class Revision extends Component{
                             <Icon name={'angle-right'} style={style.iconCerrar} />
                         </View>
                     </TouchableOpacity>
+                    }
+                    
+                       
                 </View>
             )
         })
@@ -85,7 +111,7 @@ class Revision extends Component{
   
 	render(){
         const {navigation} = this.props
-        const {puntoId, clienteId, direccion, capacidad, observacion} = this.props.navigation.state.params
+        
         const {terminoBuscador} = this.state
   
         return (
@@ -99,9 +125,12 @@ class Revision extends Component{
                         value={terminoBuscador}
                         style={[style.inputCabezera]}
                     />
-                    <TouchableOpacity  onPress={()=>navigation.navigate("nuevaRevision", {puntoId, clienteId, direccion, capacidad, observacion} )}>
-                        <Icon name='plus' style={style.iconAdd} />
-                    </TouchableOpacity>
+                    {
+                        this.props.navigation.state.params
+                        &&<TouchableOpacity  onPress={()=>navigation.navigate("nuevaRevision", {puntoId:this.props.navigation.state.params.puntoId, clienteId:this.props.navigation.state.params.clienteId, direccion:this.props.navigation.state.params.direccion, capacidad:this.props.navigation.state.params.capacidad, observacion:this.props.navigation.state.params.observacion} )}>
+                            <Icon name='plus' style={style.iconAdd} />
+                        </TouchableOpacity>
+                    }
                 </View>
 
                 <ScrollView style={{ marginBottom:85}} onScroll={(e)=>this.onScroll(e)}  keyboardDismissMode="on-drag">

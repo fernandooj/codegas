@@ -54,6 +54,8 @@ class pedidoServices{
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega, entregado:true}).sort({orden: 'desc'}).exec(callback)
 	}
 	create(data, usuarioId, usuarioCrea, nPedido, imagen, valorUnitario, callback){
+		// let fechaHoy = moment().subtract(5, 'hours');
+		// fechaHoy     = moment(fechaHoy).format('YYYY-MM-DD')
 		let fecha = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss')
  
 		let creado = moment(fecha).valueOf()

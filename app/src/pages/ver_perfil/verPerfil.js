@@ -25,6 +25,7 @@ const accesos=[
     {label: 'Administrador Tanques',value: 'adminTanque', key: 'adminTanque'}
 ]
 
+
 class verPerfil extends Component{
 	constructor(props) {
 	  super(props);
@@ -57,7 +58,9 @@ class verPerfil extends Component{
  
     async componentWillMount(){
         const accesoPerfil = await AsyncStorage.getItem('acceso')
-        this.setState({accesoPerfil})
+        let acceso = accesoPerfil=="despacho" ?"cliente" :"usuario"
+        this.setState({accesoPerfil, acceso})
+        
         
          //////////////////////////////  DEVUELVE LOS USUARIOS TIPO VEOS
          axios.get("users/acceso/veo")   
@@ -103,6 +106,7 @@ class verPerfil extends Component{
                 codMagister:      user.codMagister   ?user.codMagister  :"", 
                 editado:          user.editado       ?user.editado      :false,
                 ubicaciones:      user.ubicaciones   ?user.ubicaciones  :[],
+                accesoPerfil:"cliente",
                 direccion_factura:user.direccion_factura ?user.direccion_factura :"",
             })
         })
@@ -169,13 +173,13 @@ class verPerfil extends Component{
     renderPerfil(){
         let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
         valorUnitario = valorUnitario ?valorUnitario.toString() :""
-        console.log({imagen})
+        console.log({accesoPerfil, acceso})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
             {/* ACCESO */}	 
                 {
-                    (tipoAcceso=="admin" || tipoAcceso=="editar")
+                    ((tipoAcceso=="admin" && accesoPerfil!=="despacho") || tipoAcceso=="editar")
                     &&<View style={style.tipo}>
                         <RNPickerSelect
                             placeholder={{
@@ -275,16 +279,17 @@ class verPerfil extends Component{
                 {
                     acceso=="cliente"
                     &&<>
-                    <Text style={style.textInfo}>Codt</Text>
-                    <TextInput
-                        type='outlined'
-                        placeholder="CODT"
-                        autoCapitalize = 'none'
-                        placeholderTextColor="#aaa" 
-                        value={codt}
-                        onChangeText={codt => this.setState({ codt })}
-                        style={style.input}
-                    />
+                        <Text style={style.textInfo}>Codt</Text>
+                        <TextInput
+                            type='outlined'
+                            placeholder="CODT"
+                            autoCapitalize = 'none'
+                            placeholderTextColor="#aaa" 
+                            value={codt}
+                            onChangeText={codt => this.setState({ codt })}
+                            style={style.input}
+                            editable={accesoPerfil=="cliente" ?false :true}
+                        />
                     </>
                 }
            
@@ -340,6 +345,7 @@ class verPerfil extends Component{
                         value={valorUnitario}
                         onChangeText={valorUnitario => this.setState({ valorUnitario })}
                         style={valorUnitario.length<3 ?[style.input, style.inputRequired] :style.input}
+                        editable={accesoPerfil=="cliente" ?false :true}
                     />
                 </>
             }
@@ -359,8 +365,8 @@ class verPerfil extends Component{
                             }}
                             items={[
                                 {label: 'Residencial', value: 'Residencial',key: 'Residencial'},
-                                {label: 'Comercial', value: 'Comercial',key:   'Comercial'},
-                                {label: 'Industrial',value: 'Industrial',key:   'Industrial'}
+                                {label: 'Comercial',   value: 'Comercial',  key: 'Comercial'},
+                                {label: 'Industrial',  value: 'Industrial', key: 'Industrial'}
                             ]}
                             onValueChange={tipo => { this.setState({tipo}); }}
                         
@@ -388,10 +394,9 @@ class verPerfil extends Component{
                
                 {
                     (tipoAcceso=="editar" && (accesoPerfil=="admin" || accesoPerfil=="comercial") || acceso=="cliente")
-                    &&
-                    <View>
+                    &&<View>
                         <Text style={style.textInfo}>Comercial Veo</Text>
-                        <TouchableOpacity onPress={()=>this.setState({modalCliente:true})} style={style.inputVeo}>
+                        <TouchableOpacity onPress={()=>accesoPerfil=="cliente" ?null :this.setState({modalCliente:true})} style={style.inputVeo}>
                             <Text style={style.textVeo}>{veo ?veo :"Veos"}</Text>
                         </TouchableOpacity>
                     </View>
@@ -433,12 +438,12 @@ class verPerfil extends Component{
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
                         <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>
                     </TouchableOpacity> 
-                    :(tipoAcceso=="editar" && accesoPerfil=="admin")
+                    :(tipoAcceso=="editar" && (accesoPerfil=="admin" || accesoPerfil=="despacho" ))
                     ?<TouchableOpacity style={style.btnGuardar} onPress={()=>this.editarUsuario("editar")}>
                     {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
                         <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar Usuario"}</Text>
                     </TouchableOpacity>
-                    :accesoPerfil=="admin"
+                    :(accesoPerfil=="admin"|| accesoPerfil=="despacho") 
                     &&<TouchableOpacity style={style.btnGuardar} onPress={()=>this.handleSubmit()}>
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
                         <Text style={style.textGuardar}>{cargando ?"Guardando" :"Guardar"}</Text>

@@ -153,8 +153,17 @@ router.get('/notificacionDesvincularUsuario/:placaText/:codtCliente/:razon_socia
                 let asunto =  "Tanque no se encontro en el cliente"  
                 htmlTemplate(req, e, titulo, text1, text2,  asunto)
             })
-         })
-         res.json({ status:true }); 
+        })
+        userServices.getByAcceso("admin", (err, usuarios)=>{
+            usuarios.map(e=>{
+                let titulo = `<font size="5">El tanque con codigo activo :<b>${req.params.placaText}</b> no se encontro </font>`
+                let text1  = `Cliente asignado actualmente :<b>codt:${req.params.codtCliente}, razon social: ${req.params.razon_socialCliente} </b>`
+                let text2  = `Usuario que genero información: ${req.session.usuario.nombre}`
+                let asunto =  "Tanque no se encontro en el cliente"  
+                htmlTemplate(req, e, titulo, text1, text2,  asunto)
+            })
+        })
+        res.json({ status:true }); 
     }
 })
 

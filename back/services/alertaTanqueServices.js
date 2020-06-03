@@ -28,8 +28,9 @@ class alertaTanqueServices{
    }
     
 	create(data, usuarioCrea, callback){
-        let creado = moment().subtract(5, 'hours');
-        creado = moment(creado).format('YYYY-MM-DD h:mm');
+		console.log({data, usuarioCrea})
+    let creado = moment().subtract(5, 'hours');
+    creado = moment(creado).format('YYYY-MM-DD h:mm');
 		let alertaTanqueRev = new alertaTanque({
 			alertaText  : data.alertaText,
 			tanqueId    : data.tanqueId,
@@ -37,14 +38,13 @@ class alertaTanqueServices{
 			creado
 		})
 		alertaTanqueRev.save(callback)	
-    }   
-    cerrar(_id, cerradoText, alertaImagen, usuarioCierra, callback){
-        console.log({_id, cerradoText, alertaImagen, usuarioCierra})
-        alertaTanque.findByIdAndUpdate(_id, {$set: {
-            cerradoText:cerradoText,
-            alertaImagen: alertaImagen ?alertaImagen :[],
-            usuarioCierra,
-            activo:false,
+  }   
+  cerrar(_id, cerradoText, alertaImagen, usuarioCierra, callback){
+		alertaTanque.findByIdAndUpdate(_id, {$set: {
+				cerradoText:cerradoText,
+				alertaImagen: alertaImagen ?alertaImagen :[],
+				usuarioCierra,
+				activo:false,
 		}}, callback);
 	}    
     eliminar(_id, eliminado, callback){

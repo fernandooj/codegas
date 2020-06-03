@@ -87,9 +87,7 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
                 pedido = pedido1.concat(pedido2)
 
                 res.json({ status:true, pedido });
-
             }else{
-
                 res.json({ status:false, message: err, pedido:[] });
             }
         })
@@ -122,6 +120,7 @@ router.get('/listadoDia/:usuarioId/:puntoId/', (req,res)=>{
 		}else{
             let fechaHoy = moment().subtract(5, 'hours');
             fechaHoy     = moment(fechaHoy).format('YYYY-MM-DD')
+            console.log({fechaHoy})
             let pedido = pedidos.filter(e=>{
                 e.creado = moment(e.creado).format("YYYY-MM-DD")
                 return e.creado==fechaHoy

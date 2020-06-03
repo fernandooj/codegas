@@ -129,6 +129,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnDate2:{
 		width:Width/1.7,
+		marginVertical:6
 	},
 	textBtn:{
 		fontFamily: "Comfortaa-Regular",
@@ -180,7 +181,7 @@ export const style = MediaQueryStyleSheet.create({
 		textAlignVertical: 'top',
 		borderColor:"rgba(20,20,20,.1)",
 		borderWidth:1,
-		width:Width/1.7,
+		width:"98%",
 		marginVertical:5,
 		paddingVertical:4,
 		fontSize:10,

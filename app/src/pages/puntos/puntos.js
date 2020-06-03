@@ -34,7 +34,6 @@ class Puntos extends Component{
         })
     }
      
-   
     renderPuntos(){
         const {navigation} = this.props
         const {terminoBuscador, puntos} = this.state

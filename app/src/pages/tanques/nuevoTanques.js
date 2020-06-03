@@ -128,8 +128,9 @@ class Tanques extends Component{
                         placaText :             tanque.placaText         ?tanque.placaText          :"",
                         capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
                         fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
-                        registroOnac:           tanque.registroOnac ?tanque.registroOnac  :"",
+                        registroOnac:           tanque.registroOnac      ?tanque.registroOnac       :"",
                         fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
+                        ultimRevTotal:          tanque.ultimRevTotal     ?tanque.ultimRevTotal      :"",
                         
                         nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
                         codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
@@ -149,16 +150,17 @@ class Tanques extends Component{
                         
     
                         //////  step 3
-                        usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
-                        cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
-                        razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
-                        direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
-                        nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre              :"",
-                        celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
-                        emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
-                        puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
-                        puntoId:                  tanque.puntoId             ?tanque.puntoId._id                   :null,
-                        zonaId:                   tanque.zonaId              ?tanque.zonaId._id                    :null,
+                        usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id               :null,
+                        codtCliente:              tanque.usuarioId           ?tanque.usuarioId.codt              :"",
+                        cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social      :"",
+                        razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula            :"",
+                        direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura :"",
+                        nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre            :"",
+                        celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular           :"",
+                        emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email             :"",
+                        puntos:                   tanque.puntoId             ?[tanque.puntoId]                   :[],
+                        puntoId:                  tanque.puntoId             ?tanque.puntoId._id                 :null,
+                        zonaId:                   tanque.zonaId              ?tanque.zonaId._id                  :null,
                         modalPlacas:false    
                     })
                 })
@@ -317,7 +319,7 @@ class Tanques extends Component{
         axios.post("")
     }
     step1(){
-        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, showModal, fechaUltimaRev, existeTanque, nPlaca, serie, anoFabricacion, revisiones, registroOnac, tanqueId} = this.state
+        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, showModal, fechaUltimaRev, existeTanque, nPlaca, serie, anoFabricacion, revisiones, registroOnac, ultimRevTotal, tanqueId} = this.state
          
         return(
             <View>
@@ -338,9 +340,15 @@ class Tanques extends Component{
                 />
                 <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Codigo Activo</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPlacas:true})}>
+                    <TextInput
+                        placeholder="Serie"
+                        value={placaText}
+                        style={style.inputStep2}
+                        onChangeText={(placaText)=> this.setState({ placaText })}
+                    />
+                    {/* <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPlacas:true})}>
                         <Text style={placaText ?style.textBtnActive :style.textBtn}>{placaText ?placaText :"Placas"}</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
 
                  {/* CAPACIDAD */}
@@ -349,9 +357,7 @@ class Tanques extends Component{
 					visible={modalCapacidad}
 					onSelect={(e)=>this.setState({capacidad:e, modalCapacidad:false})}
 					onCancel={()=>this.setState({modalCapacidad:false})}
-					 
                     options={capacidades}
-                    
                     cancelButtonText="CANCELAR"
                     optionTextStyle={style.filterText}
                 />
@@ -374,7 +380,7 @@ class Tanques extends Component{
                 </View>
 
                 {/* FECHA MANTENIMIENTO TOTAL */}
-                <View style={[style.contenedorSetp2, {marginTop:6}]}>
+                <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Mto total</Text>
                     <DatePicker
                         customStyles={{
@@ -460,6 +466,32 @@ class Tanques extends Component{
                         style={style.inputStep2}
                         value={registroOnac}
                         onChangeText={(registroOnac)=> this.setState({ registroOnac })}
+                    />
+                </View>
+                
+                {/* REGISTRO ONAC */}
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Ultima Rev Total</Text>
+                    <DatePicker
+                        customStyles={{
+                            dateInput:style.btnDate,
+                            placeholderText:ultimRevTotal ?style.textBtnActive :style.textBtn,
+                            dateText: { 
+                                fontSize:14,
+                                color: '#000000'
+                            },
+                        }}
+                        style={style.btnDate2}
+                        
+                        locale="es_co"
+                        mode="date"
+                        placeholder={ultimRevTotal ?ultimRevTotal :"Ultima Rev Par"}
+                        format="YYYY-MMM-DD"
+                        showIcon={false}
+                        confirmBtnText="Confirmar"
+                        cancelBtnText="Cancelar"
+                        androidMode='spinner'
+                        onDateChange={(ultimRevTotal) => {this.setState({ultimRevTotal})}}
                     />
                 </View>
 
@@ -645,7 +677,7 @@ class Tanques extends Component{
         })
     }
     step3(){
-        const {usuarioId, modalCliente, clientes, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId} = this.state
+        const {usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId} = this.state
         return(
             <View>
                 <ModalFilterPicker
@@ -670,6 +702,10 @@ class Tanques extends Component{
                 {
                     usuarioId
                     &&<View style={style.contenedorUsuario}>
+                        <View style={style.subContenedorUsuario}>
+                            <Text style={style.row1}>CODT:</Text>
+                            <Text style={style.row2}>{codtCliente}</Text>
+                        </View>
                         <View style={style.subContenedorUsuario}>
                             <Text style={style.row1}>Identificación:</Text>
                             <Text style={style.row2}>{cedulaCliente}</Text>
@@ -757,22 +793,23 @@ class Tanques extends Component{
 		)
     }
     enviarAlerta(){
-        const { alertaText, tanqueId } = this.state
-        axios.post(`ale/alertaTanque/`, {alertaText, tanqueId})
+        const { alertaText, tanqueId, placaText, codtCliente } = this.state
+        axios.post(`ale/alertaTanque/`, {alertaText, placaText, tanqueId, codtCliente})
         .then((res)=>{
             if(res.data.status){
-                alert("Alerta Enviada")
-             
                 axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
-                .then(res=>{
-                    console.log(res.data.alerta)
-                    this.setState({alertaText:"", showAlerta:false, alertas:res.data.alerta })
+                .then(res2=>{
+                    console.log(res2.data)
+                    setTimeout(() => {
+                        alert("Alerta Enviada")
+                    }, 500);
+                    this.setState({alertaText:"", showAlerta:false, alertas:res2.data.alerta })
                 })
             }
         })
         .catch(err=>{
             this.setState({loading:false})
-            alert("No pudimos subir el archivo")
+            alert(JSON.stringify(err))
         })
     }
     step4(){
@@ -800,7 +837,7 @@ class Tanques extends Component{
                             imagen = imagen ?imagen.split("-") :""
                             imagen = `${imagen[0]}Resize${imagen[2]}`
                             return(
-                                <View style={[style.contenedorRevision, {backgroundColor: e.activo ?"#F96D6C" :"#e8a43d"} ]}>
+                                <View key={e._id} style={[style.contenedorRevision, {backgroundColor: e.activo ?"#F96D6C" :"#e8a43d"} ]}>
                                     <Text style={style.alertaText}>{e.alertaText}</Text>
                                     <Text style={style.alertaText}>{e.usuarioCrea.nombre}</Text>
                                     <Text style={style.alertaText}>{e.usuarioCierra ?e.usuarioCierra.nombre :""}</Text>
@@ -829,7 +866,7 @@ class Tanques extends Component{
     renderSteps(){
         let {placaText, crearPlaca} = this.state
         return(
-            <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" >
+            <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" style={{margin:0,padding:0}} >
                 <ProgressStep label="Datos"  nextBtnDisabled={placaText ?false :true} nextBtnText="Siguiente" onNext={()=>crearPlaca ?this.crearStep1() :this.editarStep1()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step1()}    
@@ -898,9 +935,9 @@ class Tanques extends Component{
     ////////////////////////            CREAR TANQUE
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac})
-        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal})
+        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -915,9 +952,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 1
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque, registroOnac} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque, registroOnac})
-        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque, registroOnac})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque, registroOnac, ultimRevTotal})
+        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -988,31 +1025,7 @@ class Tanques extends Component{
         const {navigation} = this.props
         navigation.navigate("Home")
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////           EDITA EL STEP 5
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // editarStep5(){
-    //     const {x, tanqueId} = this.state
-    //     console.log({x})
-    //     let lat=x.latitude
-    //     let lng=x.longitude
-    //     axios.put(`tan/tanque/coordenadas/${tanqueId}`, {lat, lng})
-    //     .then((res)=>{
-    //         console.log(res.data)
-    //         if(res.data.status){
-                 
-    //             alert("Tanque Guardado")
-    //             const {navigation} = this.props
-    //             navigation.navigate("Home")
-    //         }else{
-    //             Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
-    //         }
-    //     })
-    // }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////           EDITA EL STEP 3
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+     
 }
 
 const mapState = state => {

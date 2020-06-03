@@ -357,7 +357,7 @@ class Pedido extends Component{
                         
                         {/* CAMBIAR ESTADO */}
                         {
-                            acceso=="admin" || acceso=="solucion" || acceso=="comercial"
+                            acceso=="admin" || acceso=="solucion" || acceso=="comercial" || acceso=="despacho"
                             ?<View style={style.contenedorEspera}>
                                 <View style={style.separador}></View>
                                 <Text style={style.tituloModal}>Estado</Text>

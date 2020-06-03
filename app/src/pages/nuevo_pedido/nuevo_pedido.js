@@ -267,7 +267,7 @@ class Nuevo_pedido extends Component{
                     </View>
                 }
                 {
-                    acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial"
+                    acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial" || acceso=="despacho"
                     ?this.renderCliente()
                     :null
                 }
@@ -333,9 +333,9 @@ class Nuevo_pedido extends Component{
                     imagenes={(imagen) => {  this.setState({imagen, showLoading:false}) }}
                 />  */}
                 <TouchableOpacity style={!forma ?style.btnGuardarDisable :style.btnGuardar} onPress={()=>
-                    (acceso=="admin" || acceso=="solucion") && !idCliente
+                    (acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial" || acceso=="despacho") && !idCliente
                     ?alert("Selecciona un cliente")
-                    :(acceso=="admin" || acceso=="solucion") && !puntoId
+                    :(acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial" || acceso=="despacho") && !puntoId
                     ?alert("Selecciona una dirección")
                     :!forma
                     ?alert("selecciona una forma")
@@ -450,12 +450,13 @@ class Nuevo_pedido extends Component{
     }
     //// verifica si se creo un pedido ese dia
     verificaPedido(){
-        // this.setState({guardando:true})
-        let {idCliente, puntoId} = this.state
-        axios.get(`ped/pedido/listadoDia/${idCliente}/${puntoId}`)
+        let {idCliente, idUsuario, acceso, puntoId} = this.state
+        console.log({idCliente, idUsuario, acceso, puntoId})
+        let id = acceso=="cliente" ?idUsuario :idCliente
+        axios.get(`ped/pedido/listadoDia/${id}/${puntoId}`)
         .then(res=>{
             const {status, pedido} = res.data
-            console.log(pedido)
+            console.log(res.data)
             if (status){
                 if(pedido.length>0){
                     Alert.alert(

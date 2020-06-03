@@ -107,13 +107,13 @@ class tanqueServices{
 			fabricante        : data.fabricante,
 			registroOnac 		  : data.registroOnac,
 			fechaUltimaRev    : data.fechaUltimaRev,
+			ultimRevTotal    : data.ultimRevTotal,
 
 			nPlaca         	  : data.nPlaca,
 			codigoActivo      : data.codigoActivo,
 			serie       		  : data.serie,
 			anoFabricacion    : data.anoFabricacion,
 			existeTanque    	: data.existeTanque,
-		
 		
 			puntoId           : data.puntoId,
 			zonaId            : data.zonaId,
@@ -128,8 +128,9 @@ class tanqueServices{
 			placaText       	: data.placaText,
 			capacidad         : data.capacidad,
 			fabricante        : data.fabricante,
-			registroOnac : data.registroOnac,
+			registroOnac 		  : data.registroOnac,
 			fechaUltimaRev    : data.fechaUltimaRev,
+			ultimRevTotal    	: data.ultimRevTotal,
 			nPlaca         		: data.nPlaca,
 			codigoActivo      : data.codigoActivo,
 			serie       		  : data.serie,

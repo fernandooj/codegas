@@ -51,7 +51,7 @@ export const style = MediaQueryStyleSheet.create({
 	columna1:{
 		alignItems:"center",
 		justifyContent:"center",
-		width:"40%"
+		width:"25%"
 	},
 	btnLista:{
 		flexDirection:"row",

@@ -43,6 +43,8 @@ class Tanques extends Component{
             puntos:[],
             placas:[],
             imgIsometrico:[],
+            imgOtrosComodato:[],
+            imgSoporteEntrega:[],
             imgAlerta:[],
             imgDepTecnico:[],
             imgNMedidor:[],
@@ -61,7 +63,7 @@ class Tanques extends Component{
 	    }
     }
      
-
+    // let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, imgNComodato, imgOtrosSi} = this.state
     async componentWillMount(){
         const accesoPerfil = await AsyncStorage.getItem('acceso')
         //////////////////////////////////////////////////////////////////////
@@ -115,14 +117,14 @@ class Tanques extends Component{
                 revision.tanqueId.map(e=>{
                     tanqueIdArray.push(e._id)
                 })
-               
+                console.log(res.data)
                 this.setState({
                     /////// step 1
                     revisionId:    revision._id,
  
                     
                     /////////  step 2
- 
+                    nControl         : revision.nControl         ?revision.nControl          :"",
                     capacidad         : revision.capacidad         ?revision.capacidad          :"",
                     fabricante        : revision.fabricante        ?revision.fabricante         :"",
                     barrio            : revision.barrio            ?revision.barrio             :"",
@@ -143,8 +145,9 @@ class Tanques extends Component{
                     celularCliente :          revision.usuarioId           ?revision.usuarioId.celular             :"",
                     emailCliente:             revision.usuarioId           ?revision.usuarioId.email               :"",
                     puntos:                   revision.puntoId             ?[revision.puntoId]                     :[],
+                    direccion:                revision.puntoId             ?revision.puntoId.direccion                   :null,
                     puntoId:                  revision.puntoId             ?revision.puntoId._id                   :null,
-                    zonaId:                   revision.zonaId               ?revision.zonaId._id                   :null,
+                    zonaId:                   revision.zonaId              ?revision.zonaId._id                   :null,
                     
                     /////////  step 3
                     observaciones     : revision.observaciones     ?revision.observaciones     :"",
@@ -241,7 +244,7 @@ class Tanques extends Component{
             }
         })
     }
-    eliminarTanque(tanqueId, placaText, codt, razon_social){
+    alertaEliminarTanque(tanqueId, placaText, codt, razon_social){
         Alert.alert(
             `Vas a enviar una notificacion, para eliminar este tanque a este usuario`,
             `${placaText}`,
@@ -261,8 +264,33 @@ class Tanques extends Component{
             })
         }
     }
-
-
+    // eliminarTanque(tanqueId, placaText){
+    //     let {tanqueIdArray, tanqueArray} = this.state
+    //     Alert.alert(
+    //         `Seguro desea remover este tanque`,
+    //         `${placaText}`,
+    //         [
+    //             {text: 'Confirmar', onPress: () => confirmar()},
+    //             {text: 'Cancelar', onPress: () => console.log("e")},
+    //         ],
+    //         {cancelable: false},
+    //     )
+    //     const confirmar = ()=>{
+    //         axios.get(`tan/tanque/desvincularUsuario/${tanqueId}`)
+    //         .then(res => { 
+    //             if(res.data.status){
+    //                 tanqueArray= tanqueArray.filter(e=>{
+    //                     return e._id!=tanqueId 
+    //                 })
+    //                 tanqueIdArray= tanqueIdArray.filter(e=>{
+    //                     return e!=tanqueId 
+    //                 })
+    //                 console.log(tanqueArray, tanqueIdArray)
+    //                 this.setState({tanqueArray, tanqueIdArray})
+    //             }
+    //         })
+    //     }
+    // }
     step1(){
         const {tanqueArray, modalPlacas, placas, placaText, puntoId, usuarioId} = this.state
         console.log({tanqueArray})
@@ -303,7 +331,7 @@ class Tanques extends Component{
                                             </View>
                                             
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={()=>this.eliminarTanque(e._id, e.placaText, e.usuarioId.codt, e.usuarioId.razon_social)}>
+                                        <TouchableOpacity onPress={()=>e.usuarioId ?this.alertaEliminarTanque(e._id, e.placaText, e.usuarioId.codt, e.usuarioId.razon_social) :null}>
                                             <Icon name="trash" style={style.iconTrash} />
                                         </TouchableOpacity>
 
@@ -354,6 +382,7 @@ class Tanques extends Component{
                 <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Usuarios Atendidos</Text>
                     <TextInput
+                        keyboardType="numeric"
                         placeholder="Usuarios Atendidos"
                         style={style.inputStep2}
                         value={usuariosAtendidos}
@@ -875,8 +904,8 @@ class Tanques extends Component{
         )
     }
     solicitudServicio(){
-        const {solicitudServicio, revisionId} = this.state
-        axios.post(`rev/revision/solicitudServicio/${revisionId}`, {solicitudServicio})
+        const {solicitudServicio, revisionId, nControl, codtCliente, direccion, razon_socialCliente} = this.state
+        axios.post(`rev/revision/solicitudServicio/${revisionId}`, {solicitudServicio, nControl, codtCliente, direccion, razon_socialCliente})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -927,6 +956,7 @@ class Tanques extends Component{
 
 	render(){
         const {navigation} = this.props
+        console.log({placaText:this.state.placaText})
         return (
             <>
                 <View style={style.container}>
@@ -963,7 +993,7 @@ class Tanques extends Component{
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                this.setState({revisionId:res.data.revision._id})
+                this.setState({revisionId:res.data.revision._id, nControl:res.data.revision.nControl})
                 let totalCapacidad = []
                 tanqueArray.map(e=>{
                     e.capacidad = e.capacidad.replace( /^\D+/g, ''); 

@@ -169,7 +169,8 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////      
 
     app.post("/x/v1/user/CambiarPassword", (req, res)=>{
-        userServices.getEmail(req.body, (err, user)=>{   
+        userServices.getEmail(req.body, (err, user)=>{ 
+           
             if(err){
                 res.json({ status: 'FAIL', message:err, code:0})  
             }else{
@@ -280,6 +281,7 @@ module.exports = function(app, passport){
                         editado:           usuario.editado, 
                         direccion_factura: usuario.direccion_factura, 
                         codMagister:       usuario.codMagister, 
+                        valorUnitario:     usuario.valorUnitario, 
                         ubicaciones:       nUbicaciones
                     }
                     res.json({status:true, user})
@@ -352,9 +354,10 @@ module.exports = function(app, passport){
                                 acceso:        usuario.acceso, 
                                 avatar:        usuario.avatar, 
                                 codt:          usuario.codt, 
-                                formularioChat:usuario.formularioChat, 
+                                formularioChat:    usuario.formularioChat, 
                                 direccion_factura: usuario.direccion_factura, 
                                 codMagister:       usuario.codMagister, 
+                                valorUnitario:     usuario.valorUnitario, 
                                 ubicaciones:  nUbicaciones
                             }
                             res.json({status:true, user})
@@ -379,7 +382,7 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.post('/x/v1/users/', function(req,res){
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='despacho') {
                 userServices.tipo(req.body, function(err, usuarios){
                     if(!err){
                         res.json({status:true, usuarios})
@@ -432,9 +435,14 @@ module.exports = function(app, passport){
                                 })
                             })
                             //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO
-                            req.session.usuario=users
-                            console.log("users")
-                            console.log(users)
+                            if(users.acceso=="cliente"){
+                                req.session.usuario=users
+                                let userRegistrado = {email:"directora.comercial@codegascolombia.com, fernandooj@ymail.com, servicioalcliente@codegascolombia.com"}
+                                let text1 = "Usuario Editado"
+                                let text2 = "Codt:" + users.codt + " / Razon Social:" + users.razon_social
+                                htmlTemplate(req, userRegistrado, req.body.email, text1, text2,  "Usuario editado")
+
+                            }
                             //////////////////////////////  SI ENVIA PASSWORD LO EDITA
                             req.body.password ?userServices.editPassword(req.params.idUsuario, req.body.password, (err, res)=>{}) :null
                            
@@ -499,7 +507,7 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/', (req,res)=>{
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='despacho') {
                 userServices.get((err, usuarios)=>{
                     if(!err){
                         usuarios = usuarios.filter(e=>{
@@ -561,7 +569,7 @@ module.exports = function(app, passport){
     ///////////////////////////////////////////////////////////////////////////
     app.get('/x/v1/users/clientes', (req,res)=>{
         if(req.session.usuario){
-            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'  || req.session.usuario.acceso=='adminTanque') {
+            if (req.session.usuario.acceso=='admin' || req.session.usuario.acceso=='solucion' || req.session.usuario.acceso=='comercial'  || req.session.usuario.acceso=='despacho' || req.session.usuario.acceso=='adminTanque') {
                 userServices.getByCliente((err, usuarios)=>{
                     if(!err){
                         usuarios = usuarios.filter(e=>{

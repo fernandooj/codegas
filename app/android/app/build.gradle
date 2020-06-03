@@ -32,8 +32,8 @@ android {
         applicationId "com.codegas"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1131
-        versionName "11.3.1"
+        versionCode 1132
+        versionName "11.3.2"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
@@ -77,7 +77,6 @@ android {
 }
 
 dependencies {
-    implementation project(':@react-native-community_picker')
     implementation project(':react-native-document-picker')
     implementation project(':react-native-pdf')
     implementation project(':rn-fetch-blob')

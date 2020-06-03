@@ -1,13 +1,14 @@
-let express = require('express')
-let router = express.Router();
-let fs 		   = require('fs');
-let Jimp       = require("jimp");
-let {promisify} = require('util');
+let express              = require('express')
+let router               = express.Router();
+let fs 		             = require('fs');
+let Jimp                 = require("jimp");
+let {promisify}          = require('util');
+let  moment              = require('moment-timezone');
+let sizeOf    	         = promisify(require('image-size'));
+let fechaImagen          = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
+const htmlTemplate       = require('../notificaciones/template-email.js')
 let alertaTanqueServices = require('../services/alertaTanqueServices.js') 
-let  moment = require('moment-timezone');
-let sizeOf    	   = promisify(require('image-size'));
-let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
-const htmlTemplate     = require('../notificaciones/template-email.js')
+let userServices         = require('./../services/userServices.js') 
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS ALERTAS
 ////////////////////////////////////////////////////////////
@@ -86,9 +87,19 @@ router.post('/', (req,res)=>{
                 res.json({ status:true, alerta }); 
                  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 //////////////////////      ENVIO UN CORREO A CODEGAS AVINSANDOLE DEL NUEVO PEDIDO CREADO
-                let userRegistrado = {email:"fernandooj@ymail.com, dpto@codegascolombia.com, gerencia@codegascolombia.com"}
-                let userEnvia = "Enviado por:"+req.session.usuario.nombre
-                htmlTemplate(req, userRegistrado, "Nueva alerta de tanque", req.body.alertaText, userEnvia,  "Nueva alerta de tanque")
+                
+                userServices.getByAcceso("adminTanque", (err, usuarios)=>{
+                    usuarios.map(e=>{
+                        let userEnvia = `Tanque:${req.body.placaText} <br />Cliente:${req.body.codtCliente} <br />Enviado por: "${req.session.usuario.nombre}<br />`
+                        htmlTemplate(req, e, "Nueva alerta de tanque", req.body.alertaText, userEnvia,  "Nueva alerta de tanque")
+                    })
+                })
+                userServices.getByAcceso("admin", (err, usuarios)=>{
+                    usuarios.map(e=>{
+                        let userEnvia = `Tanque:${req.body.placaText} <br />Cliente:${req.body.codtCliente} <br />Enviado por: "${req.session.usuario.nombre}<br />`
+                        htmlTemplate(req, e, "Nueva alerta de tanque", req.body.alertaText, userEnvia,  "Nueva alerta de tanque")
+                    })
+                })
             }else{
                 res.json({ status:false, message: err }); 
             }

@@ -31,6 +31,7 @@ let Tanque = new Schema({
 	serie              : String,
 	anoFabricacion	   : String,
 	existeTanque	   : String,
+	ultimRevTotal	   : String,
 	activo			   : {type:Boolean, default:true},
 	eliminado		   : {type:Boolean, default:false},
 	usuarioId		   : {type: Schema.ObjectId, ref:'User'},

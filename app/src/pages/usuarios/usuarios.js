@@ -45,7 +45,7 @@ class verPerfil extends Component{
         return newUsuarios.map((e, key)=>{
             return(
                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
-                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params ?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
                         <View style={{width:"90%"}}>
                             
                             {e.acceso=="cliente" &&<Text style={style.textUsers}>{e.idPadre ?"Punto consumo: "+e.idPadre.razon_social :e.razon_social}</Text>}
@@ -66,7 +66,14 @@ class verPerfil extends Component{
         const {terminoBuscador} = this.state
         return (
             <View style={style.container}>
-                <Text style={style.titulo}>Listado usuarios</Text>
+                {
+                    navigation.state.params 
+                    ?<TouchableOpacity onPress={()=>navigation.navigate("revision")} style={{padding:10}}>
+                        <Text style={style.titulo}>Ver por revisiones</Text>
+                    </TouchableOpacity>
+                    :<Text style={style.titulo}>Listado usuarios</Text>
+                }
+                
                 <TextInput
                     placeholder="Buscar por: cliente, fecha, forma"
                     autoCapitalize = 'none'
@@ -79,7 +86,11 @@ class verPerfil extends Component{
                     {
                         usuarios.length==0
                         ?<ActivityIndicator color="#00218b" />
-                        :this.renderUsuarios()
+                        :!navigation.state.params 
+                        ?this.renderUsuarios()
+                        :terminoBuscador.length>4
+                        ?this.renderUsuarios()
+                        :<Text>Digita un usuario</Text>
                     }
                 </ScrollView>
                 <Footer navigation={navigation} />
