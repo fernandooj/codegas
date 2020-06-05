@@ -58,6 +58,7 @@ class Revision extends Component{
         const {terminoBuscador, inicio, final, reportes, acceso} = this.state
         let filtroReportes = reportes.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newReportes = filtroReportes.slice(inicio, final) 
+        console.log(newReportes)
         return newReportes.map((e, key)=>{
             return(
                 <View style={[style.contenedorReportes, {backgroundColor: !e.activo ?"#F96D6C" :(e.tanque||e.red||e.puntos||e.fuga) ?"#e8a43d" :"white" }]} key={key}>
@@ -66,6 +67,7 @@ class Revision extends Component{
                              <View style={{width:"90%"}}>
                                 <Text style={style.textUsers}>N Reporte: {e.nReporte}</Text>
                                 <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
+                              
                                 
                                 {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
                                 {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
@@ -91,9 +93,7 @@ class Revision extends Component{
   
 	render(){
         const {navigation} = this.props
-        
-        const {terminoBuscador} = this.state
-  
+        const {terminoBuscador, acceso} = this.state
         return (
             <View style={style.containerTanque}>
                 <View style={{flexDirection:"row"}}>
@@ -105,9 +105,13 @@ class Revision extends Component{
                         value={terminoBuscador}
                         style={[style.inputCabezera]}
                     />
-                    <TouchableOpacity  onPress={()=>navigation.navigate("nuevoReporteEmergencia")}>
-                        <Icon name='plus' style={style.iconAdd} />
-                    </TouchableOpacity>
+                    {
+                        acceso==="cliente"
+                        &&<TouchableOpacity  onPress={()=>navigation.navigate("nuevoReporteEmergencia")}>
+                            <Icon name='plus' style={style.iconAdd} />
+                        </TouchableOpacity>
+                    }
+                    
                 </View>
 
                 <ScrollView style={{ marginBottom:85}} onScroll={(e)=>this.onScroll(e)}  keyboardDismissMode="on-drag">

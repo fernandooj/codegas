@@ -220,7 +220,6 @@ class Tanques extends Component{
         let {tanqueArray, tanqueIdArray, usuarioId, puntoId} = this.state
         axios.get(`tan/tanque/byId/${id}`)
         .then(res=>{
- 
             const {tanque} = res.data
             let infoTanque={
                 _id:                tanque._id,
@@ -228,23 +227,33 @@ class Tanques extends Component{
                 barrio:             tanque.barrio    ?tanque.barrio    :"",
                 capacidad:          tanque.capacidad ?tanque.capacidad :"",
             }
-            
             if(tanqueIdArray.includes(tanque._id)){
                 alert("Este tanque ya esta agregado")
             }else{
-                axios.get(`tan/tanque/asignarPunto/${id}/${usuarioId}/${puntoId}`)
-                .then(res => { 
-                    if(res.data.status){
-                        tanqueArray.push(infoTanque)
-                        tanqueIdArray.push(tanque._id)
-                        this.setState({tanqueArray, tanqueIdArray, modalPlacas:false})
-                    }
-                })
+                Alert.alert(
+                    `Asignar tanque`,
+                    `Seguro desea agregar este tanque a este usuario?`,
+                    [
+                        {text: 'Confirmar', onPress: () => confirmar()},
+                        {text: 'Cancelar', onPress: () => console.log("e")},
+                    ],
+                    {cancelable: false},
+                )
+                const confirmar = ()=>{
+                    axios.get(`tan/tanque/asignarPunto/${id}/${usuarioId}/${puntoId}`)
+                    .then(res => { 
+                        if(res.data.status){
+                            tanqueArray.push(infoTanque)
+                            tanqueIdArray.push(tanque._id)
+                            this.setState({tanqueArray, tanqueIdArray, modalPlacas:false})
+                        }
+                    })
+                }
                 
             }
         })
     }
-    alertaEliminarTanque(tanqueId, placaText, codt, razon_social){
+    alertaEliminarTanque(placaText, codt, razon_social){
         Alert.alert(
             `Vas a enviar una notificacion, para eliminar este tanque a este usuario`,
             `${placaText}`,

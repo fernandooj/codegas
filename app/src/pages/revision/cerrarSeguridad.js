@@ -75,6 +75,7 @@ class cerrarRevision extends Component{
                         extintores        : revision.extintores        ?revision.extintores        :"",
                         distancias        : revision.distancias        ?revision.distancias        :"",
                         electricas        : revision.electricas        ?revision.electricas        :"",
+                        accesorios        : revision.accesorios        ?revision.accesorios        :"",
                     })
                 })
        
@@ -82,38 +83,45 @@ class cerrarRevision extends Component{
      
     
     rendercontenido(){
-        let {avisos, extintores, distancias, electricas, imgDepTecnico, depTecnicoText, nControl, nActa, cargando} = this.state
+        let {avisos, extintores, distancias, electricas, accesorios, imgDepTecnico, depTecnicoText, nControl, nActa, cargando} = this.state
         return(
             <View>
                 {/* BARRIO */}
                 <Text style={style.textCerrar}>N Control: {nControl}</Text>
 
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Avisos reglamentarios</Text>
+                    <Text style={style.row1Step2}>Falta de Avisos reglamentarios en mal estado</Text>
                     <Switch
                         onValueChange = {(avisos)=>this.setState({avisos})}
                         value = {avisos}
                     />
                 </View>
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Extintores</Text>
+                    <Text style={style.row1Step2}>Falta extintores en mal estado</Text>
                     <Switch
                         onValueChange = {(extintores)=>this.setState({extintores})}
                         value = {extintores}
                     />
                 </View>
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Distancias</Text>
+                    <Text style={style.row1Step2}>No cumple distancias en mal estado</Text>
                     <Switch
                         onValueChange = {(distancias)=>this.setState({distancias})}
                         value = {distancias}
                     />
                 </View>
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Condiciones electricas</Text>
+                    <Text style={style.row1Step2}>Fuentes ignición cerca en mal estado</Text>
                     <Switch
                         onValueChange = {(electricas)=>this.setState({electricas})}
                         value = {electricas}
+                    />
+                </View>
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>No cumple accesorios y materiales</Text>
+                    <Switch
+                        onValueChange = {(accesorios)=>this.setState({accesorios})}
+                        value = {accesorios}
                     />
                 </View>
 
@@ -159,7 +167,7 @@ class cerrarRevision extends Component{
         )
     }
     handleSubmit(){
-        const {distancias, extintores, imgDepTecnico, depTecnicoText, avisos, electricas, revisionId} = this.state
+        const {distancias, extintores, accesorios, imgDepTecnico, depTecnicoText, avisos, electricas, revisionId} = this.state
         console.log({distancias, extintores, imgDepTecnico, depTecnicoText, avisos, revisionId})
         this.setState({cargando:true})
         let data = new FormData();
@@ -171,6 +179,7 @@ class cerrarRevision extends Component{
         data.append('avisos',      avisos);
         data.append('extintores',  extintores);
         data.append('electricas',  electricas);
+        data.append('accesorios',  accesorios);
   
         axios({
             method: 'PUT',   

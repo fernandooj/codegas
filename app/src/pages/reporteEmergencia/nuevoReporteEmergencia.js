@@ -33,6 +33,7 @@ class cerrarRevision extends Component{
                 console.log(res.data)
                 const {reporte} = res.data
                 this.setState({
+
                     reporteId,
                     nReporte      : reporte.nReporte,
                     tanque        : reporte.tanque,
@@ -40,6 +41,8 @@ class cerrarRevision extends Component{
                     puntos        : reporte.puntos,
                     fuga          : reporte.fuga,
                     usuario       : reporte.usuarioCrea ?reporte.usuarioCrea :{} ,
+                    cliente       : reporte.usuarioId   ?reporte.usuarioId :{} ,
+                    punto         : reporte.puntoId     ?reporte.puntoId :{} ,
                     imgRuta       : reporte.ruta        ?reporte.ruta :[],
                     imgRutaCerrar : reporte.rutaCerrar  ?reporte.rutaCerrar :[],
                     cerradoText   : reporte.cerradoText ?reporte.cerradoText :"",
@@ -49,16 +52,16 @@ class cerrarRevision extends Component{
         }
     }
      
-    
     rendercontenido(){
-        let {tanque, red, puntos, fuga, imgRuta, otrosText, cerradoText, nReporte, cargando, usuario, reporteId} = this.state
-        console.log(imgRuta)
+        let {tanque, red, puntos, fuga, imgRuta, otrosText, cerradoText, nReporte, cargando, usuario, cliente, punto, reporteId} = this.state
         return(
             <View>
                 {/* BARRIO */}
-                {nReporte &&<Text style={style.textCerrar}>N Reporte: {nReporte}</Text>}
+                {nReporte  &&<Text style={style.textCerrar}>N Reporte: {nReporte}</Text>}
                 {reporteId &&<Text style={style.textCerrar}>Usuario Reporta: {usuario.codt ?usuario.razon_social :usuario.nombre} / {usuario.codt ?usuario.codt :usuario.cedula} </Text>}
-
+                {cliente   &&<Text style={style.textUsers}>Cliente:   {cliente.razon_social}</Text>}
+                {cliente   &&<Text style={style.textUsers}>codt:      {cliente.codt}</Text>}
+                {punto     && <Text style={style.textUsers}>Ubicacion: {punto.nombre}</Text>}
                 <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Tanque en mal estado</Text>
                     <Switch
@@ -165,6 +168,7 @@ class cerrarRevision extends Component{
         let {reporteId, cerradoText, imgRutaCerrar, tanque, red, puntos, fuga} = this.state
         console.log({tanque, red, puntos, fuga})
         const {navigation} = this.props
+      
         let data = new FormData();
         imgRutaCerrar.forEach(e=>{
             data.append('imgRutaCerrar', e);
@@ -173,6 +177,7 @@ class cerrarRevision extends Component{
         data.append('red',    red);
         data.append('puntos', puntos);
         data.append('fuga',  fuga);
+      
         data.append('cerradoText',  cerradoText);
         axios({
             method: 'PUT',   
@@ -186,7 +191,8 @@ class cerrarRevision extends Component{
     }
     handleSubmit(){
         const {tanque, red, puntos, fuga, otrosText, imgRuta} = this.state
-    
+        let usuarioId = this.props.navigation.state.params ?this.props.navigation.state.params.usuarioId :null
+        let puntoId = this.props.navigation.state.params ?this.props.navigation.state.params.puntoId :null
         this.setState({cargando:true})
         let data = new FormData();
         imgRuta.forEach(e=>{
@@ -197,7 +203,8 @@ class cerrarRevision extends Component{
         data.append('puntos', puntos);
         data.append('fuga',  fuga);
         data.append('otrosText',  otrosText);
-  
+        data.append('usuarioId',  usuarioId);
+        data.append('puntoId',  puntoId);
         axios({
             method: 'POST',   
             url: `rep/reporteEmergenciaRutas`,

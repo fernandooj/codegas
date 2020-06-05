@@ -103,6 +103,24 @@ router.get('/byPunto/:idPunto', (req,res)=>{
 })
 
 ///////////////////////////////////////////////////////////////
+////////////        OBTENGO LOS TANQUES POR SU PUNTO
+//////////////////////////////////////////////////////////////
+router.get('/byPlacaText/:placaText', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' }); 
+	}else{
+        tanqueServices.getByPlacaText(req.params.placaText, (err, tanque)=>{
+            if (!tanque) {
+                res.json({ status:false, tanque}); 
+            }else{
+                res.json({ status:true, tanque }); 
+            }
+        })
+    }
+})
+
+
+///////////////////////////////////////////////////////////////
 ////////////      ASIGNA UN Usuario
 //////////////////////////////////////////////////////////////
 router.get('/asignarUsuario/:idtanque/:idCliente', (req,res)=>{
@@ -177,7 +195,7 @@ router.get('/desvincularUsuario/:idTanque/', (req,res)=>{
 	}else{
         tanqueServices.desvincularUsuario(req.params.idTanque,  (err, tanque)=>{
             if (!err) {
-                res.json({ status:true, tanque }); 
+                res.json({ status:true, tanque });
             }else{
                 res.json({ status:false, message: err }); 
             }

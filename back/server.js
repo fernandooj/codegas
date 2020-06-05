@@ -31,10 +31,10 @@ let configuracionRutas = require('./routes/configuracion.js');
 let SocketIO = require('./socket.js')
 const path   = require('path');
 
-let https = require('https')
+let https = require('http')
 var options = {
-  cert: fs.readFileSync('/home/certificados/bundle.crt', 'utf8'),
-  key: fs.readFileSync('/home/certificados/appcodegas.com.pem', 'utf8')
+  // cert: fs.readFileSync('/home/certificados/bundle.crt', 'utf8'),
+  // key: fs.readFileSync('/home/certificados/appcodegas.com.pem', 'utf8')
 };
 let server = https.Server(options, app)
 SocketIO(server)

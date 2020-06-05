@@ -450,6 +450,7 @@ class Nuevo_pedido extends Component{
     }
     //// verifica si se creo un pedido ese dia
     verificaPedido(){
+        this.setState({guardando:true})
         let {idCliente, idUsuario, acceso, puntoId} = this.state
         console.log({idCliente, idUsuario, acceso, puntoId})
         let id = acceso=="cliente" ?idUsuario :idCliente
@@ -464,7 +465,7 @@ class Nuevo_pedido extends Component{
                         `desea crearlo`,
                         [
                             {text: 'Confirmar', onPress: () => this.handleSubmit()},
-                            {text: 'Cancelar', onPress: () => console.log("e")},
+                            {text: 'Cancelar', onPress: () => this.setState({guardando:false})},
                         ],
                         {cancelable: false},
                     )
@@ -477,7 +478,7 @@ class Nuevo_pedido extends Component{
         })
     }
     handleSubmit(){
-        this.setState({guardando:true})
+       
         let {forma, email, emailCliente, cantidad, idCliente, dia1, dia2, frecuencia, usuarios, novedad, puntoId, fechaSolicitud, idZona, imagen, cliente} = this.state
         email = idCliente ?emailCliente :email
         forma=="monto" ?cantidad = this.campoMonto.getRawValue() :null

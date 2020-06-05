@@ -105,6 +105,7 @@ class Chart extends Component{
                     ]
                 }}
                 paddingLeft="150"
+                fromZero={true}
                 verticalLabelRotation={30}
                 width={size.width} // from react-native
                 height={size.height-130}

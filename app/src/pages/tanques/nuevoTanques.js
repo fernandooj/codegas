@@ -206,44 +206,14 @@ class Tanques extends Component{
     }
     buscarTanque(id){
         console.log({id})
-        axios.get(`tan/tanque/byId/${id}`)
+        axios.get(`tan/tanque/byPlacaText/${id}`)
             .then(res=>{
                 console.log(res.data)
                 const {tanque} = res.data
-                this.setState({
-                    /////// step 1
-                    tanqueId:  tanque._id,
-                    placaText :             tanque.placaText         ?tanque.placaText          :"",
-                    capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
-                    fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
-                    registroOnac:           tanque.registroOnac      ?tanque.registroOnac       :"",
-                    fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
-              
-                    nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
-                    codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
-                    serie:                  tanque.serie             ?tanque.serie              :"",
-                    anoFabricacion:         tanque.anoFabricacion    ?tanque.anoFabricacion     :"",
-                 
-
-                    //////  step 2
-                    // imgPlaca:                 tanque.placa              ?tanque.placa           :[],
-                    // imgPlacaFabricante:       tanque.placaFabricante    ?tanque.placaFabricante          :[],
-                    // imgPlacaMantenimiento:    tanque.placaMantenimiento ?tanque.placaMantenimiento     :[],
-                    
-
-                    // //////  step 3
-                    // usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id                 :null,
-                    // cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social        :"",
-                    // razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula              :"",
-                    // direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura   :"",
-                    // nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre              :"",
-                    // celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular             :"",
-                    // emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email               :"",
-                    // puntos:                   tanque.puntoId             ?[tanque.puntoId]                     :[],
-                    // puntoId:                  tanque.puntboId            ?tanque.puntoId._id                   :[],
-                    // zonaId:                   tanque.zonaId              ?tanque.zonaId._id                   :null,
-                    modalPlacas:false    
-                })
+                if(res.data.status){
+                    Toast.show("Esta placa ya existe")
+                    this.setState({placaText:null})
+                }
                 
             })
     }
@@ -344,7 +314,8 @@ class Tanques extends Component{
                         placeholder="Serie"
                         value={placaText}
                         style={style.inputStep2}
-                        onChangeText={(placaText)=> this.setState({ placaText })}
+                        onChangeText={(placaText)=> this.setState({ placaText:capitalizeFirstLetter(placaText) })}
+                        onBlur={()=>this.buscarTanque(placaText)}
                     />
                     {/* <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPlacas:true})}>
                         <Text style={placaText ?style.textBtnActive :style.textBtn}>{placaText ?placaText :"Placas"}</Text>
@@ -864,10 +835,10 @@ class Tanques extends Component{
         )
     }
     renderSteps(){
-        let {placaText, crearPlaca} = this.state
+        let {placaText, tanqueId} = this.state
         return(
             <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" style={{margin:0,padding:0}} >
-                <ProgressStep label="Datos"  nextBtnDisabled={placaText ?false :true} nextBtnText="Siguiente" onNext={()=>crearPlaca ?this.crearStep1() :this.editarStep1()}>
+                <ProgressStep label="Datos"  nextBtnDisabled={placaText ?false :true} nextBtnText="Siguiente" onNext={()=>tanqueId ?this.editarStep1() :this.crearStep1()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step1()}    
                     </View>

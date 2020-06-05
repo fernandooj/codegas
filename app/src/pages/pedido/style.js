@@ -219,13 +219,14 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems:"center",
 		justifyContent: 'center',
 		backgroundColor:"rgba(0,0,0,.5)",
+		width:"100%",
 		height:size.height,
 		zIndex:100,
-		width:"100%",
 		bottom:50,
 		top:0,
 		left:0,	
-		flex:1
+		flex:1,
+
 	},
 
 	contenedorModal2:{
@@ -246,7 +247,7 @@ export const style = MediaQueryStyleSheet.create({
 		backgroundColor:"#ffffff",
 		height:size.height-100,
 		borderRadius:7,
-		padding:0,
+		padding:8,
 		alignItems:"center",
 		minWidth:size.width/1.5,
 	},
@@ -400,6 +401,14 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems:"center",
 		width:110,
 		padding:5,
+		borderRadius:8
+	},
+	btnEmergencia:{
+		backgroundColor:"rgba(255, 204, 0, 1)",
+		alignItems:"center",
+		width:220,
+		padding:5,
+		marginBottom:10,
 		borderRadius:8
 	},	
 	textNovedad:{

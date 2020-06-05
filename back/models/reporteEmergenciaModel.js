@@ -24,5 +24,7 @@ let reporteEmergencia = new Schema({
 	usuarioCrea		  : {type: Schema.ObjectId, ref:'User'},
 	usuarioCierra	  : {type: Schema.ObjectId, ref:'User'},
 	tanqueId		  :	{type: Schema.ObjectId, ref:'Tanque'},
+	usuarioId		  :	{type: Schema.ObjectId, ref:'User'},
+	puntoId		      :	{type: Schema.ObjectId, ref:'Punto'},
 })
 module.exports = mongoose.model('reporteEmergencia', reporteEmergencia) 

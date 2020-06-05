@@ -41,6 +41,10 @@ class tanqueServices{
 		.populate("usuarioId")
 		.sort({_id: 'desc'}).exec(callback)
 	}
+	getByPlacaText(placaText, callback){
+		tanque.findOne({placaText})
+		.sort({_id: 'desc'}).exec(callback)
+	}
 	getAlerta(callback){
 		tanque.aggregate([
 			{
