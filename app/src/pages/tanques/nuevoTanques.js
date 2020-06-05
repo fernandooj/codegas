@@ -16,13 +16,10 @@ import {getVehiculos}                  from '../../redux/actions/vehiculoActions
 import Footer                          from '../components/footer'
 import {style}                         from './style'
  
-
-let sectores    = [{key:"E2", label:"E2"},{key:"E3", label:"E3"},{key:"E4", label:"E4"},{key:"E5", label:"E5"},{key:"E6", label:"E6"},{key:"O", label:"O"},{key:"C", label:"C"},{key:"I", label:"I"},{key:"OT", label:"OT"}]
-let zonas       = [{key:"Urbana", label:"Urbana"},{key:"Rural", label:"Rural"},{key:"Zona Industrial", label:"Zona Industrial"}]
+ 
 
 
-
-let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
+// let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
 let anosFabricacion = []
 let existeTanques   = [{key:"Bodega", label:"Bodega"},{key:"Usuario", label:"Usuario"}]
  
@@ -62,6 +59,7 @@ class Tanques extends Component{
             imgUltimaRev:[],
             revisiones:[],
             alertas:[],
+            capacidades:[],
             alertaText:""
 	    }
     }
@@ -78,7 +76,22 @@ class Tanques extends Component{
                 }) 
                 this.setState({placas})
             })
-            
+            axios.get("cap/capacidad")
+            .then(res=>{
+                if(res.data.status){
+                    
+                    let capacidades = res.data.capacidad
+                    capacidades = capacidades.map(e=>{
+                        return{
+                            key:e.capacidad,
+                            label:e.capacidad
+                        }
+                    }) 
+                    this.setState({capacidades})
+                }else{
+                 this.setState({capacidades:[]})
+                }
+            })
  
             
             let tanqueId  = this.props.navigation.state.params.tanqueId ?this.props.navigation.state.params.tanqueId :null
@@ -289,7 +302,7 @@ class Tanques extends Component{
         axios.post("")
     }
     step1(){
-        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, showModal, fechaUltimaRev, existeTanque, nPlaca, serie, anoFabricacion, revisiones, registroOnac, ultimRevTotal, tanqueId} = this.state
+        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, showModal, fechaUltimaRev, existeTanque, capacidades, nPlaca, serie, anoFabricacion, revisiones, registroOnac, ultimRevTotal, tanqueId} = this.state
          
         return(
             <View>

@@ -7,7 +7,7 @@ let Schema   = mongoose.Schema;
 //////////////////////////////////////////////////////////////////////////////
 ////////***********     creo el esquema / ciudad        ****//////////////
 //////////////////////////////////////////////////////////////////////////////
-let reporteEmergencia = new Schema({
+let ReporteEmergencia = new Schema({
     creado 	          : String,
     nReporte          : Number,      
     tanque            : {type:Boolean, default:false},
@@ -27,4 +27,4 @@ let reporteEmergencia = new Schema({
 	usuarioId		  :	{type: Schema.ObjectId, ref:'User'},
 	puntoId		      :	{type: Schema.ObjectId, ref:'Punto'},
 })
-module.exports = mongoose.model('reporteEmergencia', reporteEmergencia) 
+module.exports = mongoose.model('ReporteEmergencia', ReporteEmergencia) 

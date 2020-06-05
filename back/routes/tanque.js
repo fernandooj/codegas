@@ -231,7 +231,7 @@ router.get('/eliminar/:idVehiculo/:estado', (req,res)=>{
 	}else{
         tanqueServices.eliminar(req.params.idVehiculo, req.params.estado, (err, pedido)=>{
             if (!err) {
-                res.json({ status:true, pedido }); 
+                res.json({ status:true, pedido });
             }else{
                 res.json({ status:false, message: err }); 
             }

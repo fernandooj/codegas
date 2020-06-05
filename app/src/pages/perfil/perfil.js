@@ -187,6 +187,13 @@ class Home extends Component{
                             <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
                         </TouchableOpacity>
                     }
+                    {
+                        (acceso=="admin")
+                        &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("capacidad")} >
+                            <Text style={style.txtLista}>Capacidades</Text> 
+                            <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
+                        </TouchableOpacity>
+                    }
                     
                     {
                         (acceso=="admin" && email=="fernandooj@ymail.com")

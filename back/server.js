@@ -25,6 +25,7 @@ let tanqueRutas        = require('./routes/tanque.js');
 let revisionRutas      = require('./routes/revision.js');
 let ultimaRevRutas     = require('./routes/ultimaRev.js');
 let alertaTanqueRutas  = require('./routes/alertaTanque.js');
+let capacidadRutas     = require('./routes/capacidad.js');
 let reporteEmergenciaRutas  = require('./routes/reporteEmergencia.js');
 let configuracionRutas = require('./routes/configuracion.js');
 
@@ -125,8 +126,9 @@ app.use('/x/v1/tan/tanque',       tanqueRutas)
 app.use('/x/v1/rev/revision',     revisionRutas) 
 app.use('/x/v1/ult/ultimaRev',    ultimaRevRutas) 
 app.use('/x/v1/ale/alertaTanque', alertaTanqueRutas) 
-app.use('/x/v1/rep/reporteEmergenciaRutas', reporteEmergenciaRutas) 
 app.use('/x/v1/con/configuracion',configuracionRutas) 
+app.use('/x/v1/cap/capacidad',    capacidadRutas) 
+app.use('/x/v1/rep/reporteEmergenciaRutas', reporteEmergenciaRutas) 
 require('./routes/user.js')(app, passport);
 
 server.listen(port)

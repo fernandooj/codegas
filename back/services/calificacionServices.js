@@ -83,7 +83,7 @@ class calificacionServices{
 	 
 	create(data, callback){
 		let fecha = moment().subtract(5, 'hours');
-            fecha     = moment(fecha).format('YYYY-MM-DD h:mm');
+            fecha = moment(fecha).format('YYYY-MM-DD h:mm');
 		let newCalificacion = new calificacion({
 			sugerencia	   :data.sugerencia,
 			calificacion  :data.calificacion,

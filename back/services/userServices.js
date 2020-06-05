@@ -84,7 +84,7 @@ class userServices {
 			'tipo'			   : user.tipo,
 			'email'			   : user.email,
 			'codt'			   : user.codt,
-			'valorUnitario'	   : user.valorUnitario ?user.valorUnitario :0,
+			'valorUnitario'	   : user.valorUnitario ?user.valorUnitario :null,
 			'updatedAt':    fecha
 			// 'password':  	newUsuario.generateHash(user.password),
 		}, callback);
