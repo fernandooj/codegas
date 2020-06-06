@@ -116,8 +116,9 @@ class Chart extends Component{
                 backgroundColor: "#e26a00",
                 backgroundGradientFrom: "#fb8c00",
                 backgroundGradientTo: "#002587",
+                fillShadowGradientOpacity:1,    
                 decimalPlaces: 0, // optional, defaults to 2dp
-                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                color: (opacity = 0) => `rgba(255, 204, 0, ${opacity})`,
                 labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                 style: {
                     borderRadius: 16

@@ -75,7 +75,7 @@ class Revision extends Component{
                                 {e.red &&<Text style={style.textUsers}>Red en mal estado</Text>}
                                 {e.puntos &&<Text style={style.textUsers}>Puntos de ignición cerca</Text>}
                                 {e.fuga &&<Text style={style.textUsers}>Fuga</Text>}
-                                {e.cerradoText &&<Text style={style.textUsers}>{e.cerradoText}</Text>}
+                                {e.cerradoText &&<Text style={style.textUsers}>{e.cerradoText=="" ?"fer" :e.cerradoText}</Text>}
                                 
                             </View>
                          

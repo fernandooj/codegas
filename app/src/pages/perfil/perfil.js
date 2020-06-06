@@ -51,7 +51,7 @@ class Home extends Component{
                         autoCapitalize="none"
                         placeholderTextColor="#aaa" 
                     />
-                     <TouchableOpacity style={style.btnGuardar} onPress={()=>email.length<2 ?alert("Inserte su email o codigo de registro") :this.handleSubmit()}>
+                     <TouchableOpacity style={style.btnGuardar} onPress={()=>email.length<2 ?Toast.show("Inserte su email o codigo de registro") :this.handleSubmit()}>
                         <Text style={style.textGuardar}>Registrarme</Text>
                     </TouchableOpacity>
                 </View>
@@ -209,7 +209,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.2</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.3-Test</Text> 
                     </TouchableOpacity> 
                     {
                         err
@@ -275,12 +275,17 @@ class Home extends Component{
 	}
     handleSubmit(){
         const {email} = this.state
+        let tipoEmail = email.includes("@")
+        tipoEmail ?this.enviarEmailRegistro() :this.enviaCodigoRegistro()
+    }
+    enviaCodigoRegistro(){
+        const {email} = this.state
         let acceso = "cliente";
         axios.post("user/sign_up", {email, acceso})
         .then(e=>{
-            
+            console.log(e.data)
             if(e.data.code==0){
-                Toast.show("Este email ya existe en el sistema")
+                Toast.show("Este codigo ya esta activo")
             }else if(e.data.code==2){
                 this.registroExitoso(email, e.data.token, e.data.user._id)
             }else if(e.data.code==3){
@@ -288,6 +293,19 @@ class Home extends Component{
                 AsyncStorage.setItem('idPerfilregistro', e.data.users._id)
             }   
             // e.data.status ?this.registroExitoso(email, e.data.token, e.data.user._id) :Toast.show("Este email ya existe en el sistema")
+        })
+        .catch(err=>{
+            console.log(err)
+            Toast.show("Tenemos un problema, intentelo mas tarde")
+        })
+    }
+    enviarEmailRegistro(){
+        const {email} = this.state
+        let acceso = "cliente";
+        axios.post("user/sign_up", {email, acceso})
+        .then(e=>{
+            console.log(e.data.user)
+            e.data.status ?this.registroExitoso(email, e.data.token, e.data.user._id) :Toast.show("Este email ya existe en el sistema")
         })
         .catch(err=>{
             console.log(err)

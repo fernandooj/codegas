@@ -52,7 +52,6 @@ module.exports = function(app, passport){
                 }
             }else{
                 userServices.create(req.body, token, null, (err, user)=>{
-                    
                     if(err){
                         return res.json({ err })
                     }else{
@@ -167,7 +166,6 @@ module.exports = function(app, passport){
     CAMBIAR LA CONTRASEÑA
     */
     ///////////////////////////////////////////////////////////////////////////      
-
     app.post("/x/v1/user/CambiarPassword", (req, res)=>{
         userServices.getEmail(req.body, (err, user)=>{ 
            
@@ -184,7 +182,22 @@ module.exports = function(app, passport){
         })
     })
 
-    
+    ///////////////////////////////////////////////////////////////////////////
+    /*
+    VERIFICA SI EXISTE EL EMAIL
+    */
+    ///////////////////////////////////////////////////////////////////////////      
+    app.post("/x/v1/user/checkEmail", (req, res)=>{
+        userServices.getClienteSinEditar(req.body, (err, user)=>{ 
+            console.log(user)
+            if(!user){
+                res.json({ status: 'FAIL', message:user, code:0})  
+            }else{
+                res.json({ status: 'SUCCESS', user, code:1})  
+            }
+        })
+    })
+
     ///////////////////////////////////////////////////////////////////////////
     ///////     LOGIN
     ///////////////////////////////////////////////////////////////////////////
@@ -411,7 +424,7 @@ module.exports = function(app, passport){
                 
                 
                 if(!err){
-                    userServices.getEmail(req.session.usuario, (err2, users)=>{    
+                    userServices.getEmail(req.body, (err2, users)=>{    
                         if(!err2){
                             req.body.registro
                             &&userServices.getByAcceso("solucion", (err, usuarios)=>{
@@ -434,14 +447,21 @@ module.exports = function(app, passport){
 
                                 })
                             })
-                            //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO
+                            //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO 
+                          
+                            if(users.acceso=="cliente" && !req.body.editado ){
+                                let text2 = "<img src='https://appcodegas.com/public/uploads/logo.png' width='30'"
+                                let text1 = `hola ${req.body.nombre} <br />Codegas, te da la bienvenida a nuestra APP, ahora tendrás muchos beneficios en la palma de tu mano.`
+                                htmlTemplate(req, req.body, "Bienvenido a Codegas", text1, text2,  "Bienvenido a Codegas")
+                            }
+                           
                             if(users.acceso=="cliente"){
                                 req.session.usuario=users
-                                let userRegistrado = {email:"directora.comercial@codegascolombia.com, fernandooj@ymail.com, servicioalcliente@codegascolombia.com"}
+                                let codt = users.codt ?users.codt :"Sin codt"
+                                let userRegistrado = {email:"directora.comercial@codegascolombia.com, fernandooj@ymail.com, soluciones@codegascolombia.com, servicioalcliente@codegascolombia.com"}
                                 let text1 = "Usuario Editado"
-                                let text2 = "Codt:" + users.codt + " / Razon Social:" + users.razon_social
+                                let text2 = "Codt:" + codt + " / Razon Social:" + users.razon_social
                                 htmlTemplate(req, userRegistrado, req.body.email, text1, text2,  "Usuario editado")
-
                             }
                             //////////////////////////////  SI ENVIA PASSWORD LO EDITA
                             req.body.password ?userServices.editPassword(req.params.idUsuario, req.body.password, (err, res)=>{}) :null

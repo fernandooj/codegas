@@ -370,7 +370,7 @@ class Home extends Component{
             return e._id
         })
         let email = this.props.navigation.state.params.email
-        axios.put(`user/update/${idUsuario}`, {puntos, puntosNuevos, email, razon_social, cedula, direccion_factura, nombre, password, celular, tipo, acceso, codt, puntos, idUsuario, ubicacionesEliminadas, registro:true})
+        axios.put(`user/update/${idUsuario}`, {editado:false, puntos, puntosNuevos, email, razon_social, cedula, direccion_factura, nombre, password, celular, tipo, acceso, codt, puntos, idUsuario, ubicacionesEliminadas, registro:true})
         .then(e=>{
            
             if(e.data.status){

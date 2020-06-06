@@ -50,7 +50,6 @@ class reporteEmergenciaServices{
 			puntos      : data.puntos,
 			fuga        : data.fuga,
 			otrosText   : data.otrosText,
-			cerradoText : data.cerradoText,
 			tanqueId 	  : data.tanqueId,
 			usuarioId   : data.usuarioId ?data.usuarioId :usuarioCrea,
 			puntoId   	: data.puntoId,

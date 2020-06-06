@@ -8,9 +8,12 @@ class userServices {
 		User.find().populate("idPadre").sort({_id: 'desc'}).exec(callback)
 	}
 	getEmail(user, callback){
-		let email = user.email
-		console.log(email)  
+		let email = user.email.toLowerCase()
 		User.findOne({'email':email}).exec(callback)
+	}
+	getClienteSinEditar(user, callback){
+		let email = user.email
+		User.findOne({'email':email, editado:true, acceso:"cliente"}).exec(callback)
 	}
 	registro(user, callback){
 		let email = user.email.toLowerCase()

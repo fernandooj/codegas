@@ -171,9 +171,9 @@ class verPerfil extends Component{
         :null
     }
     renderPerfil(){
-        let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, codMagister} = this.state
+        let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, editado, codMagister} = this.state
         valorUnitario = valorUnitario ?valorUnitario.toString() :""
-        console.log({accesoPerfil, acceso})
+        console.log({accesoPerfil, acceso, editado})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -211,6 +211,7 @@ class verPerfil extends Component{
                 placeholderTextColor="#aaa" 
                 value={email}
                 onChangeText={email => this.setState({ email })}
+                onBlur={email => this.verificaEmail()}
                 style={email.length<3 ?[style.input, style.inputRequired] :style.input}
             />    
 
@@ -460,6 +461,18 @@ class verPerfil extends Component{
             
         )
     }
+    verificaEmail(){
+        let {email} = this.state
+        axios.post("user/checkEmail", {email})
+        .then(res=>{
+            console.log(res.data)
+            if(res.data.status==="SUCCESS"){
+                Toast.show("Este email ya existe!", Toast.LONG)
+                this.setState({email:""})
+            }
+        })
+
+    }
     asignarVeo(idVeo){
         const {idUsuario, veos, tipoAcceso} = this.state
         let veo = veos.filter(e=>{
@@ -502,7 +515,7 @@ class verPerfil extends Component{
     }
     cambiarEstadoUsuario(){
         const {nombre, idUsuario, activo} = this.state
- 
+
         Alert.alert(
             `Seguro desea ${activo ?"Desactivar" :"Activar"}`,
             `al usuario ${nombre}`,
@@ -741,7 +754,7 @@ class verPerfil extends Component{
     }
 	render(){
         const {navigation} = this.props  
-        const {modalUbicacion, showPass, editado, acceso} = this.state   
+        const {modalUbicacion, showPass} = this.state   
  
         return (
             <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
@@ -942,8 +955,8 @@ class verPerfil extends Component{
         puntos = puntos.filter(e=>{
             return e._id
         })
-        console.log({ubicacionesEliminadas, puntos, puntosNuevos})
-        axios.put(`user/update/${idUsuario}`, {puntos, puntosNuevos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister, valorUnitario})
+        console.log({editado, puntos, puntosNuevos})
+        axios.put(`user/update/${idUsuario}`, {editado, puntos, puntosNuevos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister, valorUnitario})
         .then(e=>{
             console.log(e.data)
             if(acceso=="cliente") {

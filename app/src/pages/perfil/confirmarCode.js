@@ -1,11 +1,11 @@
 import React, {Component} from 'react'
 import {View, Text, TouchableOpacity,  Dimensions, ScrollView, Image} from 'react-native'
-import Icon from 'react-native-fa-icons';
+ 
 import CodeInput from 'react-native-confirmation-code-input';
 import Toast from 'react-native-simple-toast';
 import {style} from './style'
 import axios from 'axios';
-const screenWidth = Dimensions.get('window').width;
+ 
  
  
 
@@ -66,7 +66,7 @@ export default class ConfirmarComponent extends Component{
             const {code, email} = this.state
             axios.post("user/verificaToken", {token:code, email})
             .then(res=>{
-                alert("tu usuario ha sido activado")
+                Toast.show("tu usuario ha sido activado")
                 res.data.status ?this.props.navigation.navigate("privacidad", {email}) : Toast.show("Tenemos un problema intentalo mas tarde")
             })
         }else{
