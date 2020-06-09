@@ -119,9 +119,9 @@ module.exports = function(app, passport){
             if(err){
                 res.json({status:false, mensaje:"TOKEN INVALIDO", code:0})
             } else{
-               
                 userServices.estadoUsuario(token, true, (err2, user)=>{
                     req.session.usuario=user
+                    console.log(user)
                     if (user) {
                         res.json({status:true, user, code:1})             
                     }
@@ -448,20 +448,22 @@ module.exports = function(app, passport){
                                 })
                             })
                             //////////////////////////////  ACTUALIZA LA SESION DEL USUARIO LOGUEADO 
-                          
-                            if(users.acceso=="cliente" && !req.body.editado ){
-                                let text2 = "<img src='https://appcodegas.com/public/uploads/logo.png' width='30'"
-                                let text1 = `hola ${req.body.nombre} <br />Codegas, te da la bienvenida a nuestra APP, ahora tendrás muchos beneficios en la palma de tu mano.`
-                                htmlTemplate(req, req.body, "Bienvenido a Codegas", text1, text2,  "Bienvenido a Codegas")
-                            }
-                           
-                            if(users.acceso=="cliente"){
-                                req.session.usuario=users
-                                let codt = users.codt ?users.codt :"Sin codt"
-                                let userRegistrado = {email:"directora.comercial@codegascolombia.com, fernandooj@ymail.com, soluciones@codegascolombia.com, servicioalcliente@codegascolombia.com"}
-                                let text1 = "Usuario Editado"
-                                let text2 = "Codt:" + codt + " / Razon Social:" + users.razon_social
-                                htmlTemplate(req, userRegistrado, req.body.email, text1, text2,  "Usuario editado")
+                            console.log(req.body)
+                            if(req.session.usuario.codt){
+                                if(req.session.usuario.acceso=="cliente" && !req.body.editado ){
+                                    let text2 = "<img src='https://appcodegas.com/public/uploads/logo.png' width='30'"
+                                    let text1 = `hola ${req.body.nombre} <br />Codegas, te da la bienvenida a nuestra APP, ahora tendrás muchos beneficios en la palma de tu mano.`
+                                    htmlTemplate(req, req.body, "Bienvenido a Codegas", text1, text2,  "Bienvenido a Codegas")
+                                }
+                            
+                                if(req.session.usuario.acceso=="cliente"){
+                                    req.session.usuario=users
+                                    let codt = req.session.usuario.codt ?req.session.usuario.codt :"Sin codt"
+                                    let userRegistrado = {email:"directora.comercial@codegascolombia.com, fernandooj@ymail.com, soluciones@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+                                    let text1 = "Usuario Editado"
+                                    let text2 = "Codt:" + codt + " / Razon Social:" + req.session.usuario.razon_social
+                                    htmlTemplate(req, userRegistrado, req.body.email, text1, text2,  "Usuario editado")
+                                }
                             }
                             //////////////////////////////  SI ENVIA PASSWORD LO EDITA
                             req.body.password ?userServices.editPassword(req.params.idUsuario, req.body.password, (err, res)=>{}) :null

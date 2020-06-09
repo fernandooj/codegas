@@ -32,6 +32,7 @@ const BootstrapedElement = document.getElementById(ELEMENT_TO_BOOTSTRAP);
  
 export const URL = 'https://releo.co/public/assets/img/';
 export const URL2 = window.location.origin
+// export const URL2 = "https://appcodegas.com"
 axios.defaults.baseURL = URL2+"/x/v1/"
 
 const renderApp = RootComponent => {

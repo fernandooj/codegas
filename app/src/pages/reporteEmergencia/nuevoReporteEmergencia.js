@@ -1,10 +1,11 @@
 import React, {Component} from 'react'
 import {View, Text, Image, ScrollView, TouchableOpacity, TextInput, Switch, Platform} from 'react-native'
-import {style}    from './style'
-import {connect}  from 'react-redux' 
-import axios      from 'axios';
-import TomarFoto  from "../components/tomarFoto";
-import Footer     from '../components/footer'
+import {style}        from './style'
+import {connect}      from 'react-redux' 
+import axios          from 'axios';
+import SubirDocumento from "../components/subirDocumento";
+import TomarFoto      from "../components/tomarFoto";
+import Footer         from '../components/footer'
  
  
 class cerrarRevision extends Component{
@@ -16,6 +17,7 @@ class cerrarRevision extends Component{
             otrosText:"",
             imgRuta:[],
             imgRutaCerrar:[],
+            imgDocumento:[],
             tanque:false, 
             red:false, 
             puntos:false, 
@@ -40,10 +42,12 @@ class cerrarRevision extends Component{
                     red           : reporte.red,
                     puntos        : reporte.puntos,
                     fuga          : reporte.fuga,
+                    pqr           : reporte.pqr,
                     usuario       : reporte.usuarioCrea ?reporte.usuarioCrea :{} ,
                     cliente       : reporte.usuarioId   ?reporte.usuarioId :{} ,
-                    punto         : reporte.puntoId     ?reporte.puntoId :{} ,
+                    punto         : reporte.puntoId     ?reporte.puntoId :null,
                     imgRuta       : reporte.ruta        ?reporte.ruta :[],
+                    imgDocumento  : reporte.documento   ?reporte.documento :[],
                     imgRutaCerrar : reporte.rutaCerrar  ?reporte.rutaCerrar :[],
                     cerradoText   : reporte.cerradoText ?reporte.cerradoText :"",
                     otrosText     : reporte.otrosText   ?reporte.otrosText :"",
@@ -53,7 +57,7 @@ class cerrarRevision extends Component{
     }
      
     rendercontenido(){
-        let {tanque, red, puntos, fuga, imgRuta, otrosText, cerradoText, nReporte, cargando, usuario, cliente, punto, reporteId} = this.state
+        let {tanque, red, puntos, fuga, imgRuta, otrosText, cerradoText, nReporte, cargando, pqr, usuario, cliente, punto, reporteId, imgDocumento} = this.state
         return(
             <View>
                 {/* BARRIO */}
@@ -108,14 +112,25 @@ class cerrarRevision extends Component{
                         onValueChange = {(fuga)=>this.setState({fuga})}
                         value = {fuga}  
                     />
+                </View>
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>PQR</Text>
+                    <Switch
+                        trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                        thumbColor={[Platform.OS=='ios'?'#FFFFFF':(pqr ?'#d60606':'#ffffff')]}
+                        ios_backgroundColor="#fbfbfb"
+                        style={[pqr ?style.switchEnableBorder:style.switchDisableBorder]}
+                        onValueChange = {(pqr)=>this.setState({pqr})}
+                        value = {pqr}  
+                    />
                      
                 </View>
 
 
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Otros</Text>
+                    <Text style={style.row1Step2}>Detalles reporte</Text>
                     <TextInput
-                        placeholder="Otros"
+                        placeholder="Detalles reporte"
                         value={otrosText}
                         style={style.inputStep4}
                         onChangeText={(otrosText)=> this.setState({ otrosText })}
@@ -123,26 +138,40 @@ class cerrarRevision extends Component{
                     />
                 </View>
                  {/* IMAGEN */}
-                 <TomarFoto 
+                <View style={style.separador}></View>
+                <TomarFoto 
                     source={imgRuta}
                     width={180}
                     titulo="Imagen"
                     limiteImagenes={4}
                     imagenes={(imgRuta) => {  this.setState({imgRuta}) }}
                 />
+                <View style={style.separador}></View>
                 {
                     reporteId
                     &&<View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step2}>Observación cerrado</Text>
+                        <Text style={style.row1Step2}>Gestión reporte</Text>
                         <TextInput
-                            placeholder="Observación cerrado"
+                            placeholder="Gestión reporte"
                             value={cerradoText}
                             style={style.inputStep4}
                             onChangeText={(cerradoText)=> this.setState({ cerradoText })}
                         />
                     </View>
                 }
-               
+                 {/* DOSSIER */}
+                 {reporteId &&<View style={style.separador}></View>}
+                {
+                    reporteId
+                    &&<SubirDocumento 
+                        source={imgDocumento}
+                        width={180}
+                        titulo="Documento adjunto"
+                        limiteImagenes={4}
+                        imagenes={(imgDocumento) => {  this.setState({imgDocumento}) }}
+                    />
+                }
+                {reporteId &&<View style={style.separador}></View>}
                 <View style={{alignItems:"center"}}>
                     <TouchableOpacity style={style.nuevoBtn} onPress={cargando ?null :()=>reporteId ?this.cerrar() :this.handleSubmit()}>
                         <Text style={style.textGuardar}>{cargando ?"Guardando.." :"Guardar"}</Text>
@@ -165,27 +194,38 @@ class cerrarRevision extends Component{
         )
     }
     cerrar(){
-        let {reporteId, cerradoText, imgRutaCerrar, tanque, red, puntos, fuga} = this.state
-        console.log({tanque, red, puntos, fuga})
+        let {reporteId, cerradoText, imgRutaCerrar, tanque, imgDocumento, red, puntos, fuga, pqr} = this.state
+        console.log({imgDocumento, red, puntos, fuga})
         const {navigation} = this.props
       
         let data = new FormData();
         imgRutaCerrar.forEach(e=>{
             data.append('imgRutaCerrar', e);
         })
+        let documento = imgDocumento.filter(e=>{
+            return !e.uri
+        })
+        imgDocumento = imgDocumento.filter(e=>{
+            return e.uri
+        })
+        imgDocumento.forEach(e=>{
+            data.append('imgDocumento', e);
+        })
         data.append('tanque', tanque);
         data.append('red',    red);
         data.append('puntos', puntos);
         data.append('fuga',  fuga);
+        data.append('pqr',  pqr);
       
         data.append('cerradoText',  cerradoText);
+        data.append('documento',  JSON.stringify(documento));
         axios({
             method: 'PUT',   
             url: `rep/reporteEmergenciaRutas/cerrar/${reporteId}`,
             data: data,
         })
         .then(e=>{
-            alert("Reporte Cerrado")
+            alert("Reporte Enviado")
             navigation.navigate("Home")
         })
     }
@@ -205,6 +245,7 @@ class cerrarRevision extends Component{
         data.append('otrosText',  otrosText);
         data.append('usuarioId',  usuarioId);
         data.append('puntoId',  puntoId);
+       
         axios({
             method: 'POST',   
             url: `rep/reporteEmergenciaRutas`,

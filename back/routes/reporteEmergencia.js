@@ -25,7 +25,7 @@ router.get('/', (req,res)=>{
                 res.json({ status:false, message: err,  reporte:[] }); 
             }
         })
-        :reporteEmergenciaServices.getByUser((err, reporte)=>{
+        :reporteEmergenciaServices.getByUser(req.session.usuario._id, req.session.usuario._id, (err, reporte)=>{
             if (!err) {
                 res.json({ status: true, reporte }); 
             }else{
@@ -224,8 +224,38 @@ router.put('/cerrar/:reporteId', (req,res)=>{
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
-        rutaImgRutaCerrar  = rutaImgRutaCerrar.length==0   ?req.body.imgRutaCerrar :rutaImgRutaCerrar;
-        reporteEmergenciaServices.cerrar(req.params.reporteId, req.body, rutaImgRutaCerrar, req.session.usuario._id, (err, reporte)=>{
+        let rutaImgDocumento = []
+        let {imgDocumento} = req.files
+        if(imgDocumento){
+            let esArrayImgDocumento = Array.isArray(imgDocumento)
+            if(esArrayImgDocumento){
+                imgDocumento.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/reporteEmergencia/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/reporteEmergencia/'+fechaImagen+'--'+e.name
+                    rutaImgDocumento.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/reporteEmergencia/'+fechaImagen+'--'+imgDocumento.name
+                let rutas = req.protocol+'://'+req.get('Host') + '/public/uploads/reporteEmergencia/'+fechaImagen+'--'+imgDocumento.name
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgDocumento.push(rutas)
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(imgDocumento.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+    
+        let documento     = req.body.documento          ?JSON.parse(req.body.documento)       :[]
+        rutaImgDocumento  = rutaImgDocumento.length==0  ?documento :rutaImgDocumento.concat(documento);
+        rutaImgRutaCerrar = rutaImgRutaCerrar.length==0 ?req.body.imgRutaCerrar :rutaImgRutaCerrar;
+        reporteEmergenciaServices.cerrar(req.params.reporteId, req.body, rutaImgRutaCerrar, rutaImgDocumento, req.session.usuario._id, (err, reporte)=>{
             if (!err) {
                 res.json({ status:true, reporte }); 
             }else{

@@ -126,8 +126,9 @@ class userServices {
 		User.findOne({ activo:true, eliminado:false, 'email' :  user.email.toLowerCase() }).populate('categoria').populate('idPadre').exec(callback)
 	}
 	verificaToken(data, callback){
-		console.log(data)
-		User.findOne({'email':data.email, 'token': data.token}, callback)
+		let email = data.email ?data.email.toLowerCase() :""
+		console.log(email)
+		User.findOne({'email':email, 'token': data.token}, callback)
 	}
 
 	estadoUsuario(idUser, activo, callback){

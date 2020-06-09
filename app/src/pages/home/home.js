@@ -252,6 +252,32 @@ class Home extends Component{
 					{this.renderFormulario()}
 					{(acceso=="solucion" || acceso=="admin") &&this.renderBtnUsuarios()}
 					{this.renderBotones()}
+					<View style={style.contenedorColores}>
+						<View style={style.subContenedorColor}>	
+							<View style={[style.color, {backgroundColor:"rgba(91, 192, 222, 0.79)"}]}></View>
+							<Text style={style.textColor}>Espera activación</Text>
+						</View>
+						<View style={style.subContenedorColor}>
+							<View style={[style.color, {backgroundColor:"rgba(255, 235, 0, 0.79)"}]}></View>
+							<Text style={style.textColor}>Espera asignar vehiculo</Text>
+						</View>
+						<View style={style.subContenedorColor}>
+							<View style={[style.color, {backgroundColor:"rgba(240, 173, 78, 0.79)"}]}></View>
+							<Text style={style.textColor}>Vehiculo asignado</Text>
+						</View>
+						<View style={style.subContenedorColor}>
+							<View style={[style.color, {backgroundColor:"rgba(92, 184, 92, 0.79)"}]}></View>
+							<Text style={style.textColor}>Entregado</Text>
+						</View>
+						<View style={style.subContenedorColor}>
+							<View style={[style.color, {backgroundColor:"#ffffff"}]}></View>
+							<Text style={style.textColor}>No se pudo entregar</Text>
+						</View>
+						<View style={style.subContenedorColor}>
+							<View style={[style.color, {backgroundColor:"rgba(217, 83, 79, 0.79)"}]}></View>
+							<Text style={style.textColor}>Innactivo</Text>
+						</View>
+					</View>
 					<Footer navigation={navigation} />
 				</ImageBackground>
 		)

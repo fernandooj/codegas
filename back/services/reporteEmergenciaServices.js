@@ -21,8 +21,8 @@ class reporteEmergenciaServices{
 		.populate("puntoId")
 		.sort({_id: 'desc'}).exec(callback)
     } 
-    getByUser(usuarioCrea, callback){
-		reporteEmergencia.find({usuarioCrea})
+    getByUser(usuarioCrea, usuarioId, callback){
+		reporteEmergencia.find({usuarioCrea, usuarioId})
 		.populate("usuarioCrea")
 		.populate("usuarioCierra")
 		.populate("tanqueId")
@@ -49,6 +49,7 @@ class reporteEmergenciaServices{
 			red         : data.red,
 			puntos      : data.puntos,
 			fuga        : data.fuga,
+			pqr         : data.pqr,
 			otrosText   : data.otrosText,
 			tanqueId 	  : data.tanqueId,
 			usuarioId   : data.usuarioId ?data.usuarioId :usuarioCrea,
@@ -59,16 +60,18 @@ class reporteEmergenciaServices{
 		})
 		reporteEmergenciaRev.save(callback)	
     }   
-    cerrar(_id, data, rutaCerrar, usuarioCierra, callback){
+    cerrar(_id, data, rutaCerrar, documento, usuarioCierra, callback){
 			reporteEmergencia.findByIdAndUpdate(_id, {$set: {
 				tanque      : data.tanque,			
 				red         : data.red,
 				puntos      : data.puntos,
 				fuga        : data.fuga,
-				cerradoText : data.cerradoText,
+				pqr         : data.pqr,
+				cerradoText : data.cerradoText ?data.cerradoText :null,
 				usuarioId   : data.usuarioId,
 				puntoId   	: data.puntoId,
-				rutaCerrar: rutaCerrar ?rutaCerrar :[],
+				rutaCerrar  : rutaCerrar ?rutaCerrar :[],
+				documento   : documento ?documento :[],
 				usuarioCierra,
 		}}, callback);
 	}    

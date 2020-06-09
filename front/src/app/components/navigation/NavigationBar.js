@@ -60,7 +60,7 @@ class NavigationBar extends PureComponent {
     return (
       <nav className={style.nav}>
         
-          <Link to="/"><img src="https://codegascolombia.com/wp-content/uploads/2016/09/logo-codegas.png" className={style.logo} /></Link>
+          <Link to="/"><img src="https://appcodegas.com/public/uploads/logo.png" className={style.logo} /></Link>
         {
           status
           &&<ul>
@@ -91,7 +91,7 @@ class NavigationBar extends PureComponent {
                 </Link>
               </li>
               {
-                perfil.acceso=="admin"
+               ( perfil.acceso==="admin" ||  perfil.acceso==="despacho")
                 && <li>
                   <Link to="/informes">
                     Informes
@@ -99,7 +99,7 @@ class NavigationBar extends PureComponent {
                 </li>
               }
               {
-                perfil.acceso=="admin"
+                perfil.acceso==="admin"
                 &&<li>
                   <Link to="/usuarios">
                     Usuarios
@@ -107,7 +107,7 @@ class NavigationBar extends PureComponent {
                 </li>
               }
               {
-                perfil.acceso=="admin"
+                perfil.acceso==="admin"
                 &&<li>
                   <Link to="/zonas">
                     Zonas

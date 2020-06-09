@@ -44,6 +44,26 @@ export const style = MediaQueryStyleSheet.create({
 		top:8,
 		left:10
 	},
+	contenedorColores:{
+		flexDirection: 'row',
+		flexWrap: 'wrap'
+	},
+	subContenedorColor:{
+		flexDirection: 'row',
+		width:"45%",
+		marginBottom:10,
+		left:5
+	},
+	color:{
+		width:10,
+		height:10,
+		top:9,
+	},
+	textColor:{
+		fontFamily: "Comfortaa-Light",
+		fontSize:14,
+		left:5
+	},
 	//////////////////////////////////////////////////////////////////		
 	///////////				MODAL
 	//////////////////////////////////////////////////////////////////

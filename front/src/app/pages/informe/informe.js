@@ -15,7 +15,18 @@ class Home extends PureComponent {
       pedidos:[],
       fechaInicio:"2019-01-01",
       fechaFinal: "2030-01-01",
+      perfil:{}
     }
+  }
+  componentWillMount(){
+      axios.get(`user/perfil/`)
+      .then(res => {
+        console.log(res.data)
+        this.setState({perfil: res.data.user})
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
  
   onChange(date, dateString){
@@ -29,7 +40,8 @@ class Home extends PureComponent {
     console.log(data, as)
   }
   renderFormulario(){  
-    let {fechaInicio, fechaFinal} = this.state
+    let {fechaInicio, fechaFinal, perfil} = this.state
+    
     return(
       <div style={{ background: '#ECECEC', padding: '30px' }}>
         <Row gutter={16} style={{ "padding-bottom": "30px" }}>
@@ -37,35 +49,46 @@ class Home extends PureComponent {
           <RangePicker onChange={(date,string)=>this.onChange(date,string)} onPanelChange={(date,string)=>this.onPanelChange(date,string)} locale={locale}/>
         </Row>
       <Row gutter={16}>
-        <Col span={6}>
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/conversacion/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 1.  Generar Chats
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      }
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/users/corporativos/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
                 2.  Generar Usuarios corporativos
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      }
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/users/clientes/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 3.  Generar Clientes
             </a>
           </Card>
         </Col>
-       
-        <Col span={6}>
+      }
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/vehiculos/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
                 4.  Generar Vehiculos
             </a>
           </Card>
         </Col>
+      }
         <Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/pedidos/trazabilidad/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
@@ -87,34 +110,46 @@ class Home extends PureComponent {
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/novedades/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 8.  Observaciones
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      }
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/calificaciones/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 9.  Calificaciones
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      }
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href="x/v1/inf/informe/pdf/chats/true/null/null" type="primary" htmlType="submit" className="login-form-button">
                 10.  Generar PDF chats
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      }
+      {
+        perfil.acceso==="admin"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/users/clientesVeos/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
                 11.  Generar Clientes con Veos
             </a>
           </Card>
         </Col>
+      }
       </Row>
     </div>
 

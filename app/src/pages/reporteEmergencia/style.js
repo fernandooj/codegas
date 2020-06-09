@@ -129,6 +129,12 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:10,
 		height:140,
 	},
+	separador:{
+		width:"100%",
+		height:1,
+		marginVertical:10,
+		backgroundColor:"rgba(50,50,50,.1)"
+	},
 
 	/////////// LISTADO TANQUES
 	containerTanque:{

@@ -78,11 +78,11 @@ class Home extends PureComponent {
  
     return(
       <div>
-         <Button style={{backgroundColor:"#d9534f"}} onClick={()=>this.actualizarTabla("innactivo")}>Innactivo</Button>
+         <Button style={{backgroundColor:"rgba(217, 83, 79, 0.79)"}} onClick={()=>this.actualizarTabla("innactivo")}>Innactivo</Button>
          <Button style={{backgroundColor:"#5bc0de"}} onClick={()=>this.actualizarTabla("espera")}>Espera</Button>
-         <Button style={{backgroundColor:"#f0ad4e"}} onClick={()=>this.actualizarTabla2("activo", false)}>Activo</Button>
-         <Button style={{backgroundColor:"#5cb85c"}} onClick={()=>this.actualizarTabla2("activo", true)}>Asignado</Button>
-         <Button style={{backgroundColor:"#00218b"}} onClick={()=>this.actualizarTabla3("activo")}>Entregado</Button>
+         <Button style={{backgroundColor:"rgba(255, 235, 0, 0.79)"}} onClick={()=>this.actualizarTabla2("activo", false)}>Activo</Button>
+         <Button style={{backgroundColor:"rgba(240, 173, 78, 0.79)"}} onClick={()=>this.actualizarTabla2("activo", true)}>Asignado</Button>
+         <Button style={{backgroundColor:"rgba(92, 184, 92, 0.79)"}} onClick={()=>this.actualizarTabla3("activo")}>Entregado</Button>
          <Button style={{color:"#000000"}}           onClick={()=>this.actualizarTabla("noentregado")}>No Entregado</Button>
  
          
@@ -104,32 +104,32 @@ class Home extends PureComponent {
   actualizarTabla(filtro){
     this.setState({ loading: true });
     let params={
-      results: 1000,
-      page: 1000,
-      sortField: 1000,
-      sortOrder: 1000,
+      results: 5000,
+      page: 5000,
+      sortField: 5000,
+      sortOrder: 5000,
     }
     reqwest({
       url: `x/v1/ped/pedido/todos/web/undefined`,
       method: 'get',
       data: {
-        results: 10,
+        results: 5000,
         ...params,
       },
       type: 'json',
     }).then(data => {
       console.log(data)
+      // let pedidos = data.pedido.filter(e=>{
+      //   if(!e.carroId)
+      //   e["carroId"]={placa:"Sin placa"}
+      //   return e
+      // })
+      // pedidos = pedidos.filter(e=>{
+      //   if(!e.zonaId)
+      //   e["zonaId"]={nombre:"Sin Zona"}
+      //   return e
+      // })
       let pedidos = data.pedido.filter(e=>{
-        if(!e.carroId)
-        e["carroId"]={placa:"Sin placa"}
-        return e
-      })
-      pedidos = pedidos.filter(e=>{
-        if(!e.zonaId)
-        e["zonaId"]={nombre:"Sin Zona"}
-        return e
-      })
-      pedidos = pedidos.filter(e=>{
         return e.estado==filtro
       })
       const pagination = { ...this.state.pagination };
@@ -147,40 +147,42 @@ class Home extends PureComponent {
   actualizarTabla2(filtro, filtro2){
     this.setState({ loading: true });
     let params={
-      results: 1000,
-      page: 1000,
-      sortField: 1000,
-      sortOrder: 1000,
+      results: 1500,
+      page: 1500,
+      sortField: 1500,
+      sortOrder: 1500,
     }
     reqwest({
       url: `x/v1/ped/pedido/todos/web/undefined`,
       method: 'get',
       data: {
-        results: 10,
+        results: 1500,
         ...params,
       },
       type: 'json',
     }).then(data => {
-      let pedidos = data.pedido.filter(e=>{
-        if(!e.carroId)
-        e["carroId"]={placa:"Sin placa"}
-        return e
-      })
-      pedidos = pedidos.filter(e=>{
-        if(!e.zonaId)
-        e["zonaId"]={nombre:"Sin Zona"}
-        return e
-      })
+      let pedidos = data.pedido
+      // let pedidos = data.pedido.filter(e=>{
+      //   if(!e.carroId)
+      //   e["carroId"]={placa:"Sin placa"}
+      //   return e
+      // })
+      // pedidos = pedidos.filter(e=>{
+      //   if(!e.zonaId)
+      //   e["zonaId"]={nombre:"Sin Zona"}
+      //   return e
+      // })
       if(filtro2){
         pedidos = pedidos.filter(e=>{
           return e.estado==filtro &&e.carroId
         })
-        console.log(pedidos)
+       
       }else{
         pedidos = pedidos.filter(e=>{
           return e.estado==filtro &&!e.carroId
         })
       }
+
       const pagination = { ...this.state.pagination };
       pagination.total = 200;
       this.setState({
@@ -205,32 +207,33 @@ class Home extends PureComponent {
   actualizarTabla3(filtro, filtro2){
     this.setState({ loading: true });
     let params={
-      results: 1000,
-      page: 1000,
-      sortField: 1000,
-      sortOrder: 1000,
+      results: 2000,
+      page: 2000,
+      sortField: 2000,
+      sortOrder: 2000,
     }
     reqwest({
       url: `x/v1/ped/pedido/todos/web/undefined`,
       method: 'get',
       data: {
-        results: 10,
+        results: 2000,
         ...params,
       },
       type: 'json',
     }).then(data => {
+      // let pedidos = data.pedido.filter(e=>{
+      //   if(!e.carroId)
+      //   e["carroId"]={placa:"Sin placa"}
+      //   return e
+      // })
+      // pedidos = pedidos.filter(e=>{
+      //   if(!e.zonaId)
+      //   e["zonaId"]={nombre:"Sin Zona"}
+      //   return e
+      // })
+      console.log(data.pedido)
       let pedidos = data.pedido.filter(e=>{
-        if(!e.carroId)
-        e["carroId"]={placa:"Sin placa"}
-        return e
-      })
-      pedidos = pedidos.filter(e=>{
-        if(!e.zonaId)
-        e["zonaId"]={nombre:"Sin Zona"}
-        return e
-      })
-      pedidos = pedidos.filter(e=>{
-        return e.estado==filtro &&e.entregado
+        return e.estado===filtro &&e.entregado
       })
       const pagination = { ...this.state.pagination };
       pagination.total = 200;

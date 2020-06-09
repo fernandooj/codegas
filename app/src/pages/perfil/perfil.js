@@ -15,6 +15,8 @@ class Home extends Component{
 	  super(props);
 	  this.state={
         email:"",
+        email2:"",
+        password2:""
 	  }
 	}
 	 
@@ -49,6 +51,7 @@ class Home extends Component{
                         value={email}
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        
                         placeholderTextColor="#aaa" 
                     />
                      <TouchableOpacity style={style.btnGuardar} onPress={()=>email.length<2 ?Toast.show("Inserte su email o codigo de registro") :this.handleSubmit()}>
@@ -81,12 +84,13 @@ class Home extends Component{
                         value={password2}
                         placeholderTextColor="#aaa" 
                     />
-                    <TouchableOpacity style={style.btnGuardar} onPress={()=>this.login()}>
+                    <TouchableOpacity style={style.btnGuardar} onPress={()=>(email2.length<3 || password2.length<2) ?Toast.show("Inserte un email y una contraseña") :this.login()}>
                         {cargando &&<ActivityIndicator style={{marginRight:5}}/>}
                         <Text style={style.textGuardar}>{cargando ?"Cargando" :"Iniciar Sesión"}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={style.btnOlvidar} onPress={()=>this.props.navigation.navigate("recuperar")}>
                         <Text style={style.textOlvidar}>Olvide mi contraseña</Text>
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.3</Text> 
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -153,7 +157,7 @@ class Home extends Component{
                         </TouchableOpacity>
                     }
                     {
-                        acceso=="admin"
+                        (acceso=="admin" || acceso=="despacho")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("zona")} >
                             <Text style={style.txtLista}>Zonas</Text> 
                             <Image source={require('../../assets/img/pg1/icon5.png')} style={style.icon} />
@@ -208,8 +212,8 @@ class Home extends Component{
                         <Text style={style.txtLista}>Cerrar Sesion</Text> 
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
-                    <TouchableOpacity  style={style.btnLista} onPress={()=>{this.cerrarSesion()}}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.3-Test</Text> 
+                    <TouchableOpacity  style={style.btnLista}>
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.3</Text> 
                     </TouchableOpacity> 
                     {
                         err
@@ -300,7 +304,9 @@ class Home extends Component{
         })
     }
     enviarEmailRegistro(){
-        const {email} = this.state
+        let {email} = this.state
+        email = email.toLowerCase()
+        console.log({email})
         let acceso = "cliente";
         axios.post("user/sign_up", {email, acceso})
         .then(e=>{

@@ -14,9 +14,11 @@ let ReporteEmergencia = new Schema({
     red               : {type:Boolean, default:false},  
     puntos            : {type:Boolean, default:false},  
     fuga              : {type:Boolean, default:false},  
+    pqr               : {type:Boolean, default:false},  
 	otrosText		  : String,
     cerradoText		  : String,
 	ruta   	          : [],
+	documento         : [],
 	rutaCerrar        : [],
 
     activo 			  : {type:Boolean, default:true},
