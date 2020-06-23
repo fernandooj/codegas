@@ -140,30 +140,44 @@ router.post('/', (req,res)=>{
             reporteEmergenciaServices.create(req.body, req.session.usuario._id, rutaImgRuta, reportes.length+1, (err, reporte)=>{
                 if (!err) {
                     res.json({ status:true, reporte }); 
+                    let text1  = req.session.usuario.acceso=="cliente"
+                    let asunto =  "Nuevo reporte de emergencia"  
+                    let titulo = `<font size="5">Nuevo reporte de emergencia </font>`
+                    let tanque = req.body.tanque  ?"Tanque en mal estado" :""
+                    let red    = req.body.red     ?"Red en mal estado" :""
+                    let puntos = req.body.puntos  ?"Puntos de ignición cerca" :""
+                    let fuga   = req.body.fuga    ?"Fuga" :""
+                    let pqr    = req.body.pqr     ?"PQR"  :""
+                    let codt   = req.body.codt &&req.body.codt  
+                    let razon_social = req.body.razon_social &&req.body.razon_social  
+                    let text2  = `N Reporte: ${reportes.length+1} <br/> ${tanque} <br/> ${red} <br/> ${puntos} <br/> ${fuga} <br/> ${pqr}<br/> codt:${codt}<br/> razon social:${razon_social} `
+                    let usuario = {email:"fernandooj@ymail.com"}
+                    htmlTemplate(req, usuario, titulo, text1, text2,  asunto)
+
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     //////////////////////      ENVIO UN CORREO A DEPARTAMENTO TECNICO
-                    userServices.getByAcceso("admin", (err, usuarios)=>{
-                        usuarios.map(e=>{
-                            let titulo = `<font size="5">Nuevo reporte de emergencia </font>`
-                            let text1  = req.session.usuario.acceso=="cliente"
-                                         ?`Cliente reporta <br/>codt:${req.session.usuario.codt}<br/> razon social: ${req.session.usuario.razon_social} </b>`
-                                         :`Usuario reporta:<br/>Nombre:${req.session.usuario.nombre}<br/>Cedula: ${req.session.usuario.cedula} </b>`
-                            let text2  = `N Reporte: ${reportes.length+1}`
-                            let asunto =  "Nuevo reporte de emergencia"  
-                            htmlTemplate(req, e, titulo, text1, text2,  asunto)
-                        })
-                    })
-                    userServices.getByAcceso("depTecnico", (err, usuarios)=>{
-                        usuarios.map(e=>{
-                            let titulo = `<font size="5">Nuevo reporte de emergencia </font>`
-                            let text1  = req.session.usuario.acceso=="cliente"
-                                         ?`Cliente reporta <br/>codt:${req.session.usuario.codt}<br/> razon social: ${req.session.usuario.razon_social} </b>`
-                                         :`Usuario reporta:<br/>Nombre:${req.session.usuario.nombre}<br/>Cedula: ${req.session.usuario.cedula} </b>`
-                            let text2  = `N Reporte: ${reportes.length+1}`
-                            let asunto =  "Nuevo reporte de emergencia"  
-                            htmlTemplate(req, e, titulo, text1, text2,  asunto)
-                        })
-                    })                    
+                    // userServices.getByAcceso("admin", (err, usuarios)=>{
+                    //     usuarios.map(e=>{
+                    //         let titulo = `<font size="5">Nuevo reporte de emergencia </font>`
+                    //         let text1  = req.session.usuario.acceso=="cliente"
+                    //                      ?`Cliente reporta <br/>codt:${req.session.usuario.codt}<br/> razon social: ${req.session.usuario.razon_social} </b>`
+                    //                      :`Usuario reporta:<br/>Nombre:${req.session.usuario.nombre}<br/>Cedula: ${req.session.usuario.cedula} </b>`
+                    //         let text2  = `N Reporte: ${reportes.length+1}`
+                    //         let asunto =  "Nuevo reporte de emergencia"  
+                    //         htmlTemplate(req, e, titulo, text1, text2,  asunto)
+                    //     })
+                    // })
+                    // userServices.getByAcceso("depTecnico", (err, usuarios)=>{
+                    //     usuarios.map(e=>{
+                    //         let titulo = `<font size="5">Nuevo reporte de emergencia </font>`
+                    //         let text1  = req.session.usuario.acceso=="cliente"
+                    //                      ?`Cliente reporta <br/>codt:${req.session.usuario.codt}<br/> razon social: ${req.session.usuario.razon_social} </b>`
+                    //                      :`Usuario reporta:<br/>Nombre:${req.session.usuario.nombre}<br/>Cedula: ${req.session.usuario.cedula} </b>`
+                    //         let text2  = `N Reporte: ${reportes.length+1}`
+                    //         let asunto =  "Nuevo reporte de emergencia"  
+                    //         htmlTemplate(req, e, titulo, text1, text2,  asunto)
+                    //     })
+                    // })                    
                 }else{
                     res.json({ status:false, message: err }); 
                 }

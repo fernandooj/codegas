@@ -255,27 +255,27 @@ class Home extends Component{
 					<View style={style.contenedorColores}>
 						<View style={style.subContenedorColor}>	
 							<View style={[style.color, {backgroundColor:"rgba(91, 192, 222, 0.79)"}]}></View>
-							<Text style={style.textColor}>Espera activación</Text>
+							<Text style={style.textColor}>Pedido en espera</Text>
 						</View>
 						<View style={style.subContenedorColor}>
 							<View style={[style.color, {backgroundColor:"rgba(255, 235, 0, 0.79)"}]}></View>
-							<Text style={style.textColor}>Espera asignar vehiculo</Text>
+							<Text style={style.textColor}>Pedido activo</Text>
 						</View>
 						<View style={style.subContenedorColor}>
 							<View style={[style.color, {backgroundColor:"rgba(240, 173, 78, 0.79)"}]}></View>
-							<Text style={style.textColor}>Vehiculo asignado</Text>
+							<Text style={style.textColor}>Pedido asignado</Text>
 						</View>
 						<View style={style.subContenedorColor}>
 							<View style={[style.color, {backgroundColor:"rgba(92, 184, 92, 0.79)"}]}></View>
-							<Text style={style.textColor}>Entregado</Text>
+							<Text style={style.textColor}>Pedido entregado</Text>
 						</View>
 						<View style={style.subContenedorColor}>
 							<View style={[style.color, {backgroundColor:"#ffffff"}]}></View>
-							<Text style={style.textColor}>No se pudo entregar</Text>
+							<Text style={style.textColor}>Pedido no entregado</Text>
 						</View>
 						<View style={style.subContenedorColor}>
 							<View style={[style.color, {backgroundColor:"rgba(217, 83, 79, 0.79)"}]}></View>
-							<Text style={style.textColor}>Innactivo</Text>
+							<Text style={style.textColor}>Pedido inactivo</Text>
 						</View>
 					</View>
 					<Footer navigation={navigation} />

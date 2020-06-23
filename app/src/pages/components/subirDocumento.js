@@ -66,7 +66,7 @@ export default class subirDocumento extends Component{
             if(e.uri){
                 img.push(e)
             }else{
-                let img2 = e.split("-")
+                let img2 = e.split("--")
                 img2 = `${img2[2]}`
                 img.push({name:img2})
             }

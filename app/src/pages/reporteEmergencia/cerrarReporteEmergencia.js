@@ -2,10 +2,7 @@ import React, {Component} from 'react'
 import {View, Text, Image, ScrollView, TouchableOpacity, TextInput, Switch, Alert} from 'react-native'
 import {style}           from './style'
 import {connect}         from 'react-redux' 
-import DatePicker 			           from 'react-native-datepicker'
 import axios             from 'axios';
-
- 
 import TomarFoto                       from "../components/tomarFoto";
 import Footer            from '../components/footer'
  

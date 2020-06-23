@@ -1,8 +1,8 @@
 import React, {Component} from 'react'
-import {View, Text, Image, ScrollView, TouchableOpacity, TextInput, Switch, Alert} from 'react-native'
+import {View, Text, Image, ScrollView, TouchableOpacity, TextInput, Switch, Platform, Alert} from 'react-native'
 import {style}           from './style'
 import {connect}         from 'react-redux' 
-import DatePicker 			           from 'react-native-datepicker'
+import SubirDocumento from "../components/subirDocumento";
 import axios             from 'axios';
 
  
@@ -16,6 +16,7 @@ class cerrarRevision extends Component{
         this.state={
             terminoBuscador:"",
             imgDepTecnico:[],
+            imgDocumento:[],
             inicio:0,
             final:10
         }
@@ -39,17 +40,7 @@ class cerrarRevision extends Component{
                         tanqueArray:   revision.tanqueId   ?revision.tanqueId      :[],
                         tanqueIdArray: tanqueIdArray       ?tanqueIdArray :[],
                         
-                        /////////  step 2
-                        //codigoInterno:     revision.codigoInterno ?revision.codigoInterno           :"",
-                        capacidad         : revision.capacidad         ?revision.capacidad          :"",
-                        fabricante        : revision.fabricante        ?revision.fabricante         :"",
-                        barrio            : revision.barrio            ?revision.barrio             :"",
-                        sector            : revision.sector            ?revision.sector             :"",
-                        m3                : revision.m3                ?revision.m3                 :"",
-                        usuariosAtendidos : revision.usuariosAtendidos ?revision.usuariosAtendidos  :"",
-                        propiedad         : revision.propiedad         ?revision.propiedad          :"",
-                        lote              : revision.lote              ?revision.lote               :"",
-                        nMedidorText      : revision.nMedidorText      ?revision.nMedidorText       :"",
+                        
 
                         usuarioId:                revision.usuarioId           ?revision.usuarioId._id                 :null,
                         cedulaCliente:            revision.usuarioId           ?revision.usuarioId.razon_social        :"",
@@ -62,20 +53,9 @@ class cerrarRevision extends Component{
                         puntoId:                  revision.puntoId             ?revision.puntoId._id                   :null,
                         zonaId:                   revision.zonaId               ?revision.zonaId._id                   :null,
                         
-                        /////////  step 3
-                        imgNMedidor     : revision.nMedidor      ?revision.nMedidor      :[],
-                        imgNComodato    : revision.nComodato     ?revision.nComodato     :[],
-                        imgOtrosSi      : revision.otrosSi       ?revision.otrosSi       :[],
-                        imgRetiroTanques: revision.retiroTanques ?revision.retiroTanques :[],
-                        
-                        /////////  step 4
-                        imgDepTecnico     : revision.depTecnico        ?revision.depTecnico        :[],
-                        depTecnicoText     : revision.depTecnicoText   ?revision.depTecnicoText  :"",
-                        avisos            : revision.avisos            ?revision.avisos            :"",
-                        extintores        : revision.extintores        ?revision.extintores        :"",
-                        distancias        : revision.distancias        ?revision.distancias        :"",
-                        electricas        : revision.electricas        ?revision.electricas        :"",
-                        accesorios        : revision.accesorios        ?revision.accesorios        :"",
+                      
+                        imgDocumento     : revision.documento      ?revision.documento      :[],
+                      
                     })
                 })
        
@@ -83,46 +63,72 @@ class cerrarRevision extends Component{
      
     
     rendercontenido(){
-        let {avisos, extintores, distancias, electricas, accesorios, imgDepTecnico, depTecnicoText, nControl, nActa, cargando} = this.state
+        let {avisos, extintores, distancias, electricas, accesorios, imgDepTecnico, depTecnicoText, nControl, imgDocumento, cargando} = this.state
+        console.log(imgDocumento)
         return(
             <View>
                 {/* BARRIO */}
                 <Text style={style.textCerrar}>N Control: {nControl}</Text>
 
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Falta de Avisos reglamentarios en mal estado</Text>
+                    <Text style={style.row1Step2Cerrar}>Falta de Avisos reglamentarios en mal estado</Text>
                     <Switch
+                        trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                        thumbColor={[Platform.OS=='ios'?'#FFFFFF':(avisos ?'#d60606':'#ffffff')]}
+                        ios_backgroundColor="#fbfbfb"
+                        style={[avisos ?style.switchEnableBorder:style.switchDisableBorder]}
                         onValueChange = {(avisos)=>this.setState({avisos})}
-                        value = {avisos}
+                        value = {avisos}  
                     />
+                     
                 </View>
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Falta extintores en mal estado</Text>
+                    <Text style={style.row1Step2Cerrar}>Falta extintores en mal estado</Text>
                     <Switch
+                        trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                        thumbColor={[Platform.OS=='ios'?'#FFFFFF':(extintores ?'#d60606':'#ffffff')]}
+                        ios_backgroundColor="#fbfbfb"
+                        style={[extintores ?style.switchEnableBorder:style.switchDisableBorder]}
                         onValueChange = {(extintores)=>this.setState({extintores})}
-                        value = {extintores}
+                        value = {extintores}  
                     />
+                    
                 </View>
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>No cumple distancias en mal estado</Text>
+                    <Text style={style.row1Step2Cerrar}>No cumple distancias en mal estado</Text>
                     <Switch
+                        trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                        thumbColor={[Platform.OS=='ios'?'#FFFFFF':(distancias ?'#d60606':'#ffffff')]}
+                        ios_backgroundColor="#fbfbfb"
+                        style={[distancias ?style.switchEnableBorder:style.switchDisableBorder]}
                         onValueChange = {(distancias)=>this.setState({distancias})}
-                        value = {distancias}
+                        value = {distancias}  
                     />
+                    
                 </View>
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Fuentes ignición cerca en mal estado</Text>
+                    <Text style={style.row1Step2Cerrar}>Fuentes ignición cerca en mal estado</Text>
                     <Switch
+                        trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                        thumbColor={[Platform.OS=='ios'?'#FFFFFF':(electricas ?'#d60606':'#ffffff')]}
+                        ios_backgroundColor="#fbfbfb"
+                        style={[electricas ?style.switchEnableBorder:style.switchDisableBorder]}
                         onValueChange = {(electricas)=>this.setState({electricas})}
-                        value = {electricas}
+                        value = {electricas}  
                     />
+                    
                 </View>
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>No cumple accesorios y materiales</Text>
+                    <Text style={style.row1Step2Cerrar}>No cumple accesorios y materiales</Text>
                     <Switch
+                        trackColor={{ true: '#d60606', false: Platform.OS=='android'?'#d3d3d3':'#fbfbfb'  }}
+                        thumbColor={[Platform.OS=='ios'?'#FFFFFF':(accesorios ?'#d60606':'#ffffff')]}
+                        ios_backgroundColor="#fbfbfb"
+                        style={[accesorios ?style.switchEnableBorder:style.switchDisableBorder]}
                         onValueChange = {(accesorios)=>this.setState({accesorios})}
-                        value = {accesorios}
+                        value = {accesorios}  
                     />
+                     
                 </View>
 
 
@@ -135,7 +141,15 @@ class cerrarRevision extends Component{
                         onChangeText={(depTecnicoText)=> this.setState({ depTecnicoText })}
                     />
                 </View>
-                
+                 {/* DOSSIER */}
+                 <SubirDocumento 
+                    source={imgDocumento}
+                    width={180}
+                    titulo="Documento Adjunto"
+                    limiteImagenes={4}
+                    imagenes={(imgDocumento) => {  this.setState({imgDocumento}) }}
+                />
+                <View style={style.separador}></View>
                 {/* IMAGEN */}
                 <TomarFoto 
                     source={imgDepTecnico}
@@ -144,7 +158,9 @@ class cerrarRevision extends Component{
                     limiteImagenes={4}
                     imagenes={(imgDepTecnico) => {  this.setState({imgDepTecnico}) }}
                 />
+                <View style={style.separador}></View>
 
+               
                 <TouchableOpacity style={style.nuevaFrecuencia} onPress={cargando ?null :()=>this.handleSubmit()}>
                     <Text style={style.textGuardar}>{cargando ?"Guardando.." :"Guardar"}</Text>
                 </TouchableOpacity>
@@ -167,12 +183,15 @@ class cerrarRevision extends Component{
         )
     }
     handleSubmit(){
-        const {distancias, extintores, accesorios, imgDepTecnico, depTecnicoText, avisos, electricas, revisionId} = this.state
-        console.log({distancias, extintores, imgDepTecnico, depTecnicoText, avisos, revisionId})
+        const {distancias, extintores, accesorios, imgDepTecnico, depTecnicoText, avisos, electricas, imgDocumento, revisionId} = this.state
+        console.log({imgDocumento, extintores, imgDepTecnico, depTecnicoText, avisos, revisionId})
         this.setState({cargando:true})
         let data = new FormData();
         imgDepTecnico.forEach(e=>{
             data.append('imgDepTecnico', e);
+        })
+        imgDocumento.forEach(e=>{
+            data.append('imgDocumento', e);
         })
         data.append('depTecnicoText',  depTecnicoText);
         data.append('distancias',  distancias);

@@ -21,8 +21,9 @@ import {style}                         from './style'
 
 // let capacidades = [{key:"TK 50", label:"TK 50"},{key:"TK 120", label:"TK 120"},{key:"TK 250", label:"TK 250"},{key:"TK 300", label:"TK 300"},{key:"TK 500", label:"TK 500"},{key:"TK 1000", label:"TK 1000"},{key:"TK 2000", label:"TK 2000"},{key:"TK 3000", label:"TK 3000"},{key:"TK 5000", label:"TK 5000"},{key:"TK 10000", label:"TK 10000"}]
 let anosFabricacion = []
-let existeTanques   = [{key:"Bodega", label:"Bodega"},{key:"Usuario", label:"Usuario"}]
- 
+let existeTanques   = [{key:"Bodega", label:"Bodega"},{key:"Cliente", label:"Cliente"}]
+let propiedades     = [{key:"Usuario", label:"Usuario"},{key:"Propio", label:"Propio"}]
+
 //// devuelve el listado de años para el tanque
 for (var index = 1950; index < 2021; index++) {
     anosFabricacion.push({key:index, label:index })
@@ -98,7 +99,7 @@ class Tanques extends Component{
             let placaText = this.props.navigation.state.params.placaText ?this.props.navigation.state.params.placaText :null
             let puntoId   = this.props.navigation.state.params.puntoId ?this.props.navigation.state.params.puntoId :null
             let usuarioId = this.props.navigation.state.params.usuarioId ?this.props.navigation.state.params.usuarioId :null
-
+            console.log({tanqueId})
             if(usuarioId){
                 axios.get(`user/byId/${usuarioId}`)
                 .then(res => {
@@ -122,7 +123,7 @@ class Tanques extends Component{
             if(tanqueId){
                 axios.get(`ult/ultimaRev/byTanque/${tanqueId}`)
                 .then(res=>{
-                    console.log(res.data.revision)
+                    console.log(res.data)
                     this.setState({revisiones:res.data.revision})
                 })
                 axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
@@ -144,7 +145,7 @@ class Tanques extends Component{
                         registroOnac:           tanque.registroOnac      ?tanque.registroOnac       :"",
                         fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
                         ultimRevTotal:          tanque.ultimRevTotal     ?tanque.ultimRevTotal      :"",
-                        
+                        propiedad             : tanque.propiedad         ?tanque.propiedad          :"",
                         nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
                         codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
                         serie:                  tanque.serie             ?tanque.serie              :"",
@@ -302,7 +303,7 @@ class Tanques extends Component{
         axios.post("")
     }
     step1(){
-        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, showModal, fechaUltimaRev, existeTanque, capacidades, nPlaca, serie, anoFabricacion, revisiones, registroOnac, ultimRevTotal, tanqueId} = this.state
+        const {modalPlacas, placas, placaText, modalCapacidad, capacidad, fabricante, showModal, fechaUltimaRev, existeTanque, capacidades, nPlaca, serie, anoFabricacion, revisiones, registroOnac, ultimRevTotal, propiedad, modalPropiedad, tanqueId} = this.state
          
         return(
             <View>
@@ -441,6 +442,23 @@ class Tanques extends Component{
                         selectStyle={{borderWidth:0, padding:0, alignSelf:"stretch"  }}
                     />
                 </View>    
+                
+                {/* PROPIEDAD */}  
+                <ModalFilterPicker
+					placeholderText="Propiedad ..."
+					visible={modalPropiedad}
+					onSelect={(e)=>this.setState({propiedad:e, modalPropiedad:false})}
+					onCancel={()=>this.setState({modalPropiedad:false})}
+                    options={propiedades}
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Propiedad</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPropiedad:true})}>
+                        <Text style={propiedad ?style.textBtnActive :style.textBtn}>{propiedad ?propiedad :"Propiedad"}</Text>
+                    </TouchableOpacity>
+                </View>  
 
                 {/* REGISTRO ONAC */}
                 <View style={style.contenedorSetp2}>
@@ -919,9 +937,9 @@ class Tanques extends Component{
     ////////////////////////            CREAR TANQUE
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal})
-        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad})
+        axios.post(`tan/tanque/`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
@@ -936,9 +954,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 1
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
-        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque, registroOnac, ultimRevTotal})
-        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal})
+        const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal, propiedad} = this.state
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque, registroOnac, ultimRevTotal, propiedad})
+        axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal, propiedad})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

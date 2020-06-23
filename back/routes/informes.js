@@ -544,7 +544,99 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     })
 })
 
-////////////////////////////////////////////  8.	OBSERVACIONES
+
+///////////////////////////////////////////  8.	PEDIDOS TRAZABILIDAD DE PEDIDO
+router.get('/pedidos/programacion/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    console.log({fechaInicio, fechaFinal})
+    pedidoServices.get((err, pedido)=>{
+        if(!err){
+             
+            pedido["CV"]=""
+            pedido = pedido.filter(e=>{
+                let data=e.usuarioId.cedula.split('-')
+                e.usuarioId.cedula=data[0]
+                e.CV=data[1]
+                return e
+            })
+            pedido = pedido.filter(e=>{
+                e.usuarioId.cedula=e.usuarioId.cedula.replace('.', '')
+                e.usuarioId.cedula=e.usuarioId.cedula.replace(',', '')
+                return e
+            })
+            
+            pedido = pedido.filter(e=>{
+                return e.creado>=fechaInicio && e.creado<=fechaFinal
+            })
+            
+            const fields = [{   
+                label: 'N Pedido',
+                value: 'nPedido'
+            },{
+                label: 'CODT',
+                value: 'usuarioId.codt'
+            },{
+                label: 'Cedula ',
+                value: 'usuarioId.cedula'
+            },{
+                label: 'Razon Social',
+                value: 'usuarioId.razon_social'
+            },{
+                label: 'Punto Consumo',
+                value: 'puntoId.direccion'
+            },{
+                label: 'N Factura',
+                value: 'factura'
+            },{
+                label: 'Placa',
+                value: 'carroId.placa'
+            },{
+                label: 'Estado',
+                value: 'estado'
+            },{
+                label: 'Entregado',
+                value: 'entregado'
+            },{
+                label: 'Conductor',
+                value: 'conductorId.nombre'
+            },{
+                label: 'Fecha Solicitud',
+                value: 'fechaSolicitud'
+            },{
+                label: 'Kilos',
+                value: 'kilos'
+            },{
+                label: 'Remision',
+                value: 'remision'
+            },{
+                label: 'Valor Unitario Usuario',
+                value: 'usuarioId.valorUnitario'
+            },{
+                label: 'Valor Unitario',
+                value: 'valorUnitario'
+            },{
+                label: 'Valor Total', /// aun no esta
+                value: 'valor_total'
+            },{
+                label: 'Forma de pago', /// aun no esta
+                value: 'forma_pago'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(pedido);
+                res.attachment('programacion.csv');
+                res.status(200).send(csv);
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
+
+
+////////////////////////////////////////////  9.	OBSERVACIONES
 router.get('/novedades/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     novedadServices.get((err, novedad)=>{

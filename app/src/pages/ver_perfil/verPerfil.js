@@ -241,7 +241,7 @@ class verPerfil extends Component{
                     keyboardType='numeric'
                     value={cedula}
                     onChangeText={cedula => this.setState({ cedula })}
-                    style={cedula.length<3 ?[style.input, style.inputRequired] :style.input}
+                    style={cedula.length<5 ?[style.input, style.inputRequired] :style.input}
                 />
             {/* DIRECCION */}	
                 {
@@ -315,7 +315,7 @@ class verPerfil extends Component{
 					placeholderTextColor="#aaa" 
                     value={celular}
                     onChangeText={celular => this.setState({ celular })}
-                    style={celular.length<3 ?[style.input, style.inputRequired] :style.input}
+                    style={celular.length<77 ?[style.input, style.inputRequired] :style.input}
                 />
 
             {/* VEO */}	 
@@ -347,6 +347,7 @@ class verPerfil extends Component{
                         onChangeText={valorUnitario => this.setState({ valorUnitario })}
                         style={valorUnitario.length<3 ?[style.input, style.inputRequired] :style.input}
                         editable={accesoPerfil=="cliente" ?false :true}
+                        onBlur={()=>this.cambiarValorUnitario()}
                     />
                 </>
             }
@@ -460,6 +461,16 @@ class verPerfil extends Component{
             </ScrollView>  
             
         )
+    }
+    cambiarValorUnitario(){
+        let {valorUnitario, idUsuario} = this.state
+        axios.get(`users/cambiarValor/${valorUnitario}/${idUsuario}`)
+        .then(res=>{
+            console.log(res.data)
+            if(res.data.status){
+                Toast.show("Valor unitario editado", Toast.LONG)
+            }
+        })
     }
     verificaEmail(){
         let {email} = this.state
@@ -827,7 +838,7 @@ class verPerfil extends Component{
         const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario} = this.state
         console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario})
         if(acceso=="cliente"){
-            if(razon_social=="" || cedula=="" || ubicacion=="" || valorUnitario=="" || direccion_factura=="" || nombre=="" || email=="" ||  celular=="" || tipo=="" || acceso=="usuario"  || ubicaciones.length<1){
+            if(razon_social==""|| ubicacion=="" || valorUnitario=="" || direccion_factura=="" || nombre=="" || email=="" || tipo=="" || acceso=="usuario"  || ubicaciones.length<1){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
@@ -836,6 +847,11 @@ class verPerfil extends Component{
                     ],
                     { cancelable: false }
                 )
+            }else if(celular.length<7){
+                Toast.show("Telefono incorrecto")
+    
+            }else if(cedula.length<5){
+                Toast.show("Cedula incorrecta")
             }else{
                 esEditar=="editar" ?this.editarUsuario() :this.guardarUsuario()
             }

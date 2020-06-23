@@ -169,7 +169,8 @@ class revisionServices{
 		}}, callback);
 	}
 
-	cerrarDepTecnico(_id, depTecnico, data, callback){
+	cerrarDepTecnico(_id, depTecnico, data, documento, callback){
+		console.log(documento)
 		revision.findByIdAndUpdate(_id, {$set: {
 			depTecnico     : depTecnico    ?depTecnico  :[],
 			depTecnicoText : data.depTecnicoText,
@@ -178,6 +179,7 @@ class revisionServices{
 			distancias     : data.distancias,
 			electricas     : data.electricas,
 			accesorios     : data.accesorios,
+			documento      : documento ?documento :[],
 			depTecnicoEstado:true
 		}}, callback);
 	}

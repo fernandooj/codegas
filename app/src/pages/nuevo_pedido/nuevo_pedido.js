@@ -88,7 +88,7 @@ class Nuevo_pedido extends Component{
         modalCliente:false,
         modalFechaEntrega:true,
         // guardando:true,
-        fechaSolicitud: moment().tz("America/Bogota").add(hora, 'days').format('YYYY-MM-DD')
+        // fechaSolicitud: moment().tz("America/Bogota").add(hora, 'days').format('YYYY-MM-DD')
       }
      
 	}
@@ -334,19 +334,21 @@ class Nuevo_pedido extends Component{
                 />  */}
                 <TouchableOpacity style={!forma ?style.btnGuardarDisable :style.btnGuardar} onPress={()=>
                     (acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial" || acceso=="despacho") && !idCliente
-                    ?alert("Selecciona un cliente")
+                    ?Toast.show("Selecciona un cliente")
                     :(acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial" || acceso=="despacho") && !puntoId
-                    ?alert("Selecciona una dirección")
+                    ?Toast.show("Selecciona una dirección")
                     :!forma
-                    ?alert("selecciona una forma")
+                    ?Toast.show("Selecciona una forma")
                     :(forma=="monto"&&cantidad<10)
-                    ?alert("Inserta una cantidad")
+                    ?Toast.show("Inserta una cantidad")
                     :(forma=="cantidad"&&cantidad<10)
-                    ?alert("Inserta una cantidad")
+                    ?Toast.show("Inserta una cantidad")
                     :(frecuencia=="semanal" || frecuencia=="mensual") &&!dia1
-                    ?alert("Inserta un dia de frecuencia")
+                    ?Toast.show("Inserta un dia de frecuencia")
                     :frecuencia=="quincenal"  &&(!dia1 ||!dia2)
-                    ?alert("Inserta los dias de frecuencia")
+                    ?Toast.show("Inserta los dias de frecuencia")
+                    :!fechaSolicitud
+                    ?Toast.show("Inserta una fecha de entrega")
                     :!guardando &&this.verificaPedido()
                 }>
                     {/* <Text style={style.textGuardar}> {guardando ?"Guardando" :"Guardar pedido"}</Text> */}
@@ -374,7 +376,7 @@ class Nuevo_pedido extends Component{
     modalFechaEntrega(){
         let {modalFechaEntrega, fechaSolicitud} = this.state
         fechaSolicitud = moment(fechaSolicitud).format("YYYY-MM-DD")
-        let diaActual =  moment().tz("America/Bogota").add(1, 'days').format('YYYY-MM-DD')
+        let diaActual =  moment().tz("America/Bogota").add(0, 'days').format('YYYY-MM-DD')
         console.log(diaActual)
         return(
             <Modal transparent visible={modalFechaEntrega} animationType="fade" >

@@ -66,6 +66,7 @@ let Revision = new Schema({
 	eliminado		  : {type:Boolean, default:false},
 	usuarioCrea		  : {type: Schema.ObjectId, ref:'User'},
 	tanqueId		  :	[{type: Schema.ObjectId, ref:'Tanque'}],
+	documento	  : [], 
 
 	////////////////////////////////	CERRAR DEP TECNICO	
 	depTecnico		  :[],

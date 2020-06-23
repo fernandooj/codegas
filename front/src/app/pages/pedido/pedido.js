@@ -87,21 +87,24 @@ class Home extends PureComponent {
  
          
          <DatePicker 
-          onChange={(data, fechaEntregaFiltro)=>this.actualizaFecha({data, fechaEntregaFiltro})} 
+          onChange={(data, fechaEntregaFiltro)=>this.actualizaFechaSolicitud({data, fechaEntregaFiltro})} 
+          // value={this.state.fechaCreacion}
           locale={locale} 
-          placeholder="Fecha creación"
+          placeholder="Fecha Solicitud"
         />
         <DatePicker 
-           onChange={(data, fechaEntregaFiltro)=>this.actualizaFechaEntrega({data, fechaEntregaFiltro})} 
+          onChange={(data, fechaEntregaFiltro)=>this.actualizaFechaEntrega({data, fechaEntregaFiltro})} 
           locale={locale} 
+          // value={this.state.fechaEntrega}
           placeholder="Fecha entrega"
           style={{margin:"0 8px"}}
         />
-         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=> {this.setState({terminoBuscador:""});this.fetch()} }>Limpiar</Button>
+         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=> {this.setState({fechaCreacion:"", fechaEntrega:"", terminoBuscador:""});this.fetch()} }>Limpiar</Button>
       </div>
     )
   }
   actualizarTabla(filtro){
+
     this.setState({ loading: true });
     let params={
       results: 5000,
@@ -119,16 +122,6 @@ class Home extends PureComponent {
       type: 'json',
     }).then(data => {
       console.log(data)
-      // let pedidos = data.pedido.filter(e=>{
-      //   if(!e.carroId)
-      //   e["carroId"]={placa:"Sin placa"}
-      //   return e
-      // })
-      // pedidos = pedidos.filter(e=>{
-      //   if(!e.zonaId)
-      //   e["zonaId"]={nombre:"Sin Zona"}
-      //   return e
-      // })
       let pedidos = data.pedido.filter(e=>{
         return e.estado==filtro
       })
@@ -144,6 +137,69 @@ class Home extends PureComponent {
      
   
   }
+  actualizaFechaSolicitud = fechaEntregaFiltro => {
+    console.log("filtro")
+    console.log(fechaEntregaFiltro)
+    this.setState({ loading: true, fechaCreacion:fechaEntregaFiltro});
+    let params={
+      results: 1500,
+      page: 1500,
+      sortField: 1500,
+      sortOrder: 1500,
+    }
+    reqwest({
+      url: `x/v1/ped/pedido/todos/web/undefined`,
+      method: 'get',
+      data: {
+        results: 1500,
+        ...params,
+      },
+      type: 'json',
+    }).then(data => {
+      let pedidos = data.pedido
+      pedidos = pedidos.filter(e=>{
+        return e.fechaSolicitud==fechaEntregaFiltro.fechaEntregaFiltro 
+      })
+      const pagination = { ...this.state.pagination };
+      pagination.total = 200;
+      this.setState({
+        loading: false,
+        data: pedidos,
+        pagination,
+      });
+    });    
+  }
+  actualizaFechaEntrega = fechaEntregaFiltro => {
+    this.setState({ loading: true, fechaEntrega:fechaEntregaFiltro });
+    let params={
+      results: 1500,
+      page: 1500,
+      sortField: 1500,
+      sortOrder: 1500,
+    }
+    reqwest({
+      url: `x/v1/ped/pedido/todos/web/undefined`,
+      method: 'get',
+      data: {
+        results: 1500,
+        ...params,
+      },
+      type: 'json',
+    }).then(data => {
+      let pedidos = data.pedido
+      pedidos = pedidos.filter(e=>{
+        return e.fechaEntrega==fechaEntregaFiltro.fechaEntregaFiltro 
+      })
+      const pagination = { ...this.state.pagination };
+      pagination.total = 200;
+      this.setState({
+        loading: false,
+        data: pedidos,
+        pagination,
+      });
+    });    
+  }
+
   actualizarTabla2(filtro, filtro2){
     this.setState({ loading: true });
     let params={
@@ -162,16 +218,6 @@ class Home extends PureComponent {
       type: 'json',
     }).then(data => {
       let pedidos = data.pedido
-      // let pedidos = data.pedido.filter(e=>{
-      //   if(!e.carroId)
-      //   e["carroId"]={placa:"Sin placa"}
-      //   return e
-      // })
-      // pedidos = pedidos.filter(e=>{
-      //   if(!e.zonaId)
-      //   e["zonaId"]={nombre:"Sin Zona"}
-      //   return e
-      // })
       if(filtro2){
         pedidos = pedidos.filter(e=>{
           return e.estado==filtro &&e.carroId
@@ -190,19 +236,7 @@ class Home extends PureComponent {
         data: pedidos,
         pagination,
       });
-    });
-
-    // let {pedidos, pedidosFiltro} = this.state
-    // if(filtro2){
-    //   pedidos = pedidosFiltro.filter(e=>{
-    //     return e.estado==filtro &&e.carroId
-    //   })
-    // }else{
-    //   pedidos = pedidosFiltro.filter(e=>{
-    //     return e.estado==filtro &&!e.carroId
-    //   })
-    // }
-    
+    });    
   }
   actualizarTabla3(filtro, filtro2){
     this.setState({ loading: true });
@@ -309,6 +343,7 @@ class Home extends PureComponent {
       {
         title: 'Razón social',
         dataIndex: 'usuarioId.razon_social',
+        width: '12%',
       },
       {
         title: 'Cedula',
@@ -319,6 +354,7 @@ class Home extends PureComponent {
       {
         title: 'Dirección',
         dataIndex: 'puntoId.direccion',
+        width: '12%',
       },
       {
         title: 'Zona',
@@ -329,7 +365,7 @@ class Home extends PureComponent {
         sortDirections: ['descend', 'ascend'],
       },
       {
-        title: 'Fecha creación',
+        title: 'F. Creación',
         dataIndex: 'creado',
         render:fecha=>(
           fecha
@@ -340,7 +376,18 @@ class Home extends PureComponent {
         sortDirections: ['descend', 'ascend'],
       },
       {
-        title: 'Fecha entrega',
+        title: 'F. Solicitud',
+        dataIndex: 'fechaSolicitud',
+        render:fecha=>(
+          fecha
+        ),
+       
+        onFilter: (value, record) => record.creado.indexOf(value) === 0,
+        sorter: (a, b) => a.creado.length - b.creado.length,
+        sortDirections: ['descend', 'ascend'],
+      },
+      {
+        title: 'F. entrega',
         dataIndex: 'fechaEntrega',
         render:(fecha, e)=>(
           <Button type="link" className={style.link} 
@@ -760,26 +807,7 @@ class Home extends PureComponent {
       </div>
     );
   }
-  actualizaFecha = fechaEntregaFiltro => {
-    let {pedidos, pedidosFiltro} = this.state
-    let pedidosSlice = pedidosFiltro.filter(item=>{
-      item.creado = item.creado.slice(0,10);
-      return item;
-    })
 
-    pedidos = pedidosSlice.filter(e=>{
-      return e.creado==fechaEntregaFiltro.fechaEntregaFiltro 
-    })
-    this.setState({pedidos})
-  }
-  actualizaFechaEntrega = fechaEntregaFiltro => {
-    let {pedidos, pedidosFiltro} = this.state
-   
-    pedidos = pedidosFiltro.filter(e=>{
-      return e.fechaEntrega==fechaEntregaFiltro.fechaEntregaFiltro 
-    })
-    this.setState({pedidos})
-  }
 }
 const mapState = state => {
  

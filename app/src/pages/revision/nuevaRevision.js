@@ -74,8 +74,8 @@ class Tanques extends Component{
             let placas = res.data.tanque
             placas = placas.map(e=>{
                 return{
-                    key:e._id,
-                    label:e.placaText
+                    key:e._id._id,
+                    label:e._id.placaText
                 }
             }) 
             this.setState({placas})
@@ -117,7 +117,7 @@ class Tanques extends Component{
                 revision.tanqueId.map(e=>{
                     tanqueIdArray.push(e._id)
                 })
-                console.log(res.data)
+                
                 this.setState({
                     /////// step 1
                     revisionId:    revision._id,
@@ -220,6 +220,7 @@ class Tanques extends Component{
         let {tanqueArray, tanqueIdArray, usuarioId, puntoId} = this.state
         axios.get(`tan/tanque/byId/${id}`)
         .then(res=>{
+            console.log(res.data)
             const {tanque} = res.data
             let infoTanque={
                 _id:                tanque._id,
@@ -431,7 +432,7 @@ class Tanques extends Component{
                 }
 
                 {/* PROPIEDAD */}  
-                 <ModalFilterPicker
+                 {/* <ModalFilterPicker
 					placeholderText="Propiedad ..."
 					visible={modalPropiedad}
 					onSelect={(e)=>this.setState({propiedad:e, modalPropiedad:false})}
@@ -445,7 +446,7 @@ class Tanques extends Component{
                     <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPropiedad:true})}>
                         <Text style={propiedad ?style.textBtnActive :style.textBtn}>{propiedad ?propiedad :"Propiedad"}</Text>
                     </TouchableOpacity>
-                </View>
+                </View> */}
 
                 {/* UBICACIONES */}
                 <ModalFilterPicker
@@ -1024,9 +1025,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 1
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
-        const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion, tanqueArray} = this.state
+        const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion, tanqueArray} = this.state
         console.log({tanqueArray})
-        axios.put(`rev/revision/${revisionId}`, {tanqueId:tanqueIdArray, sector, barrio, usuariosAtendidos, m3, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion})
+        axios.put(`rev/revision/${revisionId}`, {tanqueId:tanqueIdArray, sector, barrio, usuariosAtendidos, m3, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
             if(res.data.status){
                 let totalCapacidad = []
@@ -1049,9 +1050,9 @@ class Tanques extends Component{
     ////////////////////////            EDITA EL STEP 2
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep2(){
-        const {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion, capacidad} = this.state
-        console.log({capacidad, zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, propiedad, nComodatoText, nMedidorText, ubicacion})
-        axios.put(`rev/revision/${revisionId}`, {sector, barrio, usuariosAtendidos, m3, tanqueId:tanqueIdArray, zonaId, usuarioId, puntoId, propiedad, nComodatoText, nMedidorText, ubicacion})
+        const {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, nComodatoText, nMedidorText, ubicacion, capacidad} = this.state
+        console.log({capacidad, zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, nComodatoText, nMedidorText, ubicacion})
+        axios.put(`rev/revision/${revisionId}`, {sector, barrio, usuariosAtendidos, m3, tanqueId:tanqueIdArray, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

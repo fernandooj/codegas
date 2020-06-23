@@ -110,12 +110,19 @@ class Home extends PureComponent {
             </a>
           </Card>
         </Col>
+        <Col span={6}>
+          <Card>
+            <a href={"x/v1/inf/informe/pedidos/programacion/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+              8.  Programación
+            </a>
+          </Card>
+        </Col>
       {
         perfil.acceso==="admin"
         &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/novedades/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
-                8.  Observaciones
+                9.  Observaciones
             </a>
           </Card>
         </Col>
@@ -125,7 +132,7 @@ class Home extends PureComponent {
         &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/calificaciones/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
-                9.  Calificaciones
+                10.  Calificaciones
             </a>
           </Card>
         </Col>
@@ -135,7 +142,7 @@ class Home extends PureComponent {
         &&<Col span={6}>
           <Card>
             <a href="x/v1/inf/informe/pdf/chats/true/null/null" type="primary" htmlType="submit" className="login-form-button">
-                10.  Generar PDF chats
+                11.  Generar PDF chats
             </a>
           </Card>
         </Col>
@@ -145,7 +152,7 @@ class Home extends PureComponent {
         &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/users/clientesVeos/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
-                11.  Generar Clientes con Veos
+                12.  Generar Clientes con Veos
             </a>
           </Card>
         </Col>

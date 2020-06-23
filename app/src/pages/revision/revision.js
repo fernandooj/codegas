@@ -68,7 +68,7 @@ class Revision extends Component{
                 <View style={[style.contenedorRevisiones, {backgroundColor: !e.activo ?"#F96D6C" :(e.estado==2 ||e.avisos||e.distancias||e.electricas||e.extintores||e.accesorios) ?"#e8a43d" :"white" }]} key={key}>
                     {
                         navigation.state.params
-                        ?<TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:navigation.state.params.puntoId, clienteId:navigation.state.params.clienteId, revisionId:e._id})}>
+                        ?<><TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:navigation.state.params.puntoId, clienteId:navigation.state.params.clienteId, revisionId:e._id})}>
                              <View style={{width:"90%"}}>
                                 <Text style={style.textUsers}>N Control: {e.nControl}</Text>
                                 <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
@@ -85,25 +85,54 @@ class Revision extends Component{
                                 <Icon name={'angle-right'} style={style.iconCerrar} />
                             </View>
                         </TouchableOpacity>
-                        :<TouchableOpacity style={{flexDirection:"row"}}
-                        onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:e.puntoId._id, clienteId:e.usuarioId._id, revisionId:e._id})}
-                        >
-                            <View style={{width:"90%"}}>
-                            <Text style={style.textUsers}>N Control: {e.nControl}</Text>
-                            <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
-                            
-                            {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
-                            {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
-                            {e.avisos     &&<Text style={style.textUsers}>Falta de Avisos reglamentarios en mal estado</Text>}
-                            {e.extintores &&<Text style={style.textUsers}>Falta extintores en mal estado</Text>}
-                            {e.distancias &&<Text style={style.textUsers}>No cumple distancias en mal estado</Text>}
-                            {e.electricas &&<Text style={style.textUsers}>Fuentes ignición cerca en mal estado</Text>}
-                            {e.accesorios &&<Text style={style.textUsers}>No cumple accesorios y materiales</Text>}
-                        </View>
-                        <View  style={{justifyContent:"center"}}>
-                            <Icon name={'angle-right'} style={style.iconCerrar} />
-                        </View>
-                    </TouchableOpacity>
+                            {
+                        acceso=="admin"
+                        &&<View style={[style.separador, {width:"100%"}]}></View>
+                        }
+                        {
+                            acceso=="admin"
+                            &&<TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("cerrarTanque", {tanqueId:e._id})}>
+                            <Text>Cerrar Tanque <Icon name='times-circle' style={style.iconCerrarTanque} /> </Text>
+                            </TouchableOpacity>
+                        }
+                        </>
+                        :<>
+                            <TouchableOpacity style={{flexDirection:"row"}}
+                            onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:e.puntoId._id, clienteId:e.usuarioId._id, revisionId:e._id})}
+                            >
+                                <View style={{width:"90%"}}>
+                                <Text style={style.textUsers}>N Control: {e.nControl}</Text>
+                                <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
+                                
+                                {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
+                                {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
+                                {e.avisos     &&<Text style={style.textUsers}>Falta de Avisos reglamentarios en mal estado</Text>}
+                                {e.extintores &&<Text style={style.textUsers}>Falta extintores en mal estado</Text>}
+                                {e.distancias &&<Text style={style.textUsers}>No cumple distancias en mal estado</Text>}
+                                {e.electricas &&<Text style={style.textUsers}>Fuentes ignición cerca en mal estado</Text>}
+                                {e.accesorios &&<Text style={style.textUsers}>No cumple accesorios y materiales</Text>}
+                            </View>
+                            <View  style={{justifyContent:"center"}}>
+                                <Icon name={'angle-right'} style={style.iconCerrar} />
+                            </View>
+                        </TouchableOpacity>
+                            {
+                                acceso=="admin"
+                                &&<View style={[style.separador, {width:"100%"}]}></View>
+                            }
+                            {
+                                acceso=="admin"
+                                &&<TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("cerrarRevision", {puntoId:e.puntoId._id, clienteId:e.usuarioId._id, revisionId:e._id})}>
+                                 <Text>Cerrar Depto tecnico <Icon name='times-circle' style={style.iconCerrarTanque} /> </Text>
+                                </TouchableOpacity>
+                            }
+                            {
+                                acceso=="admin"
+                                &&<TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("cerrarSeguridad", {puntoId:e.puntoId._id, clienteId:e.usuarioId._id, revisionId:e._id})}>
+                                    <Text>Cerrar Seguridad <Icon name='times-circle' style={style.iconCerrarTanque} /> </Text>
+                                </TouchableOpacity>
+                            }
+                        </>
                     }
                     
                        

@@ -142,7 +142,7 @@ class Pedido extends Component{
         const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = pedidosFiltro.slice(inicio, final)
-        console.log(newPedidos)
+ 
         return newPedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -168,7 +168,7 @@ class Pedido extends Component{
                                 placaPedido:e.carroId ?e.carroId.placa :null, 
                                 conductorPedido:e.conductorId ?e.conductorId.nombre :null, 
                                 valor_unitarioUsuario:e.valorUnitario ?e.valorUnitario :e.usuarioId.valorUnitario, 
-                                imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", usuarioId:e.usuarioId._id, nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_total:e.valor_total, nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad, observacion:e.puntoId.observacion,  puntoId:e.puntoId._id, usuarioCrea:e.usuarioCrea.nombre, creado:e.creado })
+                                imagenPedido:e.imagen, fechaEntrega:e.fechaEntrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", usuarioId:e.usuarioId._id, nombre:e.usuarioId.nombre, razon_social:e.usuarioId.razon_social, codt:e.usuarioId.codt, email:e.usuarioId.email, tokenPhone:e.usuarioId.tokenPhone, cedula:e.usuarioId.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar[0], factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_total:e.valor_total, nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.puntoId.capacidad, observacion:e.puntoId.observacion,  puntoId:e.puntoId._id, usuarioCrea:e.usuarioCrea.nombre, creado:e.creado })
                         }                        
                     }
                 >
@@ -316,8 +316,7 @@ class Pedido extends Component{
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
-        let {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, valor_unitarioUsuario, usuarioCrea, observacion, usuarioId, puntoId } = this.state
-        console.log({valor_totalTexto})
+        let {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, codt, usuarioCrea, observacion, usuarioId, puntoId } = this.state
         valor_totalTexto =valor_totalTexto.replace(/[A-Za-z$-]/g, "");
 		valor_totalTexto=valor_totalTexto.replace(",", "");
 		valor_totalTexto=parseInt(valor_totalTexto).toFixed(0);
@@ -348,7 +347,7 @@ class Pedido extends Component{
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Almacenamiento: {capacidad}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Observacion: {observacion}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>{cantidad &&`cantidad ${cantidad}`}</Text>
-                                <TouchableOpacity style={style.btnEmergencia} onPress={()=>this.props.navigation.navigate("nuevoReporteEmergencia", {usuarioId, puntoId})} >
+                                <TouchableOpacity style={style.btnEmergencia} onPress={()=>this.props.navigation.navigate("nuevoReporteEmergencia", {usuarioId, puntoId, codt, razon_social})} >
                                     <Text style={style.txtNovedad}> Crear Reporte de emergencia </Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity style={style.btnNovedad} onPress={()=>this.setState({showNovedades:true})} >
@@ -817,7 +816,6 @@ class Pedido extends Component{
     actualizarFechaSolicitud(filtro){ 
         axios.get(`zon/zona/pedidoSolicitud/${filtro}`)
         .then(res => {
-            console.log(res.data)
             this.setState({fechaSolicitudFiltro:filtro, zonaPedidos:res.data.zona})
         })
         let {pedidos, pedidosFiltro, acceso} = this.state
@@ -831,16 +829,7 @@ class Pedido extends Component{
         this.props.getPedidos() 
         this.props.getZonasPedidos(moment().format("YYYY-MM-DD")) 
     }
-    onScroll(e) {
-		const {final} =  this.state
-		let paddingToBottom = 10;
-        paddingToBottom += e.nativeEvent.layoutMeasurement.height;
-        if(e.nativeEvent.contentOffset.y >= e.nativeEvent.contentSize.height - paddingToBottom) {
-            this.setState({final:final+5, showSpin:true})
-            this.myInterval = setInterval(()=>this.setState({showSpin:false}), 2000)
-            // clearInterval(this.myInterval);
-        }
-	}
+    
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LOS CONDUCTORES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1033,11 +1022,29 @@ class Pedido extends Component{
             </View>
         </View>)
     }
-
+    onScroll(event) {
+		const {final} =  this.state
+		let paddingToBottom = 10;
+        paddingToBottom += event.nativeEvent.layoutMeasurement.height;
+    
+        if(event.nativeEvent.contentOffset.y >= event.nativeEvent.contentSize.height - paddingToBottom) {
+            this.setState({final:final+5, showSpin:true})
+            this.myInterval = setInterval(()=>this.setState({showSpin:false}), 2000)
+            // clearInterval(this.myInterval);
+        }
+        if(event.nativeEvent.contentOffset.y==0){
+            this.setState({showSpin1:true})
+            this.myInterval = setInterval(()=>this.setState({showSpin1:false}), 2200)
+            this.props.getPedidos()
+            this.props.getZonasPedidos(this.state.fechaEntregaFiltro)
+            this.props.getVehiculos()
+        }
+    }
+    
 	render(){
         const {navigation} = this.props
-        const {pedidos, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, modalPerfiles, modalCarrosFiltro, valor_unitario} = this.state
-        
+        const {pedidos, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, showSpin1, modalPerfiles, modalCarrosFiltro, bounces} = this.state
+ 
         return (
             <View style={style.container}>
                 {modalPerfiles &&this.modalPerfiles()}
@@ -1049,7 +1056,8 @@ class Pedido extends Component{
                 {this.renderModalFiltro()}
                 {this.modalZonas()}
                 {openModal &&this.editarPedido()}
-                <ScrollView style={style.subContenedor} onScroll={(e)=>this.onScroll(e)} >
+                <ScrollView style={style.subContenedor} onScroll={(e)=>this.onScroll(e)}  bounces={this.state.bounces}>
+                    {showSpin1 &&<ActivityIndicator color="#0071bb" style={style.preload1}/> }
                     {/* {
                         pedidos.length==0
                         ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
@@ -1187,7 +1195,7 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     cerrarPedido(){
         let {novedad, kilosTexto, facturaTexto, forma_pagoTexto, valor_totalTexto, id, tokenPhone, imagen, email, fechaEntrega, remisionTexto, valor_unitarioUsuario} = this.state
-        console.log({valor_unitarioUsuario})
+       
         Alert.alert(
             `Seguro desea cerrar este pedido`,
             '',
@@ -1239,7 +1247,6 @@ class Pedido extends Component{
                 data: data,
             })
             .then((res)=>{
-                console.log(res.data)
                 if(res.data.status){
                     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
                     .then((res2)=>{
@@ -1261,10 +1268,10 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     handleSubmit(){
         const {id, estado, estadoInicial} = this.state
-        console.log({estadoInicial})
+   
         axios.get(`ped/pedido/cambiarEstado/${id}/${estado}`)
         .then(res=>{
-            console.log(res.data)
+ 
             if(res.data.status){
                 if(estado=="activo"){
                     //////// esta condicion es para cuando estaba el pedido innactivo y luego lo activaron

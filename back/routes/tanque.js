@@ -17,7 +17,7 @@ router.get('/', (req,res)=>{
         res.json({ status:false, message: 'No hay un usuario logueado', tanque:[] }); 
     }else{
         req.session.usuario.acceso=="admin" || req.session.usuario.acceso=="adminTanque"
-        ?tanqueServices.get((err, tanque)=>{
+        ?tanqueServices.getAlerta((err, tanque)=>{
             if (!err) {
                 res.json({ status: true, tanque }); 
             }else{
@@ -55,8 +55,8 @@ router.get('/no_eliminados', (req,res)=>{
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN tanque POR SU ID
 ////////////////////////////////////////////////////////////
-router.get('/byId/:revisionId', (req,res)=>{
-	tanqueServices.getById(req.params.revisionId, (err, tanque)=>{
+router.get('/byId/:tanqueId', (req,res)=>{
+	tanqueServices.getById(req.params.tanqueId, (err, tanque)=>{
 		if (err) {
 			res.json({ status:false, message: err, tanque:[] }); 
 		}else{

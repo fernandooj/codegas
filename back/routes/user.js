@@ -4,6 +4,7 @@ let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 let userServices       = require('./../services/userServices.js') 
 let puntoServices      = require('./../services/puntoServices.js') 
+let pedidoServices     = require('../services/pedidoServices.js')
 const htmlTemplate     = require('../notificaciones/template-email.js')
 let redis        = require('redis')
 let cliente      = redis.createClient()
@@ -816,15 +817,29 @@ module.exports = function(app, passport){
     app.get('/x/v1/users/cambiarValor/:valor/:idUser', (req,res)=>{
         userServices.editarValorUnitario(req.params.valor, req.params.idUser, (err, usuarios)=>{
             if(usuarios){  
-                res.json({status:true})
+                editarValorProductos(req, res)
             }else{
                 res.json({ status: false, err}) 
             }
         })
     })
 
+    const editarValorProductos =(req, res)=> {
+        pedidoServices.getByUser(req.params.idUser, (err, pedido)=>{
+            if(!err){
+                pedido = pedido.filter(e=>{
+                    return e.entregado===false  
+                })
+                pedido.filter(e=>{
+                    pedidoServices.editarValorUnitario(e._id, req.params.valor, (req, pedidos)=>{
+                    })
+                })
+                res.json({status:true, pedido})
+            }
+        })
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////     CAMBIA EL VALOR UNITARIO DEL PRODUCTO
+    //////////////////     CAMBIA EL VALOR UNITARIO DE TODOS LOS USUARIOS
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     app.put('/x/v1/users/cambiarValorTodos/', (req,res)=>{
         userServices.get((err, usuarios)=>{

@@ -466,6 +466,12 @@ export const style = MediaQueryStyleSheet.create({
 		bottom:55,
 		left:(size.width/2)-5
 	},
+	preload1:{
+		position:"absolute",
+		zIndex:100,
+		top:0,
+		left:(size.width/2)-5
+	},
 
 	/////////////////////////////////////////////////////////////////
 	////////////////////        PICKER

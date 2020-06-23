@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, ScrollView, TextInput} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Linking} from 'react-native'
 import {style}           from './style'
 import {connect}         from 'react-redux' 
 import Icon              from 'react-native-fa-icons';
@@ -37,6 +37,7 @@ class Revision extends Component{
         
         axios.get(`rep/reporteEmergenciaRutas/`)
         .then(res=>{
+            console.log(res.data)
             this.setState({reportes:res.data.reporte})
         })
        
@@ -63,7 +64,7 @@ class Revision extends Component{
             return(
                 <View style={[style.contenedorReportes, {backgroundColor: !e.activo ?"#F96D6C" :(e.tanque||e.red||e.puntos||e.fuga) ?"#e8a43d" :"white" }]} key={key}>
                     {
-                        <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate((acceso=="depTecnico" || acceso=="admin") &&"nuevoReporteEmergencia", {reporteId:e._id})}>
+                        <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate((acceso=="depTecnico" || acceso=="admin") ?"nuevoReporteEmergencia" :"", {reporteId:e._id})}>
                              <View style={{width:"90%"}}>
                                 <Text style={style.textUsers}>N Reporte: {e.nReporte}</Text>
                                 <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
@@ -76,7 +77,7 @@ class Revision extends Component{
                                 {e.puntos &&<Text style={style.textUsers}>Puntos de ignición cerca</Text>}
                                 {e.fuga &&<Text style={style.textUsers}>Fuga</Text>}
                                 {e.pqr &&<Text style={style.textUsers}>PQR</Text>}
-                                {e.cerradoText &&<Text style={style.textUsers}>{e.cerradoText=="" ?"fer" :e.cerradoText}</Text>}
+                                {(e.cerradoText &&e.cerradoText!=="") &&<Text style={style.textUsers}>{e.cerradoText=="" ?"fer" :e.cerradoText}</Text>}
                                 
                             </View>
                          
@@ -85,8 +86,20 @@ class Revision extends Component{
                         </View>
                     </TouchableOpacity>
                     }
-                    
-                       
+                    { e.documento.length!=0 &&<View style={[style.separador, {width:"100%"}]}></View>}
+                    {
+                        e.documento.length!=0
+                        &&e.documento.map(e2=>{
+                            let document = e2.split("--")
+                            return(
+                                <TouchableOpacity onPress={()=>Linking.openURL(e2.toString()).catch(err => console.error("Couldn't load page", err))}>
+                                    <Text>ver Pdf: {document[1]}</Text>
+                                </TouchableOpacity>
+                            )
+                        })
+                        
+                    }
+                
                 </View>
             )
         })

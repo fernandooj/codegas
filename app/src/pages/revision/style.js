@@ -324,5 +324,9 @@ export const style = MediaQueryStyleSheet.create({
 		width:"100%",
 		height:"100%",
 		zIndex:100,
+	},
+	row1Step2Cerrar:{
+		fontFamily: "Comfortaa-Regular",
+		width:Width/1.3,
 	}
 })

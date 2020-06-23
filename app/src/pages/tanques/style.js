@@ -356,6 +356,11 @@ export const style = MediaQueryStyleSheet.create({
 	iconCerrar:{
 		fontSize:30
 	},
+	iconCerrarTanque:{
+		fontSize:18,
+		top:15,
+		position:"relative"
+	},
 	btnIconPass:{
 		position:"absolute",
 		top:10,

@@ -22,7 +22,7 @@ class reporteEmergenciaServices{
 		.sort({_id: 'desc'}).exec(callback)
     } 
     getByUser(usuarioCrea, usuarioId, callback){
-		reporteEmergencia.find({usuarioCrea, usuarioId})
+		reporteEmergencia.find({ $or: [ {usuarioCrea}, {usuarioId}]})
 		.populate("usuarioCrea")
 		.populate("usuarioCierra")
 		.populate("tanqueId")
@@ -68,8 +68,7 @@ class reporteEmergenciaServices{
 				fuga        : data.fuga,
 				pqr         : data.pqr,
 				cerradoText : data.cerradoText ?data.cerradoText :null,
-				usuarioId   : data.usuarioId,
-				puntoId   	: data.puntoId,
+				
 				rutaCerrar  : rutaCerrar ?rutaCerrar :[],
 				documento   : documento ?documento :[],
 				usuarioCierra,

@@ -53,17 +53,10 @@ let flash    = require('connect-flash');
 let port = process.env.port || 8181;
 
 
-
-
-
 /////////////////////////////////////////////////////////////////////////
 /********* importo el archivo de configuracion de passport   ***********/
 /////////////////////////////////////////////////////////////////////////
 require('./config/passport')(passport); // pass passport for configuration
-
-
-    
-
 
 // da acceso para los servicios
 mongoose.Promise = global.Promise;

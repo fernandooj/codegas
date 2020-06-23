@@ -233,6 +233,8 @@ class cerrarRevision extends Component{
         const {tanque, red, puntos, fuga, otrosText, imgRuta} = this.state
         let usuarioId = this.props.navigation.state.params ?this.props.navigation.state.params.usuarioId :null
         let puntoId = this.props.navigation.state.params ?this.props.navigation.state.params.puntoId :null
+        let codt = this.props.navigation.state.params ?this.props.navigation.state.params.codt :null
+        let razon_social = this.props.navigation.state.params ?this.props.navigation.state.params.razon_social :null
         this.setState({cargando:true})
         let data = new FormData();
         imgRuta.forEach(e=>{
@@ -245,6 +247,8 @@ class cerrarRevision extends Component{
         data.append('otrosText',  otrosText);
         data.append('usuarioId',  usuarioId);
         data.append('puntoId',  puntoId);
+        data.append('razon_social',  razon_social);
+        data.append('codt',  codt);
        
         axios({
             method: 'POST',   

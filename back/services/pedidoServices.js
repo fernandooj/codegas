@@ -246,6 +246,11 @@ class pedidoServices{
 			'orden':orden
 		}}, callback) ;
 	}
+	editarValorUnitario(_id, valorUnitario, callback){
+		pedido.findByIdAndUpdate(_id, {$set: {
+			'valorUnitario':valorUnitario
+		}}, callback) ;
+	}
 }
 
 module.exports = new pedidoServices();

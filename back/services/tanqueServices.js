@@ -83,8 +83,11 @@ class tanqueServices{
 					capacidad:1,
 					usuario:'$UserData.nombre',
 					texto:'$TanqueData.alertaText',
+					cerrado:'$TanqueData.cerradoText',
+					activo: '$TanqueData.activo',
 				},
 			},
+			 
 			{
 			    $group:{
 			 
@@ -94,7 +97,7 @@ class tanqueServices{
 							placaText:'$placaText',
 							usuario:'$usuario',
 						},
-						data: { $addToSet: {texto:"$texto"}},
+						data: { $addToSet: {texto:"$texto",  activo:"$activo",  cerrado:"$cerrado"}},
 						total:{ $sum :1},
 			    }
 			},
@@ -111,7 +114,8 @@ class tanqueServices{
 			fabricante        : data.fabricante,
 			registroOnac 		  : data.registroOnac,
 			fechaUltimaRev    : data.fechaUltimaRev,
-			ultimRevTotal    : data.ultimRevTotal,
+			ultimRevTotal     : data.ultimRevTotal,
+			propiedad    		  : data.propiedad,
 
 			nPlaca         	  : data.nPlaca,
 			codigoActivo      : data.codigoActivo,
@@ -134,6 +138,7 @@ class tanqueServices{
 			fabricante        : data.fabricante,
 			registroOnac 		  : data.registroOnac,
 			fechaUltimaRev    : data.fechaUltimaRev,
+			propiedad    			: data.propiedad,
 			ultimRevTotal    	: data.ultimRevTotal,
 			nPlaca         		: data.nPlaca,
 			codigoActivo      : data.codigoActivo,

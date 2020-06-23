@@ -400,8 +400,39 @@ router.put('/cerrarDepTecnico/:revisionId/', (req,res)=>{
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
+
+        let rutaImgDocumento = []
+        let {imgDocumento} = req.files
+        if(imgDocumento){
+            let esArrayImgDocumento = Array.isArray(imgDocumento)
+            if(esArrayImgDocumento){
+                imgDocumento.map(e=>{
+                    ////////////////////    ruta que se va a guardar en el folder
+                    let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    
+                    ////////////////////    ruta que se va a guardar en la base de datos
+                    let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+e.name
+                    rutaImgDocumento.push(rutas)
+                    
+                    ///////////////////     envio la imagen al nuevo path
+                    fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+                })
+            }else{
+                ////////////////////    ruta que se va a guardar en el folder
+                let fullUrlimagenOriginal = '../front/docs/public/uploads/revisions/'+fechaImagen+'--'+imgDocumento.name
+                let rutas = req.protocol+'://'+req.get('Host') + '/public/uploads/revisions/'+fechaImagen+'--'+imgDocumento.name
+                ////////////////////    ruta que se va a guardar en la base de datos
+                rutaImgDocumento.push(rutas)
+               
+                ///////////////////     envio la imagen al nuevo path                
+                fs.rename(imgDocumento.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+            }
+        }
+    
+        let documento    = req.body.documento         ?JSON.parse(req.body.documento)       :[]
+        rutaImgDocumento  = rutaImgDocumento.length==0  ?documento :rutaImgDocumento.concat(documento);
         rutaDepTecnico   = rutaDepTecnico.length==0   ?req.body.rutaDepTecnico :rutaDepTecnico;
-        revisionServices.cerrarDepTecnico(req.params.revisionId, rutaDepTecnico, req.body, (err, revision)=>{
+        revisionServices.cerrarDepTecnico(req.params.revisionId, rutaDepTecnico, req.body, rutaImgDocumento, (err, revision)=>{
             if (!err) {
                 res.json({ status:true, revision }); 
             }else{
