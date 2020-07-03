@@ -240,15 +240,20 @@ router.post('/', (req,res)=>{
                             const dia1       = req.body.dia1!=="undefined" ?`Dia 1: ${req.body.dia1}<br/>` :""
                             const dia2       = req.body.dia2=="undefined" || req.body.dia2=="null" ?"" :`Dia 2: ${req.body.dia2}<br/>`
                             const cantidad   = req.body.cantidad!=="" ?`Cantidad: ${req.body.cantidad}<br/>` :""
-                            const frecuencia = req.body.frecuencia!=="undefined" ?`Frecuencia: ${req.body.frecuencia}<br/>` :""
+                            // const frecuencia = req.body.frecuencia!=="undefined" ?`Frecuencia: ${req.body.frecuencia}<br/>` :""
+                            const frecuencia = req.body.frecuencia ?`Frecuencia: ${req.body.frecuencia}<br/>` :""
+                            const fechaSolicitud = req.body.fechaSolicitud ?`Fecha Solicitud: ${req.body.fechaSolicitud}<br/>` :""
+                            const codt           = clientes.codt  ?`CODT:  ${clientes.codt}<br/>`  :"Sin Codt <br/>"
+                            const valor_unitario = clientes.valorUnitario  ?`Valor Unitario: ${clientes.valorUnitario}<br/>` :"Sin valor unitario <br/>"
                             let titulo = `<font size="5">Pedido guardado con exito</font>`;
-                            let text1  = `Hola Estimado/a: el pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
-                            let text2  = `Forma: <b>${req.body.forma}</b><br/> ${cantidad} ${frecuencia} ${dia1} ${dia2} `
+                            let text1  = `Hola Estimado/a: su pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
+                            let text2  = `Forma: <b>${req.body.forma}</b><br/> ${cantidad} ${frecuencia} ${fechaSolicitud} ${dia1} ${dia2} ${codt} ${valor_unitario} `
 
                             htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                             //////////////////////      ENVIO UN CORREO A CODEGAS AVINSANDOLE DEL NUEVO PEDIDO CREADO
                             let userRegistrado = {email:"directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+                            // let userRegistrado = {email:"fernandooj@ymail.com"}
                             let email = req.body.email ?req.body.email :req.session.usuario.email
                             htmlTemplate(req, userRegistrado, email, text2, "",  "Nuevo pedido")
                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -394,7 +399,7 @@ router.post('/finalizar/:estado', (req,res)=>{
                     if (!err2) {
                         let titulo = `<font size="5">Pedido entregado</font>`
                         let text1  = `Su pedido ha sido entregado con exito`
-                        let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/><img src="${ruta}" width="500"/>`
+                        let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/> SI QUIERES CONSULTAR TU FACTURA TE INVITAMOS A QUE LO CONSULTES EN LA APP`
                         let asunto = "Estado pedido Codegas, entregado"
                         htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
                         enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado el pedido: ${pedido.nPedido}`)

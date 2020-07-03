@@ -15,7 +15,7 @@ router.get('/', (req,res)=>{
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado' }); 
     }else{
-        req.session.usuario.acceso=="admin"
+        (req.session.usuario.acceso=="admin" || req.session.usuario.acceso=="adminTanque")
         ?revisionServices.get((err, revision)=>{
             if (!err) {
                 res.json({ status: true, revision }); 

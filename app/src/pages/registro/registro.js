@@ -99,13 +99,13 @@ class Home extends Component{
         this.setState({ubicaciones, modalZona:false}) 
     }
     modalUbicacion(){
-        let {ubicaciones, modalZona} = this.state
+        let {ubicaciones, modalZona, activeScroll} = this.state
         return(
             <View>
                  {modalZona ?this.modalZonas() :null}
                 <View >
                     <TouchableOpacity activeOpacity={1}  >   
-                        <View style={style.modal}>
+                        <View style={[style.modal, {top:activeScroll?-250 :0} ]}>
                             <View style={style.subContenedorModal}>
                                 <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalUbicacion:false})} style={style.btnModalClose}>
                                     <Icon name={'times-circle'} style={style.iconCerrar} />
@@ -158,8 +158,20 @@ class Home extends Component{
                                                             placeholder="Email"
                                                             placeholderTextColor="#aaa" 
                                                             value={e.email}
+                                                            onFocus={()=> this.setState({activeScroll:true})}
+                                                            onBlur ={()=> this.setState({activeScroll:false})}
                                                             onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
                                                             style={style.inputUbicacion}
+                                                        />
+                                                        <TextInput
+                                                            type='outlined'
+                                                            label='Celular'
+                                                            placeholder="Celular"
+                                                            value={e.celular}
+                                                            onFocus={()=> this.setState({activeScroll:true})}
+                                                            onBlur ={()=> this.setState({activeScroll:false})}
+                                                            onChangeText={celularUbicacion => this.actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
+                                                            style={style.input}
                                                         />
                                                         <TextInput
                                                             type='outlined'
@@ -167,6 +179,8 @@ class Home extends Component{
                                                             placeholder="Nombre"
                                                             placeholderTextColor="#aaa" 
                                                             value={e.nombre}
+                                                            onFocus={()=> this.setState({activeScroll:true})}
+                                                                onBlur ={()=> this.setState({activeScroll:false})}
                                                             onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
                                                             style={[style.input, {marginBottom: key>0 ?40 :10}]}
                                                         />
@@ -338,7 +352,6 @@ class Home extends Component{
         const {modalUbicacion} = this.state
 	    return (
             <View style={style.container} >
-                <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />
                 <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
                     {modalUbicacion ?this.modalUbicacion() :null}
                     

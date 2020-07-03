@@ -49,8 +49,6 @@ class verPerfil extends Component{
         const {terminoBuscador, inicio, final, tanques, acceso} = this.state
         let filtroTanques = tanques.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newTanques = filtroTanques.slice(inicio, final) 
-        
-        console.log(newTanques)
         return newTanques.map((e, key)=>{
             
             return(
@@ -59,7 +57,7 @@ class verPerfil extends Component{
                         <View style={{width:"90%"}}>
                             <Text style={style.textUsers}>Placa:     {e.placaText ?e.placaText :e._id.placaText}</Text>
                             <Text style={style.textUsers}>Capacidad: {e.capacidad ?e.capacidad :e._id.capacidad}</Text>
-                            <Text style={style.textUsers}>Cliente:   {e.usuarioId ?e.usuarioId.razon_social :e._id.usuario}</Text>
+                            <Text style={style.textUsers}>Cliente:   {e.usuarioId ?e.usuarioId.razon_social+" "+e.usuarioId.codt :e._id.usuario} {e._id.codt &&"/ "+e._id.codt }</Text>
                             {/* {e.total &&<Text style={style.textUsers}>Alertas Activas:   {totalActivos}</Text>}
                             {e.total &&<Text style={style.textUsers}>Alertas Innactivas:{totalInnactivos}</Text>} */}
                         </View>

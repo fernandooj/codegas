@@ -90,7 +90,7 @@ class Home extends Component{
                     </TouchableOpacity>
                     <TouchableOpacity style={style.btnOlvidar} onPress={()=>this.props.navigation.navigate("recuperar")}>
                         <Text style={style.textOlvidar}>Olvide mi contraseña</Text>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.3</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.4</Text> 
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -178,7 +178,7 @@ class Home extends Component{
                         </TouchableOpacity>
                     }
                     {
-                         (acceso=="admin" || acceso=="comercial" || acceso=="depTecnico" || acceso=="insSeguridad")
+                         (acceso=="admin" || acceso=="comercial" || acceso=="depTecnico" || acceso=="insSeguridad" || acceso=="adminTanque")
                         &&<TouchableOpacity style={style.btnLista} onPress={()=>navigation.navigate("usuarios", {revision:true})} >
                             <Text style={style.txtLista}>Revision y control tanques</Text> 
                             <Image source={require('../../assets/img/pg1/icon6.png')} style={style.icon} />
@@ -213,7 +213,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.3</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.4</Text> 
                     </TouchableOpacity> 
                     {
                         err

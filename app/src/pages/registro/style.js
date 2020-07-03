@@ -110,7 +110,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginHorizontal:12,
         marginTop:40,
 		marginBottom:5,
-		paddingBottom:170,
+		paddingBottom:60,
 		width:"93%"
     },
     tituloModal:{

@@ -154,8 +154,8 @@ export const style = MediaQueryStyleSheet.create({
         paddingLeft:10
     },
     contenedorPerfil:{
-        marginTop:Platform.OS==='android' ?100 :110,
-        marginBottom:90
+        //marginTop:Platform.OS==='android' ?100 :110,
+        marginBottom:70
     },
     /////////////////////////////////////////////////////////////////
     ////////////////////        PICKER
@@ -180,7 +180,8 @@ export const style = MediaQueryStyleSheet.create({
     //////////////////////////////////////////////////////////////////
 	modal:{
 		position:Platform.OS==='android' ?"relative" :"relative",
-		backgroundColor:"#ffffff",
+        backgroundColor:"#ffffff",
+        top:-150,
 		zIndex:100,
 		width:size.width,
 		height:size.height,

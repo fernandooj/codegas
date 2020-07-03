@@ -58,7 +58,7 @@ class tanqueServices{
 			{
 				$unwind:{
 					path:'$TanqueData',
-					preserveNullAndEmptyArrays: false
+					preserveNullAndEmptyArrays: true
 				}
 			},
 			{
@@ -72,7 +72,7 @@ class tanqueServices{
 			{
 				$unwind:{
 					path:'$UserData',
-					preserveNullAndEmptyArrays: false
+					preserveNullAndEmptyArrays: true
 				}
 			},
 		 
@@ -81,7 +81,8 @@ class tanqueServices{
 					_id:1,
 					placaText:1,
 					capacidad:1,
-					usuario:'$UserData.nombre',
+					usuario:'$UserData.razon_social',
+					codt:'$UserData.codt',
 					texto:'$TanqueData.alertaText',
 					cerrado:'$TanqueData.cerradoText',
 					activo: '$TanqueData.activo',
@@ -96,6 +97,7 @@ class tanqueServices{
 							capacidad:'$capacidad',
 							placaText:'$placaText',
 							usuario:'$usuario',
+							codt:'$codt',
 						},
 						data: { $addToSet: {texto:"$texto",  activo:"$activo",  cerrado:"$cerrado"}},
 						total:{ $sum :1},

@@ -475,7 +475,10 @@ class Nuevo_pedido extends Component{
                     this.handleSubmit()
                 }
             }else{
-                alert("tenemos un problema intentalo nuevamente")
+                res.data.message.path=="puntoId"
+                ?alert("Inserte un punto de entrega")
+                :alert("tenemos un problema intentalo nuevamente")
+                this.setState({guardando:false})
             }
         })
     }
@@ -495,7 +498,7 @@ class Nuevo_pedido extends Component{
         data.append('cantidad', cantidad);
         data.append('dia1', dia1);
         data.append('dia2', dia2);
-        data.append('frecuencia', frecuencia);
+        data.append('frecuencia', frecuencia ?frecuencia :"");
         data.append('idCliente', idCliente);
         data.append('puntoId', puntoId);
         data.append('fechaSolicitud', fechaSolicitud);

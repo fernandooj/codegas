@@ -315,7 +315,7 @@ class verPerfil extends Component{
 					placeholderTextColor="#aaa" 
                     value={celular}
                     onChangeText={celular => this.setState({ celular })}
-                    style={celular.length<77 ?[style.input, style.inputRequired] :style.input}
+                    style={celular.length<7 ?[style.input, style.inputRequired] :style.input}
                 />
 
             {/* VEO */}	 
@@ -559,7 +559,7 @@ class verPerfil extends Component{
         type == "direccion"       ?ubicaciones[key].direccion   = value 
         :type=="observacion"      ?ubicaciones[key].observacion = value 
         :type=="emailUbicacion"   ?ubicaciones[key].email       = value 
-        :type=="celularUbicacion" ?ubicaciones[key].celular       = value 
+        :type=="celularUbicacion" ?ubicaciones[key].celular     = value 
         :type=="capacidad"        ?ubicaciones[key].capacidad   = value 
         :ubicaciones[key].nombre = value
         this.setState({ubicaciones})
@@ -609,14 +609,13 @@ class verPerfil extends Component{
     }
  
     modalUbicacion(){
-        let {modalZona, ubicaciones} = this.state
- 
+        let {modalZona, ubicaciones, activeScroll} = this.state
         return(
             <View>
                 {modalZona ?this.modalZonas() :null}
                 <View>
                     <TouchableOpacity activeOpacity={1}  >   
-                        <View style={style.modal}>
+                        <View style={[style.modal, {top:activeScroll?-150 :0} ]}>
                             <View style={style.subContenedorModal}>
                                 <TouchableOpacity activeOpacity={1} onPress={() => this.setState({modalUbicacion:false})} style={style.btnModalClose}>
                                     <Icon name={'times-circle'} style={style.iconCerrar} />
@@ -668,6 +667,8 @@ class verPerfil extends Component{
                                                                 label='Email'
                                                                 placeholder="Email"
                                                                 value={e.email}
+                                                                onFocus={()=> this.setState({activeScroll:true})}
+                                                                onBlur ={()=> this.setState({activeScroll:false})}
                                                                 onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
                                                                 style={style.input}
                                                             />
@@ -679,6 +680,8 @@ class verPerfil extends Component{
                                                                 label='Celular'
                                                                 placeholder="Celular"
                                                                 value={e.celular}
+                                                                onFocus={()=> this.setState({activeScroll:true})}
+                                                                onBlur ={()=> this.setState({activeScroll:false})}
                                                                 onChangeText={celularUbicacion => this.actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
                                                                 style={style.input}
                                                             />
@@ -690,6 +693,8 @@ class verPerfil extends Component{
                                                                 label='Nombre'
                                                                 placeholder="Nombre"
                                                                 value={e.nombre}
+                                                                onFocus={()=> this.setState({activeScroll:true})}
+                                                                onBlur ={()=> this.setState({activeScroll:false})}
                                                                 onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
                                                                 style={[style.input, {marginBottom: key>0 ?40 :10}]}
                                                             />
@@ -768,7 +773,7 @@ class verPerfil extends Component{
         const {modalUbicacion, showPass} = this.state   
  
         return (
-            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')} >
+            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
                 {modalUbicacion ?this.modalUbicacion() :null}
                 {
                     showPass
@@ -835,10 +840,10 @@ class verPerfil extends Component{
     //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
     ///////////////////////////////////////////////////////////////////////
     handleSubmit(esEditar){
-        const {razon_social, cedula, ubicacion, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario} = this.state
-        console.log({razon_social, cedula, ubicacion, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario})
+        const {razon_social, cedula, direccion_factura, nombre,  email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario} = this.state
+        console.log({razon_social, cedula, direccion_factura, nombre, email,  tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario})
         if(acceso=="cliente"){
-            if(razon_social==""|| ubicacion=="" || valorUnitario=="" || direccion_factura=="" || nombre=="" || email=="" || tipo=="" || acceso=="usuario"  || ubicaciones.length<1){
+            if(razon_social==""|| direccion_factura=="" || nombre=="" || email=="" || tipo=="" || acceso=="usuario"  || ubicaciones.length<1){
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',

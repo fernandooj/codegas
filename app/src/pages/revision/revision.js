@@ -24,6 +24,7 @@ class Revision extends Component{
     }
  
     async componentWillMount(){
+        
         try{
             const userId    = await AsyncStorage.getItem('userId')
             const nombre    = await AsyncStorage.getItem('nombre')
@@ -37,10 +38,13 @@ class Revision extends Component{
         this.props.navigation.state.params
         ?axios.get(`rev/revision/byPunto/${this.props.navigation.state.params.puntoId}`)
         .then(res=>{
+            console.log(res)
             this.setState({revisiones:res.data.revision})
         })
         :axios.get(`rev/revision/`)
         .then(res=>{
+            console.log("res")
+            console.log(res)
             this.setState({revisiones:res.data.revision})
         })
        
@@ -72,6 +76,7 @@ class Revision extends Component{
                              <View style={{width:"90%"}}>
                                 <Text style={style.textUsers}>N Control: {e.nControl}</Text>
                                 <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
+                             
                                 
                                 {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
                                 {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
@@ -103,7 +108,7 @@ class Revision extends Component{
                                 <View style={{width:"90%"}}>
                                 <Text style={style.textUsers}>N Control: {e.nControl}</Text>
                                 <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
-                                
+                                <Text style={style.textUsers}>Usuario:   {e.usuarioId.razon_social} / {e.usuarioId.codt}</Text>
                                 {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
                                 {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
                                 {e.avisos     &&<Text style={style.textUsers}>Falta de Avisos reglamentarios en mal estado</Text>}

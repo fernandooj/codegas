@@ -39,7 +39,7 @@ import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoRep
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 	: {screen: homeComponent},	
+	Home  		 	 	: {screen: homeComponent},
 	inicio 		 	 	: {screen: homeComponent},
 	perfil       		: {screen: perfilComponent},
 	verPerfil    		: {screen: verPerfilComponent},
