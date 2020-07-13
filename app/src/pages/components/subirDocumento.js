@@ -62,21 +62,24 @@ export default class subirDocumento extends Component{
 	renderDocumentos(){
         let {imagenes} = this.state
         let img = []
+ 
         imagenes.map(e=>{
             if(e.uri){
                 img.push(e)
             }else{
                 let img2 = e.split("--")
-                img2 = `${img2[2]}`
-                img.push({name:img2})
+                
+                img.push({uri:e, name:img2[1]})
             }
         })
    
- 
-        return  img.map((e, key)=>{
+        console.log({imagenes})
+        return img.map((e, key)=>{
             return(
-                <View key={key} style={style.contenedorPdf}>     
-                    <Text style={style.textPdf}>{e.name}</Text>
+                <View key={key} style={style.contenedorPdf}>   
+                    <TouchableOpacity onPress={()=>this.props.navigate("pdf", {uri:e.uri}) }>
+                        <Text style={style.textPdf}>{e.name}</Text>
+                    </TouchableOpacity>  
                     <Icon name={'close'} style={style.iconTrashPdf} onPress={()=>this.eliminarImagen(key)}/>
                 </View>
             )

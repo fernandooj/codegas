@@ -209,7 +209,8 @@ class revisionServices{
 		let lat=parseFloat(data.lat)
 		let coordenadas = {'type':'Point', "coordinates": [lng, lat] }
 		revision.findByIdAndUpdate(_id, {$set: {
-			'coordenadas':coordenadas
+			'coordenadas':coordenadas,
+			'poblado':data.poblado
 		}}, callback);
 	}
 }

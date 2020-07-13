@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import Footer   from '../components/footer'
 import axios    from 'axios'
 import Icon from 'react-native-fa-icons';
-import FCM from "react-native-fcm";
+// import FCM from "react-native-fcm";
 import { connect } from "react-redux";
 import Toast from 'react-native-simple-toast';
 import {style} from './style'
@@ -34,9 +34,9 @@ class Home extends Component{
         }
 	}
     componentDidMount(){
-        FCM.getFCMToken().then(token => {
-			this.setState({ tokenPhone: token || "" });
-		});
+        // FCM.getFCMToken().then(token => {
+		// 	this.setState({ tokenPhone: token || "" });
+		// });
     }
     renderEmail(){
         const {email} = this.state
@@ -90,7 +90,7 @@ class Home extends Component{
                     </TouchableOpacity>
                     <TouchableOpacity style={style.btnOlvidar} onPress={()=>this.props.navigation.navigate("recuperar")}>
                         <Text style={style.textOlvidar}>Olvide mi contraseña</Text>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.4</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.5</Text> 
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -213,7 +213,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.4</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.5</Text> 
                     </TouchableOpacity> 
                     {
                         err

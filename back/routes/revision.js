@@ -429,8 +429,9 @@ router.put('/cerrarDepTecnico/:revisionId/', (req,res)=>{
             }
         }
     
-        let documento    = req.body.documento         ?JSON.parse(req.body.documento)       :[]
+        
         rutaImgDocumento  = rutaImgDocumento.length==0  ?documento :rutaImgDocumento.concat(documento);
+        rutaImgDocumento = rutaImgDocumento.split(" ").join("")
         rutaDepTecnico   = rutaDepTecnico.length==0   ?req.body.rutaDepTecnico :rutaDepTecnico;
         revisionServices.cerrarDepTecnico(req.params.revisionId, rutaDepTecnico, req.body, rutaImgDocumento, (err, revision)=>{
             if (!err) {
@@ -838,6 +839,11 @@ router.put('/uploadPdf/:idRevision/', (req,res)=>{
         rutaImgHojaSeguridad    = rutaImgHojaSeguridad.length==0    ?hojaSeguridad    :rutaImgHojaSeguridad.concat(hojaSeguridad);
         rutaImgNComodato        = rutaImgNComodato.length==0        ?nComodato        :rutaImgNComodato.concat(nComodato);
         rutaImgOtrosSi          = rutaImgOtrosSi.length==0          ?otrosSi          :rutaImgOtrosSi.concat(otrosSi);
+
+        rutaImgProtocoloLlenado = rutaImgProtocoloLlenado.split(" ").join("")
+        rutaImgHojaSeguridad = rutaImgHojaSeguridad.split(" ").join("")
+        rutaImgNComodato = rutaImgNComodato.split(" ").join("")
+        rutaImgOtrosSi = rutaImgOtrosSi.split(" ").join("")
 
         revisionServices.subirPdf(req.params.idRevision, rutaImgProtocoloLlenado, rutaImgHojaSeguridad, rutaImgNComodato, rutaImgOtrosSi, (err, revision)=>{
             if (!err) {

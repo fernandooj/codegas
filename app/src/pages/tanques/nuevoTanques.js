@@ -187,10 +187,12 @@ class Tanques extends Component{
         
     }
     getClientes(){
+        this.setState({loadClientes:true})
         axios.get(`users/clientes`)
         .then(res => {
             console.log(res.data.usuarios)
             if(res.data.status){
+                this.setState({loadClientes:false})
                 let clientes = res.data.usuarios.map(e=>{
                     return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular }
                 }) 
@@ -340,7 +342,8 @@ class Tanques extends Component{
                  <ModalFilterPicker
 					placeholderText="Capacidad ..."
 					visible={modalCapacidad}
-					onSelect={(e)=>this.setState({capacidad:e, modalCapacidad:false})}
+					onSelect={(e)=>this.setState({capacidad:e.key, modalCapacidad:false})}
+					// onSelect={(e)=>console.log(e)}
 					onCancel={()=>this.setState({modalCapacidad:false})}
                     options={capacidades}
                     cancelButtonText="CANCELAR"
@@ -366,7 +369,7 @@ class Tanques extends Component{
 
                 {/* FECHA MANTENIMIENTO TOTAL */}
                 <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Mto total</Text>
+                    <Text style={style.row1Step2}>Fecha Mto</Text>
                     <DatePicker
                         customStyles={{
                             dateInput:style.btnDate,
@@ -447,7 +450,7 @@ class Tanques extends Component{
                 <ModalFilterPicker
 					placeholderText="Propiedad ..."
 					visible={modalPropiedad}
-					onSelect={(e)=>this.setState({propiedad:e, modalPropiedad:false})}
+					onSelect={(e)=>this.setState({propiedad:e.key, modalPropiedad:false})}
 					onCancel={()=>this.setState({modalPropiedad:false})}
                     options={propiedades}
                     cancelButtonText="CANCELAR"
@@ -597,6 +600,7 @@ class Tanques extends Component{
 
                 {/* DOSSIER */}
                 <SubirDocumento 
+                    navigate={this.props.navigation.navigate}
                     source={imgDossier}
                     width={180}
                     titulo="Dossier"
@@ -607,6 +611,7 @@ class Tanques extends Component{
 
                 {/* CER FABRICANTE */}
                 <SubirDocumento 
+                    navigate={this.props.navigation.navigate}
                     source={imgCerFabricante}
                     width={180}
                     titulo="Cer. Fabricante"
@@ -617,6 +622,7 @@ class Tanques extends Component{
                 
                 {/* CER ONAC */}
                 <SubirDocumento 
+                    navigate={this.props.navigation.navigate}
                     source={imgCerOnac}
                     width={180}
                     titulo="Cer. Onac"
@@ -631,6 +637,7 @@ class Tanques extends Component{
     ////////////////////////           SUBE LOS PDF
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     uploadPdf(pdf, tipo){
+      
         this.setState({loading:true})
         let {tanqueId, imgDossier, imgCerFabricante, imgCerOnac} = this.state
         let data = new FormData();
@@ -652,11 +659,11 @@ class Tanques extends Component{
         imgCerOnac = imgCerOnac.filter(e=>{
             return e.uri
         })
-        tipo === 1
+        tipo===1
         ?pdf.forEach(e=>{
             data.append('imgDossier', e);
         })
-        :tipo === 2
+        :tipo===2
         ?pdf.forEach(e=>{
             data.append('imgCerFabricante', e);
         })
@@ -666,20 +673,25 @@ class Tanques extends Component{
         data.append('dossier',       JSON.stringify(dossier));
         data.append('cerFabricante', JSON.stringify(cerFabricante));
         data.append('cerOnac',       JSON.stringify(cerOnac));
-        
-        axios({ method: 'put',    url: `tan/tanque/uploadPdf/${tanqueId}`, data: data })
-        .then((res)=>{
-            if(res.data.status){
+        console.log({imgCerOnac, tipo})
+       
+            axios({ method: 'put',    url: `tan/tanque/uploadPdf/${tanqueId}`, data })
+            .then((res)=>{
+                console.log(res.data)
+                if(res.data.status){
+                    this.setState({loading:false})
+                }
+            })
+            .catch(err=>{
                 this.setState({loading:false})
-            }
-        })
-        .catch(err=>{
-            this.setState({loading:false})
-            alert("No pudimos subir el archivo")
-        })
+                console.log(err)
+                alert("No pudimos subir el archivo")
+            })
+
+        
     }
     step3(){
-        const {usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId} = this.state
+        const {usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, loadClientes} = this.state
         return(
             <View>
                 <ModalFilterPicker
@@ -693,6 +705,7 @@ class Tanques extends Component{
                 />
                 <View style={{flexDirection:"row"}}>
                     <TouchableOpacity style={style.nuevoUsuario} onPress={()=>this.getClientes()}>
+                        {loadClientes &&<ActivityIndicator color="#ffffff"  />}
                         <Icon name="plus" style={style.iconUsuario} />
                         <Text style={style.textGuardar}>Asignar Cliente</Text>
                     </TouchableOpacity>
@@ -913,9 +926,10 @@ class Tanques extends Component{
     }
      
     filtroClientes(idCliente){
-		let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
+        let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente.key })
+        console.log({cliente})
         this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular,nombreCliente:cliente[0].nombre, modalCliente:false})
-        axios.get(`pun/punto/byCliente/${idCliente}`)
+        axios.get(`pun/punto/byCliente/${idCliente.key}`)
         .then(e=>{
             if(e.data.status){
                 e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id, zonaId:e.data.puntos[0].idZona, usuarioId:idCliente}) :this.setState({puntos:e.data.puntos, usuarioId:idCliente })
@@ -960,8 +974,7 @@ class Tanques extends Component{
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                // AsyncStorage.setItem('tanqueId', res.data.tanque._id)
-                // this.setState({tanqueId:res.data.tanque._id})
+                Toast.show("Información Guardada")
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }
@@ -999,7 +1012,7 @@ class Tanques extends Component{
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                 
+                Toast.show("Información Guardada")
             }
         })
         .catch(err=>{
@@ -1013,10 +1026,11 @@ class Tanques extends Component{
     editarStep3(){
         const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, tanqueId} = this.state
         console.log({zonaId, usuarioId, puntoId})
-        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque  })
+        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId.key, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque  })
         .then((res)=>{
+            console.log(res.data)
             if(res.data.status){
-                console.log(res.data)
+                Toast.show("Usuario Guardado")
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }

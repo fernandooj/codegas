@@ -85,12 +85,13 @@ export default class tomarPhoto extends Component{
         return  img.map((e, key)=>{
             return(
                 <Lightbox 
-                    backgroundColor="#fff"
+                    key={key}
+                    backgroundColor="#ccc"
                     renderContent={() => (
                         <Image 
-                        source={{uri: e.uri }}
-                        style={{ width: "100%", height:400, backgrundColor:"white"}}
-                        resizeMode="contain"
+                            source={{uri: e.uri }}
+                            style={{ width: "100%", height:600, backgrundColor:"white"}}
+                            resizeMode="contain"
                         />
                     )}
                     >
@@ -103,7 +104,7 @@ export default class tomarPhoto extends Component{
             )
         })
     }
- 
+    
     eliminarImagen(keyImagen){
         let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
         this.setState({imagenes})    

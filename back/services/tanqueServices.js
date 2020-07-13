@@ -134,6 +134,7 @@ class tanqueServices{
 		newTanque.save(callback)	
 	}
 	editar(_id, data, callback){
+		console.log(_id, data)
 		tanque.findByIdAndUpdate(_id, {$set: {
 			placaText       	: data.placaText,
 			capacidad         : data.capacidad,

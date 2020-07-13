@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Switch, TextInput, Platform, Image, Dimensions, Alert, AsyncStorage, ActivityIndicator} from 'react-native'
+import Geolocation from '@react-native-community/geolocation';
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';  
@@ -28,6 +29,9 @@ class Tanques extends Component{
             modalCliente:false,
             modalSectores:false,
             modalZona:false,
+            modalDpto:false,
+            modalCiudad:false,
+            modalPoblado:false,
             modalPropiedad:false,
             modalUbicacion:false,
             modalM3:false,
@@ -57,7 +61,10 @@ class Tanques extends Component{
             imgHojaSeguridad:[],
             imgVisual:[],
             tanqueArray:[],
-            tanqueIdArray:[],  
+            tanqueIdArray:[], 
+            dptos:[{key:"", label:""}], 
+            ciudades:[{key:"", label:""}], 
+            poblados:[{key:"", label:""}], 
             lat:4.597825,
             lng:-74.0755723
 	    }
@@ -88,7 +95,7 @@ class Tanques extends Component{
  
         this.setState({revisionId, puntoId, usuarioId, accesoPerfil})
  
-        //////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////        LISTA SOLO LOS TANQUES DE ESTE USUARIO
         if(usuarioId){
             axios.get(`tan/tanque/byPunto/${puntoId}`)
@@ -107,12 +114,14 @@ class Tanques extends Component{
             })
 
         }
-       
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////        SI SELECCIONA UNA REVISION POR DEFECTO LA SELECCIONA
         if(revisionId){
             axios.get(`rev/revision/byId/${revisionId}`)
             .then(res => {
-       
                 const {revision} = res.data
+                console.log(revision)
                 let tanqueIdArray = []
                 revision.tanqueId.map(e=>{
                     tanqueIdArray.push(e._id)
@@ -121,6 +130,7 @@ class Tanques extends Component{
                 this.setState({
                     /////// step 1
                     revisionId:    revision._id,
+                    poblado:       revision.poblado,
  
                     
                     /////////  step 2
@@ -182,7 +192,7 @@ class Tanques extends Component{
             })
         }
         
-        navigator.geolocation.getCurrentPosition(e=>{
+        Geolocation.getCurrentPosition(e=>{
      
 			let lat = parseFloat(e.coords.latitude)
 			let lng = parseFloat(e.coords.longitude)
@@ -190,7 +200,7 @@ class Tanques extends Component{
             lng =  lng ?lng :-74.0755723;
  
             this.setState({lat, lng})
-        }, (error)=>this.watchID = navigator.geolocation.watchPosition(e=>{
+        }, (error)=>this.watchID = Geolocation.watchPosition(e=>{
  
             let lat =parseFloat(e.coords.latitude)
             let lng = parseFloat(e.coords.longitude)
@@ -201,6 +211,7 @@ class Tanques extends Component{
             (error) => console.log('error'),
             {enableHighAccuracy: true, timeout:5000, maximumAge:0})
         )
+        this.buscarDepto()
     }
     filtroClientes(idCliente){
         axios.get(`users/clientes`)
@@ -215,11 +226,12 @@ class Tanques extends Component{
         })	
     }
     
-
+    
     buscarTanque(id){
         let {tanqueArray, tanqueIdArray, usuarioId, puntoId} = this.state
-        axios.get(`tan/tanque/byId/${id}`)
+        axios.get(`tan/tanque/byId/${id.key}`)
         .then(res=>{
+            console.log(id)
             console.log(res.data)
             const {tanque} = res.data
             let infoTanque={
@@ -241,9 +253,10 @@ class Tanques extends Component{
                     {cancelable: false},
                 )
                 const confirmar = ()=>{
-                    axios.get(`tan/tanque/asignarPunto/${id}/${usuarioId}/${puntoId}`)
-                    .then(res => { 
-                        if(res.data.status){
+                    axios.get(`tan/tanque/asignarPunto/${id.key}/${usuarioId}/${puntoId}`)
+                    .then(e => { 
+                        console.log(e.data)
+                        if(e.data.status){
                             tanqueArray.push(infoTanque)
                             tanqueIdArray.push(tanque._id)
                             this.setState({tanqueArray, tanqueIdArray, modalPlacas:false})
@@ -339,7 +352,10 @@ class Tanques extends Component{
                                                 <Text style={style.row1}>Capacidad:</Text>
                                                 <Text style={style.row2}>{e.capacidad}</Text>
                                             </View>
-                                            
+                                            <View style={style.subContenedorUsuario}>
+                                                <Text style={style.row1}>Propiedad:</Text>
+                                                <Text style={style.row2}>{e.propiedad}</Text>
+                                            </View>
                                         </TouchableOpacity>
                                         <TouchableOpacity onPress={()=>e.usuarioId ?this.alertaEliminarTanque(e._id, e.placaText, e.usuarioId.codt, e.usuarioId.razon_social) :null}>
                                             <Icon name="trash" style={style.iconTrash} />
@@ -363,7 +379,7 @@ class Tanques extends Component{
                  <ModalFilterPicker
 					placeholderText="Sectores ..."
 					visible={modalSectores}
-					onSelect={(e)=>this.setState({sector:e, modalSectores:false})}
+					onSelect={(e)=>this.setState({sector:e.key, modalSectores:false})}
 					onCancel={()=>this.setState({modalSectores:false})}
                     options={sectores}
                     cancelButtonText="CANCELAR"
@@ -404,7 +420,7 @@ class Tanques extends Component{
                 <ModalFilterPicker
 					placeholderText="M3 ..."
 					visible={modalM3}
-					onSelect={(e)=>this.setState({m3:e, modalM3:false})}
+					onSelect={(e)=>this.setState({m3:e.key, modalM3:false})}
 					onCancel={()=>this.setState({modalM3:false})}
                     options={m3s}
                     cancelButtonText="CANCELAR"
@@ -452,7 +468,7 @@ class Tanques extends Component{
                 <ModalFilterPicker
 					placeholderText="ubicaciones ..."
 					visible={modalUbicacion}
-					onSelect={(e)=>this.setState({ubicacion:e, modalUbicacion:false})}
+					onSelect={(e)=>this.setState({ubicacion:e.key, modalUbicacion:false})}
 					onCancel={()=>this.setState({modalUbicacion:false})}
                     options={ubicaciones}
                     cancelButtonText="CANCELAR"
@@ -702,7 +718,7 @@ class Tanques extends Component{
       
     step4(){
         let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, imgNComodato, imgOtrosSi} = this.state
-    
+        let {navigate} =this.props.navigation
         return(
             <View>
                 {/* ISOMETRICO */}
@@ -736,7 +752,7 @@ class Tanques extends Component{
                  <TomarFoto 
                     source={imgPuntoConsumo}
                     width={180}
-                    titulo="Punto Consumo"
+                    titulo="Visual gasoequipos"
                     limiteImagenes={4}
                     imagenes={(imgPuntoConsumo) => {  this.setState({imgPuntoConsumo}) }}
                 /> 
@@ -754,6 +770,7 @@ class Tanques extends Component{
                 
                 {/* NO COMODATO */}
                 <SubirDocumento 
+                    navigate={navigate}
                     source={imgProtocoloLlenado}
                     width={180}
                     titulo="Protocolo de llenado"
@@ -764,6 +781,7 @@ class Tanques extends Component{
                 
                 {/* NO COMODATO */}
                 <SubirDocumento 
+                    navigate={navigate}
                     source={imgHojaSeguridad}
                     width={180}
                     titulo="Hoja de seguridad"
@@ -774,6 +792,7 @@ class Tanques extends Component{
                 
                 {/* NO COMODATO */}
                 <SubirDocumento 
+                    navigate={navigate}
                     source={imgNComodato}
                     width={180}
                     titulo="Doc. de comodato"
@@ -784,6 +803,7 @@ class Tanques extends Component{
                 
                 {/* OTROS SI */}
                 <SubirDocumento 
+                    navigate={navigate}
                     source={imgOtrosSi}
                     width={180}
                     titulo="Otros si"
@@ -855,9 +875,58 @@ class Tanques extends Component{
             alert("No pudimos subir el archivo")
         })
     }
-
+    buscarDepto(){
+        axios.get(`https://appcodegas.com/public/poblado/departamentos.json`)
+        .then(res=>{
+            let dptos = res.data
+            dptos = dptos.map(e=>{
+                return{
+                    key:e.name,
+                    label:e.name
+                }
+            }) 
+            this.setState({dptos})
+        })
+    }
+    buscarCiudad(ciudad){
+        axios.get(`https://appcodegas.com/public/poblado/ciudades.json`)
+        .then(res=>{
+            console.log({ciudad})
+            console.log(res.data)
+            let ciudades = res.data
+            ciudades = ciudades.filter(e=>{
+                return ciudad===e.dpto
+            })
+            ciudades = ciudades.map(e=>{
+                return{
+                    key:e.ciudad,
+                    label:e.ciudad
+                }
+            })
+            this.setState({dpto:ciudad, ciudades, modalDpto:false})
+        })
+        
+    }
+    buscarPoblado(ciudad){
+        axios.get(`https://appcodegas.com/public/poblado/poblado.json`)
+        .then(res=>{
+            console.log(res.data)
+            let poblados = res.data
+            poblados = poblados.filter(e=>{
+                return ciudad===e.ciudad
+            })
+            poblados = poblados.map(e=>{
+                return{
+                    key:e.codigo,
+                    label:e.poblado
+                }
+            })
+            this.setState({ciudad:ciudad, poblados, modalCiudad:false})
+        })
+    }
     step5(){
-        let {lat, lng, accesoPerfil}= this.state
+        let {lat, lng, accesoPerfil, modalDpto, dpto, dptos, modalCiudad, ciudades, ciudad, modalPoblado, poblados, poblado }= this.state
+        console.log({modalDpto, dptos})
         return(
             <View>
                 {
@@ -885,6 +954,57 @@ class Tanques extends Component{
                     :<><Text>Lat: {lat}</Text>
                      <Text>Lng: {lng}</Text></>
                 }
+                {/* DEPARTAMENTOS */}
+                <ModalFilterPicker
+					placeholderText="Dpto ..."
+					visible={modalDpto}
+					onSelect={(e)=>this.buscarCiudad(e.key)}
+					onCancel={()=>this.setState({modalDpto:false})}
+                    options={dptos}
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Dpto</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalDpto:true})}>
+                        <Text style={dpto ?style.textBtnActive :style.textBtn}>{dpto ?dpto :"Dpto"}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* CIUDADES */}
+                <ModalFilterPicker
+					placeholderText="ciudad ..."
+					visible={modalCiudad}
+					onSelect={(e)=>this.buscarPoblado(e.key)}
+					onCancel={()=>this.setState({modalCiudad:false})}
+                    options={ciudades}
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>ciudad</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalCiudad:true})}>
+                        <Text style={ciudad ?style.textBtnActive :style.textBtn}>{ciudad ?ciudad :"ciudad"}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* POBLADOS */}
+                <ModalFilterPicker
+					placeholderText="Poblado ..."
+					visible={modalPoblado}
+					onSelect={(e)=>this.setState({poblado:e.key, modalPoblado:false})}
+					onCancel={()=>this.setState({modalPoblado:false})}
+                    options={poblados}
+                    cancelButtonText="CANCELAR"
+                    optionTextStyle={style.filterText}
+                />
+                <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Poblado</Text>
+                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPoblado:true})}>
+                        <Text style={poblado ?style.textBtnActive :style.textBtn}>{poblado ?poblado :"Poblado"}</Text>
+                    </TouchableOpacity>
+                </View>
+
             </View>
         )
     }
@@ -1177,12 +1297,12 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 5
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep5(){
-        let {lat, lng, revisionId} = this.state
+        let {lat, lng, revisionId, poblado} = this.state
         lat =  lat ?lat :4.597825;
         lng =  lng ?lng :-74.0755723;
-        console.log({lat, lng})
+        console.log({lat, lng, poblado})
         
-        axios.put(`rev/revision/coordenadas/${revisionId}`, {lat, lng})
+        axios.put(`rev/revision/coordenadas/${revisionId}`, {lat, lng, poblado})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

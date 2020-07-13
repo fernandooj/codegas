@@ -2,9 +2,9 @@ import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Platform, Dimensions, Modal, TextInput, ImageBackground, Image} from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-fa-icons';
-import FCM, { NotificationActionType } from "react-native-fcm";
+// import FCM, { NotificationActionType } from "react-native-fcm";
 import moment 			       from 'moment-timezone'
-import { registerAppListener } from "../push/Listeners";
+// import { registerAppListener } from "../push/Listeners";
 import Footer   from '../components/footer'
 import { connect } from "react-redux";
 import SocketIOClient from 'socket.io-client';
@@ -33,8 +33,6 @@ class Home extends Component{
 		let url = (userId===null || userId==='0') ? 'user/perfil/' :`user/perfil/${userId}`
 		axios.get(url)
 		.then((res)=>{
-			console.log("res.data")
-			console.log(res.data)
 			if(res.data.status){
 				const userId = res.data.user._id
 				const nombre = res.data.user.nombre
@@ -58,13 +56,13 @@ class Home extends Component{
 				}
 			}else{
 				//////////////////////// para saber si muestra el formulario del chat //////////////////////////
-				FCM.getFCMToken().then(token => {
-					axios.get(`users/formulario_chat/${token}/${true}`)
-					.then(res2=>{
+				// FCM.getFCMToken().then(token => {
+				// 	axios.get(`users/formulario_chat/${token}/${true}`)
+				// 	.then(res2=>{
 					 
-						res2.data.status ?this.setState({formularioChat:true}) :this.setState({formularioChat:false})
-					})
-				})
+				// 		res2.data.status ?this.setState({formularioChat:true}) :this.setState({formularioChat:false})
+				// 	})
+				// })
 				////////////////////////////////////////////////////////////////////////////////////////////////
 			}
 		})
@@ -76,44 +74,44 @@ class Home extends Component{
 	async componentDidMount() {
 		//FCM.createNotificationChannel is mandatory for Android targeting >=8. Otherwise you won't see any notification
 		// console.log({nav:this.props.navigation})
-		FCM.createNotificationChannel({
-		  id: 'default',
-		  name: 'Default',
-		  description: 'used for example',
-		  priority: 'high'
-		})
-		registerAppListener(this.props.navigation);
-		FCM.getInitialNotification().then(notif => {
-		  this.setState({ initNotif: notif });
-			console.log(notif)
-		  if (notif && notif.targetScreen === "Home") {
-			setTimeout(() => {
-			  this.props.navigation.navigate("Detail");
-			}, 500);
-		  }
-		});
+		// FCM.createNotificationChannel({
+		//   id: 'default',
+		//   name: 'Default',
+		//   description: 'used for example',
+		//   priority: 'high'
+		// })
+		// registerAppListener(this.props.navigation);
+		// FCM.getInitialNotification().then(notif => {
+		//   this.setState({ initNotif: notif });
+		// 	console.log(notif)
+		//   if (notif && notif.targetScreen === "Home") {
+		// 	setTimeout(() => {
+		// 	  this.props.navigation.navigate("Detail");
+		// 	}, 500);
+		//   }
+		// });
 	
-		try {
-		  let result = await FCM.requestPermissions({
-				badge: true,
-				sound: true,
-				alert: true
-		  });
-		} catch (e) {
-		  console.error(e);
-		}
+		// try {
+		//   let result = await FCM.requestPermissions({
+		// 		badge: true,
+		// 		sound: true,
+		// 		alert: true
+		//   });
+		// } catch (e) {
+		//   console.error(e);
+		// }
 	
-		FCM.getFCMToken().then(token => {
-			console.log(token)
-			this.setState({ tokenPhone: token || "" });
-			AsyncStorage.setItem('tokenPhone', token ?JSON.stringify(token) :"")
-		});
+		// FCM.getFCMToken().then(token => {
+		// 	console.log(token)
+		// 	this.setState({ tokenPhone: token || "" });
+		// 	AsyncStorage.setItem('tokenPhone', token ?JSON.stringify(token) :"")
+		// });
 	
-		if (Platform.OS === "ios") {
-		  FCM.getAPNSToken().then(token => {
-			// console.log("APNS TOKEN (getFCMToken)", token);
-		  });
-		}
+		// if (Platform.OS === "ios") {
+		//   FCM.getAPNSToken().then(token => {
+		// 	// console.log("APNS TOKEN (getFCMToken)", token);
+		//   });
+		// }
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +153,7 @@ class Home extends Component{
 		const {acceso, tokenPhone, formularioChat, userId} = this.state
 		return(
 			<View>
-				<TouchableOpacity style={[style.btn, {marginTop:50}]} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
+				<TouchableOpacity style={[style.btn, {marginTop:10}]} onPress={()=>navigation.navigate(userId ?'nuevo_pedido' :"perfil")}>
 					<Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon}/>
 					<Text style={style.text}>NUEVO PEDIDO</Text>
 				</TouchableOpacity>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { createStackNavigator, createAppContainer, NetInfo }   from 'react-navigation'
+import { createStackNavigator, createAppContainer}   from 'react-navigation'
  
 
 
@@ -36,6 +36,7 @@ import cerrarTanqueComponent 	from '../pages/tanques/cerrarTanque';
 import capacidadComponent 		from '../pages/capacidad/capacidad';
 import reporteEmergenciaComponent from '../pages/reporteEmergencia/reporteEmergencia';
 import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoReporteEmergencia';
+import pdfComponent 				from '../pages/pdf/pdf';
  
  
 const AppNavigator = createStackNavigator({
@@ -69,6 +70,7 @@ const AppNavigator = createStackNavigator({
 	cerrarTanque 		: {screen: cerrarTanqueComponent},
 	reporteEmergencia	: {screen: reporteEmergenciaComponent},
 	capacidad			: {screen: capacidadComponent},
+	pdf					: {screen: pdfComponent},
 	nuevoReporteEmergencia : {screen: nuevoReporteEmergenciaComponent},
   },{ headerMode: 'none'});
 

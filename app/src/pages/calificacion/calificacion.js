@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, NetInfo, KeyboardAvoidingView} from 'react-native'
+import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, KeyboardAvoidingView} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import axios               from 'axios';
 import Footer              from '../components/footer'

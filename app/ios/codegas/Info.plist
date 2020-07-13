@@ -63,8 +63,8 @@
 	<array>
 		<string>FontAwesome.ttf</string>
 		<string>Comfortaa-Light.ttf</string>
-		<string>Comfortaa-Regular.ttf</string>
 		<string>Comfortaa-Bold.ttf</string>
+		<string>Comfortaa-Regular.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

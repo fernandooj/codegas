@@ -499,7 +499,7 @@ router.put('/uploadPdf/:idTanque/', (req,res)=>{
         let rutaImgDossier            = []
         let rutaImgCerFabricante      = []
         let rutaImgCerOnac            = [] 
-   
+        console.log(req.files)
         let {imgDossier} = req.files
         if(imgDossier){
             let esArrayimgDossier = Array.isArray(imgDossier)
@@ -556,6 +556,8 @@ router.put('/uploadPdf/:idTanque/', (req,res)=>{
 
         let {imgCerOnac} = req.files
         if(imgCerOnac){
+            console.log("ff")
+           
             let esArrayimgCerOnac = Array.isArray(imgCerOnac)
             if(esArrayimgCerOnac){
                 imgCerOnac.map(e=>{
@@ -588,13 +590,16 @@ router.put('/uploadPdf/:idTanque/', (req,res)=>{
         rutaImgCerFabricante      = rutaImgCerFabricante.length==0  ?cerFabricante  :rutaImgCerFabricante.concat(cerFabricante);
         rutaImgCerOnac            = rutaImgCerOnac.length==0        ?cerOnac        :rutaImgCerOnac.concat(cerOnac);
   
-       
+        rutaImgDossier = rutaImgDossier.split(" ").join("")
+        rutaImgCerFabricante = rutaImgCerFabricante.split(" ").join("")
+        rutaImgCerOnac = rutaImgCerOnac.split(" ").join("")
         tanqueServices.subirPdf(req.params.idTanque,   rutaImgDossier, rutaImgCerFabricante, rutaImgCerOnac, (err, tanque)=>{
             if (!err) {
                
                 res.json({ status:true, tanque }); 
             }else{
                 res.json({ status:false, message: err }); 
+                console.log(err)
             }
         })
     }

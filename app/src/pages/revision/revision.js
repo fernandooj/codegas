@@ -44,7 +44,7 @@ class Revision extends Component{
         :axios.get(`rev/revision/`)
         .then(res=>{
             console.log("res")
-            console.log(res)
+            console.log(res.data)
             this.setState({revisiones:res.data.revision})
         })
        
@@ -66,7 +66,6 @@ class Revision extends Component{
         const {terminoBuscador, inicio, final, revisiones, acceso} = this.state
         let filtroRevisiones = revisiones.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newRevisiones = filtroRevisiones.slice(inicio, final) 
-        console.log({newRevisiones})
         return newRevisiones.map((e, key)=>{
             return(
                 <View style={[style.contenedorRevisiones, {backgroundColor: !e.activo ?"#F96D6C" :(e.estado==2 ||e.avisos||e.distancias||e.electricas||e.extintores||e.accesorios) ?"#e8a43d" :"white" }]} key={key}>
@@ -103,12 +102,12 @@ class Revision extends Component{
                         </>
                         :<>
                             <TouchableOpacity style={{flexDirection:"row"}}
-                            onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:e.puntoId._id, clienteId:e.usuarioId._id, revisionId:e._id})}
+                            onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:e.puntoId &&e.puntoId._id, clienteId:e.usuarioId &&e.usuarioId._id, revisionId:e._id})}
                             >
                                 <View style={{width:"90%"}}>
                                 <Text style={style.textUsers}>N Control: {e.nControl}</Text>
                                 <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
-                                <Text style={style.textUsers}>Usuario:   {e.usuarioId.razon_social} / {e.usuarioId.codt}</Text>
+                                {e.usuarioId &&<Text style={style.textUsers}>{e.usuarioId.razon_social+" / "+e.usuarioId.codt}</Text>}
                                 {e.estado==2  &&<Text style={style.textUsers}>Solicitud: {e.solicitudServicio}</Text>}
                                 {e.estado==3  &&<Text style={style.textUsers}>Solicitud cerrada</Text>}
                                 {e.avisos     &&<Text style={style.textUsers}>Falta de Avisos reglamentarios en mal estado</Text>}

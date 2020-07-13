@@ -10,7 +10,7 @@ import {getUsuarios}     from '../../redux/actions/usuarioActions'
 import { createFilter }  from 'react-native-search-filter';
 import Footer            from '../components/footer'
  
-const KEYS_TO_FILTERS = ["nControl", "usuarioId.razon_social", 'placa', 'fabricante', "anoFabricacion", "barrio"] 
+const KEYS_TO_FILTERS = ["_id.usuario", '_id.placaText',  "_id.capacidad"] 
  
 class verPerfil extends Component{
 	constructor(props) {
@@ -27,7 +27,7 @@ class verPerfil extends Component{
         const acceso    = await AsyncStorage.getItem('acceso')
         axios.get("tan/tanque")
         .then(res=>{
-            
+    
             this.setState({tanques:res.data.tanque, acceso})
         })
        
@@ -50,7 +50,6 @@ class verPerfil extends Component{
         let filtroTanques = tanques.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newTanques = filtroTanques.slice(inicio, final) 
         return newTanques.map((e, key)=>{
-            
             return(
                 <View style={style.contenedorTanques} key={key}>
                     <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarTanque" :"nuevoTanque", {tanqueId:acceso=="depTecnico"?e._id._id :e._id._id})}>

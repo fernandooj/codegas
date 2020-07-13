@@ -1,5 +1,5 @@
 import React, { Component }        from 'react'
-import { YellowBox, NetInfo, StyleSheet} from 'react-native'
+import { YellowBox, StyleSheet} from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage';
 import axios                       from 'axios' 
 import {Provider}                  from 'react-redux';
@@ -72,14 +72,14 @@ export default class App extends Component<{}> {
     }
   }
   componentDidMount() {
-    NetInfo.isConnected.addEventListener(
-        'connectionChange',
-        this.handleConnectivityChange
-    );
-    NetInfo.isConnected.fetch().done((isConnected) => {
-      console.log({isConnected})
-      isConnected ?this.setState({connection_Status :true}) : this.setState({connection_Status :false})
-    });
+    // NetInfo.isConnected.addEventListener(
+    //     'connectionChange',
+    //     this.handleConnectivityChange
+    // );
+    // NetInfo.isConnected.fetch().done((isConnected) => {
+    //   console.log({isConnected})
+    //   isConnected ?this.setState({connection_Status :true}) : this.setState({connection_Status :false})
+    // });
   }
   handleConnectivityChange = (isConnected) => {
     isConnected ?this.setState({connection_Status :true}) : this.setState({connection_Status :false})
