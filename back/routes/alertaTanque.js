@@ -90,13 +90,13 @@ router.post('/', (req,res)=>{
                 
                 userServices.getByAcceso("adminTanque", (err, usuarios)=>{
                     usuarios.map(e=>{
-                        let userEnvia = `Tanque:${req.body.placaText} <br />Cliente:${req.body.codtCliente} <br />Enviado por: "${req.session.usuario.nombre}<br />`
+                        let userEnvia = `Tanque:${req.body.placaText} <br />Cliente:${req.body.codtCliente} / ${req.body.razon_socialCliente} <br />Enviado por: "${req.session.usuario.nombre}<br />`
                         htmlTemplate(req, e, "Nueva alerta de tanque", req.body.alertaText, userEnvia,  "Nueva alerta de tanque")
                     })
                 })
                 userServices.getByAcceso("admin", (err, usuarios)=>{
                     usuarios.map(e=>{
-                        let userEnvia = `Tanque:${req.body.placaText} <br />Cliente:${req.body.codtCliente} <br />Enviado por: "${req.session.usuario.nombre}<br />`
+                        let userEnvia = `Tanque:${req.body.placaText} <br />Cliente:${req.body.codtCliente} / ${req.body.razon_socialCliente}  <br />Enviado por: "${req.session.usuario.nombre}<br />`
                         htmlTemplate(req, e, "Nueva alerta de tanque", req.body.alertaText, userEnvia,  "Nueva alerta de tanque")
                     })
                 })

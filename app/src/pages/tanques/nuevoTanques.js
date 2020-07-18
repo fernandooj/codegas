@@ -194,7 +194,7 @@ class Tanques extends Component{
             if(res.data.status){
                 this.setState({loadClientes:false})
                 let clientes = res.data.usuarios.map(e=>{
-                    return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular }
+                    return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular , codt:e.codt }
                 }) 
                 this.setState({clientes, modalCliente:true, puntoId:undefined})
             }
@@ -808,8 +808,9 @@ class Tanques extends Component{
 		)
     }
     enviarAlerta(){
-        const { alertaText, tanqueId, placaText, codtCliente } = this.state
-        axios.post(`ale/alertaTanque/`, {alertaText, placaText, tanqueId, codtCliente})
+        const { alertaText, tanqueId, placaText, codtCliente, razon_socialCliente } = this.state
+        console.log({ alertaText, tanqueId, placaText, codtCliente, razon_socialCliente })
+        axios.post(`ale/alertaTanque/`, {alertaText, placaText, tanqueId, codtCliente, razon_socialCliente})
         .then((res)=>{
             if(res.data.status){
                 axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
@@ -928,7 +929,7 @@ class Tanques extends Component{
     filtroClientes(idCliente){
         let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente.key })
         console.log({cliente})
-        this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular,nombreCliente:cliente[0].nombre, modalCliente:false})
+        this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, codtCliente:cliente[0].codt, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular, nombreCliente:cliente[0].nombre, modalCliente:false})
         axios.get(`pun/punto/byCliente/${idCliente.key}`)
         .then(e=>{
             if(e.data.status){
@@ -1026,14 +1027,17 @@ class Tanques extends Component{
     editarStep3(){
         const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, tanqueId} = this.state
         console.log({zonaId, usuarioId, puntoId})
-        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId.key, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque  })
+        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId ?usuarioId.key :null, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque  })
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                Toast.show("Usuario Guardado")
+                //Toast.show("Usuario Guardado")
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }
+        })
+        .catch(err=>{
+            console.log(err)
         })
     }
     editarStep4(){

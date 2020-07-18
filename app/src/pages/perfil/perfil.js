@@ -90,7 +90,7 @@ class Home extends Component{
                     </TouchableOpacity>
                     <TouchableOpacity style={style.btnOlvidar} onPress={()=>this.props.navigation.navigate("recuperar")}>
                         <Text style={style.textOlvidar}>Olvide mi contraseña</Text>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.5</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.6</Text> 
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -213,7 +213,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.5</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.6</Text> 
                     </TouchableOpacity> 
                     {
                         err

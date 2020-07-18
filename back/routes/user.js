@@ -844,11 +844,55 @@ module.exports = function(app, passport){
     app.put('/x/v1/users/cambiarValorTodos/', (req,res)=>{
         userServices.get((err, usuarios)=>{
             if(!err){  
+               
+                        
                 req.body.seleccionados.filter(e=>{
                     userServices.editarValorUnitario(e.valorUnitario, e._id, (err2, user)=>{
+                        
+                    })
+                    pedidoServices.getByUser(e._id, (err, pedido)=>{
+                        if(!err){
+                            pedido = pedido.filter(e=>{
+                                return e.entregado===false  
+                            })
+                        }
+                        pedido.filter(e2=>{
+                            pedidoServices.editarValorUnitario(e2._id, e.valorUnitario, (req, pedidos)=>{ })   
+                        })
+                    })
+                })
+                        
+
+                res.json({status:true})
+            }else{
+                res.json({ status: false, err}) 
+            }
+        })
+    })
+
+    app.get(`/x/v1/users/cambiarValorTodos/:valor`, (req,res)=>{
+        userServices.get((err, usuarios)=>{
+            if(!err){  
+                usuarios.filter(e=>{
+                    userServices.editarValorUnitario(req.params.valor, e._id, (err2, user)=>{
                         console.log(err2)
                     })
                 })
+
+                pedidoServices.get((err, pedido)=>{
+                    if(!err){
+                        pedido = pedido.filter(e=>{
+                            return e.entregado===false  
+                        })
+                        pedido.filter(e=>{
+                            pedidoServices.editarValorUnitario(e._id, req.params.valor, (req, pedidos)=>{
+                            })
+                        })
+                         
+                    }
+                })
+
+
                 res.json({status:true})
             }else{
                 res.json({ status: false, err}) 

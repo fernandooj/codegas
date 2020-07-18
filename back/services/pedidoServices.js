@@ -247,6 +247,7 @@ class pedidoServices{
 		}}, callback) ;
 	}
 	editarValorUnitario(_id, valorUnitario, callback){
+		console.log({_id, valorUnitario})
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'valorUnitario':valorUnitario
 		}}, callback) ;

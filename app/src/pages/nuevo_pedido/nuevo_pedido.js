@@ -361,7 +361,8 @@ class Nuevo_pedido extends Component{
         )
     }
     filtroClientes(idCliente){
-		let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
+        let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
+        console.log({cliente})
         this.setState({cliente:cliente[0].label, idCliente, emailCliente:cliente[0].email, modalCliente:false})
         axios.get(`pun/punto/byCliente/${idCliente}`)
         .then(e=>{
@@ -409,7 +410,7 @@ class Nuevo_pedido extends Component{
 				<ModalFilterPicker
 					placeholderText="Filtrar ..."
 					visible={modalCliente}
-					onSelect={(e)=>this.filtroClientes(e)}
+					onSelect={(e)=>this.filtroClientes(e.key)}
 					onCancel={()=>this.setState({modalCliente:false})}
                     options={clientes}
                     cancelButtonText="CANCELAR"
