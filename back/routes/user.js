@@ -844,8 +844,6 @@ module.exports = function(app, passport){
     app.put('/x/v1/users/cambiarValorTodos/', (req,res)=>{
         userServices.get((err, usuarios)=>{
             if(!err){  
-               
-                        
                 req.body.seleccionados.filter(e=>{
                     userServices.editarValorUnitario(e.valorUnitario, e._id, (err2, user)=>{
                         
@@ -861,7 +859,6 @@ module.exports = function(app, passport){
                         })
                     })
                 })
-                        
 
                 res.json({status:true})
             }else{

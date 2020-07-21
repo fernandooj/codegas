@@ -108,6 +108,7 @@ class tanqueServices{
 
 	
 	create(data, usuarioCrea, callback){
+		console.log( data)
     let creado = moment().subtract(5, 'hours');
     creado = moment(creado).format('YYYY-MM-DD h:mm');
 		let newTanque = new tanque({
@@ -134,7 +135,7 @@ class tanqueServices{
 		newTanque.save(callback)	
 	}
 	editar(_id, data, callback){
-		console.log(_id, data)
+	
 		tanque.findByIdAndUpdate(_id, {$set: {
 			placaText       	: data.placaText,
 			capacidad         : data.capacidad,

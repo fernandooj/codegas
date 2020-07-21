@@ -1025,9 +1025,9 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 3
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep3(){
-        const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, tanqueId} = this.state
+        const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad, tanqueId} = this.state
         console.log({zonaId, usuarioId, puntoId})
-        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId ?usuarioId.key :null, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque  })
+        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId ?usuarioId.key :null, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad  })
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

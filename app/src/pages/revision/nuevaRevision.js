@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Switch, TextInput, Platform, Image, Dimensions, Alert, AsyncStorage, ActivityIndicator} from 'react-native'
+import {View, Text, TouchableOpacity, Switch, TextInput, Platform, Image, Dimensions, Alert, ActivityIndicator} from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage';
 import Geolocation from '@react-native-community/geolocation';
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
@@ -72,12 +73,11 @@ class Tanques extends Component{
      
     // let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, imgProtocoloLlenado, imgHojaSeguridad, imgNComodato, imgOtrosSi} = this.state
     async componentWillMount(){
-        const accesoPerfil = await AsyncStorage.getItem('acceso')
         //////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////        LISTA TODOS LOS TANQUES
         axios.get(`tan/tanque`)
         .then(res=>{
-           
+            
             let placas = res.data.tanque
             placas = placas.map(e=>{
                 return{
@@ -87,10 +87,11 @@ class Tanques extends Component{
             }) 
             this.setState({placas})
         })
+        let accesoPerfil = await AsyncStorage.getItem('acceso')
         let revisionId = this.props.navigation.state.params ?this.props.navigation.state.params.revisionId :null
         let puntoId = this.props.navigation.state.params.puntoId  
         let usuarioId = this.props.navigation.state.params.clienteId 
- 
+        
         this.filtroClientes(usuarioId)
  
         this.setState({revisionId, puntoId, usuarioId, accesoPerfil})
@@ -727,7 +728,7 @@ class Tanques extends Component{
                     width={180}
                     titulo="Isometrico"
                     limiteImagenes={4}
-                    imagenes={(imgIsometrico) => {  this.setState({imgIsometrico}) }}
+                    imagenes={(imgIsometrico) => {  this.uploadImagen(imgIsometrico, 1) }}
                 />
                 <View style={style.separador}></View>
                 {/* PLACA */}
@@ -736,7 +737,7 @@ class Tanques extends Component{
                     width={180}
                     titulo="Otros Comodatos"
                     limiteImagenes={4}
-                    imagenes={(imgOtrosComodato) => {  this.setState({imgOtrosComodato}) }}
+                    imagenes={(imgOtrosComodato) => {  this.uploadImagen(imgOtrosComodato, 2) }}
                 />  
                 <View style={style.separador}></View>
                 {/* PLACA */}
@@ -745,16 +746,16 @@ class Tanques extends Component{
                     width={180}
                     titulo="Soporte de entrega"
                     limiteImagenes={4}
-                    imagenes={(imgSoporteEntrega) => {  this.setState({imgSoporteEntrega}) }}
+                    imagenes={(imgSoporteEntrega) => {  this.uploadImagen(imgSoporteEntrega, 3) }}
                 /> 
                 <View style={style.separador}></View>
                 {/* PLACA */}
-                 <TomarFoto 
+                <TomarFoto 
                     source={imgPuntoConsumo}
                     width={180}
                     titulo="Visual gasoequipos"
                     limiteImagenes={4}
-                    imagenes={(imgPuntoConsumo) => {  this.setState({imgPuntoConsumo}) }}
+                    imagenes={(imgPuntoConsumo) => {  this.uploadImagen(imgPuntoConsumo, 4) }}
                 /> 
                 <View style={style.separador}></View>
                 
@@ -764,7 +765,7 @@ class Tanques extends Component{
                     width={180}
                     titulo="Visual instalación"
                     limiteImagenes={4}
-                    imagenes={(imgVisual) => {  this.setState({imgVisual}) }}
+                    imagenes={(imgVisual) => {  this.uploadImagen(imgVisual, 5) }}
                 /> 
                 <View style={style.separador}></View>
                 
@@ -813,6 +814,85 @@ class Tanques extends Component{
             </View>
         )
     }
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           EDITA EL STEP 4, IMAGENES Y DOCUMENTOS 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    uploadImagen(imagen, tipo){
+        let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId} = this.state
+
+        let data = new FormData();
+        let isometrico = imgIsometrico.filter(e=>{
+            return !e.uri
+        })
+        imgIsometrico = imgIsometrico.filter(e=>{
+            return e.uri
+        })
+        let otrosComodato = imgOtrosComodato.filter(e=>{
+            return !e.uri
+        })
+        imgOtrosComodato = imgOtrosComodato.filter(e=>{
+            return e.uri
+        })
+        let soporteEntrega = imgSoporteEntrega.filter(e=>{
+            return !e.uri
+        })
+        imgSoporteEntrega = imgSoporteEntrega.filter(e=>{
+            return e.uri
+        })
+        let puntoConsumo = imgPuntoConsumo.filter(e=>{
+            return !e.uri
+        })
+        imgPuntoConsumo = imgPuntoConsumo.filter(e=>{
+            return e.uri
+        })
+        let visual = imgVisual.filter(e=>{
+            return !e.uri
+        })
+        imgVisual = imgVisual.filter(e=>{
+            return e.uri
+        })
+        tipo === 1
+        ?imagen.forEach(e=>{
+            data.append('imgIsometrico', e);
+        })
+        :tipo === 2
+        ?imagen.forEach(e=>{
+            data.append('imgOtrosComodato', e);
+        })
+        :tipo === 3
+        ?imagen.forEach(e=>{
+            data.append('imgSoporteEntrega', e);
+        })
+        :tipo === 4
+        ?imagen.forEach(e=>{
+            data.append('imgPuntoConsumo', e);
+        })
+        :imagen.forEach(e=>{
+            data.append('imgVisual', e);
+        })
+        console.log({imgIsometrico, imgOtrosComodato, imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId})
+        
+        data.append('isometrico',JSON.stringify(isometrico));
+        data.append('otrosComodato',JSON.stringify(otrosComodato));
+        data.append('soporteEntrega',JSON.stringify(soporteEntrega));
+        data.append('puntoConsumo',JSON.stringify(puntoConsumo));
+        data.append('visual',JSON.stringify(visual));
+        axios({
+            method: 'PUT',   
+            url: `rev/revision/guardarImagen/${revisionId}`,
+            data: data,
+        })
+        .then((res)=>{
+            console.log(res.data)
+            
+        })
+        .catch(err=>{
+            console.log({err})
+            this.setState({cargando:false})
+            alert("Error al subir la imagen")
+        })
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           SUBE LOS PDF
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -924,9 +1004,11 @@ class Tanques extends Component{
             this.setState({ciudad:ciudad, poblados, modalCiudad:false})
         })
     }
+    
+
     step5(){
         let {lat, lng, accesoPerfil, modalDpto, dpto, dptos, modalCiudad, ciudades, ciudad, modalPoblado, poblados, poblado }= this.state
-        console.log({modalDpto, dptos})
+        console.log({modalDpto, accesoPerfil})
         return(
             <View>
                 {
@@ -1069,7 +1151,7 @@ class Tanques extends Component{
                         {this.step3()}
                     </View>
                 </ProgressStep>
-                <ProgressStep label="Doc. adicionales" nextBtnText="Siguiente"  previousBtnText="Anterior"  onNext={()=>this.editarStep4()}>
+                <ProgressStep label="Doc. adicionales" nextBtnText="Siguiente"  previousBtnText="Anterior">
                     <View style={{ alignItems: 'center' }}>
                         {this.step4()}
                     </View>
@@ -1214,84 +1296,6 @@ class Tanques extends Component{
             this.setState({cargando:false})
         })
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////           EDITA EL STEP 4, IMAGENES Y DOCUMENTOS 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    editarStep4(){
-        let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId} = this.state
-
-        let data = new FormData();
-        let isometrico = imgIsometrico.filter(e=>{
-            return !e.uri
-        })
-        imgIsometrico = imgIsometrico.filter(e=>{
-            return e.uri
-        })
-        let otrosComodato = imgOtrosComodato.filter(e=>{
-            return !e.uri
-        })
-        imgOtrosComodato = imgOtrosComodato.filter(e=>{
-            return e.uri
-        })
-        let soporteEntrega = imgSoporteEntrega.filter(e=>{
-            return !e.uri
-        })
-        imgSoporteEntrega = imgSoporteEntrega.filter(e=>{
-            return e.uri
-        })
-        let puntoConsumo = imgPuntoConsumo.filter(e=>{
-            return !e.uri
-        })
-        imgPuntoConsumo = imgPuntoConsumo.filter(e=>{
-            return e.uri
-        })
-        let visual = imgVisual.filter(e=>{
-            return !e.uri
-        })
-        imgVisual = imgVisual.filter(e=>{
-            return e.uri
-        })
-
-        imgIsometrico.forEach(e=>{
-            data.append('imgIsometrico', e);
-        })
-        imgOtrosComodato.forEach(e=>{
-            data.append('imgOtrosComodato', e);
-        })
-       
-        imgSoporteEntrega.forEach(e=>{
-            data.append('imgSoporteEntrega', e);
-        })
-        imgPuntoConsumo.forEach(e=>{
-            data.append('imgPuntoConsumo', e);
-        })
-        imgVisual.forEach(e=>{
-            data.append('imgVisual', e);
-        })
-        console.log({imgIsometrico, imgOtrosComodato, imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId})
-        
-        data.append('isometrico',JSON.stringify(isometrico));
-        data.append('otrosComodato',JSON.stringify(otrosComodato));
-        data.append('soporteEntrega',JSON.stringify(soporteEntrega));
-        data.append('puntoConsumo',JSON.stringify(puntoConsumo));
-        data.append('visual',JSON.stringify(visual));
-        axios({
-            method: 'PUT',   
-            url: `rev/revision/guardarImagen/${revisionId}`,
-            data: data,
-        })
-        .then((res)=>{
-            console.log(res.data)
-            
-        })
-        .catch(err=>{
-            console.log({err})
-            this.setState({cargando:false})
-        })
-    }
-
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           EDITA EL STEP 5
