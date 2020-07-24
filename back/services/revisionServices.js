@@ -90,7 +90,7 @@ class revisionServices{
 			nComodato         : data.nComodato,
 			nComodatoText     : data.nComodatoText,
 			ubicacion         : data.ubicacion,
-			coordenadas       : data.coordenadas,
+		 
 			otrosSi						:data.otrosSi,
 			usuarioCrea,
 			creado
@@ -114,7 +114,7 @@ class revisionServices{
 			nMedidorText       : data.nMedidorText,
 			nComodatoText     : data.nComodatoText,
 			ubicacion         : data.ubicacion,
-			coordenadas        : data.coordenadas,
+		 
 		}}, callback);
   }
 	editarImagen(_id,  isometrico, otrosComodato, soporteEntrega, puntoConsumo, visual, callback){
@@ -129,7 +129,7 @@ class revisionServices{
 	}
 
 	subirPdf(_id, protocoloLlenado, hojaSeguridad, nComodato, otrosSi, callback){
-	
+		console.log({protocoloLlenado, _id})
 		revision.findByIdAndUpdate(_id, {$set: {
 			protocoloLlenado : protocoloLlenado ?protocoloLlenado : [],
 			hojaSeguridad    : hojaSeguridad    ?hojaSeguridad    : [],
@@ -208,9 +208,12 @@ class revisionServices{
 		let lng=parseFloat(data.lng)
 		let lat=parseFloat(data.lat)
 		let coordenadas = {'type':'Point', "coordinates": [lng, lat] }
+		console.log({_id, data})
 		revision.findByIdAndUpdate(_id, {$set: {
-			'coordenadas':coordenadas,
-			'poblado':data.poblado
+		'coordenadas':coordenadas,
+			'poblado':data.poblado,
+			// 'poblado':data.poblado,
+			// 'poblado':data.poblado
 		}}, callback);
 	}
 }

@@ -14,6 +14,10 @@ recursos/
 front/docs/
 front/package-lock.json
 front/docs/public
+front__
+front__/docs/
+front__/package-lock.json
+front__/docs/public
 /coverage
 /.nyc_output
 

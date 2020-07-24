@@ -115,7 +115,11 @@ class Tanques extends Component{
             })
 
         }
-
+        this.buscarRevision()
+        this.buscarDepto()
+    }
+    buscarRevision(){
+        let revisionId = this.props.navigation.state.params ?this.props.navigation.state.params.revisionId :this.state.revisionId
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////        SI SELECCIONA UNA REVISION POR DEFECTO LA SELECCIONA
         if(revisionId){
@@ -123,6 +127,7 @@ class Tanques extends Component{
             .then(res => {
                 const {revision} = res.data
                 console.log(revision)
+                console.log(revision.coordenadas.coordinates[1])
                 let tanqueIdArray = []
                 revision.tanqueId.map(e=>{
                     tanqueIdArray.push(e._id)
@@ -133,7 +138,6 @@ class Tanques extends Component{
                     revisionId:    revision._id,
                     poblado:       revision.poblado,
  
-                    
                     /////////  step 2
                     nControl         : revision.nControl         ?revision.nControl          :"",
                     capacidad         : revision.capacidad         ?revision.capacidad          :"",
@@ -177,42 +181,37 @@ class Tanques extends Component{
                     depTecnicoText    : revision.depTecnicoText    ?revision.depTecnicoText    :"",
                     depTecnicoEstado  : revision.depTecnicoEstado  ?revision.depTecnicoEstado  :"",  
 
-
                     /////////  step 4
                     imgIsometrico      : revision.isometrico      ?revision.isometrico     :[],
                     imgOtrosComodato   : revision.otrosComodato   ?revision.otrosComodato  :[],
                     imgSoporteEntrega  : revision.soporteEntrega  ?revision.soporteEntrega :[],
                     imgPuntoConsumo    : revision.puntoConsumo    ?revision.puntoConsumo   :[],
-                    imgVisual          : revision.visual          ?revision.visual         :[],
-                    
+                    imgVisual          : revision.visual          ?revision.visual         :[],                    
                     imgProtocoloLlenado: revision.protocoloLlenado ?revision.protocoloLlenado :[],
                     imgHojaSeguridad:    revision.hojaSeguridad    ?revision.hojaSeguridad :[],
                     imgNComodato    :    revision.nComodato        ?revision.nComodato     :[],
                     imgOtrosSi      :    revision.otrosSi          ?revision.otrosSi       :[],
                 })
+
+                Geolocation.getCurrentPosition(e=>{
+                    let lat = parseFloat(e.coords.latitude)
+                    let lng = parseFloat(e.coords.longitude)
+                    lat =  revision.coordenadas ?revision.coordenadas.coordinates[1] :lat;
+                    lng =  revision.coordenadas ?revision.coordenadas.coordinates[0] :lng;
+                    this.setState({lat, lng})
+                }, (error)=>this.watchID = Geolocation.watchPosition(e=>{
+         
+                    let lat =parseFloat(e.coords.latitude)
+                    let lng = parseFloat(e.coords.longitude)
+                    lat =  revision.coordenadas ?revision.coordenadas.coordinates[1] :lat;
+                    lng =  revision.coordenadas ?revision.coordenadas.coordinates[0] :lng;
+                    this.setState({lat, lng})
+                },
+                    (error) => console.log('error'),
+                    {enableHighAccuracy: true, timeout:5000, maximumAge:0})
+                )
             })
         }
-        
-        Geolocation.getCurrentPosition(e=>{
-     
-			let lat = parseFloat(e.coords.latitude)
-			let lng = parseFloat(e.coords.longitude)
-            lat =  lat ?lat :4.597825;
-            lng =  lng ?lng :-74.0755723;
- 
-            this.setState({lat, lng})
-        }, (error)=>this.watchID = Geolocation.watchPosition(e=>{
- 
-            let lat =parseFloat(e.coords.latitude)
-            let lng = parseFloat(e.coords.longitude)
-            lat =  lat ?lat :4.597825;
-            lng =  lng ?lng :-74.0755723;            
-            this.setState({lat, lng})
-        },
-            (error) => console.log('error'),
-            {enableHighAccuracy: true, timeout:5000, maximumAge:0})
-        )
-        this.buscarDepto()
     }
     filtroClientes(idCliente){
         axios.get(`users/clientes`)
@@ -373,7 +372,7 @@ class Tanques extends Component{
 
     step2(){
         const {modalSectores, sector, barrio, usuariosAtendidos, modalM3, m3, usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, modalPropiedad, propiedad, nComodatoText, nMedidorText, ubicacion, modalUbicacion, capacidad, direccion, observacion} = this.state
-        console.log({capacidad})
+ 
         return(
             <View>
                  {/* SECTORES */}
@@ -818,21 +817,38 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 4, IMAGENES Y DOCUMENTOS 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     uploadImagen(imagen, tipo){
+        this.setState({loading:true})
         let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId} = this.state
-
+        console.log({imgIsometrico, imgOtrosComodato, imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId})
         let data = new FormData();
-        let isometrico = imgIsometrico.filter(e=>{
-            return !e.uri
-        })
-        imgIsometrico = imgIsometrico.filter(e=>{
-            return e.uri
-        })
+        let isometrico = []
+        if(tipo===1){
+            isometrico = imagen.filter(e=>{
+                return !e.uri
+            })
+        }
+        if(tipo===2){
+            otrosComodato = imagen.filter(e=>{
+                return !e.uri
+            })
+        }
+        if(tipo===3){
+            soporteEntrega = imagen.filter(e=>{
+                return !e.uri
+            })
+        }
+        
+        // imgIsometrico = imgIsometrico.filter(e=>{
+        //     return e.uri
+        // })
+
         let otrosComodato = imgOtrosComodato.filter(e=>{
             return !e.uri
         })
         imgOtrosComodato = imgOtrosComodato.filter(e=>{
             return e.uri
         })
+        
         let soporteEntrega = imgSoporteEntrega.filter(e=>{
             return !e.uri
         })
@@ -851,6 +867,17 @@ class Tanques extends Component{
         imgVisual = imgVisual.filter(e=>{
             return e.uri
         })
+        // tipo === 1
+        // ?isometrico = imagen
+        // :tipo === 2
+        // ?otrosComodato = imagen
+        // :tipo === 3
+        // ?soporteEntrega = imagen
+        // :tipo === 4
+        // ?puntoConsumo = imagen
+        // :visual = imagen
+
+
         tipo === 1
         ?imagen.forEach(e=>{
             data.append('imgIsometrico', e);
@@ -870,7 +897,8 @@ class Tanques extends Component{
         :imagen.forEach(e=>{
             data.append('imgVisual', e);
         })
-        console.log({imgIsometrico, imgOtrosComodato, imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId})
+        
+        console.log({isometrico, otrosComodato, soporteEntrega, puntoConsumo, visual, revisionId})
         
         data.append('isometrico',JSON.stringify(isometrico));
         data.append('otrosComodato',JSON.stringify(otrosComodato));
@@ -884,12 +912,13 @@ class Tanques extends Component{
         })
         .then((res)=>{
             console.log(res.data)
-            
+            this.buscarRevision()
+            this.setState({loading:false})
         })
         .catch(err=>{
             console.log({err})
-            this.setState({cargando:false})
-            alert("Error al subir la imagen")
+            this.setState({loading:false})
+            alert("Error al subir esta imagen")
         })
     }
 
@@ -948,6 +977,7 @@ class Tanques extends Component{
         .then((res)=>{
             if(res.data.status){
                 this.setState({loading:false})
+                this.buscarRevision()
             }
         })
         .catch(err=>{
@@ -971,8 +1001,7 @@ class Tanques extends Component{
     buscarCiudad(ciudad){
         axios.get(`https://appcodegas.com/public/poblado/ciudades.json`)
         .then(res=>{
-            console.log({ciudad})
-            console.log(res.data)
+          
             let ciudades = res.data
             ciudades = ciudades.filter(e=>{
                 return ciudad===e.dpto
@@ -1008,7 +1037,7 @@ class Tanques extends Component{
 
     step5(){
         let {lat, lng, accesoPerfil, modalDpto, dpto, dptos, modalCiudad, ciudades, ciudad, modalPoblado, poblados, poblado }= this.state
-        console.log({modalDpto, accesoPerfil})
+   
         return(
             <View>
                 {
@@ -1168,7 +1197,6 @@ class Tanques extends Component{
 
 	render(){
         const {navigation} = this.props
-        console.log({placaText:this.state.placaText})
         return (
             <>
                 <View style={style.container}>
@@ -1258,10 +1286,10 @@ class Tanques extends Component{
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){
-                axios.put(`pun/punto/editaAlmacenamiento/${puntoId}/${capacidad}`)
-                .then((res)=>{
-                    console.log(res.data)
-                })
+                // axios.put(`pun/punto/editaAlmacenamiento/${puntoId}/${capacidad}`)
+                // .then((res)=>{
+                //     console.log(res.data)
+                // })
             }else{
                 Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
             }

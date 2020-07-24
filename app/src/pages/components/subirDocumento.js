@@ -73,7 +73,6 @@ export default class subirDocumento extends Component{
             }
         })
    
-        console.log({imagenes})
         return img.map((e, key)=>{
             return(
                 <View key={key} style={style.contenedorPdf}>   

@@ -629,7 +629,7 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
             }
         }
         let imgVisual = req.files
-        console.log(req.files)
+         
         if(req.files.imgVisual){
             let esArrayVisual = Array.isArray(imgVisual)
             if(esArrayVisual){
@@ -673,20 +673,19 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
             }
         }
 
-
  
         let isometrico     = req.body.isometrico     ?JSON.parse(req.body.isometrico)    :[]
         let otrosComodato  = req.body.otrosComodato  ?JSON.parse(req.body.otrosComodato) :[]
         let soporteEntrega = req.body.soporteEntrega ?JSON.parse(req.body.soporteEntrega):[]   
         let puntoConsumo   = req.body.puntoConsumo   ?JSON.parse(req.body.puntoConsumo)  :[]   
         let visual         = req.body.visual         ?JSON.parse(req.body.visual)        :[]   
-        
-        rutaImgIsometrico      = rutaImgIsometrico.length==0     ?isometrico :rutaImgIsometrico.concat(isometrico);
-        rutaImgOtrosComodato   = rutaImgOtrosComodato.length==0  ?otrosComodato :rutaImgOtrosComodato.concat(otrosComodato);
-        rutaImgSoporteEntrega  = rutaImgSoporteEntrega.length==0 ?soporteEntrega :rutaImgSoporteEntrega.concat(soporteEntrega);
-        rutaImgPuntoConsumo    = rutaImgPuntoConsumo.length==0   ?puntoConsumo :rutaImgPuntoConsumo.concat(puntoConsumo);
-        rutaImgVisual          = rutaImgVisual.length==0         ?visual :rutaImgVisual.concat(visual);
-        
+    
+        rutaImgIsometrico      = rutaImgIsometrico.length==0     ?isometrico     :isometrico.concat(rutaImgIsometrico);
+        rutaImgOtrosComodato   = rutaImgOtrosComodato.length==0  ?otrosComodato  :otrosComodato.concat(rutaImgOtrosComodato);
+        rutaImgSoporteEntrega  = rutaImgSoporteEntrega.length==0 ?soporteEntrega :soporteEntrega.concat(rutaImgSoporteEntrega);
+        rutaImgPuntoConsumo    = rutaImgPuntoConsumo.length==0   ?puntoConsumo   :puntoConsumo.concat(rutaImgPuntoConsumo);
+        rutaImgVisual          = rutaImgVisual.length==0         ?visual         :visual.concat(rutaImgVisual);
+       
 
         
 
@@ -839,11 +838,11 @@ router.put('/uploadPdf/:idRevision/', (req,res)=>{
         rutaImgHojaSeguridad    = rutaImgHojaSeguridad.length==0    ?hojaSeguridad    :rutaImgHojaSeguridad.concat(hojaSeguridad);
         rutaImgNComodato        = rutaImgNComodato.length==0        ?nComodato        :rutaImgNComodato.concat(nComodato);
         rutaImgOtrosSi          = rutaImgOtrosSi.length==0          ?otrosSi          :rutaImgOtrosSi.concat(otrosSi);
-
-        rutaImgProtocoloLlenado = rutaImgProtocoloLlenado.split(" ").join("")
-        rutaImgHojaSeguridad = rutaImgHojaSeguridad.split(" ").join("")
-        rutaImgNComodato = rutaImgNComodato.split(" ").join("")
-        rutaImgOtrosSi = rutaImgOtrosSi.split(" ").join("")
+        rutaImgProtocoloLlenado = rutaImgProtocoloLlenado.filter(e=>{return e.split(" ").join("")})
+        rutaImgHojaSeguridad = rutaImgHojaSeguridad.filter(e=>{return e.split(" ").join("")})
+        rutaImgNComodato = rutaImgNComodato.filter(e=>{return e.split(" ").join("")})
+        rutaImgOtrosSi = rutaImgOtrosSi.filter(e=>{return e.split(" ").join("")})
+        console.log({rutaImgProtocoloLlenado})
 
         revisionServices.subirPdf(req.params.idRevision, rutaImgProtocoloLlenado, rutaImgHojaSeguridad, rutaImgNComodato, rutaImgOtrosSi, (err, revision)=>{
             if (!err) {

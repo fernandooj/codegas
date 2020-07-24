@@ -36,9 +36,10 @@ let Revision = new Schema({
 	nMedidorText      : String,     
 	ubicacion      	  : String,     
 	nComodatoText     : String,     
-	poblado     	  : String,     
+	poblado     	  : String,   
+	  
 	isometrico        : [],
-    otrosComodat	  : [],
+    otrosComodato	  : [],
 	soporteEntrega	  : [],
 	puntoConsumo	  : [],
 	visual	  		  : [],

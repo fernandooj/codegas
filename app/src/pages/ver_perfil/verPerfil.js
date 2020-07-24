@@ -388,7 +388,7 @@ class verPerfil extends Component{
                 <ModalFilterPicker
 					placeholderText="Filtrar ..."
 					visible={modalCliente}
-					onSelect={(e)=>this.asignarVeo(e )}
+					onSelect={(e)=>this.asignarVeo(e.key)}
 					onCancel={()=>this.setState({modalCliente:false})}
                     options={veos}
                     cancelButtonText="CANCELAR"
@@ -489,13 +489,14 @@ class verPerfil extends Component{
         let veo = veos.filter(e=>{
             return e.key==idVeo
         }) 
-        this.setState({veo:veo[0].label, modalCliente:false, idVeo, modalCliente:tipoAcceso=="editar" ?true :false})   
+        // this.setState({veo:veo[0].label, modalCliente:false, idVeo, modalCliente:tipoAcceso=="editar" ?true :false})   
+        this.setState({veo:veo[0].label, modalCliente:false, idVeo})   
         axios.get(`/users/asignarComercial/${idUsuario}/${idVeo}`)
         .then(res=>{
             if(res.data.status){
                 setTimeout(() => {
                     Toast.show("Usuario asignado", Toast.LONG)
-                }, 300);
+                }, 100);
             }
         })
         .catch(err=>{

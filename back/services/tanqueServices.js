@@ -106,6 +106,105 @@ class tanqueServices{
 		], callback)
 	}  
 
+
+	getAlertaWeb(callback){
+		tanque.aggregate([
+			{
+				$lookup:{
+					from:"alertatanques",
+					localField:"_id",
+					foreignField:"tanqueId",
+					as:"TanqueData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$TanqueData',
+					preserveNullAndEmptyArrays: true
+				}
+			},
+			{
+				$lookup:{
+					from:"users",
+					localField:"usuarioId",
+					foreignField:"_id",
+					as:"UserData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$UserData',
+					preserveNullAndEmptyArrays: true
+				}
+			},
+			{
+				$lookup:{
+					from:"puntos",
+					localField:"puntoId",
+					foreignField:"_id",
+					as:"PuntoData"
+				}
+			},
+			{
+				$unwind:{
+					path:'$PuntoData',
+					preserveNullAndEmptyArrays: true
+				}
+			},
+		 
+			{
+				$project:{
+					_id:1,
+					placaText:1,
+					capacidad:1,
+					fabricante:1,
+					registroOnac:1,
+					fechaUltimaRev:1,
+					nPlaca:1,
+					codigoActivo:1,
+					serie:1,
+					anoFabricacion:1,
+					existeTanque:1,
+					ultimRevTotal:1,
+					propiedad:1,
+					usuario:'$UserData.razon_social',
+					punto:'$UserData.direccion',
+					codt:'$UserData.codt',
+					texto:'$TanqueData.alertaText',
+					cerrado:'$TanqueData.cerradoText',
+					activo: '$TanqueData.activo',
+				},
+			},
+			 
+			{
+			    $group:{
+			 
+						_id:{
+							_id:'$_id',
+							capacidad:'$capacidad',
+							placaText:'$placaText',
+							usuario:'$usuario',
+							codt:'$codt',
+							fabricante:'$fabricante',
+							registroOnac:'$registroOnac',
+							fechaUltimaRev:'$fechaUltimaRev',
+							nPlaca:'$nPlaca',
+							codigoActivo:'$codigoActivo',
+							serie:'$serie',
+							anoFabricacion:'$anoFabricacion',
+							existeTanque:'$existeTanque',
+							ultimRevTotal:'$ultimRevTotal',
+							propiedad:'$propiedad',
+							punto:'$punto',
+						},
+						data: { $addToSet: {texto:"$texto",  activo:"$activo",  cerrado:"$cerrado"}},
+						total:{ $sum :1},
+			    }
+			},
+		], callback)
+	}  
+
+
 	
 	create(data, usuarioCrea, callback){
 		console.log( data)

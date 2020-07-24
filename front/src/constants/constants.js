@@ -1,0 +1,1 @@
+export const url= "https://releo.co/x/v1/" 

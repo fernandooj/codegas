@@ -35,6 +35,21 @@ router.get('/', (req,res)=>{
     }
 })
 
+
+router.get('/web', (req,res)=>{
+    if (!req.session.usuario) {
+        res.json({ status:false, message: 'No hay un usuario logueado', tanque:[] }); 
+    }else{
+        tanqueServices.getAlertaWeb((err, tanque)=>{
+            if (!err) {
+                res.json({ status: true, tanque }); 
+            }else{
+                res.json({ status:false, message: err,  tanque:[] }); 
+            }
+        })
+    }
+})
+
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS ACTIVOS
 ////////////////////////////////////////////////////////////

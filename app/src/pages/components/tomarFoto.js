@@ -106,7 +106,9 @@ export default class tomarPhoto extends Component{
     }
     
     eliminarImagen(keyImagen){
-        let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
+        let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })   
+        console.log({keyImagen}) 
+        console.log(imagenes) 
         this.setState({imagenes})    
         this.props.imagenes(imagenes)
     }
