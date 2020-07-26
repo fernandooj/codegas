@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, Image, TouchableOpacity, Modal} from 'react-native'
+import {View, Text, Image, TouchableOpacity, Modal, Alert} from 'react-native'
 import DocumentPicker from 'react-native-document-picker';
 import Icon           from 'react-native-fa-icons' 
  
@@ -86,9 +86,28 @@ export default class subirDocumento extends Component{
     }
  
     eliminarImagen(keyImagen){
-        let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
-        this.setState({imagenes})    
-        this.props.imagenes(imagenes)
+        Alert.alert(
+            'Eliminar Pdf',
+            'seguro desea eliminar este pdf',
+            [
+               
+              {
+                text: 'Cancelar',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel'
+              },
+              { text: 'Eliminar', onPress: () => eliminar() }
+            ],
+            { cancelable: false }
+        );
+
+        const eliminar =()=>{
+            let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
+            this.setState({imagenes})    
+            this.props.imagenes(imagenes)
+        }
+
+        
     }
     renderModal(){
         const {tipoMensaje, cerrar} = this.props

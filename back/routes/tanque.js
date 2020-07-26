@@ -16,21 +16,15 @@ router.get('/', (req,res)=>{
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado', tanque:[] }); 
     }else{
-        req.session.usuario.acceso=="admin" || req.session.usuario.acceso=="adminTanque"
-        ?tanqueServices.getAlerta((err, tanque)=>{
+   
+        tanqueServices.getAlerta((err, tanque)=>{
             if (!err) {
-                res.json({ status: true, tanque }); 
+                res.json({ status: true, total: tanque.length, tanque }); 
             }else{
                 res.json({ status:false, message: err,  tanque:[] }); 
             }
         })
-        :tanqueServices.getAlerta((err, tanque)=>{
-            if (!err) {
-                res.json({ status: true, tanque }); 
-            }else{
-                res.json({ status:false, message: err,  tanque:[] }); 
-            }
-        })
+        
         
     }
 })
@@ -493,9 +487,19 @@ router.put('/guardarImagen/:idTanque/', (req,res)=>{
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
-        rutaImgPlaca              = rutaImgPlaca.length==0              ?req.body.imgPlaca              :rutaImgPlaca;
-        rutaImgPlacaMantenimiento = rutaImgPlacaMantenimiento.length==0 ?req.body.imgPlacaMantenimiento :rutaImgPlacaMantenimiento;
-        rutaImgVisual             = rutaImgVisual.length==0             ?req.body.rutaImgVisual         :rutaImgVisual;
+
+        let placa               = req.body.placa     ?JSON.parse(req.body.placa)    :[]
+        let placaMantenimiento  = req.body.placaMantenimiento  ?JSON.parse(req.body.placaMantenimiento) :[]
+        let placaFabricante     = req.body.placaFabricante ?JSON.parse(req.body.placaFabricante):[]   
+        let visual              = req.body.visual         ?JSON.parse(req.body.visual)        :[]   
+
+        rutaImgPlaca              = rutaImgPlaca.length==0              ?placa              :placa.concat(rutaImgPlaca);
+        rutaImgPlacaMantenimiento = rutaImgPlacaMantenimiento.length==0 ?placaMantenimiento :placaMantenimiento.concat(rutaImgPlacaMantenimiento);
+        rutaImgPlacaFabricante    = rutaImgPlacaFabricante.length==0    ?placaFabricante    :placaFabricante.concat(rutaImgPlacaFabricante);
+        rutaImgVisual             = rutaImgVisual.length==0             ?visual             :visual.concat(rutaImgVisual);
+
+
+        
         tanqueServices.editarImagen(req.params.idTanque,  rutaImgPlaca, rutaImgPlacaMantenimiento, rutaImgPlacaFabricante, rutaImgVisual, (err, tanque)=>{
             if (!err) {
                

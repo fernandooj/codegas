@@ -41,7 +41,7 @@ const Revision =()=>{
         axios.get("rev/revision") 
         .then(res=>{
             console.log(res.data.revision) 
-            setRevision(res.data.revision)
+            setRevision(res.data.revision) 
         }) 
         .catch(err=>{
             console.log(err) 
@@ -49,24 +49,28 @@ const Revision =()=>{
     }, [])   
    
     const renderModal=()=>{
+        let lat = detalleRev.coordenadas &&detalleRev.coordenadas.coordinates[0]
+        let lng = detalleRev.coordenadas &&detalleRev.coordenadas.coordinates[1]
         return(
             <Modal
                 title="Detalles Revisión"
                 visible={modal}
-                // onOk={this.handleOk}
+                footer={null}
                 onCancel={()=>setModal(false)}
-            >
+            >  
                 <Descriptions title="Revision">
                     <Descriptions.Item label="N Control">{detalleRev.nControl}</Descriptions.Item>
                     <Descriptions.Item label="dep Tecnico">{detalleRev.depTecnicoEstado}</Descriptions.Item>
                     <Descriptions.Item label="accesorios">{detalleRev.accesorios ?"Si" :"No"}</Descriptions.Item>
-                    <Descriptions.Item label="avisos">{detalleRev.avisos ?"Si" :"No"}</Descriptions.Item>
-                    <Descriptions.Item label="distancias">{detalleRev.distancias ?"Si" :"No"}</Descriptions.Item>
-                    <Descriptions.Item label="electricas">{detalleRev.electricas ?"Si" :"No"}</Descriptions.Item>
-                    <Descriptions.Item label="extintores">{detalleRev.extintores ?"Si" :"No"}</Descriptions.Item>
-                    <Descriptions.Item label="observaciones">{detalleRev.observaciones ?detalleRev.observaciones :""}</Descriptions.Item>
-                    <Descriptions.Item label="Lat">{detalleRev.coordenadas &&detalleRev.coordenadas.coordinates[0]}</Descriptions.Item>
-                    <Descriptions.Item label="Lng">{detalleRev.coordenadas &&detalleRev.coordenadas.coordinates[0]}</Descriptions.Item>
+                    {detalleRev.avisos &&<Descriptions.Item label="avisos">{detalleRev.avisos ?"Si" :"No"}</Descriptions.Item>}
+                    {detalleRev.distancias &&<Descriptions.Item label="distancias">{detalleRev.distancias ?"Si" :"No"}</Descriptions.Item>}
+                    {detalleRev.electricas &&<Descriptions.Item label="electricas">{detalleRev.electricas ?"Si" :"No"}</Descriptions.Item>} 
+                    {detalleRev.extintores &&<Descriptions.Item label="extintores">{detalleRev.extintores ?"Si" :"No"}</Descriptions.Item>}
+                    {detalleRev.observaciones!="undefined" &&<Descriptions.Item label="observaciones">{detalleRev.observaciones ?detalleRev.observaciones :""}</Descriptions.Item>}
+                    <Descriptions.Item label="Lat">{lat}</Descriptions.Item>
+                    <Descriptions.Item label="Lng">{lng}</Descriptions.Item>
+                    {/* <Descriptions.Item label="Mapa"><a target="blank" href={`https://www.google.com/maps/@${lng},${lat},18z`}>Ver en Mapa</a></Descriptions.Item> */}
+                    <Descriptions.Item label="Mapa"><a target="blank" href={`https://www.google.com/maps/dir//${lng},${lat}/@${lng},${lat},18z/data=!4m2!4m1!3e0`}>Ver en Mapa</a></Descriptions.Item>
                 </Descriptions>
                 <Card title="Isometrico" bordered={false} style={{ width: 300 }}> 
                     {imagen(detalleRev.isometrico)}
@@ -112,8 +116,18 @@ const Revision =()=>{
     const renderTable=()=>{
         const columns = [ 
             { 
-                title: 'N Con.',
+                title: 'N Revisión',
                 dataIndex: 'nControl', 
+            },
+            {  
+                title: 'Codt',
+                dataIndex: 'usuarioId',
+                render: text => <p>{text &&text.codt}</p>,    
+            },
+            {
+                title: 'usuario', 
+                dataIndex: 'usuarioId',
+                render: text => <p>{text &&text.razon_social}</p>, 
             },
             {
                 title: 'barrio',
@@ -135,16 +149,8 @@ const Revision =()=>{
                 title: 'poblado',
                 dataIndex: 'poblado',
             },
-            {
-                title: 'usuario', 
-                dataIndex: 'usuarioId',
-                render: text => <p>{text &&text.razon_social}</p>, 
-            },
-            {  
-                title: 'Codt',
-                dataIndex: 'usuarioId',
-                render: text => <p>{text &&text.codt}</p>,    
-            },
+           
+           
             {
                 title: 'punto',
                 dataIndex: 'puntoId',
@@ -153,7 +159,7 @@ const Revision =()=>{
             {
                 title: 'punto',
                 dataIndex: '_id',
-                render: text => <Button type="primary" onClick={()=>buscarRevision(text)}>Ver Rev</Button>, 
+                render: text => <Button type="primary" onClick={()=>buscarRevision(text)}>Detalle</Button>, 
             },
         ]; 
         

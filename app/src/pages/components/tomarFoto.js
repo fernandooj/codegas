@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, Image, TouchableOpacity, Modal} from 'react-native'
+import {View, Text, Image, TouchableOpacity, Modal, Alert} from 'react-native'
 import ImagePicker  from 'react-native-image-crop-picker';
 import Icon         from 'react-native-fa-icons' 
 import Lightbox 	from 'react-native-lightbox';
@@ -106,11 +106,27 @@ export default class tomarPhoto extends Component{
     }
     
     eliminarImagen(keyImagen){
-        let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })   
-        console.log({keyImagen}) 
-        console.log(imagenes) 
-        this.setState({imagenes})    
-        this.props.imagenes(imagenes)
+        Alert.alert(
+            'Eliminar Imagen',
+            'seguro desea eliminar esta imagen',
+            [
+               
+              {
+                text: 'Cancelar',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel'
+              },
+              { text: 'Eliminar', onPress: () => eliminar() }
+            ],
+            { cancelable: false }
+        );
+        const eliminar =()=>{
+            let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })   
+            console.log({keyImagen}) 
+            console.log(imagenes) 
+            this.setState({imagenes})    
+            this.props.imagenes(imagenes)
+        }
     }
     renderModal(){
         const {tipoMensaje, cerrar} = this.props

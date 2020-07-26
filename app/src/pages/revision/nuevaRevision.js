@@ -85,6 +85,7 @@ class Tanques extends Component{
                     label:e._id.placaText
                 }
             }) 
+            console.log({placas})
             this.setState({placas})
         })
         let accesoPerfil = await AsyncStorage.getItem('acceso')
@@ -287,33 +288,7 @@ class Tanques extends Component{
             })
         }
     }
-    // eliminarTanque(tanqueId, placaText){
-    //     let {tanqueIdArray, tanqueArray} = this.state
-    //     Alert.alert(
-    //         `Seguro desea remover este tanque`,
-    //         `${placaText}`,
-    //         [
-    //             {text: 'Confirmar', onPress: () => confirmar()},
-    //             {text: 'Cancelar', onPress: () => console.log("e")},
-    //         ],
-    //         {cancelable: false},
-    //     )
-    //     const confirmar = ()=>{
-    //         axios.get(`tan/tanque/desvincularUsuario/${tanqueId}`)
-    //         .then(res => { 
-    //             if(res.data.status){
-    //                 tanqueArray= tanqueArray.filter(e=>{
-    //                     return e._id!=tanqueId 
-    //                 })
-    //                 tanqueIdArray= tanqueIdArray.filter(e=>{
-    //                     return e!=tanqueId 
-    //                 })
-    //                 console.log(tanqueArray, tanqueIdArray)
-    //                 this.setState({tanqueArray, tanqueIdArray})
-    //             }
-    //         })
-    //     }
-    // }
+    
     step1(){
         const {tanqueArray, modalPlacas, placas, placaText, puntoId, usuarioId} = this.state
         console.log({tanqueArray})
@@ -743,7 +718,7 @@ class Tanques extends Component{
                 <TomarFoto 
                     source={imgSoporteEntrega}
                     width={180}
-                    titulo="Soporte de entrega"
+                    titulo="Soporte de entrega y ruta"
                     limiteImagenes={4}
                     imagenes={(imgSoporteEntrega) => {  this.uploadImagen(imgSoporteEntrega, 3) }}
                 /> 
@@ -813,7 +788,7 @@ class Tanques extends Component{
             </View>
         )
     }
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           EDITA EL STEP 4, IMAGENES Y DOCUMENTOS 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     uploadImagen(imagen, tipo){
@@ -837,10 +812,19 @@ class Tanques extends Component{
                 return !e.uri
             })
         }
+        if(tipo===4){
+            puntoConsumo = imagen.filter(e=>{
+                return !e.uri
+            })
+        }
+        if(tipo===5){
+            visual = imagen.filter(e=>{
+                return !e.uri
+            })
+        }
         
-        // imgIsometrico = imgIsometrico.filter(e=>{
-        //     return e.uri
-        // })
+        
+        
 
         let otrosComodato = imgOtrosComodato.filter(e=>{
             return !e.uri
@@ -867,17 +851,7 @@ class Tanques extends Component{
         imgVisual = imgVisual.filter(e=>{
             return e.uri
         })
-        // tipo === 1
-        // ?isometrico = imagen
-        // :tipo === 2
-        // ?otrosComodato = imagen
-        // :tipo === 3
-        // ?soporteEntrega = imagen
-        // :tipo === 4
-        // ?puntoConsumo = imagen
-        // :visual = imagen
-
-
+ 
         tipo === 1
         ?imagen.forEach(e=>{
             data.append('imgIsometrico', e);

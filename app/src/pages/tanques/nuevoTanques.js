@@ -75,6 +75,7 @@ class Tanques extends Component{
                         label:e.placaText
                     }
                 }) 
+           
                 this.setState({placas})
             })
             axios.get("cap/capacidad")
@@ -99,15 +100,12 @@ class Tanques extends Component{
             let placaText = this.props.navigation.state.params.placaText ?this.props.navigation.state.params.placaText :null
             let puntoId   = this.props.navigation.state.params.puntoId ?this.props.navigation.state.params.puntoId :null
             let usuarioId = this.props.navigation.state.params.usuarioId ?this.props.navigation.state.params.usuarioId :null
-            console.log({tanqueId})
+           
             if(usuarioId){
                 axios.get(`user/byId/${usuarioId}`)
                 .then(res => {
                     const {cedula, razon_social, direccion_factura, nombre, celular, email} = res.data.user
-                    this.setState({
-                        cedulaCliente:cedula, razon_socialCliente:razon_social, direccion_facturaCliente: direccion_factura, nombreCliente:nombre, celularCliente: celular, emailCliente: email
-
-                    })
+                    this.setState({cedulaCliente:cedula, razon_socialCliente:razon_social, direccion_facturaCliente: direccion_factura, nombreCliente:nombre, celularCliente: celular, emailCliente: email })
                 })
                 axios.get(`pun/punto/byId/${puntoId}`)
                 .then(res => {
@@ -116,75 +114,77 @@ class Tanques extends Component{
                         puntos:res.data.punto
                     })
                 })
-               
             }
- 
-            this.setState({placaText, puntoId, usuarioId})
-            if(tanqueId){
-                axios.get(`ult/ultimaRev/byTanque/${tanqueId}`)
-                .then(res=>{
-                    console.log(res.data)
-                    this.setState({revisiones:res.data.revision})
-                })
-                axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
-                .then(res=>{
-                    console.log(res.data.alerta)
-                    this.setState({alertas:res.data.alerta})
-                })
-
-                axios.get(`tan/tanque/byId/${tanqueId}`)
-                .then(res => {
-                    console.log(res.data)
-                    const {tanque} = res.data
-                    this.setState({
-                        /////// step 1
-                        tanqueId:  tanque._id,
-                        placaText :             tanque.placaText         ?tanque.placaText          :"",
-                        capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
-                        fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
-                        registroOnac:           tanque.registroOnac      ?tanque.registroOnac       :"",
-                        fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
-                        ultimRevTotal:          tanque.ultimRevTotal     ?tanque.ultimRevTotal      :"",
-                        propiedad             : tanque.propiedad         ?tanque.propiedad          :"",
-                        nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
-                        codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
-                        serie:                  tanque.serie             ?tanque.serie              :"",
-                        anoFabricacion:         tanque.anoFabricacion    ?tanque.anoFabricacion     :"",
-                        existeTanque:           tanque.existeTanque      ?tanque.existeTanque       :"",
-
-                        
-                        //////  step 2
-                        imgPlaca:              tanque.placa              ?tanque.placa               :[],
-                        imgPlacaFabricante:    tanque.placaFabricante    ?tanque.placaFabricante     :[],
-                        imgPlacaMantenimiento: tanque.placaMantenimiento ?tanque.placaMantenimiento  :[],
-                        imgVisual:             tanque.visual             ?tanque.visual              :[],
-                        imgDossier:            tanque.dossier            ?tanque.dossier             :[],
-                        imgCerFabricante:      tanque.cerFabricante      ?tanque.cerFabricante       :[],
-                        imgCerOnac:            tanque.cerOnac            ?tanque.cerOnac             :[],
-                        
-    
-                        //////  step 3
-                        usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id               :null,
-                        codtCliente:              tanque.usuarioId           ?tanque.usuarioId.codt              :"",
-                        cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social      :"",
-                        razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula            :"",
-                        direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura :"",
-                        nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre            :"",
-                        celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular           :"",
-                        emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email             :"",
-                        puntos:                   tanque.puntoId             ?[tanque.puntoId]                   :[],
-                        puntoId:                  tanque.puntoId             ?tanque.puntoId._id                 :null,
-                        zonaId:                   tanque.zonaId              ?tanque.zonaId._id                  :null,
-                        modalPlacas:false    
-                    })
-                })
-            }else{
-                this.setState({crearPlaca:true})    /// esta linea es para cuando creo la placa desde revision, el crear placa sera verdadero, o de lo contrario editara un tanque que aun no existe
-            }   
+            this.setState({placaText, puntoId, usuarioId, tanqueId})
+            
         }catch(e){
             console.log(e)
         }    
-        
+        this.searchTanque()
+    }
+    searchTanque(){
+        let tanqueId  = this.props.navigation.state.params.tanqueId ?this.props.navigation.state.params.tanqueId :this.state.tanqueId
+        if(tanqueId){
+            axios.get(`ult/ultimaRev/byTanque/${tanqueId}`)
+            .then(res=>{
+                console.log(res.data)
+                this.setState({revisiones:res.data.revision})
+            })
+            axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
+            .then(res=>{
+                console.log(res.data.alerta)
+                this.setState({alertas:res.data.alerta})
+            })
+
+            axios.get(`tan/tanque/byId/${tanqueId}`)
+            .then(res => {
+                console.log(res.data)
+                const {tanque} = res.data
+                this.setState({
+                    /////// step 1
+                    tanqueId:  tanque._id,
+                    placaText :             tanque.placaText         ?tanque.placaText          :"",
+                    capacidad:              tanque.capacidad         ?tanque.capacidad          :"",
+                    fabricante:             tanque.fabricante        ?tanque.fabricante         :"",
+                    registroOnac:           tanque.registroOnac      ?tanque.registroOnac       :"",
+                    fechaUltimaRev:         tanque.fechaUltimaRev    ?tanque.fechaUltimaRev     :"",
+                    ultimRevTotal:          tanque.ultimRevTotal     ?tanque.ultimRevTotal      :"",
+                    propiedad             : tanque.propiedad         ?tanque.propiedad          :"",
+                    nPlaca:                 tanque.nPlaca            ?tanque.nPlaca             :"",
+                    codigoActivo:           tanque.codigoActivo      ?tanque.codigoActivo       :"",
+                    serie:                  tanque.serie             ?tanque.serie              :"",
+                    anoFabricacion:         tanque.anoFabricacion    ?tanque.anoFabricacion     :"",
+                    existeTanque:           tanque.existeTanque      ?tanque.existeTanque       :"",
+
+                    
+                    //////  step 2
+                    imgPlaca:              tanque.placa              ?tanque.placa               :[],
+                    imgPlacaFabricante:    tanque.placaFabricante    ?tanque.placaFabricante     :[],
+                    imgPlacaMantenimiento: tanque.placaMantenimiento ?tanque.placaMantenimiento  :[],
+                    imgVisual:             tanque.visual             ?tanque.visual              :[],
+                    imgDossier:            tanque.dossier            ?tanque.dossier             :[],
+                    imgCerFabricante:      tanque.cerFabricante      ?tanque.cerFabricante       :[],
+                    imgCerOnac:            tanque.cerOnac            ?tanque.cerOnac             :[],
+                    
+
+                    //////  step 3
+                    usuarioId:                tanque.usuarioId           ?tanque.usuarioId._id               :null,
+                    codtCliente:              tanque.usuarioId           ?tanque.usuarioId.codt              :"",
+                    cedulaCliente:            tanque.usuarioId           ?tanque.usuarioId.razon_social      :"",
+                    razon_socialCliente:      tanque.usuarioId           ?tanque.usuarioId.cedula            :"",
+                    direccion_facturaCliente: tanque.usuarioId           ?tanque.usuarioId.direccion_factura :"",
+                    nombreCliente:            tanque.usuarioId           ?tanque.usuarioId.nombre            :"",
+                    celularCliente :          tanque.usuarioId           ?tanque.usuarioId.celular           :"",
+                    emailCliente:             tanque.usuarioId           ?tanque.usuarioId.email             :"",
+                    puntos:                   tanque.puntoId             ?[tanque.puntoId]                   :[],
+                    puntoId:                  tanque.puntoId             ?tanque.puntoId._id                 :null,
+                    zonaId:                   tanque.zonaId              ?tanque.zonaId._id                  :null,
+                    modalPlacas:false    
+                })
+            })
+        }else{
+            this.setState({crearPlaca:true})    /// esta linea es para cuando creo la placa desde revision, el crear placa sera verdadero, o de lo contrario editara un tanque que aun no existe
+        }   
     }
     getClientes(){
         this.setState({loadClientes:true})
@@ -221,7 +221,6 @@ class Tanques extends Component{
     }
     }
     buscarTanque(id){
-        console.log({id})
         axios.get(`tan/tanque/byPlacaText/${id}`)
             .then(res=>{
                 console.log(res.data)
@@ -267,7 +266,7 @@ class Tanques extends Component{
                             <TomarFoto 
                                 source={imgUltimaRev}
                                 width={180}
-                                titulo="Ultima Rev Par"
+                                titulo="Ultima Rev Par / Cer. Onac "
                                 limiteImagenes={4}
                                 imagenes={(imgUltimaRev) => {  this.setState({imgUltimaRev}) }}
                             />
@@ -487,10 +486,9 @@ class Tanques extends Component{
                             },
                         }}
                         style={style.btnDate2}
-                        
                         locale="es_co"
                         mode="date"
-                        placeholder={ultimRevTotal ?ultimRevTotal :"Ultima Rev Par"}
+                        placeholder={ultimRevTotal ?ultimRevTotal :"Ultima Rev Total"}
                         format="YYYY-MMM-DD"
                         showIcon={false}
                         confirmBtnText="Confirmar"
@@ -505,7 +503,7 @@ class Tanques extends Component{
                 {/* ULTIMA REVISIÓN PARCIAL */}
                 {
                     tanqueId
-                    &&<View style={[style.contenedorSetp2, {marginTop:10, marginBottom:5}]}>
+                    &&<View style={[style.contenedorSetp2, {marginTop:10, marginBottom:12}]}>
                         <Text style={style.row1Step2}>Ultima Rev Par</Text>
                         <TouchableOpacity onPress={()=>this.setState({showModal:true})}>
                             <Icon name="plus" style={style.iconFrecuencia} />
@@ -564,7 +562,7 @@ class Tanques extends Component{
                     width={180}
                     titulo="Placa"
                     limiteImagenes={4}
-                    imagenes={(imgPlaca) => {  this.setState({imgPlaca}) }}
+                    imagenes={(imgPlaca) => {  this.uploadImage(imgPlaca, 1) }}
                 />
                 <View style={style.separador}></View>
 
@@ -574,7 +572,7 @@ class Tanques extends Component{
                     width={180}
                     titulo="Placa Mantenimiento"
                     limiteImagenes={4}
-                    imagenes={(imgPlacaMantenimiento) => {  this.setState({imgPlacaMantenimiento}) }}
+                    imagenes={(imgPlacaMantenimiento) => {  this.uploadImage(imgPlacaMantenimiento, 2) }}
                 />
                 <View style={style.separador}></View>
 
@@ -584,7 +582,7 @@ class Tanques extends Component{
                     width={180}
                     titulo="Placa fabricante"
                     limiteImagenes={4}
-                    imagenes={(imgPlacaFabricante) => {  this.setState({imgPlacaFabricante}) }}
+                    imagenes={(imgPlacaFabricante) => {  this.uploadImage(imgPlacaFabricante, 3) }}
                 />
                 <View style={style.separador}></View>
 
@@ -594,7 +592,7 @@ class Tanques extends Component{
                     width={180}
                     titulo="Visual Tanque"
                     limiteImagenes={4}
-                    imagenes={(imgVisual) => {  this.setState({imgVisual}) }}
+                    imagenes={(imgVisual) => {  this.uploadImage(imgVisual, 4) }}
                 />
                 <View style={style.separador}></View>
 
@@ -625,7 +623,7 @@ class Tanques extends Component{
                     navigate={this.props.navigation.navigate}
                     source={imgCerOnac}
                     width={180}
-                    titulo="Cer. Onac"
+                    titulo="Cer. Onac / Rev total"
                     limiteImagenes={4}
                     imagenes={(imgCerOnac) => {  this.uploadPdf(imgCerOnac, 3) }}
                 />
@@ -634,10 +632,109 @@ class Tanques extends Component{
         )
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////           EDITA EL STEP 2
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    uploadImage(imagen, tipo){
+        this.setState({loading:true})
+        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgVisual, imgDossier, imgCerFabricante, imgCerOnac, tanqueId} = this.state
+      
+        let data = new FormData();
+         
+        
+        let placa = imgPlaca.filter(e=>{
+            return !e.uri
+        })
+        imgPlaca = imgPlaca.filter(e=>{
+            return e.uri
+        })
+        
+        let placaMantenimiento = imgPlacaMantenimiento.filter(e=>{
+            return !e.uri
+        })
+        imgPlacaMantenimiento = imgPlacaMantenimiento.filter(e=>{
+            return e.uri
+        })
+        let placaFabricante = imgPlacaFabricante.filter(e=>{
+            return !e.uri
+        })
+        imgPlacaFabricante = imgPlacaFabricante.filter(e=>{
+            return e.uri
+        })
+        let visual = imgVisual.filter(e=>{
+            return !e.uri
+        })
+        imgVisual = imgVisual.filter(e=>{
+            return e.uri
+        })
+
+
+        if(tipo===1){
+            placa = imagen.filter(e=>{
+                return !e.uri
+            })
+            imagen.forEach(e=>{
+                data.append('imgPlaca', e);
+            })
+        }
+        if(tipo===2){
+            placaMantenimiento = imagen.filter(e=>{
+                return !e.uri
+            })
+            imagen.forEach(e=>{
+                data.append('imgPlacaMantenimiento', e);
+            })
+        }
+        if(tipo===3){
+            placaFabricante = imagen.filter(e=>{
+                return !e.uri
+            })
+            imagen.forEach(e=>{
+                data.append('imgPlacaFabricante', e);
+            })
+        }
+        if(tipo===4){
+            visual = imagen.filter(e=>{
+                return !e.uri
+            })
+            imagen.forEach(e=>{
+                data.append('imgVisual', e);
+            })
+        }
+
+        
+
+        data.append('placa',JSON.stringify(placa));
+        data.append('placaMantenimiento',JSON.stringify(placaMantenimiento));
+        data.append('placaFabricante',JSON.stringify(placaFabricante));
+        data.append('visual',JSON.stringify(visual));
+        console.log({placa, placaMantenimiento, placaFabricante, visual, imgPlaca, imgPlacaMantenimiento,  imgPlacaFabricante, imgVisual})
+
+        // data.append('imgPlaca',              imgPlaca);
+        // data.append('imgPlacaMantenimiento', imgPlacaMantenimiento);
+        // data.append('imgPlacaFabricante',    imgPlacaFabricante);
+        // data.append('imgVisual',             imgVisual);
+        axios({
+            method: 'put',   
+            url: `tan/tanque/guardarImagen/${tanqueId}`,
+            data: data,
+        })
+        .then((res)=>{
+            console.log(res.data)
+            if(res.data.status){
+                this.searchTanque()
+                this.setState({loading:false})
+                Toast.show("Imagen Guardada")
+            }
+        })
+        .catch(err=>{
+            this.setState({cargando:false})
+        })
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           SUBE LOS PDF
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     uploadPdf(pdf, tipo){
-      
         this.setState({loading:true})
         let {tanqueId, imgDossier, imgCerFabricante, imgCerOnac} = this.state
         let data = new FormData();
@@ -888,7 +985,7 @@ class Tanques extends Component{
                         {this.step1()}    
                     </View>
                 </ProgressStep> 
-                <ProgressStep label="Imagenes" nextBtnText="Siguiente"  previousBtnText="Anterior"  onNext={()=>this.editarStep2()}>
+                <ProgressStep label="Imagenes" nextBtnText="Siguiente"  previousBtnText="Anterior"  >
                     <View style={{ alignItems: 'center' }}>
                         {this.step2()}
                     </View>
@@ -970,7 +1067,7 @@ class Tanques extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
         const {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal, propiedad} = this.state
-        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque, registroOnac, ultimRevTotal, propiedad})
+        console.log({placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, tanqueId, existeTanque, registroOnac, usuarioId, ultimRevTotal, propiedad})
         axios.put(`tan/tanque/${tanqueId}`, {placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, zonaId, usuarioId, puntoId, existeTanque, registroOnac, ultimRevTotal, propiedad})
         .then((res)=>{
             console.log(res.data)
@@ -983,51 +1080,12 @@ class Tanques extends Component{
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////           EDITA EL STEP 2
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    editarStep2(){
-        let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgVisual, imgDossier, imgCerFabricante, imgCerOnac, tanqueId} = this.state
-        console.log({imgVisual, imgCerFabricante, imgCerOnac})
-        let data = new FormData();
-        imgPlaca.forEach(e=>{
-            data.append('imgPlaca', e);
-        })
-        imgPlacaMantenimiento.forEach(e=>{
-            data.append('imgPlacaMantenimiento', e);
-        })
-        imgPlacaFabricante.forEach(e=>{
-            data.append('imgPlacaFabricante', e);
-        })
-        imgVisual.forEach(e=>{
-            data.append('imgVisual', e);
-        })
-        data.append('imgPlaca',              imgPlaca);
-        data.append('imgPlacaMantenimiento', imgPlacaMantenimiento);
-        data.append('imgPlacaFabricante',    imgPlacaFabricante);
-        data.append('imgVisual',             imgVisual);
-        axios({
-            method: 'put',   
-            url: `tan/tanque/guardarImagen/${tanqueId}`,
-            data: data,
-        })
-        .then((res)=>{
-            console.log(res.data)
-            if(res.data.status){
-                Toast.show("Información Guardada")
-            }
-        })
-        .catch(err=>{
-            this.setState({cargando:false})
-        })
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////           EDITA EL STEP 3
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep3(){
         const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad, tanqueId} = this.state
         console.log({zonaId, usuarioId, puntoId})
-        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId ?usuarioId.key :null, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad  })
+        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId ?usuarioId.key :usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad  })
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

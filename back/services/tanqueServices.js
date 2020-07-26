@@ -86,9 +86,15 @@ class tanqueServices{
 					texto:'$TanqueData.alertaText',
 					cerrado:'$TanqueData.cerradoText',
 					activo: '$TanqueData.activo',
+					idTanque: '$TanqueData._id',
+					creado: '$TanqueData.creado',
 				},
 			},
-			 
+			{
+				$sort:{
+					creado:1
+				}
+			},
 			{
 			    $group:{
 			 
@@ -173,9 +179,15 @@ class tanqueServices{
 					texto:'$TanqueData.alertaText',
 					cerrado:'$TanqueData.cerradoText',
 					activo: '$TanqueData.activo',
+					idTanque: '$TanqueData._id',
+					creado: '$TanqueData.creado',
 				},
 			},
-			 
+			{
+				$sort:{
+					creado:1
+				}
+			},
 			{
 			    $group:{
 			 
@@ -254,12 +266,12 @@ class tanqueServices{
 		}}, callback);
   }
 	editarImagen(_id, placa, placaMantenimiento, placaFabricante,  visual, callback){
+		console.log({placa, placaMantenimiento, placaFabricante, visual})
 		tanque.findByIdAndUpdate(_id, {$set: {
-			placa  				     : placa   						?placa   					  : [],
+			placa  			   : placa   			?placa   			: [],
 			placaMantenimiento : placaMantenimiento ?placaMantenimiento : [],
 			placaFabricante    : placaFabricante   	?placaFabricante    : [],
- 
-			visual    			   : visual   			    ?visual   					: [],
+			visual    		   : visual   			?visual   		    : [],
 		}}, callback);
 	}
 

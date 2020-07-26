@@ -101,7 +101,7 @@ export const style = MediaQueryStyleSheet.create({
 		borderWidth:1,
 		width:Width/1.7,
 		marginVertical:5,
-		paddingVertical:4,
+		paddingVertical:10,
 		fontSize:10,
 	},
 	inputAno:{
