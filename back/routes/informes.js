@@ -316,6 +316,9 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Fecha Entrega',
                 value: 'fechaEntrega'
             },{
+                label: 'Kilos',
+                value: 'kilos'
+            },{
                 label: 'Usuario Asigna',
                 value: 'usuarioAsigna.nombre'
             },{
@@ -509,8 +512,14 @@ router.get('/pedidos/cerrados/:email/:fechaInicio/:fechaFinal', (req,res)=>{
                 label: 'Fecha Asignación',
                 value: 'fechaEntrega'
             },{
+                label: 'Fecha Entrega',
+                value: 'fechaEntrega'
+            },{
                 label: 'Kilos',
                 value: 'kilos'
+            },{
+                label: 'Estado',
+                value: 'estado'
             },{
                 label: 'Remision',
                 value: 'remision'

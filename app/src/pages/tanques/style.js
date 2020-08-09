@@ -379,8 +379,24 @@ export const style = MediaQueryStyleSheet.create({
 		width:"100%",
 		padding:10
 	}, 
+	buscarRevision:{
+		backgroundColor:"#002587",
+		alignItems:"center",
+		width:45,
+		padding:10
+	},
 	btnDate3:{
 		marginTop:30,
 		width:"100%",
 	},
+	iconSearch:{
+		color:"#ffffff",
+		fontSize:22
+	},
+	contenedorUsers:{
+		borderColor:"rgba(0,0,0,.1)",
+		padding:10,
+		borderWidth:1,
+		marginVertical:5
+	}
 })

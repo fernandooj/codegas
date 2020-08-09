@@ -276,10 +276,11 @@ class tanqueServices{
 	}
 
 	subirPdf(_id, dossier, cerFabricante, cerOnac, callback){
+		console.log({dossier, cerFabricante, cerOnac})
 		tanque.findByIdAndUpdate(_id, {$set: {
-			dossier    			   : dossier   					?dossier   					: [],
-			cerFabricante      : cerFabricante   		?cerFabricante   		: [],
-			cerOnac    			   : cerOnac   			    ?cerOnac   					: [],
+			dossier    	  : dossier   	  ?dossier   	 : [],
+			cerFabricante : cerFabricante ?cerFabricante : [],
+			cerOnac    	  : cerOnac   	  ?cerOnac   	 : [],
 		}}, callback);
 	}
 	

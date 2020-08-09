@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Alert, TextInput, Modal, ActivityIndicator, Image, Dimensions, Animated} from 'react-native'
+import {View, Text, TouchableOpacity, Alert, TextInput, Modal, ActivityIndicator, Image, Dimensions, ScrollView} from 'react-native'
 import Toast from 'react-native-simple-toast';
 import ModalFilterPicker               from 'react-native-modal-filter-picker'
 import ModalSelector                   from 'react-native-modal-selector'
@@ -15,7 +15,8 @@ import {getUsuariosAcceso}             from '../../redux/actions/usuarioActions'
 import {getVehiculos}                  from '../../redux/actions/vehiculoActions'
 import Footer                          from '../components/footer'
 import {style}                         from './style'
- 
+import {createFilter} from 'react-search-input'
+const KEYS_TO_FILTERS = ["nombre", "email",  "razon_social", 'codt'] 
  
 
 
@@ -61,10 +62,12 @@ class Tanques extends Component{
             revisiones:[],
             alertas:[],
             capacidades:[],
-            alertaText:""
+            alertaText:"",
+            terminoBuscador:""
 	    }
     }
     async componentWillMount(){
+      
         try{
             axios.get(`tan/tanque`)
             .then(res=>{
@@ -121,8 +124,10 @@ class Tanques extends Component{
             console.log(e)
         }    
         this.searchTanque()
+        this.getClientes()
     }
     searchTanque(){
+        
         let tanqueId  = this.props.navigation.state.params.tanqueId ?this.props.navigation.state.params.tanqueId :this.state.tanqueId
         if(tanqueId){
             axios.get(`ult/ultimaRev/byTanque/${tanqueId}`)
@@ -187,18 +192,73 @@ class Tanques extends Component{
         }   
     }
     getClientes(){
-        this.setState({loadClientes:true})
+        // this.setState({loadClientes:true})
         axios.get(`users/clientes`)
         .then(res => {
             console.log(res.data.usuarios)
             if(res.data.status){
-                this.setState({loadClientes:false})
-                let clientes = res.data.usuarios.map(e=>{
-                    return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular , codt:e.codt }
-                }) 
-                this.setState({clientes, modalCliente:true, puntoId:undefined})
+                // this.setState({loadClientes:false})
+                // let clientes = res.data.usuarios.map(e=>{
+                //     return {key:e._id, label:e.cedula ?e.razon_social+" | "+e.cedula+" | "+e.codt :e.razon_social, email:e.email, direccion_factura:e.direccion_factura, nombre:e.nombre, razon_social:e.razon_social, cedula:e.cedula, celular:e.celular , codt:e.codt }
+                // }) 
+                this.setState({clientes:res.data.usuarios, modalCliente:true, puntoId:undefined})
             }
         })
+    }
+    renderUsuarios(){
+        const {usuarios, navigation} = this.props
+        const {terminoBuscador, clientes} = this.state
+        let clientesFiltro = clientes.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        return clientesFiltro.map((e, key)=>{
+            return(
+                <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=> this.filtroClientes(e) }>
+                        <View style={{width:"90%"}}>
+                            {e.acceso=="cliente" &&<Text style={style.textUsers}>{e.idPadre ?"Punto consumo: "+e.idPadre.razon_social :e.razon_social}</Text>}
+                            <Text style={style.textUsers}>{e.nombre}</Text>
+                            <Text style={style.textUsers}>{e.codt}</Text>
+                        </View>
+                        <View style={{justifyContent:"center"}}>
+                            <Icon name={'angle-right'} style={style.iconCerrar} />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            )
+        })
+    }    
+    modalCliente(){
+        let {showRenderUsuarios, terminoBuscador} = this.state
+		return(
+			<Modal transparent visible={true} animationType="fade" >
+				<TouchableOpacity activeOpacity={1} >
+					<View style={style.contenedorModal}>
+						<View style={style.subContenedorModalUbicacion}>
+							<TouchableOpacity activeOpacity={1} onPress={() => this.setState({showAlerta:false})} style={style.btnModalClose}>
+								<Icon name={'times-circle'} style={style.iconCerrar} />
+							</TouchableOpacity>
+                            <View style={{flexDirection:"row"}}>
+                                <TextInput
+                                    placeholder="Buscar cliente"
+                                    value={terminoBuscador}
+                                    style={style.inputStep2}
+                                    onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador })}
+                                />
+                                <TouchableOpacity style={style.buscarRevision} onPress={()=>terminoBuscador.length>1 ?this.setState({showRenderUsuarios:true}) :alert("Inserte un valor") }>
+                                    <Icon name='search' style={style.iconSearch} />
+                                </TouchableOpacity>
+
+                            </View>
+                            {
+                                showRenderUsuarios
+                                &&<ScrollView>
+                                    {this.renderUsuarios()}
+                                </ScrollView>
+                            }
+						</View>
+					</View>
+				</TouchableOpacity>
+			</Modal>
+		)
     }
     eliminarTanque(){
         let {tanqueId} = this.state
@@ -788,10 +848,11 @@ class Tanques extends Component{
         
     }
     step3(){
-        const {usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, loadClientes} = this.state
+        const {usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, loadClientes, showClientes} = this.state
         return(
             <View>
-                <ModalFilterPicker
+                {showClientes &&this.modalCliente()}
+                {/* <ModalFilterPicker
 					placeholderText="Filtrar ..."
 					visible={modalCliente}
 					onSelect={(e)=>this.filtroClientes(e)}
@@ -799,9 +860,9 @@ class Tanques extends Component{
                     options={clientes}
                     cancelButtonText="CANCELAR"
                     optionTextStyle={style.filterText}
-                />
+                /> */}
                 <View style={{flexDirection:"row"}}>
-                    <TouchableOpacity style={style.nuevoUsuario} onPress={()=>this.getClientes()}>
+                    <TouchableOpacity style={style.nuevoUsuario} onPress={()=>this.setState({showClientes:true})}>
                         {loadClientes &&<ActivityIndicator color="#ffffff"  />}
                         <Icon name="plus" style={style.iconUsuario} />
                         <Text style={style.textGuardar}>Asignar Cliente</Text>
@@ -1023,14 +1084,28 @@ class Tanques extends Component{
         )
     }
      
-    filtroClientes(idCliente){
-        let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente.key })
-        console.log({cliente})
-        this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, codtCliente:cliente[0].codt, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular, nombreCliente:cliente[0].nombre, modalCliente:false})
-        axios.get(`pun/punto/byCliente/${idCliente.key}`)
+    filtroClientes(objetoCliente){
+        // let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
+        console.log({objetoCliente})
+        let {razon_social, _id, cedula, codt, email, direccion_factura, celular, nombre} = objetoCliente
+        // console.log({cliente})
+        // this.setState({cliente:cliente[0].label, idCliente, cedulaCliente:cliente[0].cedula, codtCliente:cliente[0].codt, emailCliente:cliente[0].email, razon_socialCliente:cliente[0].razon_social, direccion_facturaCliente:cliente[0].direccion_factura, celularCliente:cliente[0].celular, nombreCliente:cliente[0].nombre, modalCliente:false})
+        this.setState({
+            cliente      : razon_social,
+            idCliente    : _id,
+            cedulaCliente: cedula,
+            codtCliente  : codt,
+            emailCliente : email,
+            razon_socialCliente: razon_social,
+            direccion_facturaCliente: direccion_factura,
+            celularCliente: celular,
+            nombreCliente:nombre
+        })
+
+        axios.get(`pun/punto/byCliente/${_id}`)
         .then(e=>{
             if(e.data.status){
-                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id, zonaId:e.data.puntos[0].idZona, usuarioId:idCliente}) :this.setState({puntos:e.data.puntos, usuarioId:idCliente })
+                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id, zonaId:e.data.puntos[0].idZona, usuarioId:_id, showClientes:false}) :this.setState({puntos:e.data.puntos, usuarioId:_id, showClientes:false })
             }else{
                 Toast.show("Tuvimos un problema, intentele mas tarde")
             }
@@ -1085,7 +1160,7 @@ class Tanques extends Component{
     editarStep3(){
         const {zonaId, usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad, tanqueId} = this.state
         console.log({zonaId, usuarioId, puntoId})
-        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId ?usuarioId.key :usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad  })
+        axios.put(`tan/tanque/${tanqueId}`, {zonaId, usuarioId:usuarioId, puntoId, placaText, capacidad, fabricante, ultimaRevisionPar, fechaUltimaRev, nPlaca, codigoActivo, serie, anoFabricacion, existeTanque, registroOnac, ultimRevTotal, propiedad  })
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

@@ -605,13 +605,13 @@ router.put('/uploadPdf/:idTanque/', (req,res)=>{
         let cerFabricante    = req.body.cerFabricante  ?JSON.parse(req.body.cerFabricante) :[]
         let cerOnac          = req.body.cerOnac        ?JSON.parse(req.body.cerOnac)       :[]     
        
-        rutaImgDossier            = rutaImgDossier.length==0        ?dossier        :rutaImgDossier.concat(dossier);
-        rutaImgCerFabricante      = rutaImgCerFabricante.length==0  ?cerFabricante  :rutaImgCerFabricante.concat(cerFabricante);
-        rutaImgCerOnac            = rutaImgCerOnac.length==0        ?cerOnac        :rutaImgCerOnac.concat(cerOnac);
-  
-        rutaImgDossier = rutaImgDossier.split(" ").join("")
-        rutaImgCerFabricante = rutaImgCerFabricante.split(" ").join("")
-        rutaImgCerOnac = rutaImgCerOnac.split(" ").join("")
+        rutaImgDossier            = rutaImgDossier.length==0        ?dossier        :dossier.concat(rutaImgDossier);
+        rutaImgCerFabricante      = rutaImgCerFabricante.length==0  ?cerFabricante  :cerFabricante.concat(rutaImgCerFabricante);
+        rutaImgCerOnac            = rutaImgCerOnac.length==0        ?cerOnac        :cerOnac.concat(rutaImgCerOnac);
+        console.log(rutaImgCerOnac)
+        // rutaImgDossier       = rutaImgDossier.length<0 ?rutaImgDossier.split(" ").join("") :[]
+        // rutaImgCerFabricante = rutaImgCerFabricante.length<0 ?rutaImgCerFabricante.split(" ").join("") :[]
+        // rutaImgCerOnac       = rutaImgCerOnac.length<0 ?rutaImgCerOnac.split(" ").join("") :[]
         tanqueServices.subirPdf(req.params.idTanque,   rutaImgDossier, rutaImgCerFabricante, rutaImgCerOnac, (err, tanque)=>{
             if (!err) {
                

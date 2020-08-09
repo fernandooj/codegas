@@ -147,7 +147,7 @@ class verPerfil extends Component{
                 }
             })  
            
-            console.log(user.valorUnitario)
+            console.log(user)
             this.setState({
                 razon_social:     user.razon_social ?user.razon_social :"",
                 cedula:           user.cedula       ?user.cedula       :"",
@@ -157,7 +157,7 @@ class verPerfil extends Component{
                 celular :         user.celular      ?user.celular      :"",
                 tipo :            user.tipo         ?user.tipo         :"",
                 acceso:           user.acceso       ?user.acceso       :"",
-                imagen:           user.avatar       ?user.avatar       :"",
+                imagen:           user.avatar       ?user.avatar       :[],
                 codt:             user.codt         ?user.codt         :"",
                 ubicaciones,
                 activo:           user.activo       &&user.activo ,
@@ -173,7 +173,12 @@ class verPerfil extends Component{
     renderPerfil(){
         let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, editado, codMagister} = this.state
         valorUnitario = valorUnitario ?valorUnitario.toString() :""
-        console.log({accesoPerfil, acceso, editado})
+        razon_social = razon_social.toUpperCase()
+        email = email.toUpperCase()
+        direccion_factura = direccion_factura.toUpperCase()
+        nombre = nombre.toUpperCase()
+        
+        console.log({imagen, acceso, editado})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -633,7 +638,7 @@ class verPerfil extends Component{
                                                                 type='outlined'
                                                                 label='Dirección'
                                                                 placeholder="Dirección"
-                                                                value={e.direccion}
+                                                                value={e.direccion.toUpperCase()}
                                                                 onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
                                                                 style={style.input}
                                                             />
@@ -657,7 +662,7 @@ class verPerfil extends Component{
                                                             type='outlined'
                                                             label='observacion al momento de ingresar el vehiculo'
                                                             placeholder="observaciones ingreso del vehiculo"
-                                                            value={e.observacion}
+                                                            value={e.observacion.toUpperCase()}
                                                             onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
                                                             style={[style.input, {marginBottom: (e.nuevo || !e.idCliente ) && key>0 ?40 :10}]}
                                                         />

@@ -7,26 +7,28 @@ import 'react-medium-image-zoom/dist/styles.css'
 
 const KEYS_TO_FILTERS = ["_id.capacidad", "_id.placaText",  "_id.razon_social", '_id.codt'] 
 const { Search } = Input;
-
-
+const { Meta } = Card;
+  
 const imagen=(data)=>{ 
     data = data ?data :[]
+    console.log(data)
     return data.map((e, key)=>{
         let img2 = e.split("-")
         img2 = `${img2[0]}Resize${img2[2]}`
         return(
             <Zoom key={key}>
+                
                 <img src={img2} style={{width:"40px", float:"left"}} />
             </Zoom>
         )
-    })
+    }) 
 }
-
 const Tanque =()=>{
     const [tanques, setTanques] = useState([])
     const [tanque,  setTanque]  = useState({})
-    const [modal,   setModal]   = useState(false)
-    const [terminoBuscador, setTerminoBuscador] = useState("")
+    const [revision,setRevision]  = useState([])
+    const [modal,   setModal]   = useState(false) 
+    const [terminoBuscador, setTerminoBuscador] = useState("") 
     useEffect(() => {
         axios.get("tan/tanque/web") 
         .then(res=>{
@@ -45,16 +47,21 @@ const Tanque =()=>{
             setTanque(tanque)
             setModal(true)
         }) 
+        axios.get(`ult/ultimaRev/byTanque/${tanqueId._id}`)
+        .then(res=>{
+            console.log(res.data)
+            setRevision(res.data.revision)
+        })
     }
     const renderModal=()=>{
- 
-        return(
+        console.log(revision)
+        return( 
             <Modal
                 title="Detalles Tanque"
                 visible={modal}
                 footer={null}
                 onCancel={()=>setModal(false)}
-            >  
+            > 
                 <Descriptions title="Tanque">
                     <Descriptions.Item label="Ano Fabricación">{tanque.placaText}</Descriptions.Item>
                     <Descriptions.Item label="Fabricante">{tanque.fabricante}</Descriptions.Item> 
@@ -71,7 +78,18 @@ const Tanque =()=>{
                 <Card title="visual" bordered={false} style={{ width: 300 }}> 
                     {imagen(tanque.visual)}
                 </Card>
-                
+                <p>Ultima revision Parcial</p>
+                { 
+                    revision.map(e=>{ 
+                        return( 
+                            <Card>
+                                {imagen(e.ruta)}
+                                <Meta title={e.fecha} description={e.usuarioId.nombre} />
+                            </Card>
+                        )
+                    })
+                }
+               
                 
                 {/* <Card title="Protocolo llenado" bordered={false} style={{ width: 300 }}> 
                     {imagen(detalleRev.puntoConsumo)}
@@ -198,7 +216,6 @@ const Tanque =()=>{
             }, 
         ];
         let tanquesFiltro = tanques.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-        console.log(terminoBuscador)
         return (<Table columns={columns} dataSource={tanquesFiltro}   />)
     }
    
