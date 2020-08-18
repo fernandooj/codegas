@@ -10,7 +10,9 @@ let puntoServices        = require('../services/puntoServices.js')
 let carroServices        = require('../services/carroServices.js') 
 let novedadServices      = require('../services/novedadServices.js') 
 let calificacionServices = require('../services/calificacionServices.js') 
-
+let tanqueServices       = require('../services/tanqueServices.js') 
+let revisionServices     = require('../services/revisionServices.js') 
+let ultimaRevServices    = require('../services/ultimaRevServices.js') 
 let fs = require('fs');
 ///////////////////////////////////////////////////   1.    CONVERSACIONES
 router.get('/conversacion/:email/:fechaInicio/:fechaFinal', (req,res)=>{
@@ -772,5 +774,308 @@ router.get('/pdf/chats/:email/:fechaInicio/:fechaFinal', (req,res)=>{
 
 
 
+////////////////////////////////////////////  13.	GENERA TANQUES
+router.get('/tanques/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    tanqueServices.get((err, tanque)=>{
+        if(!err){
+            // tanque = tanque.filter(e=>{
+            //     return e.creado>fechaInicio && e.creado<fechaFinal
+            // })
+            const fields = [{   
+                label: 'Placa Text',
+                value: 'placaText'
+            },{
+                label: 'Capacidad',
+                value: 'capacidad'
+            },{
+                label: 'Fabricante',
+                value: 'fabricante'
+            },{
+                label: 'Fecha Mto',
+                value: 'fechaUltimaRev'
+            },{
+                label: 'Propiedad',
+                value: 'propiedad'
+            },{
+                label: 'N Placa',
+                value: 'nPlaca'
+            },{
+                label: 'Serie',
+                value: 'serie'
+            },{
+                label: 'Año Fab.',
+                value: 'anoFabricacion'
+            },{
+                label: 'Ubicación',
+                value: 'existeTanque'
+            },{
+                label: 'Fecha Creación',
+                value: 'creado'
+            },{
+                label: 'Visual',
+                value: 'visual'
+            },{
+                label: 'Cer. Onac',
+                value: 'cerOnac'
+            },{
+                label: 'Cliente',
+                value: 'usuarioId.razon_social'
+            },{
+                label: 'CODT',
+                value: 'usuarioId.codt'
+            },{
+                label: 'dirección',
+                value: 'puntoId.direccion'
+            },{
+                label: 'Cer. Fabricante',
+                value: 'cerFabricante'
+            },{
+                label: 'Dossier',
+                value: 'dossier'
+            },{
+                label: 'Placa Fabricante',
+                value: 'placaFabricante'
+            },{
+                label: 'Placa Mantenimiento',
+                value: 'placaMantenimiento'
+            },{
+                label: 'Placa',
+                value: 'placa'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(tanque);
+                res.attachment('tanques.csv');
+                res.status(200).send(csv);
+                // res.json(tanque); 
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
+
+
+////////////////////////////////////////////  14.	GENERA ALERTAS TANQUES
+router.get('/alertaTanques/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    tanqueServices.getAlerta((err, tanque)=>{
+        if(!err){
+            // tanque = tanque.filter(e=>{
+            //     return e.creado>fechaInicio && e.creado<fechaFinal
+            // })
+            const fields = [{   
+                label: 'Placa Text',
+                value: '_id.placaText'
+            },{
+                label: 'Capacidad',
+                value: '_id.capacidad'
+            },{
+                label: 'Cliente',
+                value: '_id.usuario'
+            },{
+                label: 'CODT',
+                value: '_id.codt'
+            },{
+                label: 'Mensaje',
+                value: 'data[0]texto'
+            },{
+                label: 'Activo',
+                value: 'data[0].activo'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(tanque);
+                res.attachment('alertTanques.csv');
+                res.status(200).send(csv);
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
+
+
+
+////////////////////////////////////////////  15.	GENERA ULTIMAS REVISIONES
+router.get('/ultimaRev/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    ultimaRevServices.get((err, tanque)=>{
+        if(!err){
+            // tanque = tanque.filter(e=>{
+            //     return e.creado>fechaInicio && e.creado<fechaFinal
+            // })
+            const fields = [{   
+                label: 'Fecha',
+                value: 'fecha'
+            },{
+                label: 'Tanque',
+                value: 'tanqueId.placaText'
+            },{
+                label: 'Usuario crea',
+                value: 'usuarioId.nombre'
+            },{
+                label: 'Creado',
+                value: 'creado'
+            },{
+                label: 'Imagen',
+                value: 'ruta[0]'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(tanque);
+                res.attachment('ultimaRev.csv');
+                res.status(200).send(csv);
+                // res.json({ total: tanque.length, tanque }); 
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
+
+
+///////////////////////////////////////////  16.	REVISIONES
+router.get('/revision/:email/:fechaInicio/:fechaFinal', (req,res)=>{
+    const {fechaInicio, fechaFinal} = req.params
+    revisionServices.get((err, revision)=>{
+        if(!err){
+            let revisiones = revision.map(e=>{
+                accesorios = e.accesorios ?"No cumple" :"Cumple"
+                return e
+            })
+            const fields = [{   
+                label: 'N Revisión',
+                value: 'nControl'
+            },{
+                label: 'Usuario Crea',
+                value: 'usuarioCrea.nombre'
+            },{
+                label: 'Fecha Creación',
+                value: 'creado'
+            },{
+                label: 'Barrio',
+                value: 'barrio'
+            },{
+                label: 'M 3',
+                value: 'm3'
+            },{
+                label: 'N Comodato',
+                value: 'nComodatoText'
+            },{
+                label: 'N Medidor',
+                value: 'nMedidorText'
+            },{
+                label: 'Direccion',
+                value: 'puntoId.direccion'
+            },{
+                label: 'Sector',
+                value: 'sector'
+            },{
+                label: 'Ubicación',
+                value: 'ubicacion'
+            },{
+                label: 'Cliente',
+                value: 'usuarioId.razon_social'
+            },{
+                label: 'CODT',
+                value: 'usuarioId.codt'
+            },{
+                label: 'Usuarios Atendidos',
+                value: 'usuariosAtendidos'
+            },{
+                label: 'Accesorios',
+                value: 'accesorios'
+            },{
+                label: 'Avisos',
+                value: 'avisos'
+            },{
+                label: 'Distancias',
+                value: 'distancias'
+            },{
+                label: 'Electricas',
+                value: 'electricas'
+            },{
+                label: 'Extintores',
+                value: 'extintores'
+            },{
+                label: 'Lat',
+                value: 'coordenadas.coordinates[1]'
+            },{
+                label: 'Lng',
+                value: 'coordenadas.coordinates[0]'
+            },{
+                label: 'Poblado',
+                value: 'poblado'
+            },{
+                label: 'Dep Tecnico Estado',
+                value: 'depTecnicoEstado'
+            },{
+                label: 'Observaciones',
+                value: 'observaciones'
+            },{
+                label: 'Activo',
+                value: 'activo'
+            },{
+                label: 'Dep Tecnico',
+                value: 'depTecnico'
+            },{
+                label: 'Documento',
+                value: 'documento'
+            },{
+                label: 'Alerta',
+                value: 'alerta'
+            },{
+                label: 'Otros Si',
+                value: 'otrosSi'
+            },{
+                label: 'N Comodato',
+                value: 'nComodato'
+            },{
+                label: 'Hoja Seguridad',
+                value: 'hojaSeguridad'
+            },{
+                label: 'Protocolo Llenado',
+                value: 'protocoloLlenado'
+            },{
+                label: 'Visual',
+                value: 'visual'
+            },{
+                label: 'Visual gasoequipos',
+                value: 'puntoConsumo'
+            },{
+                label: 'Ruta y soporte de entrega',
+                value: 'soporteEntrega'
+            },{
+                label: 'Otros Comodato',
+                value: 'otrosComodato'
+            },{
+                label: 'Isometrico',
+                value: 'isometrico'
+            },{
+                label: 'Solicitud',
+                value: 'estado'
+            }];
+            const opts = {fields, withBOM:true};
+             
+            try {
+                const parser = new Parser(opts);
+                const csv = parser.parse(revisiones);
+                res.attachment('revision.csv');
+                res.status(200).send(csv);
+                
+              } catch (err) {
+                console.error(err);
+              }
+        }
+    })
+})
 
 module.exports = router;

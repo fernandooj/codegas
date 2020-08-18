@@ -140,13 +140,13 @@ class revisionServices{
 
 	editarInstalacion(_id, isometrico, data, callback){
 		revision.findByIdAndUpdate(_id, {$set: {
-			isometrico        : isometrico  ?isometrico  :[],
-			observaciones     : data.observaciones,
-			avisos 			 			: data.avisos,
-			extintores 			  : data.extintores,
-			distancias 				: data.distancias,
-			electricas 				: data.electricas,
-			accesorios 				: data.accesorios,
+			isometrico    : isometrico  ?isometrico  :[],
+			observaciones : data.observaciones,
+			avisos 		  : data.avisos,
+			extintores 	  : data.extintores,
+			distancias 	  : data.distancias,
+			electricas 	  : data.electricas,
+			accesorios 	  : data.accesorios,
 		}}, callback);
 	}
 	

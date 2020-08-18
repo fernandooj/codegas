@@ -20,7 +20,7 @@ class Informe extends PureComponent {
   }
   componentWillMount(){
       axios.get(`user/perfil/`)
-      .then(res => {
+      .then(res => { 
         console.log(res.data)
         this.setState({perfil: res.data.user})
       })
@@ -39,12 +39,12 @@ class Informe extends PureComponent {
   onOpenChanges(data, as){
     console.log(data, as)
   }
-  renderFormulario(){  
+  renderFormulario(){   
     let {fechaInicio, fechaFinal, perfil} = this.state
     
     return(
       <div style={{ background: '#ECECEC', padding: '30px' }}>
-        <Row gutter={16} style={{ "padding-bottom": "30px" }}>
+        <Row gutter={16} style={{ "paddingBottom": "30px" }}>
           <h4 style={{ float: 'left', margin: "6px 13px" }}>Filtrar por fechas</h4> 
           <RangePicker onChange={(date,string)=>this.onChange(date,string)} onPanelChange={(date,string)=>this.onPanelChange(date,string)} locale={locale}/>
         </Row>
@@ -89,34 +89,47 @@ class Informe extends PureComponent {
           </Card>
         </Col>
       }
-        <Col span={6}>
+      {
+        perfil.acceso!=="adminTanque"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/pedidos/trazabilidad/true/"+fechaInicio+"/"+fechaFinal}  type="primary" htmlType="submit" className="login-form-button">
                5.	Pedidos trazabilidad
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+
+      }
+      {
+        perfil.acceso!=="adminTanque"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/pedidos/no_entregados/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
               6. Generar Pedidos no entregados
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      }
+      {
+        perfil.acceso!=="adminTanque"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/pedidos/cerrados/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
               7.  Facturación
             </a>
           </Card>
         </Col>
-        <Col span={6}>
+      }
+      {
+        perfil.acceso!=="adminTanque"
+        &&<Col span={6}>
           <Card>
             <a href={"x/v1/inf/informe/pedidos/programacion/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
               8.  Programación
             </a>
           </Card>
         </Col>
+      }
       {
         perfil.acceso==="admin"
         &&<Col span={6}>
@@ -136,7 +149,7 @@ class Informe extends PureComponent {
             </a>
           </Card>
         </Col>
-      }
+      }   
       {
         perfil.acceso==="admin"
         &&<Col span={6}>
@@ -157,6 +170,47 @@ class Informe extends PureComponent {
           </Card>
         </Col>
       }
+      {
+        (perfil.acceso==="admin" || perfil.acceso==="adminTanque" || perfil.acceso==="depTecnico")
+        &&<Col span={6}>
+          <Card>
+            <a href={"x/v1/inf/informe/tanques/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+                13.  Generar Tanques
+            </a>
+          </Card> 
+        </Col>
+      } 
+      {
+        (perfil.acceso==="admin" || perfil.acceso==="adminTanque" || perfil.acceso==="depTecnico")
+        &&<Col span={6}>
+          <Card>
+            <a href={"x/v1/inf/informe/alertaTanques/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+                14.  Generar Alertas tanques
+            </a>
+          </Card> 
+        </Col>
+      }  
+      {
+        (perfil.acceso==="admin" || perfil.acceso==="adminTanque" || perfil.acceso==="depTecnico")
+        &&<Col span={6}> 
+          <Card>
+            <a href={"x/v1/inf/informe/ultimaRev/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+              15.  Generar ultima revisión
+            </a>
+          </Card>
+        </Col>
+      }
+      {
+        (perfil.acceso==="admin" || perfil.acceso==="adminTanque" || perfil.acceso==="depTecnico")
+        &&<Col span={6}> 
+          <Card>
+            <a href={"x/v1/inf/informe/revision/true/"+fechaInicio+"/"+fechaFinal} type="primary" htmlType="submit" className="login-form-button">
+              16.  Generar Revisiones
+            </a>
+          </Card>
+        </Col>
+      }
+      
       </Row>
     </div>
 

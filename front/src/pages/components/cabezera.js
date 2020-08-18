@@ -5,14 +5,15 @@ import { AiOutlineLogin, AiFillCaretDown, AiOutlineLogout }  from 'react-icons/a
 import { GiBookshelf }  from 'react-icons/gi';
 import { BsUpload, BsChatDots }  from 'react-icons/bs';
 import { IoIosNotificationsOutline }  from 'react-icons/io';
-import { FaBook }  from 'react-icons/fa';
-import HamburgerMenu from 'react-hamburger-menu'
-import { Link }                           from "@reach/router";
-import { connect }                        from "react-redux";
-import { getPerfil } from "../../redux/actions/usuarioActions";
 import { Avatar, Menu, Row, Col, Dropdown } from 'antd';
+import { FaBook }    from 'react-icons/fa';
+import HamburgerMenu from 'react-hamburger-menu'
+import axios         from 'axios'
+import { Link }      from "@reach/router";
+import { connect }   from "react-redux";
+import { getPerfil } from "../../redux/actions/usuarioActions";
 import CheeseburgerMenu from 'cheeseburger-menu'
-  
+   
 const menu=(props)=>( 
     <Menu> 
         <Menu.Item> 
@@ -20,7 +21,7 @@ const menu=(props)=>(
                 Subir Libro
             </Link>
         </Menu.Item> 
-        <Menu.Item> 
+        <Menu.Item>  
             <Link to="perfil" rel="perfil"  >
                 Perfil 
             </Link> 
@@ -47,13 +48,20 @@ const menu=(props)=>(
         </Menu.Item>
     </Menu>
 ) 
-const Cabezera = (props) =>{ 
+const Cabezera = (props) =>{  
     let {nombre, avatar} = props.perfil
     console.log(props.perfil)
     const [menuIsOpen, setMenuIsOpen] = useState(false)
     useEffect(() => {
         props.getPerfil() 
     }, [])  
+    const logout = e => {
+        
+        axios.get("/user/logout")
+        .then(e=>{
+          window.location.href ="/"
+        })
+      };
     return(  
         <CabezeraContenedor>
             <CheeseburgerMenu isOpen={menuIsOpen} closeCallback={()=>setMenuIsOpen(false)} right={true}>
@@ -145,10 +153,10 @@ const Cabezera = (props) =>{
                                 color='black'
                                 borderRadius={0} 
                                 animationDuration={0.5}
-                            /> 
+                            />  
                         </div>
                     } */}
-                    <Link to="/"> 
+                    <Link to={props.perfil.acceso==="adminTanque" ?"/informes" :"/"}> 
                         <Logo src="https://appcodegas.com/public/uploads/logo.png" />
                     </Link>  
                 </Col>  
@@ -157,14 +165,16 @@ const Cabezera = (props) =>{
                     &&<Col lg={17} sm={7} xs={9} style={{textAlign:"right"}}>   
                         <Menu mode="horizontal">  
                             {
-                                <Menu.Item key="pedidos">
+                                (props.perfil.acceso==="admin" || props.perfil.acceso==="solucion" || props.perfil.acceso==="despacho" || props.perfil.acceso==="pedidos")
+                                &&<Menu.Item key="pedidos">
                                     <Link to="/pedidos" rel="noopener noreferrer" >
                                         Pedidos 
                                     </Link>  
                                 </Menu.Item> 
                             }
                             {
-                                <Menu.Item key="Fechas">
+                                (props.perfil.acceso==="admin" || props.perfil.acceso==="solucion" || props.perfil.acceso==="despacho" || props.perfil.acceso==="pedidos")
+                                &&<Menu.Item key="Fechas">
                                     <Link to="/pedidoVehiculo" rel="noopener noreferrer" >
                                         Fechas 
                                     </Link> 
@@ -190,23 +200,30 @@ const Cabezera = (props) =>{
                                 &&<Menu.Item key="Zonas">
                                     <Link to="/zonas">
                                         Zonas
-                                    </Link>
+                                    </Link> 
                                 </Menu.Item>
                             }
                             {
-                                props.perfil.acceso==="admin"
+                                (props.perfil.acceso==="admin" || props.perfil.acceso==="adminTanque" || props.perfil.acceso==="depTecnico")
                                 &&<Menu.Item key="Tanques">
                                     <Link to="/tanques">
-                                        Tanques
+                                        Tanques 
                                     </Link>
                                 </Menu.Item>
                             } 
                             {
-                                props.perfil.acceso==="admin"
+                                (props.perfil.acceso==="admin" || props.perfil.acceso==="adminTanque" || props.perfil.acceso==="depTecnico")
                                 &&<Menu.Item key="Revisiones">
                                     <Link to="/revisiones">
                                         Revisiones
                                     </Link>
+                                </Menu.Item>
+                            } 
+                            {
+                                <Menu.Item key="cerrar sesion">
+                                   <a onClick={()=>logout()}>
+                                       Cerrar sesión
+                                    </a>
                                 </Menu.Item>
                             } 
                         </Menu> 

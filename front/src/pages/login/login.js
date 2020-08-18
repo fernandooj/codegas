@@ -31,9 +31,7 @@ class Home extends PureComponent {
 
     return(
       <Row>
-         
         <Col span={6} offset={9}>
-           <h2>Iniciar Sesión</h2>
              <Form
               {...layout}
               name="basic"
@@ -52,7 +50,7 @@ class Home extends PureComponent {
                 prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
                 
               />    
-            </Form.Item>
+            </Form.Item> 
             {/*   campos password   */}
             <Form.Item
              label="Password"

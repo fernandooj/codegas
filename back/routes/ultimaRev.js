@@ -7,7 +7,7 @@ let ultimaRevServices = require('../services/ultimaRevServices.js')
 let  moment = require('moment-timezone');
 let sizeOf    	   = promisify(require('image-size'));
 let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
-const htmlTemplate     = require('../notificaciones/template-email.js')
+ 
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS revisionS
 ////////////////////////////////////////////////////////////

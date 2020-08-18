@@ -2,8 +2,8 @@
 
 import React, { PureComponent } from "react";
   
-import { Table, Modal, Button, Avatar, notification, DatePicker, Select, Input } from 'antd'; 
- 
+import { Table, Modal, Button, Avatar, notification, DatePicker, Select, Input, Space } from 'antd'; 
+import './style.css' 
 import locale              from 'antd/lib/date-picker/locale/es_ES';
 import axios               from "axios";
 import moment 			       from 'moment-timezone'
@@ -73,10 +73,9 @@ class Home extends PureComponent {
     this.fetch();
   }
 
-  renderBotones(){
- 
+  renderBotones(){ 
     return(
-      <div>
+      <Space>
          <Button style={{backgroundColor:"rgba(217, 83, 79, 0.79)"}} onClick={()=>this.actualizarTabla("innactivo")}>Innactivo</Button>
          <Button style={{backgroundColor:"#5bc0de"}} onClick={()=>this.actualizarTabla("espera")}>Espera</Button>
          <Button style={{backgroundColor:"rgba(255, 235, 0, 0.79)"}} onClick={()=>this.actualizarTabla2("activo", false)}>Activo</Button>
@@ -99,7 +98,7 @@ class Home extends PureComponent {
           style={{margin:"0 8px"}}
         />
          <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=> {this.setState({fechaCreacion:"", fechaEntrega:"", terminoBuscador:""});this.fetch()} }>Limpiar</Button>
-      </div>
+      </Space>
     )
   }
   actualizarTabla(filtro){
@@ -349,7 +348,6 @@ class Home extends PureComponent {
       {
         title: 'Cedula',
         dataIndex: 'usuarioId',
-        defaultSortOrder: 'descend',
         render: usuarioId => <p>{usuarioId.cedula}</p>, 
         sorter: (a, b) => a.age - b.age,
       },
@@ -506,7 +504,7 @@ class Home extends PureComponent {
         loading={this.state.loading}
         onChange={this.handleTableChange}
          
-        // rowClassName={ (e, record) =>  e.estado=="espera" ?style.espera :e.estado=="noentregado" ?style.noentregado :e.estado=="innactivo" ?style.innactivo :e.estado=="activo" &&!e.carroId && !e.entregado ?style.activo :e.estado=="activo" && !e.entregado ?style.asignado :style.otro   }
+        rowClassName={ (e, record) =>  e.estado=="espera" ?"espera" :e.estado=="noentregado" ?"noentregado" :e.estado=="innactivo" ?"innactivo" :e.estado=="activo" &&!e.carroId && !e.entregado ?"activo" :e.estado=="activo" && !e.entregado ?"asignado" :"otro"}
       />)
   }
 
@@ -582,6 +580,7 @@ class Home extends PureComponent {
           placeholderTextColor="#aaa" 
           autoCapitalize = 'none'
           onChangeText={(novedad)=> this.setState({novedad})}
+          style={{background:"red"}} 
         />
       </Modal>
     )
@@ -795,23 +794,19 @@ class Home extends PureComponent {
   }
   render() {
     return (
-      <div style={{"maxWidth":"1850px"}}> 
-        <section>
-          <section>
-            {this.renderBotones()}
-          </section>
-          <section>
-            {/* <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} /> */}
-            <Search  placeholder="Buscar registro"  onSearch={value => this.buscarRegistro(value)} enterButton /> 
-
-          </section>
-
-        </section>
+      <Space direction="vertical" style={{"maxWidth":"1850px", display: "inline"}}> 
+        {this.renderBotones()}  
+        {/* <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} /> */}
+        <Search  placeholder="Buscar registro"  onSearch={value => this.buscarRegistro(value)} enterButton /> 
+ 
+ 
+        
         {this.renderTable()}
+          
         {this.renderModalVehiculo()}
         {this.modalNovedad()}
         {this.modalFecha()}
-      </div>
+      </Space>
     );
   }
 
