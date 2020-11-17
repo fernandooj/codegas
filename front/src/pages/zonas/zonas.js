@@ -2,7 +2,7 @@
 
 import React, { PureComponent } from "react";
  
-import { Table, Checkbox, Button, Input, notification, DatePicker, Select, InputNumber } from 'antd'; 
+import { Table, Checkbox, Button, Input, notification, Space, Select, InputNumber } from 'antd'; 
 import 'antd/dist/antd.css';
 import axios from "axios";
 import {createFilter} from 'react-search-input'
@@ -52,11 +52,7 @@ class Home extends PureComponent {
  
       axios.get(`users/cambiarValor/${valorUni}/${id}`)
       .then((res)=>{
-        
           if(res.data.status){
-              
-          
-              
               let usuarios = this.state.usuarios.filter(e=>{
                   if(e.idCliente==id){e.valorUnitario=valorUni}
                   return e
@@ -139,18 +135,18 @@ class Home extends PureComponent {
         
         ];
         
-        let usuariosFiltro = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-        return (<Table rowSelection={rowSelection} columns={columns} dataSource={usuariosFiltro} onChange={(a,e,i)=>this.tableChange(a,e,i)} pagination={{ pageSize:terminoBuscador.length<1 ?pageSize :usuariosFiltro.length }} scroll={{ x: 1500, y: 800 }} bordered />)
+        let usuariosFiltro = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS)) 
+        return (<Table  rowKey={(record) => record.idCliente} rowSelection={rowSelection} columns={columns} dataSource={usuariosFiltro} onChange={(a,e,i)=>this.tableChange(a,e,i)} pagination={{ pageSize:terminoBuscador.length<1 ?pageSize :usuariosFiltro.length }} scroll={{ x: 1500, y: 800 }} bordered />)
     }
     onSelectChange = (selectedRowKeys, seleccionados) => {
         this.setState({ selectedRowKeys, seleccionados });
-    };
+    }; 
     render() {
-        const {showValorBase, todos, tipo} = this.state 
-     
-        let icon = tipo=="porcentaje" ?"%" :"$"
-        return (
-        <div> 
+      const {showValorBase, seleccionados, tipo} = this.state 
+      console.log({seleccionados})
+      let icon = tipo=="porcentaje" ?"%" :"$"
+      return (
+          <Space direction="vertical">
             <section style={{padding: "20px 5px"}}>
                 
                 <Checkbox onChange={(showValorBase)=>this.setState({showValorBase:showValorBase.target.checked})}>Tomar valor base</Checkbox>
@@ -161,7 +157,7 @@ class Home extends PureComponent {
                         parser={value => value.replace(/\$\s?|(,*)/g, '')}
                         onChange={(valor)=>this.setState({valor})}
                         placeholder="Valor Base"
-                    />    
+                    />
                 }
                 <Select defaultValue="Tipo" style={{ width: 150,  margin:"0 10px" }} onChange={(tipo)=>this.setState({tipo})}>
                     <Option value="porcentaje">% Porcentaje</Option>
@@ -175,14 +171,14 @@ class Home extends PureComponent {
                     
                 /> 
                 <Checkbox onChange={(todos)=>this.seleccionaTodos(todos.target.checked)} style={{ margin:"0 10px" }} >Cambiar a todos</Checkbox>
-            <Button style={{backgroundColor:"#00218b"}} onClick={()=>this.handleSubmit()}>Guardar</Button>
+            <Button type="primary" onClick={()=>this.handleSubmit()}>Guardar</Button>
             </section>
             <section>
                 <Search  allowClear enterButton  placeholder="Buscar registro" onSearch={(e)=>this.setState({terminoBuscador:e})} />
             </section>
             {this.renderTable()}
-        </div>
-        );
+        </Space>
+      );
   }
   seleccionaTodos(todos){
     let {seleccionados, usuarios} = this.state

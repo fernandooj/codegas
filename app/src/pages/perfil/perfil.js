@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Image, ImageBackground} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
@@ -20,47 +21,54 @@ class Home extends Component{
 	  }
 	}
 	 
-	async componentWillMount(){
-        try{
-            const userId    = await AsyncStorage.getItem('userId')
-            const nombre    = await AsyncStorage.getItem('nombre')
-            const email 	= await AsyncStorage.getItem('email')
-            const avatar    = await AsyncStorage.getItem('avatar')
-            const acceso    = await AsyncStorage.getItem('acceso')
-            console.log({userId})
-            userId ?this.setState({userId, nombre, email, avatar, acceso}) :null
-        }catch(e){
-            console.log(e)
-        }
+	async componentWillMount() {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      const nombre = await AsyncStorage.getItem('nombre');
+      const email = await AsyncStorage.getItem('email');
+      const avatar = await AsyncStorage.getItem('avatar');
+      const acceso = await AsyncStorage.getItem('acceso');
+      console.log({userId});
+      userId ?this.setState({userId, nombre, email, avatar, acceso}) :null
+    } catch(e) {
+        console.log(e)
+    }
 	}
-    componentDidMount(){
-        // FCM.getFCMToken().then(token => {
-		// 	this.setState({ tokenPhone: token || "" });
-		// });
-    }
-    renderEmail(){
-        const {email} = this.state
-        return(
-            <ScrollView style={style.containerRegistro2}>
-                <View style={style.subContainerRegistro}>
-                    <Text style={style.titulo}>Crear Nueva Cuenta</Text>
-                    <TextInput
-                        style={email.length<2 ?[style.input, style.inputInvalid] :style.input}
-                        placeholder="Email / Codigo registro"
-                        onChangeText={(email) => this.setState({email})}
-                        value={email}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        
-                        placeholderTextColor="#aaa" 
-                    />
-                     <TouchableOpacity style={style.btnGuardar} onPress={()=>email.length<2 ?Toast.show("Inserte su email o codigo de registro") :this.handleSubmit()}>
-                        <Text style={style.textGuardar}>Registrarme</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        )
-    }
+  componentDidMount() {
+      // FCM.getFCMToken().then(token => {
+  // 	this.setState({ tokenPhone: token || "" });
+  // });
+  }
+  renderEmail() {
+    const {email} = this.state
+    return(
+      <ScrollView style={style.containerRegistro2}>
+        <View style={style.subContainerRegistro}>
+          <Text style={style.titulo}>Crear Nueva Cuenta</Text>
+          <TextInput
+            style={
+              email.length < 2 ? [style.input, style.inputInvalid] : style.input
+            }
+            placeholder="Email / Codigo registro"
+            onChangeText={(email) => this.setState({email})}
+            value={email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            placeholderTextColor="#aaa"
+          />
+          <TouchableOpacity
+            style={style.btnGuardar}
+            onPress={() =>
+              email.length < 2
+                ? Toast.show('Inserte su email o codigo de registro')
+                : this.handleSubmit()
+            }>
+            <Text style={style.textGuardar}>Registrarme</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    )
+  }
 	iniciarSesion(){
         const {email2, password2, cargando} = this.state
         return (
@@ -90,7 +98,7 @@ class Home extends Component{
                     </TouchableOpacity>
                     <TouchableOpacity style={style.btnOlvidar} onPress={()=>this.props.navigation.navigate("recuperar")}>
                         <Text style={style.textOlvidar}>Olvide mi contraseña</Text>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.12</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.30-1</Text> 
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -103,7 +111,7 @@ class Home extends Component{
         return (
             <ScrollView style={style.containerRegistro}> 
                 <View style={style.perfilContenedor}>
-                    <View style={style.columna1}>
+                    <View style={style.columna4}>
                         {
                             avatar=="null"
                             ?<Icon name={'user-circle'} style={style.iconAvatar} />
@@ -213,7 +221,7 @@ class Home extends Component{
                         <Image source={require('../../assets/img/pg1/icon7.png')} style={style.icon} />
                     </TouchableOpacity> 
                     <TouchableOpacity  style={style.btnLista}>
-                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.12</Text> 
+                        <Text style={[style.txtLista, {fontSize:11}]}>Ver 11.3.30-1</Text> 
                     </TouchableOpacity> 
                     {
                         err
@@ -265,7 +273,7 @@ class Home extends Component{
                             ?this.renderPerfil()
                             :<KeyboardAwareScrollView style={style.containerRegistro}>
                                 {this.renderEmail()}
-                                <View style={style.separador}></View>
+                                <View style={style.separador} />
                                 {this.iniciarSesion()}
                             </KeyboardAwareScrollView>
                         }

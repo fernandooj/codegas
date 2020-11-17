@@ -425,12 +425,12 @@ class Home extends PureComponent {
         sortDirections: ['descend', 'ascend'],
       },
       {
-        title: 'Cantidad',
-        dataIndex: 'cantidadKl',
-        render:(cantidadKl, e)=>(
-          // console.log(e)
-         <p>{e.forma=="monto" ?e.cantidadPrecio :e.forma=="cantidad" &&e.cantidadKl}</p>
-        ),
+        title: 'Kilos',
+        dataIndex: 'kilos',
+        // render:(cantidadKl, e)=>(
+        //   // console.log(e)
+        //  <p>{e.forma=="monto" ?e.cantidadPrecio :e.forma=="cantidad" &&e.cantidadKl}</p>
+        // ),
         onFilter: (value, record) => record.cantidad.indexOf(value) === 0,
         sorter: (a, b) => a.cantidad.length - b.cantidad.length,
         sortDirections: ['descend', 'ascend'],

@@ -1,184 +1,199 @@
-import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, ScrollView, Button, TextInput, ImageBackground, ActivityIndicator, Alert, Modal} from 'react-native'
-import {style}   from './style'
-import {connect} from 'react-redux' 
-import axios             from "axios"
-import Icon              from 'react-native-fa-icons';
-import AsyncStorage      from '@react-native-community/async-storage';
-import ModalFilterPicker from 'react-native-modal-filter-picker'
-import RNPickerSelect    from 'react-native-picker-select';
-import Footer            from '../components/footer'
-import TomarFoto         from "../components/tomarFoto";
-import Toast             from 'react-native-simple-toast';
-import { createFilter }  from 'react-native-search-filter';
-const KEYS_TO_FILTERS = ['nombre'] 
-const accesos=[
-    {label: 'Administrador',        value: 'admin',      key: 'administrador'},
-    {label: 'Solución Cliente',     value: 'solucion',   key: 'solucion'},
-    {label: 'Despachos',            value: 'despacho',   key: 'despacho'},
-    {label: 'Conductor',            value: 'conductor',  key: 'conductor'},
-    {label: 'Veo',                  value: 'veo',        key: 'veo'},
-    {label: 'Cliente',              value: 'cliente',    key: 'cliente'},
-    {label: 'Comercial',            value: 'comercial',  key: 'comercial'},
-    {label: 'Departamento Tecnico', value: 'depTecnico', key: 'depTecnico'},
-    {label: 'Inspector Seguridad',  value: 'insSeguridad', key: 'insSeguridad'},
-    {label: 'Administrador Tanques',value: 'adminTanque', key: 'adminTanque'}
-]
+import React, {Component} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Button,
+  TextInput,
+  ImageBackground,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import {style} from './style';
+import {connect} from 'react-redux';
+import axios from 'axios';
+import Icon from 'react-native-fa-icons';
+import AsyncStorage from '@react-native-community/async-storage';
+import ModalFilterPicker from 'react-native-modal-filter-picker';
+import RNPickerSelect from 'react-native-picker-select';
+import Footer from '../components/footer';
+import TomarFoto from '../components/tomarFoto';
+import Toast from 'react-native-simple-toast';
+import {createFilter} from 'react-native-search-filter';
+const KEYS_TO_FILTERS = ['nombre'];
+const accesos = [
+  {label: 'Administrador', value: 'admin', key: 'administrador'},
+  {label: 'Solución Cliente', value: 'solucion', key:'solucion'},
+  {label: 'Despachos', value: 'despacho', key:'despacho'},
+  {label: 'Conductor', value: 'conductor', key: 'conductor'},
+  {label: 'Veo', value: 'veo', key: 'veo'},
+  {label: 'Cliente', value: 'cliente', key: 'cliente'},
+  {label: 'Comercial', value: 'comercial', key: 'comercial'},
+  {label: 'Departamento Tecnico', value: 'depTecnico', key: 'depTecnico'},
+  {label: 'Inspector Seguridad', value: 'insSeguridad', key: 'insSeguridad'},
+  {label: 'Administrador Tanques', value: 'adminTanque', key: 'adminTanque'}
+];
+class verPerfil extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      razon_social: '',
+      cedula: '',
+      direccion_factura: '',
+      email: '',
+      nombre: '',
+      password: '',
+      celular: '',
+      tipo: '',
+      acceso: 'usuario',
+      codt: '',
+      codMagister: '',
+      terminoBuscador: '',
+      valorUnitario: '',
+      modalUbicacion: false,
+      modalZona: false,
+      modalCliente: false,
+      zonas: [],
+      puntos: [],
+      imagen: [],
+      veos: [],
+      ubicacionesEliminadas: [], //envio los id de las ubicaciones eliminados
+      ubicaciones: [
+        {
+          direccion: undefined,
+          nombre: undefined,
+          email: undefined,
+          celular: undefined,
+          idZona: undefined,
+          nombreZona: undefined,
+          capacidad: undefined,
+          nuevo: true,
+          acceso: 'cliente',
+        },
+      ],
+    };
+  }
+  async componentWillMount(){
+    const accesoPerfil = await AsyncStorage.getItem('acceso');
+    let acceso = accesoPerfil == 'despacho' ? 'cliente' : 'usuario';
+    this.setState({accesoPerfil, acceso});
+    /** 
+     DEVUELVE LOS USUARIOS TIPO VEOS
+    */
+    axios.get('users/acceso/veo').then((res) => {
+      let veos = res.data.usuarios.map((e) => {
+        return {key: e._id, label: e.nombre};
+      });
+      this.setState({veos});
+    });
 
+    /**
+    * DEVUELVE EL LISTADO DE LAS ZONAS
+    */
+    axios.get('zon/zona/activos').then((res) => {
+      res.data.status && this.setState({zonas: res.data.zona});
+    });
 
-class verPerfil extends Component{
-	constructor(props) {
-	  super(props);
-	  this.state={
-        razon_social:"",
-        cedula:"",
-        direccion_factura:"",
-        email:"",
-        nombre:"",
-        password:"",
-        celular:"",
-        tipo:"",
-        acceso:"usuario",
-        password:"",
-        codt:"",
-        codMagister:"",
-        terminoBuscador:"",
-        valorUnitario:"",
-        modalUbicacion:false,
-        modalZona:false,
-        modalCliente:false,
-        zonas:[],
-        puntos:[],
-        imagen:[],
-        veos:[],
-        ubicacionesEliminadas:[], //envio los id de las ubicaciones eliminados
-        ubicaciones:[{direccion:undefined, nombre:undefined, email:undefined, celular:undefined, idZona:undefined, nombreZona:undefined, capacidad:undefined, nuevo:true, acceso:"cliente"}]
-	  }
-    }
- 
-    async componentWillMount(){
-        const accesoPerfil = await AsyncStorage.getItem('acceso')
-        let acceso = accesoPerfil=="despacho" ?"cliente" :"usuario"
-        this.setState({accesoPerfil, acceso})
-        
-        
-         //////////////////////////////  DEVUELVE LOS USUARIOS TIPO VEOS
-         axios.get("users/acceso/veo")   
-         .then(res=>{
-       
-            let veos = res.data.usuarios.map(e=>{
-                return {key:e._id, label:e.nombre}
-            }) 
-            this.setState({veos})            
-         })
-
-
-        //////////////////////////////  DEVUELVE EL LISTADO DE LAS ZONAS
-        axios.get("zon/zona/activos")   
-        .then(res=>{
-            res.data.status &&this.setState({zonas:res.data.zona})
+    const {params} = this.props.navigation.state
+    if(params.tipoAcceso){
+      this.setState({tipoAcceso:params.tipoAcceso})
+      params.tipoAcceso=="solucion" &&this.setState({acceso: "cliente"})
+    }else{
+      null
+    } 
+    !params.tipoAcceso
+      ? axios.get('user/perfil').then((e) => {
+          const {user} = e.data;
+          this.setState({
+            razon_social: user.razon_social ? user.razon_social : '',
+            cedula: user.cedula ? user.cedula : '',
+            email: user.email ? user.email : '',
+            nombre: user.nombre ? user.nombre : '',
+            password: user.password ? user.password : '',
+            celular: user.celular ? user.celular : '',
+            tipo: user.tipo ? user.tipo : '',
+            acceso: user.acceso ? user.acceso : '',
+            imagen: user.avatar ? user.avatar : [],
+            codt: user.codt ? user.codt : '',
+            valorUnitario: user.valorUnitario ? user.valorUnitario : '',
+            idUsuario: user._id ? user._id : '',
+            codMagister: user.codMagister ? user.codMagister : '',
+            editado: user.editado ? user.editado : false,
+            ubicaciones: user.ubicaciones ? user.ubicaciones : [],
+            accesoPerfil: 'cliente',
+            direccion_factura:user.direccion_factura ?user.direccion_factura :"",
         })
-        ////////////////////////////////////////////////////////////////
-        const {params} = this.props.navigation.state
-        if(params.tipoAcceso){
-            this.setState({tipoAcceso:params.tipoAcceso})
-            params.tipoAcceso=="solucion" &&this.setState({acceso: "cliente"})
-        }else{
-          null
-        } 
-        !params.tipoAcceso
-        ?axios.get("user/perfil").then(e=>{
-            const {user} = e.data
-            console.log(user)
-            this.setState({
-                razon_social:     user.razon_social  ?user.razon_social :"",
-                cedula:           user.cedula        ?user.cedula       :"",
-                email:            user.email         ?user.email        :"",
-                nombre:           user.nombre        ?user.nombre       :"",
-                password :        user.password      ?user.password     :"",
-                celular :         user.celular       ?user.celular      :"",
-                tipo :            user.tipo          ?user.tipo         :"",
-                acceso:           user.acceso        ?user.acceso       :"",
-                imagen:           user.avatar        ?user.avatar       :[],
-                codt:             user.codt          ?user.codt         :"",
-                valorUnitario:    user.valorUnitario ?user.valorUnitario:"",
-                idUsuario:        user._id           ?user._id          :"",
-                codMagister:      user.codMagister   ?user.codMagister  :"", 
-                editado:          user.editado       ?user.editado      :false,
-                ubicaciones:      user.ubicaciones   ?user.ubicaciones  :[],
-                accesoPerfil:"cliente",
-                direccion_factura:user.direccion_factura ?user.direccion_factura :"",
-            })
-        })
-        :params.tipoAcceso=="editar"
-        ?axios.get(`/user/byId/${params.idUsuario}`).then(e=>{
-            console.log(e.data)
-            const {user} = e.data
-            let ubicaciones =  user.ubicaciones  ?user.ubicaciones  :[]
-            ubicaciones= ubicaciones.map(data=>{
-                let data1 = params.idUsuario
-                let data2 = data.idCliente
-                if(data1===data2){
-                    return {
-                        direccion: data.direccion,
-                        email: undefined,
-                        idCliente: undefined,
-                        idZona: data.idZona,
-                        nombre: undefined,
-                        celular: undefined,
-                        nombreZona: data.nombreZona,
-                        observacion: data.observacion,
-                        capacidad: data.capacidad,
-                        _id: data._id
-                    }
-                }else{
-                    return {
-                        direccion  : data.direccion,
-                        email      : data.email,
-                        idCliente  : data.idCliente,
-                        idZona     : data.idZona,
-                        nombre     : data.nombre,
-                        celular    : data.celular,
-                        nombreZona : data.nombreZona,
-                        observacion: data.observacion,
-                        capacidad  : data.capacidad,
-                        _id        : data._id
-                    }
-                }
-            })  
-           
-            console.log(user)
-            this.setState({
-                razon_social:     user.razon_social ?user.razon_social :"",
-                cedula:           user.cedula       ?user.cedula       :"",
-                email:            user.email        ?user.email        :"",
-                nombre:           user.nombre       ?user.nombre       :"",
-                password :        user.password     ?user.password     :"",
-                celular :         user.celular      ?user.celular      :"",
-                tipo :            user.tipo         ?user.tipo         :"",
-                acceso:           user.acceso       ?user.acceso       :"",
-                imagen:           user.avatar       ?user.avatar       :[],
-                codt:             user.codt         ?user.codt         :"",
-                ubicaciones,
-                activo:           user.activo       &&user.activo ,
-                idUsuario:        user._id          ?user._id          :"",
-                veo:              user.veos         ?user.veos.nombre  :"",
-                codMagister:      user.codMagister   ?user.codMagister  :"",
-                valorUnitario:    user.valorUnitario,
-                direccion_factura:user.direccion_factura ?user.direccion_factura :"",
-            })
-        })
-        :null
-    }
-    renderPerfil(){
-        let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, editado, codMagister} = this.state
-        valorUnitario = valorUnitario ?valorUnitario.toString() :""
-        razon_social = razon_social.toUpperCase()
-        email = email.toUpperCase()
-        direccion_factura = direccion_factura.toUpperCase()
-        nombre = nombre.toUpperCase()
+    })
+      :params.tipoAcceso=="editar"
+      ?axios.get(`/user/byId/${params.idUsuario}`).then(e=>{
+          console.log(e.data)
+          const {user} = e.data
+          let ubicaciones =  user.ubicaciones  ?user.ubicaciones  :[]
+          ubicaciones= ubicaciones.map(data=>{
+              let data1 = params.idUsuario
+              let data2 = data.idCliente
+              if(data1===data2){
+                  return {
+                      direccion: data.direccion,
+                      email: undefined,
+                      idCliente: undefined,
+                      idZona: data.idZona,
+                      nombre: undefined,
+                      celular: undefined,
+                      nombreZona: data.nombreZona,
+                      observacion: data.observacion,
+                      capacidad: data.capacidad,
+                      _id: data._id
+                  }
+              }else{
+                  return {
+                      direccion  : data.direccion,
+                      email      : data.email,
+                      idCliente  : data.idCliente,
+                      idZona     : data.idZona,
+                      nombre     : data.nombre,
+                      celular    : data.celular,
+                      nombreZona : data.nombreZona,
+                      observacion: data.observacion,
+                      capacidad  : data.capacidad,
+                      _id        : data._id
+                  }
+              }
+          })  
+          
+          console.log(user)
+          this.setState({
+              razon_social:     user.razon_social ?user.razon_social :"",
+              cedula:           user.cedula       ?user.cedula       :"",
+              email:            user.email        ?user.email        :"",
+              nombre:           user.nombre       ?user.nombre       :"",
+              password :        user.password     ?user.password     :"",
+              celular :         user.celular      ?user.celular      :"",
+              tipo :            user.tipo         ?user.tipo         :"",
+              acceso:           user.acceso       ?user.acceso       :"",
+              imagen:           user.avatar       ?user.avatar       :[],
+              codt:             user.codt         ?user.codt         :"",
+              ubicaciones,
+              activo:           user.activo       &&user.activo ,
+              idUsuario:        user._id          ?user._id          :"",
+              veo:              user.veos         ?user.veos.nombre  :"",
+              codMagister:      user.codMagister   ?user.codMagister  :"",
+              valorUnitario:    user.valorUnitario,
+              direccion_factura:user.direccion_factura ?user.direccion_factura :"",
+          })
+      })
+      :null
+  }
+  renderPerfil(){
+    let {razon_social, cedula, direccion_factura, email, nombre, celular,  codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, editado, codMagister} = this.state
+    valorUnitario = valorUnitario ? valorUnitario.toString() : '';
+    razon_social = razon_social ? razon_social.toUpperCase() : razon_social;
+    email = email ?email.toUpperCase() :email;
+    direccion_factura = direccion_factura ?direccion_factura.toUpperCase() :direccion_factura;
+    nombre = nombre ?nombre.toUpperCase() :nombre;
         
-        console.log({imagen, acceso, editado})
+    console.log({imagen, acceso, editado})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -237,18 +252,18 @@ class verPerfil extends Component{
                     </View>
                 }
 
-            {/* CEDULA */}	
-                <Text style={style.textInfo}>Cedula/ Nit</Text> 
-                <TextInput
-                    type='outlined'
-                    placeholder="Cedula / Nit"
-                    placeholderTextColor="#aaa" 
-                    keyboardType='numeric'
-                    value={cedula}
-                    onChangeText={cedula => this.setState({ cedula })}
-                    style={cedula.length<5 ?[style.input, style.inputRequired] :style.input}
-                />
-            {/* DIRECCION */}	
+        {/* CEDULA */}
+        <Text style={style.textInfo}>Cedula/ Nit</Text>
+        <TextInput
+            type='outlined'
+            placeholder="Cedula / Nit"
+            placeholderTextColor="#aaa" 
+            keyboardType='numeric'
+            value={cedula}
+            onChangeText={cedula => this.setState({ cedula })}
+            style={cedula.length<5 ?[style.input, style.inputRequired] :style.input}
+        />
+        {/* DIRECCION */}	
                 {
                     acceso=="cliente"
                     &&<View>
@@ -317,7 +332,7 @@ class verPerfil extends Component{
                     type='outlined'
                     placeholder="Celular"
                     autoCapitalize = 'none'
-					placeholderTextColor="#aaa" 
+					          placeholderTextColor="#aaa" 
                     value={celular}
                     onChangeText={celular => this.setState({ celular })}
                     style={celular.length<7 ?[style.input, style.inputRequired] :style.input}
@@ -424,7 +439,7 @@ class verPerfil extends Component{
                 }
             {/* BOTON CAMBIAR ESTADO */}
                 {
-                    (tipoAcceso=="editar" && accesoPerfil=="admin")
+                    (tipoAcceso=="editar" && (accesoPerfil=="admin" || accesoPerfil=="despacho"))
                     &&<TouchableOpacity style={[style.btnGuardar, {backgroundColor:activo ?"green" :"orange", marginBottom:0} ]} onPress={()=>this.cambiarEstadoUsuario()}>
                         <Text style={style.textGuardar}>{activo ?"Desactivar" :"Activar"}</Text>
                     </TouchableOpacity> 
@@ -432,7 +447,7 @@ class verPerfil extends Component{
 
             {/* BOTON ELIMINAR */}
                 {
-                    (tipoAcceso=="editar" && accesoPerfil=="admin")
+                    (tipoAcceso=="editar" && (accesoPerfil=="admin" || accesoPerfil=="despacho"))
                     &&<TouchableOpacity style={[style.btnGuardar, {backgroundColor:"red", marginBottom:0} ]}  onPress={()=>this.eliminarUsuario()}>
                         <Text style={style.textGuardar}>{"Eliminar"}</Text>
                     </TouchableOpacity> 
@@ -554,22 +569,44 @@ class verPerfil extends Component{
 
         }
     }
-    actualizaUbicacion(){
-        let {observacion, ubicaciones, direccion, emailUbicacion, celularUbicacion, nombreUbicacion, nombreZona} = this.state
-        let data = {direccion, email:emailUbicacion, celular:celularUbicacion, nombre:nombreUbicacion, observacion, nombreZona, nuevo:true, acceso:"cliente"}
-        ubicaciones.push(data)
-        this.setState({ubicaciones})
-    }
-    actualizaArrayUbicacion(type, value, key){
-        let {ubicaciones} = this.state 
-        type == "direccion"       ?ubicaciones[key].direccion   = value 
-        :type=="observacion"      ?ubicaciones[key].observacion = value 
-        :type=="emailUbicacion"   ?ubicaciones[key].email       = value 
-        :type=="celularUbicacion" ?ubicaciones[key].celular     = value 
-        :type=="capacidad"        ?ubicaciones[key].capacidad   = value 
-        :ubicaciones[key].nombre = value
-        this.setState({ubicaciones})
-    }
+  actualizaUbicacion() {
+    let {
+      observacion,
+      ubicaciones,
+      direccion,
+      emailUbicacion,
+      celularUbicacion,
+      nombreUbicacion,
+      nombreZona,
+    } = this.state;
+    let data = {
+      direccion,
+      email: emailUbicacion,
+      celular: celularUbicacion,
+      nombre: nombreUbicacion,
+      observacion,
+      nombreZona,
+      nuevo: true,
+      acceso: 'cliente',
+    };
+    ubicaciones.push(data)
+    this.setState({ubicaciones})
+  }
+  actualizaArrayUbicacion(type, value, key){
+    let {ubicaciones} = this.state;
+    type == 'direccion'
+      ? (ubicaciones[key].direccion = value)
+      : type == 'observacion'
+      ? (ubicaciones[key].observacion = value)
+      : type == 'emailUbicacion'
+      ? (ubicaciones[key].email = value)
+      : type == 'celularUbicacion'
+      ? (ubicaciones[key].celular = value)
+      : type == 'capacidad'
+      ? (ubicaciones[key].capacidad = value)
+      : (ubicaciones[key].nombre = value);
+    this.setState({ubicaciones});
+  }
     modalZonas(){
         const {zonas, idZona, terminoBuscador} = this.state
         let filtroZonas = zonas.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
@@ -631,6 +668,7 @@ class verPerfil extends Component{
                                     <View>
                                         {
                                             ubicaciones.map((e, key)=>{
+                                                console.log({dir:e.direccion})
                                                 return(
                                                     <View key={key}>
                                                     <View>
@@ -638,7 +676,7 @@ class verPerfil extends Component{
                                                                 type='outlined'
                                                                 label='Dirección'
                                                                 placeholder="Dirección"
-                                                                value={e.direccion.toUpperCase()}
+                                                                value={e.direccion ?e.direccion.toUpperCase() :e.direccion}
                                                                 onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
                                                                 style={style.input}
                                                             />
@@ -662,7 +700,7 @@ class verPerfil extends Component{
                                                             type='outlined'
                                                             label='observacion al momento de ingresar el vehiculo'
                                                             placeholder="observaciones ingreso del vehiculo"
-                                                            value={e.observacion.toUpperCase()}
+                                                            // value={e.observacion.toUpperCase()}
                                                             onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
                                                             style={[style.input, {marginBottom: (e.nuevo || !e.idCliente ) && key>0 ?40 :10}]}
                                                         />

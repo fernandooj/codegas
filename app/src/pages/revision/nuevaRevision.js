@@ -128,7 +128,6 @@ class Tanques extends Component{
             .then(res => {
                 const {revision} = res.data
                 console.log(revision)
-                console.log(revision.coordenadas.coordinates[1])
                 let tanqueIdArray = []
                 revision.tanqueId.map(e=>{
                     tanqueIdArray.push(e._id)
@@ -138,9 +137,10 @@ class Tanques extends Component{
                     /////// step 1
                     revisionId:    revision._id,
                     poblado:       revision.poblado,
- 
+                    tanqueArray :  revision.tanqueId,
+                    tanqueIdArray,
                     /////////  step 2
-                    nControl         : revision.nControl         ?revision.nControl          :"",
+                    nControl          : revision.nControl          ?revision.nControl          :"",
                     capacidad         : revision.capacidad         ?revision.capacidad          :"",
                     fabricante        : revision.fabricante        ?revision.fabricante         :"",
                     barrio            : revision.barrio            ?revision.barrio             :"",
@@ -152,18 +152,18 @@ class Tanques extends Component{
                     ubicacion         : revision.ubicacion         ?revision.ubicacion          :"",
                     nComodatoText     : revision.nComodatoText     ?revision.nComodatoText      :"",
 
-                    usuarioId:                revision.usuarioId           ?revision.usuarioId._id                 :null,
-                    cedulaCliente:            revision.usuarioId           ?revision.usuarioId.razon_social        :"",
-                    codtCliente:              revision.usuarioId           ?revision.usuarioId.codt        :"",
-                    razon_socialCliente:      revision.usuarioId           ?revision.usuarioId.cedula              :"",
-                    direccion_facturaCliente: revision.usuarioId           ?revision.usuarioId.direccion_factura   :"",
-                    nombreCliente:            revision.usuarioId           ?revision.usuarioId.nombre              :"",
-                    celularCliente :          revision.usuarioId           ?revision.usuarioId.celular             :"",
-                    emailCliente:             revision.usuarioId           ?revision.usuarioId.email               :"",
-                    puntos:                   revision.puntoId             ?[revision.puntoId]                     :[],
-                    direccion:                revision.puntoId             ?revision.puntoId.direccion                   :null,
-                    puntoId:                  revision.puntoId             ?revision.puntoId._id                   :null,
-                    zonaId:                   revision.zonaId              ?revision.zonaId._id                   :null,
+                    usuarioId:                revision.usuarioId    ?revision.usuarioId._id               :null,
+                    cedulaCliente:            revision.usuarioId    ?revision.usuarioId.razon_social      :"",
+                    codtCliente:              revision.usuarioId    ?revision.usuarioId.codt              :"",
+                    razon_socialCliente:      revision.usuarioId    ?revision.usuarioId.cedula            :"",
+                    direccion_facturaCliente: revision.usuarioId    ?revision.usuarioId.direccion_factura :"",
+                    nombreCliente:            revision.usuarioId    ?revision.usuarioId.nombre            :"",
+                    celularCliente :          revision.usuarioId    ?revision.usuarioId.celular           :"",
+                    emailCliente:             revision.usuarioId    ?revision.usuarioId.email             :"",
+                    puntos:                   revision.puntoId      ?[revision.puntoId]                   :[],
+                    direccion:                revision.puntoId      ?revision.puntoId.direccion           :null,
+                    puntoId:                  revision.puntoId      ?revision.puntoId._id                 :null,
+                    zonaId:                   revision.zonaId       ?revision.zonaId._id                  :null,
                     
                     /////////  step 3
                     observaciones     : revision.observaciones     ?revision.observaciones     :"",
@@ -192,6 +192,11 @@ class Tanques extends Component{
                     imgHojaSeguridad:    revision.hojaSeguridad    ?revision.hojaSeguridad :[],
                     imgNComodato    :    revision.nComodato        ?revision.nComodato     :[],
                     imgOtrosSi      :    revision.otrosSi          ?revision.otrosSi       :[],
+
+                    /////////  step 5
+                    poblado: revision.poblado ?revision.poblado :"",
+                    ciudad: revision.ciudad ?revision.ciudad :"",
+                    dpto: revision.dpto ?revision.dpto :"",
                 })
 
                 Geolocation.getCurrentPosition(e=>{
@@ -290,8 +295,9 @@ class Tanques extends Component{
     }
     
     step1(){
-        const {tanqueArray, modalPlacas, placas, placaText, puntoId, usuarioId} = this.state
-        console.log({tanqueArray})
+        const {tanqueIdArray, tanqueArray, modalPlacas, placas, placaText, puntoId, usuarioId} = this.state
+        console.log({tanqueIdArray, tanqueArray})
+        
         return(
             <View>
                 {/* PLACAS */}
@@ -718,7 +724,7 @@ class Tanques extends Component{
                 <TomarFoto 
                     source={imgSoporteEntrega}
                     width={180}
-                    titulo="Soporte de entrega y ruta"
+                    titulo="Ruta"
                     limiteImagenes={4}
                     imagenes={(imgSoporteEntrega) => {  this.uploadImagen(imgSoporteEntrega, 3) }}
                 /> 
@@ -781,7 +787,7 @@ class Tanques extends Component{
                     navigate={navigate}
                     source={imgOtrosSi}
                     width={180}
-                    titulo="Otros si"
+                    titulo="Otros documentos"
                     limiteImagenes={4}
                     imagenes={(imgOtrosSi) => {  this.uploadPdf(imgOtrosSi, 4) }}
                 />
@@ -794,38 +800,16 @@ class Tanques extends Component{
     uploadImagen(imagen, tipo){
         this.setState({loading:true})
         let {imgIsometrico, imgOtrosComodato,  imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId} = this.state
-        console.log({imgIsometrico, imgOtrosComodato, imgSoporteEntrega, imgPuntoConsumo, imgVisual, revisionId})
+        
         let data = new FormData();
-        let isometrico = []
-        if(tipo===1){
-            isometrico = imagen.filter(e=>{
-                return !e.uri
-            })
-        }
-        if(tipo===2){
-            otrosComodato = imagen.filter(e=>{
-                return !e.uri
-            })
-        }
-        if(tipo===3){
-            soporteEntrega = imagen.filter(e=>{
-                return !e.uri
-            })
-        }
-        if(tipo===4){
-            puntoConsumo = imagen.filter(e=>{
-                return !e.uri
-            })
-        }
-        if(tipo===5){
-            visual = imagen.filter(e=>{
-                return !e.uri
-            })
-        }
-        
-        
-        
 
+        let isometrico = imgIsometrico.filter(e=>{
+            return !e.uri
+        })
+        imgIsometrico = imgIsometrico.filter(e=>{
+            return e.uri
+        })
+        
         let otrosComodato = imgOtrosComodato.filter(e=>{
             return !e.uri
         })
@@ -851,29 +835,66 @@ class Tanques extends Component{
         imgVisual = imgVisual.filter(e=>{
             return e.uri
         })
- 
-        tipo === 1
-        ?imagen.forEach(e=>{
+        if(tipo===1){
+          isometrico = imagen.filter(e=>{
+            return !e.uri
+          })
+          imagen.forEach(e=>{
             data.append('imgIsometrico', e);
-        })
-        :tipo === 2
-        ?imagen.forEach(e=>{
+          })
+        }
+        if(tipo===2){
+          otrosComodato = imagen.filter(e=>{
+            return !e.uri
+          })
+          imagen.forEach(e=>{
             data.append('imgOtrosComodato', e);
-        })
-        :tipo === 3
-        ?imagen.forEach(e=>{
+          })
+        }
+        if(tipo===3){
+          soporteEntrega = imagen.filter(e=>{
+            return !e.uri
+          })
+          imagen.forEach(e=>{
             data.append('imgSoporteEntrega', e);
-        })
-        :tipo === 4
-        ?imagen.forEach(e=>{
+          })
+        }
+        if(tipo===4){
+          puntoConsumo = imagen.filter(e=>{
+              return !e.uri
+          })
+          imagen.forEach(e=>{
             data.append('imgPuntoConsumo', e);
-        })
-        :imagen.forEach(e=>{
+          })
+        }
+        if(tipo===5){
+          visual = imagen.filter(e=>{
+              return !e.uri
+          })
+          imagen.forEach(e=>{
             data.append('imgVisual', e);
         })
-        
-        console.log({isometrico, otrosComodato, soporteEntrega, puntoConsumo, visual, revisionId})
-        
+        }
+        // tipo === 1
+        // ?imagen.forEach(e=>{
+        //     data.append('imgIsometrico', e);
+        // })
+        // :tipo === 2
+        // ?imagen.forEach(e=>{
+        //     data.append('imgOtrosComodato', e);
+        // })
+        // :tipo === 3
+        // ?imagen.forEach(e=>{
+        //     data.append('imgSoporteEntrega', e);
+        // })
+        // :tipo === 4
+        // ?imagen.forEach(e=>{
+        //     data.append('imgPuntoConsumo', e);
+        // })
+        // :imagen.forEach(e=>{
+        //     data.append('imgVisual', e);
+        // })
+ 
         data.append('isometrico',JSON.stringify(isometrico));
         data.append('otrosComodato',JSON.stringify(otrosComodato));
         data.append('soporteEntrega',JSON.stringify(soporteEntrega));
@@ -900,9 +921,12 @@ class Tanques extends Component{
     ////////////////////////           SUBE LOS PDF
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     uploadPdf(pdf, tipo){
+       
         this.setState({loading:true})
         let {revisionId, imgProtocoloLlenado, imgHojaSeguridad, imgNComodato, imgOtrosSi} = this.state
         let data = new FormData();
+       
+        console.log({otrosSi, pdf})
         let protocoloLlenado = imgProtocoloLlenado.filter(e=>{
             return !e.uri
         })
@@ -927,26 +951,59 @@ class Tanques extends Component{
         imgOtrosSi = imgOtrosSi.filter(e=>{
             return e.uri
         })
-        tipo === 1
-        ?pdf.forEach(e=>{
+        if(tipo===1){
+          protocoloLlenado = pdf.filter(e=>{
+              return !e.uri
+          })
+          pdf.forEach(e=>{
             data.append('imgProtocoloLlenado', e);
-        })
-        :tipo === 2
-        ?pdf.forEach(e=>{
+          })
+        }
+        if(tipo===2){
+          hojaSeguridad = pdf.filter(e=>{
+              return !e.uri
+          })
+          pdf.forEach(e=>{
             data.append('imgHojaSeguridad', e);
-        })
-        :tipo === 3
-        ?pdf.forEach(e=>{
+          })
+        }
+        if(tipo===3){
+          nComodato = pdf.filter(e=>{
+              return !e.uri
+          })
+          pdf.forEach(e=>{
             data.append('imgNComodato', e);
-        })
-        :pdf.forEach(e=>{
+          })
+        }
+        if(tipo===4){
+          otrosSi = pdf.filter(e=>{
+              return !e.uri
+          })
+          pdf.forEach(e=>{
             data.append('imgOtrosSi', e);
-        })
+          })
+        }
+
+        // tipo === 1
+        // ?pdf.forEach(e=>{
+        //     data.append('imgProtocoloLlenado', e);
+        // })
+        // :tipo === 2
+        // ?pdf.forEach(e=>{
+        //     data.append('imgHojaSeguridad', e);
+        // })
+        // :tipo === 3
+        // ?pdf.forEach(e=>{
+        //     data.append('imgNComodato', e);
+        // })
+        // :pdf.forEach(e=>{
+        //     data.append('imgOtrosSi', e);
+        // })
         data.append('protocoloLlenado',JSON.stringify(protocoloLlenado));
         data.append('hojaSeguridad',   JSON.stringify(hojaSeguridad));
         data.append('nComodato',       JSON.stringify(nComodato));
         data.append('otrosSi',         JSON.stringify(otrosSi));
-        console.log({imgNComodato, imgHojaSeguridad, imgProtocoloLlenado, imgOtrosSi})
+        console.log({otrosSi, imgNComodato, imgHojaSeguridad, imgProtocoloLlenado, imgOtrosSi})
         axios({ method: 'put',    url: `rev/revision/uploadPdf/${revisionId}`, data: data })
         .then((res)=>{
             if(res.data.status){
@@ -1011,60 +1068,59 @@ class Tanques extends Component{
 
     step5(){
         let {lat, lng, accesoPerfil, modalDpto, dpto, dptos, modalCiudad, ciudades, ciudad, modalPoblado, poblados, poblado }= this.state
-   
         return(
-            <View>
-                {
-                    accesoPerfil=="admin"
-                    ?<>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step2}>Latitud</Text>
-                            <TextInput
-                                placeholder="Latitud"
-                                style={style.inputStep2}
-                                value={lat ?lat.toString() :""}
-                                onChangeText={(lat)=> this.setState({ lat })}
-                            />
-                        </View>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step2}>Longitud</Text>
-                            <TextInput
-                                placeholder="Longitud"
-                                style={style.inputStep2}
-                                value={lng ?lng.toString() :""}
-                                onChangeText={(lng)=> this.setState({ lng })}
-                            />
-                        </View>
-                    </>
-                    :<><Text>Lat: {lat}</Text>
-                     <Text>Lng: {lng}</Text></>
-                }
-                {/* DEPARTAMENTOS */}
-                <ModalFilterPicker
-					placeholderText="Dpto ..."
-					visible={modalDpto}
-					onSelect={(e)=>this.buscarCiudad(e.key)}
-					onCancel={()=>this.setState({modalDpto:false})}
-                    options={dptos}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Dpto</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalDpto:true})}>
-                        <Text style={dpto ?style.textBtnActive :style.textBtn}>{dpto ?dpto :"Dpto"}</Text>
-                    </TouchableOpacity>
-                </View>
+          <View>
+              {
+                (accesoPerfil=="admin" || accesoPerfil=="adminTanque")
+                ?<>
+                  <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Latitud</Text>
+                    <TextInput
+                      placeholder="Latitud"
+                      style={style.inputStep2}
+                      value={lat ?lat.toString() :""}
+                      onChangeText={(lat)=> this.setState({ lat })}
+                    />
+                  </View>
+                  <View style={style.contenedorSetp2}>
+                    <Text style={style.row1Step2}>Longitud</Text>
+                    <TextInput
+                      placeholder="Longitud"
+                      style={style.inputStep2}
+                      value={lng ?lng.toString() :""}
+                      onChangeText={(lng)=> this.setState({ lng })}
+                    />
+                  </View>
+                </>
+                :<><Text>Lat: {lat}</Text>
+                  <Text>Lng: {lng}</Text></>
+              }
+              {/* DEPARTAMENTOS */}
+              <ModalFilterPicker
+                placeholderText="Dpto ..."
+                visible={modalDpto}
+                onSelect={(e)=>this.buscarCiudad(e.key)}
+                onCancel={()=>this.setState({modalDpto:false})}
+                options={dptos}
+                cancelButtonText="CANCELAR"
+                optionTextStyle={style.filterText}
+              />
+              <View style={style.contenedorSetp2}>
+                  <Text style={style.row1Step2}>Dpto</Text>
+                  <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalDpto:true})}>
+                      <Text style={dpto ?style.textBtnActive :style.textBtn}>{dpto ?dpto :"Dpto"}</Text>
+                  </TouchableOpacity>
+              </View>
 
                 {/* CIUDADES */}
                 <ModalFilterPicker
-					placeholderText="ciudad ..."
-					visible={modalCiudad}
-					onSelect={(e)=>this.buscarPoblado(e.key)}
-					onCancel={()=>this.setState({modalCiudad:false})}
-                    options={ciudades}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
+                  placeholderText="ciudad ..."
+                  visible={modalCiudad}
+                  onSelect={(e)=>this.buscarPoblado(e.key)}
+                  onCancel={()=>this.setState({modalCiudad:false})}
+                  options={ciudades}
+                  cancelButtonText="CANCELAR"
+                  optionTextStyle={style.filterText}
                 />
                 <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>ciudad</Text>
@@ -1075,13 +1131,13 @@ class Tanques extends Component{
 
                 {/* POBLADOS */}
                 <ModalFilterPicker
-					placeholderText="Poblado ..."
-					visible={modalPoblado}
-					onSelect={(e)=>this.setState({poblado:e.key, modalPoblado:false})}
-					onCancel={()=>this.setState({modalPoblado:false})}
-                    options={poblados}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
+                  placeholderText="Poblado ..."
+                  visible={modalPoblado}
+                  onSelect={(e)=>this.setState({poblado:e.key, modalPoblado:false})}
+                  onCancel={()=>this.setState({modalPoblado:false})}
+                  options={poblados}
+                  cancelButtonText="CANCELAR"
+                  optionTextStyle={style.filterText}
                 />
                 <View style={style.contenedorSetp2}>
                     <Text style={style.row1Step2}>Poblado</Text>
@@ -1122,7 +1178,6 @@ class Tanques extends Component{
         const {solicitudServicio, revisionId, nControl, codtCliente, direccion, razon_socialCliente} = this.state
         axios.post(`rev/revision/solicitudServicio/${revisionId}`, {solicitudServicio, nControl, codtCliente, direccion, razon_socialCliente})
         .then((res)=>{
-            console.log(res.data)
             if(res.data.status){
                 Toast.show("Solicitud enviada")
                 this.setState({modalAlerta:false, solicitudServicio:""})
@@ -1134,11 +1189,11 @@ class Tanques extends Component{
 
 
     renderSteps(){
-        let {tanqueIdArray, revisionId, modalAlerta} = this.state
+        let {tanqueArray, revisionId, modalAlerta} = this.state
        
         return(
             <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" >
-                <ProgressStep label="Datos"  nextBtnDisabled={tanqueIdArray.length==0 ?true :false} nextBtnText="Siguiente" onNext={()=>revisionId ?this.editarStep1() :this.crearStep1()}>
+                <ProgressStep label="Datos"  nextBtnDisabled={tanqueArray.length==0 ?true :false} nextBtnText="Siguiente" onNext={()=>revisionId ?this.editarStep1() :this.crearStep1()}>
                     <View style={{ alignItems: 'center' }}>
                         {this.step1()}    
                     </View>
@@ -1202,10 +1257,8 @@ class Tanques extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearStep1(){
         const {tanqueIdArray, tanqueArray} = this.state
-        console.log({tanqueIdArray})
         axios.post(`rev/revision/`, {tanqueId:tanqueIdArray})
         .then((res)=>{
-            console.log(res.data)
             if(res.data.status){
                 this.setState({revisionId:res.data.revision._id, nControl:res.data.revision.nControl})
                 let totalCapacidad = []
@@ -1230,7 +1283,6 @@ class Tanques extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep1(){
         const {sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion, tanqueArray} = this.state
-        console.log({tanqueArray})
         axios.put(`rev/revision/${revisionId}`, {tanqueId:tanqueIdArray, sector, barrio, usuariosAtendidos, m3, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
             if(res.data.status){
@@ -1255,7 +1307,7 @@ class Tanques extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep2(){
         const {zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, nComodatoText, nMedidorText, ubicacion, capacidad} = this.state
-        console.log({capacidad, zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, nComodatoText, nMedidorText, ubicacion})
+        
         axios.put(`rev/revision/${revisionId}`, {sector, barrio, usuariosAtendidos, m3, tanqueId:tanqueIdArray, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion})
         .then((res)=>{
             console.log(res.data)
@@ -1275,7 +1327,6 @@ class Tanques extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep3(){
         const {observaciones, avisos, extintores, distancias, electricas, accesorios, revisionId} = this.state
-        console.log({observaciones, avisos, extintores, distancias, electricas, accesorios})
         let data = new FormData();
         
         data.append('observaciones',  observaciones);
@@ -1303,12 +1354,12 @@ class Tanques extends Component{
     ////////////////////////           EDITA EL STEP 5
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarStep5(){
-        let {lat, lng, revisionId, poblado} = this.state
+        let {lat, lng, revisionId, poblado, ciudad, dpto} = this.state
         lat =  lat ?lat :4.597825;
         lng =  lng ?lng :-74.0755723;
-        console.log({lat, lng, poblado})
+        console.log({lat, lng, poblado, ciudad, dpto})
         
-        axios.put(`rev/revision/coordenadas/${revisionId}`, {lat, lng, poblado})
+        axios.put(`rev/revision/coordenadas/${revisionId}`, {lat, lng, poblado, ciudad, dpto})
         .then((res)=>{
             console.log(res.data)
             if(res.data.status){

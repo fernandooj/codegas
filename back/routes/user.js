@@ -458,12 +458,16 @@ module.exports = function(app, passport){
                                 }
                             
                                 if(req.session.usuario.acceso=="cliente"){
-                                    req.session.usuario=users
-                                    let codt = req.session.usuario.codt ?req.session.usuario.codt :"Sin codt"
-                                    let userRegistrado = {email:"directora.comercial@codegascolombia.com, fernandooj@ymail.com, soluciones@codegascolombia.com, servicioalcliente@codegascolombia.com"}
-                                    let text1 = "Usuario Editado"
-                                    let text2 = "Codt:" + codt + " / Razon Social:" + req.session.usuario.razon_social
-                                    htmlTemplate(req, userRegistrado, req.body.email, text1, text2,  "Usuario editado")
+                                  req.session.usuario=users
+                                  console.log("req.session")
+                                  console.log(req.session)
+                                  console.log("req.session")
+                                  console.log(req.body)
+                                  let codt = req.session.usuario.codt ?req.session.usuario.codt :"Sin codt"
+                                  let userRegistrado = {email:"directora.comercial@codegascolombia.com, fernandooj@ymail.com, soluciones@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+                                  let text1 = "Usuario Editado"
+                                  let text2 = "Codt:" + codt + " / Razon Social:" + req.session.usuario.razon_social
+                                  htmlTemplate(req, userRegistrado, req.body.email, text1, text2,  "Usuario editado")
                                 }
                             
                             //////////////////////////////  SI ENVIA PASSWORD LO EDITA
@@ -859,7 +863,6 @@ module.exports = function(app, passport){
                         })
                     })
                 })
-
                 res.json({status:true})
             }else{
                 res.json({ status: false, err}) 

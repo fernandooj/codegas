@@ -10,7 +10,7 @@ let mongoose      = require('mongoose');
 let cookieSession = require('cookie-session');
 let formidable    = require('express-form-data');
 let fs            = require('fs');
- 
+
 // importo las rutas
 let conversacionRutas  = require('./routes/conversacion.js');
 let mensajeRutas       = require('./routes/mensaje.js');
@@ -31,11 +31,11 @@ let configuracionRutas = require('./routes/configuracion.js');
 
 let SocketIO = require('./socket.js')
 const path   = require('path');
- 
-let https = require('http')
+
+let https = require('https')
 var options = {
-  // cert: fs.readFileSync('/home/certificados/bundle.crt', 'utf8'),
-  // key: fs.readFileSync('/home/certificados/appcodegas.com.pem', 'utf8')
+  cert: fs.readFileSync('/home/certificados/bundle.crt', 'utf8'),
+  key: fs.readFileSync('/home/certificados/appcodegas.com.pem', 'utf8')
 };
 let server = https.Server(options, app)
 SocketIO(server)
@@ -50,7 +50,7 @@ let flash    = require('connect-flash');
 /////////////////////////////////////////////////////////////////////////
 /***** puerto donde va a funcionar el servidor por defecto 3030  *******/
 /////////////////////////////////////////////////////////////////////////
-let port = process.env.port || 8181;
+let port = process.env.port || 3131;
 
 
 /////////////////////////////////////////////////////////////////////////

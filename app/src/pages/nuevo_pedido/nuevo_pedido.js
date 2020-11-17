@@ -391,7 +391,7 @@ class Nuevo_pedido extends Component{
                             <Calendar
                                 style={style.calendar}
                                 current={fechaSolicitud}
-                                minDate={diaActual}
+                                //minDate={diaActual}
                                 firstDay={1}
                                 onDayPress={(day) => { this.setState({solicitud:true, showFechaEntrega:false, fechaSolicitud:day.dateString})}}
                                 markedDates={{[fechaSolicitud]: {selected: true,  marked: true}}}

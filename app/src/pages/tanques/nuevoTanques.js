@@ -227,33 +227,35 @@ class Tanques extends Component{
         })
     }    
     modalCliente(){
-        let {showRenderUsuarios, terminoBuscador} = this.state
+    let {showRenderUsuarios, terminoBuscador} = this.state
 		return(
 			<Modal transparent visible={true} animationType="fade" >
 				<TouchableOpacity activeOpacity={1} >
 					<View style={style.contenedorModal}>
 						<View style={style.subContenedorModalUbicacion}>
-							<TouchableOpacity activeOpacity={1} onPress={() => this.setState({showAlerta:false})} style={style.btnModalClose}>
+              <TouchableOpacity activeOpacity={1} 
+                onPress={()=>this.setState({showClientes:false})} style={style.btnModalClose}
+              >
 								<Icon name={'times-circle'} style={style.iconCerrar} />
 							</TouchableOpacity>
-                            <View style={{flexDirection:"row"}}>
-                                <TextInput
-                                    placeholder="Buscar cliente"
-                                    value={terminoBuscador}
-                                    style={style.inputStep2}
-                                    onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador })}
-                                />
-                                <TouchableOpacity style={style.buscarRevision} onPress={()=>terminoBuscador.length>1 ?this.setState({showRenderUsuarios:true}) :alert("Inserte un valor") }>
-                                    <Icon name='search' style={style.iconSearch} />
-                                </TouchableOpacity>
+              <View style={{flexDirection:"row"}}>
+                  <TextInput
+                      placeholder="Buscar cliente"
+                      value={terminoBuscador}
+                      style={style.inputStep2}
+                      onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador })}
+                  />
+                  <TouchableOpacity style={style.buscarCliente} onPress={()=>terminoBuscador.length>1 ?this.setState({showRenderUsuarios:true}) :alert("Inserte un valor") }>
+                      <Icon name='search' style={style.iconSearch} />
+                  </TouchableOpacity>
 
-                            </View>
-                            {
-                                showRenderUsuarios
-                                &&<ScrollView>
-                                    {this.renderUsuarios()}
-                                </ScrollView>
-                            }
+              </View>
+              {
+                  showRenderUsuarios
+                  &&<ScrollView>
+                      {this.renderUsuarios()}
+                  </ScrollView>
+              }
 						</View>
 					</View>
 				</TouchableOpacity>
@@ -293,8 +295,8 @@ class Tanques extends Component{
             })
     }
     renderModalUltimaRev(){
-        let {ultimaRevisionPar, imgUltimaRev, loading, err1, err2} = this.state
-		return(
+      let {ultimaRevisionPar, imgUltimaRev, loading, err1, err2} = this.state
+		  return(
 			<Modal transparent visible={true} animationType="fade" >
 				<TouchableOpacity activeOpacity={1} >
 					<View style={style.contenedorModal}>
@@ -302,37 +304,37 @@ class Tanques extends Component{
 							<TouchableOpacity activeOpacity={1} onPress={() => this.setState({showModal:false})} style={style.btnModalClose}>
 								<Icon name={'times-circle'} style={style.iconCerrar} />
 							</TouchableOpacity>
-                            <DatePicker
-                                customStyles={{
-                                    dateInput:style.btnDate,
-                                    placeholderText:ultimaRevisionPar ?style.textBtnActive :style.textBtn,
-                                    dateText: { 
-                                        fontSize:14,
-                                        color: '#000000'
-                                    },
-                                }}
-                                style={style.btnDate3}
-                                
-                                locale="es_co"
-                                mode="date"
-                                placeholder={ultimaRevisionPar ?ultimaRevisionPar :"Ultima Rev Par"}
-                                format="YYYY-MMM-DD"
-                                showIcon={false}
-                                confirmBtnText="Confirmar"
-                                cancelBtnText="Cancelar"
-                                androidMode='spinner'
-                                onDateChange={(ultimaRevisionPar) => {this.setState({ultimaRevisionPar})}}
-                            />
-                            <TomarFoto 
-                                source={imgUltimaRev}
-                                width={180}
-                                titulo="Ultima Rev Par / Cer. Onac "
-                                limiteImagenes={4}
-                                imagenes={(imgUltimaRev) => {  this.setState({imgUltimaRev}) }}
-                            />
-                            <TouchableOpacity style={style.nuevaRevision} onPress={()=>ultimaRevisionPar ?this.saveRevision() :alert("Inserte una fecha") }>
-                                <Text style={style.textGuardar}>Guardar</Text>
-                            </TouchableOpacity>
+              <DatePicker
+                  customStyles={{
+                      dateInput:style.btnDate,
+                      placeholderText:ultimaRevisionPar ?style.textBtnActive :style.textBtn,
+                      dateText: { 
+                          fontSize:14,
+                          color: '#000000'
+                      },
+                  }}
+                  style={style.btnDate3}
+                  
+                  locale="es_co"
+                  mode="date"
+                  placeholder={ultimaRevisionPar ?ultimaRevisionPar :"Ultima Rev Par"}
+                  format="YYYY-MMM-DD"
+                  showIcon={false}
+                  confirmBtnText="Confirmar"
+                  cancelBtnText="Cancelar"
+                  androidMode='spinner'
+                  onDateChange={(ultimaRevisionPar) => {this.setState({ultimaRevisionPar})}}
+              />
+              <TomarFoto 
+                  source={imgUltimaRev}
+                  width={180}
+                  titulo="Ultima Rev Par / Cer. Onac "
+                  limiteImagenes={4}
+                  imagenes={(imgUltimaRev) => {  this.setState({imgUltimaRev}) }}
+              />
+              <TouchableOpacity style={style.nuevaRevision} onPress={()=>ultimaRevisionPar ?this.saveRevision() :alert("Inserte una fecha") }>
+                  <Text style={style.textGuardar}>Guardar</Text>
+              </TouchableOpacity>
                             
 						</View>
 					</View>
@@ -727,7 +729,6 @@ class Tanques extends Component{
             return e.uri
         })
 
-
         if(tipo===1){
             placa = imagen.filter(e=>{
                 return !e.uri
@@ -795,57 +796,81 @@ class Tanques extends Component{
     ////////////////////////           SUBE LOS PDF
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     uploadPdf(pdf, tipo){
-        this.setState({loading:true})
-        let {tanqueId, imgDossier, imgCerFabricante, imgCerOnac} = this.state
-        let data = new FormData();
-        let dossier = imgDossier.filter(e=>{
+      this.setState({loading:true})
+      let {tanqueId, imgDossier, imgCerFabricante, imgCerOnac} = this.state
+      let data = new FormData();
+      let dossier = imgDossier.filter(e=>{
+          return !e.uri
+      })
+      imgDossier = imgDossier.filter(e=>{
+          return e.uri
+      })
+      let cerFabricante = imgCerFabricante.filter(e=>{
+          return !e.uri
+      })
+      imgCerFabricante = imgCerFabricante.filter(e=>{
+          return e.uri
+      })
+      let cerOnac = imgCerOnac.filter(e=>{
+          return !e.uri
+      })
+      imgCerOnac = imgCerOnac.filter(e=>{
+          return e.uri
+      })
+      if(tipo===1){
+        dossier = pdf.filter(e=>{
             return !e.uri
         })
-        imgDossier = imgDossier.filter(e=>{
-            return e.uri
-        })
-        let cerFabricante = imgCerFabricante.filter(e=>{
-            return !e.uri
-        })
-        imgCerFabricante = imgCerFabricante.filter(e=>{
-            return e.uri
-        })
-        let cerOnac = imgCerOnac.filter(e=>{
-            return !e.uri
-        })
-        imgCerOnac = imgCerOnac.filter(e=>{
-            return e.uri
-        })
-        tipo===1
-        ?pdf.forEach(e=>{
+        pdf.forEach(e=>{
             data.append('imgDossier', e);
         })
-        :tipo===2
-        ?pdf.forEach(e=>{
+      }
+      if(tipo===2){
+        cerFabricante = pdf.filter(e=>{
+            return !e.uri
+        })
+        pdf.forEach(e=>{
             data.append('imgCerFabricante', e);
         })
-        :pdf.forEach(e=>{
+      }
+      if(tipo===3){
+        cerOnac = pdf.filter(e=>{
+            return !e.uri
+        })
+        pdf.forEach(e=>{
             data.append('imgCerOnac', e);
         })
-        data.append('dossier',       JSON.stringify(dossier));
-        data.append('cerFabricante', JSON.stringify(cerFabricante));
-        data.append('cerOnac',       JSON.stringify(cerOnac));
-        console.log({imgCerOnac, tipo})
-       
-            axios({ method: 'put',    url: `tan/tanque/uploadPdf/${tanqueId}`, data })
-            .then((res)=>{
-                console.log(res.data)
-                if(res.data.status){
-                    this.setState({loading:false})
-                }
-            })
-            .catch(err=>{
-                this.setState({loading:false})
-                console.log(err)
-                alert("No pudimos subir el archivo")
-            })
+      }
 
-        
+
+      // tipo===1
+      // ?pdf.forEach(e=>{
+      //     data.append('imgDossier', e);
+      // })
+      // :tipo===2
+      // ?pdf.forEach(e=>{
+      //     data.append('imgCerFabricante', e);
+      // })
+      // :pdf.forEach(e=>{
+      //     data.append('imgCerOnac', e);
+      // })
+      data.append('dossier',       JSON.stringify(dossier));
+      data.append('cerFabricante', JSON.stringify(cerFabricante));
+      data.append('cerOnac',       JSON.stringify(cerOnac));
+      console.log({data, dossier, imgDossier, tipo})
+      
+      axios({ method: 'put',    url: `tan/tanque/uploadPdf/${tanqueId}`, data })
+      .then((res)=>{
+          console.log(res.data)
+          if(res.data.status){
+              this.setState({loading:false})
+          }
+      })
+      .catch(err=>{
+          this.setState({loading:false})
+          console.log(err)
+          alert("No pudimos subir el archivo")
+      })        
     }
     step3(){
         const {usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, loadClientes, showClientes} = this.state
@@ -940,8 +965,8 @@ class Tanques extends Component{
         )
     }
     renderModaAlerta(){
-        let {alertaText} = this.state
-		return(
+      let {alertaText} = this.state
+		  return(
 			<Modal transparent visible={true} animationType="fade" >
 				<TouchableOpacity activeOpacity={1} >
 					<View style={style.contenedorModal}>
@@ -949,15 +974,15 @@ class Tanques extends Component{
 							<TouchableOpacity activeOpacity={1} onPress={() => this.setState({showAlerta:false})} style={style.btnModalClose}>
 								<Icon name={'times-circle'} style={style.iconCerrar} />
 							</TouchableOpacity>
-                            <TextInput
-                                placeholder="Comentarios"
-                                value={alertaText}
-                                style={style.inputStep4}
-                                onChangeText={(alertaText)=> this.setState({ alertaText })}
-                            />
-                            <TouchableOpacity style={style.nuevaRevision} onPress={()=>alertaText.length>5 ?this.enviarAlerta() :alert("Inserte una alerta") }>
-                                <Text style={style.textGuardar}>Guardar</Text>
-                            </TouchableOpacity>
+              <TextInput
+                placeholder="Comentarios"
+                value={alertaText}
+                style={style.inputStep4}
+                onChangeText={(alertaText)=> this.setState({ alertaText })}
+              />
+              <TouchableOpacity style={style.nuevaRevision} onPress={()=>alertaText.length>5 ?this.enviarAlerta() :alert("Inserte una alerta") }>
+                  <Text style={style.textGuardar}>Guardar</Text>
+              </TouchableOpacity>
                             
 						</View>
 					</View>
@@ -966,76 +991,76 @@ class Tanques extends Component{
 		)
     }
     enviarAlerta(){
-        const { alertaText, tanqueId, placaText, codtCliente, razon_socialCliente } = this.state
-        console.log({ alertaText, tanqueId, placaText, codtCliente, razon_socialCliente })
-        axios.post(`ale/alertaTanque/`, {alertaText, placaText, tanqueId, codtCliente, razon_socialCliente})
-        .then((res)=>{
-            if(res.data.status){
-                axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
-                .then(res2=>{
-                    console.log(res2.data)
-                    setTimeout(() => {
-                        alert("Alerta Enviada")
-                    }, 500);
-                    this.setState({alertaText:"", showAlerta:false, alertas:res2.data.alerta })
-                })
-            }
-        })
-        .catch(err=>{
-            this.setState({loading:false})
-            alert(JSON.stringify(err))
-        })
+      const { alertaText, tanqueId, placaText, codtCliente, razon_socialCliente } = this.state
+      console.log({ alertaText, tanqueId, placaText, codtCliente, razon_socialCliente })
+      axios.post(`ale/alertaTanque/`, {alertaText, placaText, tanqueId, codtCliente, razon_socialCliente})
+      .then((res)=>{
+          if(res.data.status){
+              axios.get(`ale/alertaTanque/byTanque/${tanqueId}`)
+              .then(res2=>{
+                  console.log(res2.data)
+                  setTimeout(() => {
+                      alert("Alerta Enviada")
+                  }, 500);
+                  this.setState({alertaText:"", showAlerta:false, alertas:res2.data.alerta })
+              })
+          }
+      })
+      .catch(err=>{
+          this.setState({loading:false})
+          alert(JSON.stringify(err))
+      })
     }
     step4(){
-        const {alertas, showAlerta} = this.state
-        return(
+      const {alertas, showAlerta} = this.state
+      return(
+        <View>
+            {showAlerta &&this.renderModaAlerta()}
+            <View style={[style.contenedorSetp2, {marginTop:10, marginBottom:5}]} > 
+                <Text style={style.row1Step2}>Nueva alerta</Text>
+                <TouchableOpacity onPress={()=>this.setState({showAlerta:true})}>
+                    <Icon name="plus" style={style.iconFrecuencia} />
+                </TouchableOpacity>    
+            </View>
+            <View style={[style.separador]}></View> 
             <View>
-                {showAlerta &&this.renderModaAlerta()}
-                <View style={[style.contenedorSetp2, {marginTop:10, marginBottom:5}]} > 
-                    <Text style={style.row1Step2}>Nueva alerta</Text>
-                    <TouchableOpacity onPress={()=>this.setState({showAlerta:true})}>
-                        <Icon name="plus" style={style.iconFrecuencia} />
-                    </TouchableOpacity>    
-                </View>
-                <View style={[style.separador]}></View> 
-                <View>
-                    <View style={style.contenedorRevision}>
-                        <Text style={style.alertaTit}>Alerta</Text>
-                        <Text style={style.alertaTit}>Crea</Text>
-                        <Text style={style.alertaTit}>Cierra</Text>
-                        <Text style={style.alertaTit}>Imagen</Text>
-                    </View>   
-                    {
-                        alertas.map(e=>{
-                            let imagen = e.alertaImagen[0]
-                            imagen = imagen ?imagen.split("-") :""
-                            imagen = `${imagen[0]}Resize${imagen[2]}`
-                            return(
-                                <View key={e._id} style={[style.contenedorRevision, {backgroundColor: e.activo ?"#F96D6C" :"#e8a43d"} ]}>
-                                    <Text style={style.alertaText}>{e.alertaText}</Text>
-                                    <Text style={style.alertaText}>{e.usuarioCrea.nombre}</Text>
-                                    <Text style={style.alertaText}>{e.usuarioCierra ?e.usuarioCierra.nombre :""}</Text>
-                                    <Lightbox 
-                                        backgroundColor="#fff"
-                                        renderContent={() => (
-                                            <Image
-                                                source={{uri: imagen }}
-                                                style={{ width:"100%", height:400, resizeMode:"contain" }}
-                                            />
-                                            )}
-                                    >
-                                        <Image
-                                            source={{ uri: imagen  }}
-                                            style={style.imagen}
-                                        />
-                                    </Lightbox>
-                                </View>
-                            )
-                        })
-                    }
-                </View>
-            </View> 
-        )
+              <View style={style.contenedorRevision}>
+                  <Text style={style.alertaTit}>Alerta</Text>
+                  <Text style={style.alertaTit}>Crea</Text>
+                  <Text style={style.alertaTit}>Cierra</Text>
+                  <Text style={style.alertaTit}>Imagen</Text>
+              </View>   
+              {
+                alertas.map(e=>{
+                  let imagen = e.alertaImagen[0]
+                  imagen = imagen ?imagen.split("-") :""
+                  imagen = `${imagen[0]}Resize${imagen[2]}`
+                  return(
+                    <View key={e._id} style={[style.contenedorRevision, {backgroundColor: e.activo ?"#F96D6C" :"#e8a43d"} ]}>
+                        <Text style={style.alertaText}>{e.alertaText}</Text>
+                        <Text style={style.alertaText}>{e.usuarioCrea.nombre}</Text>
+                        <Text style={style.alertaText}>{e.usuarioCierra ?e.usuarioCierra.nombre :""}</Text>
+                        <Lightbox 
+                            backgroundColor="#fff"
+                            renderContent={() => (
+                                <Image
+                                    source={{uri: imagen }}
+                                    style={{ width:"100%", height:400, resizeMode:"contain" }}
+                                />
+                                )}
+                        >
+                            <Image
+                                source={{ uri: imagen  }}
+                                style={style.imagen}
+                            />
+                        </Lightbox>
+                    </View>
+                    )
+                  })
+                }
+          </View>
+        </View> 
+      )
     }
     renderSteps(){
         let {placaText, tanqueId} = this.state

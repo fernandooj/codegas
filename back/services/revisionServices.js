@@ -90,8 +90,7 @@ class revisionServices{
 			nComodato         : data.nComodato,
 			nComodatoText     : data.nComodatoText,
 			ubicacion         : data.ubicacion,
-		 
-			otrosSi						:data.otrosSi,
+			otrosSi						: data.otrosSi,
 			usuarioCrea,
 			creado
 		})
@@ -212,8 +211,8 @@ class revisionServices{
 		revision.findByIdAndUpdate(_id, {$set: {
 		'coordenadas':coordenadas,
 			'poblado':data.poblado,
-			// 'poblado':data.poblado,
-			// 'poblado':data.poblado
+			'ciudad':data.ciudad,
+			'dpto':data.dpto
 		}}, callback);
 	}
 }

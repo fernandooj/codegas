@@ -608,7 +608,7 @@ router.put('/uploadPdf/:idTanque/', (req,res)=>{
         rutaImgDossier            = rutaImgDossier.length==0        ?dossier        :dossier.concat(rutaImgDossier);
         rutaImgCerFabricante      = rutaImgCerFabricante.length==0  ?cerFabricante  :cerFabricante.concat(rutaImgCerFabricante);
         rutaImgCerOnac            = rutaImgCerOnac.length==0        ?cerOnac        :cerOnac.concat(rutaImgCerOnac);
-        console.log(rutaImgCerOnac)
+        console.log({rutaImgDossier, rutaImgCerFabricante, rutaImgCerOnac})
         // rutaImgDossier       = rutaImgDossier.length<0 ?rutaImgDossier.split(" ").join("") :[]
         // rutaImgCerFabricante = rutaImgCerFabricante.length<0 ?rutaImgCerFabricante.split(" ").join("") :[]
         // rutaImgCerOnac       = rutaImgCerOnac.length<0 ?rutaImgCerOnac.split(" ").join("") :[]

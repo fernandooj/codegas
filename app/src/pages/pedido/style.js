@@ -480,7 +480,7 @@ export const style = MediaQueryStyleSheet.create({
 		borderColor:"rgba(0,0,0,.2)",
 		backgroundColor:"#ffffff",
 		color:"#000000",
-		width:"99.5%",
+		width:"96.5%",
 		borderWidth:1,
 		height:50,
 		marginTop:5,

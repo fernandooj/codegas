@@ -81,8 +81,8 @@ class Pedido extends Component{
         } catch (error) {
             console.log(error)
         }
-        this.socket = SocketIOClient(URL);
-        this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
+        // this.socket = SocketIOClient(URL);
+        // this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
     }
@@ -96,12 +96,12 @@ class Pedido extends Component{
     }
     reciveMensanje(messages) {
         //this.props.getPedidos()
-	}
+	  }
     callObservaciones(id){
-        axios.get(`nov/novedad/byPedido/${id}`)
-        .then(e=>{
-            this.setState({novedades:e.data.novedad})
-        })
+      axios.get(`nov/novedad/byPedido/${id}`)
+      .then(e=>{
+          this.setState({novedades:e.data.novedad})
+      })
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LAS NOVEDADES
@@ -142,7 +142,7 @@ class Pedido extends Component{
         const {acceso, terminoBuscador, pedidos, inicio, final} = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = pedidosFiltro.slice(inicio, final)
- 
+        
         return newPedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -288,7 +288,7 @@ class Pedido extends Component{
                     <Calendar
                         style={style.calendar}
                         current={fechaEntrega ?fechaEntrega :diaActual}
-                        minDate={diaActual}
+                        //minDate={diaActual}
                         firstDay={1}
                         onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
                         markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
@@ -317,10 +317,16 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido(){
         let {estado, razon_social, cedula, forma, cantidad, acceso, novedad,remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, codt, usuarioCrea, observacion, usuarioId, puntoId } = this.state
+        kilosTexto =kilosTexto.replace(/[A-Za-z$-]/g, "");
+        kilosTexto=kilosTexto.replace(",", "");
+        kilosTexto=parseInt(kilosTexto).toFixed(0);
+        kilosTexto = kilosTexto==="NaN" ?"" :kilosTexto
+
         valor_totalTexto =valor_totalTexto.replace(/[A-Za-z$-]/g, "");
-		valor_totalTexto=valor_totalTexto.replace(",", "");
-		valor_totalTexto=parseInt(valor_totalTexto).toFixed(0);
-		valor_totalTexto = valor_totalTexto==="NaN" ?"" :valor_totalTexto
+        valor_totalTexto=valor_totalTexto.replace(",", "");
+        valor_totalTexto=parseInt(valor_totalTexto).toFixed(0);
+        valor_totalTexto = valor_totalTexto==="NaN" ?"" :valor_totalTexto
+
 
         let imagenPedido1 = imagenPedido ?imagenPedido.split("-") :""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
@@ -857,7 +863,7 @@ class Pedido extends Component{
                             <Calendar
                                 style={style.calendar}
                                 current={fechaEntrega ?fechaEntrega :diaActual}
-                                minDate={diaActual}
+                                //minDate={diaActual}
                                 firstDay={1}
                                 onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
                                 markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}

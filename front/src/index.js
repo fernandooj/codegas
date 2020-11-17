@@ -17,9 +17,9 @@ export const URL = 'https://releo.co/public/assets/img/';
 export const URL2 = "https://appcodegas.com"    
 axios.defaults.baseURL = URL2+"/x/v1/";  
   
-ReactDom.render(
+ReactDom.render( 
     <Provider store={store}>
         <App />
     </Provider>
     , document.getElementById("root")
-) 
+)

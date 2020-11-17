@@ -8,7 +8,8 @@ class userServices {
 		User.find().populate("idPadre").sort({_id: 'desc'}).exec(callback)
 	}
 	getEmail(user, callback){
-		let email = user.email.toLowerCase()
+    let email = user.email.toLowerCase()
+    console.log({email})
 		User.findOne({'email':email}).exec(callback)
 	}
 	getClienteSinEditar(user, callback){
@@ -42,7 +43,7 @@ class userServices {
 	}
 	create(user, token, idPadre, callback){ 
 		let fecha2 = moment().subtract(5, 'hours');
-        fecha2 = moment(fecha2).format('YYYY-MM-DD h:mm');
+    fecha2 = moment(fecha2).format('YYYY-MM-DD h:mm');
 		let newUsuario = new User() 
 		newUsuario.razon_social			=  user.razon_social,
 		newUsuario.cedula				=  user.cedula,
@@ -85,7 +86,7 @@ class userServices {
 			'codt'			   : user.codt,
 			'celular'		   : user.celular,
 			'tipo'			   : user.tipo,
-			'email'			   : user.email,
+			'email'			   : user.email.toLowerCase(),
 			'codt'			   : user.codt,
 			'valorUnitario'	   : user.valorUnitario ?user.valorUnitario :null,
 			'updatedAt':    fecha

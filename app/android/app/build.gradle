@@ -36,8 +36,8 @@ android {
         applicationId "com.codegas"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11311
-        versionName "11.3.11"
+        versionCode 11330
+        versionName "11.3.30"
     }
     splits {
         abi {

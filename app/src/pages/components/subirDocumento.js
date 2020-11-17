@@ -79,13 +79,13 @@ export default class subirDocumento extends Component{
                     <TouchableOpacity onPress={()=>this.props.navigate("pdf", {uri:e.uri}) }>
                         <Text style={style.textPdf}>{e.name}</Text>
                     </TouchableOpacity>  
-                    <Icon name={'close'} style={style.iconTrashPdf} onPress={()=>this.eliminarImagen(key)}/>
+                    <Icon name={'close'} style={style.iconTrashPdf} onPress={()=>this.eliminarPdf(key)}/>
                 </View>
             )
         })
     }
  
-    eliminarImagen(keyImagen){
+    eliminarPdf(keyImagen){
         Alert.alert(
             'Eliminar Pdf',
             'seguro desea eliminar este pdf',
@@ -102,7 +102,11 @@ export default class subirDocumento extends Component{
         );
 
         const eliminar =()=>{
-            let imagenes = this.state.imagenes.filter((e, key)=>{return key!=keyImagen })    
+            console.log({imagenes:this.state.imagenes, keyImagen})
+            let imagenes = this.state.imagenes.filter((e, key)=>{
+              return key!=keyImagen 
+            })  
+            console.log({imagenes2:imagenes})  
             this.setState({imagenes})    
             this.props.imagenes(imagenes)
         }
