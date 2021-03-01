@@ -684,10 +684,7 @@ router.put('/guardarImagen/:idRevision/', (req,res)=>{
         rutaImgOtrosComodato   = rutaImgOtrosComodato.length==0  ?otrosComodato  :otrosComodato.concat(rutaImgOtrosComodato);
         rutaImgSoporteEntrega  = rutaImgSoporteEntrega.length==0 ?soporteEntrega :soporteEntrega.concat(rutaImgSoporteEntrega);
         rutaImgPuntoConsumo    = rutaImgPuntoConsumo.length==0   ?puntoConsumo   :puntoConsumo.concat(rutaImgPuntoConsumo);
-        rutaImgVisual          = rutaImgVisual.length==0         ?visual         :visual.concat(rutaImgVisual);
-       
-
-        
+        rutaImgVisual          = rutaImgVisual.length==0         ?visual         :visual.concat(rutaImgVisual);     
 
         revisionServices.editarImagen(req.params.idRevision, rutaImgIsometrico, rutaImgOtrosComodato, rutaImgSoporteEntrega, rutaImgPuntoConsumo, rutaImgVisual, (err, revision)=>{
             if (!err) {
@@ -801,6 +798,8 @@ router.put('/uploadPdf/:idRevision/', (req,res)=>{
         }     
 
         let {imgOtrosSi} = req.files
+        console.log("hojaseguridad")
+        console.log(req.files)
         if(imgOtrosSi){
             let esArrayimgOtrosSi = Array.isArray(imgOtrosSi)
             if(esArrayimgOtrosSi){

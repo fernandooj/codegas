@@ -233,9 +233,9 @@ class Tanques extends Component{
 				<TouchableOpacity activeOpacity={1} >
 					<View style={style.contenedorModal}>
 						<View style={style.subContenedorModalUbicacion}>
-              <TouchableOpacity activeOpacity={1} 
-                onPress={()=>this.setState({showClientes:false})} style={style.btnModalClose}
-              >
+                            <TouchableOpacity activeOpacity={1} 
+                                onPress={()=>this.setState({showClientes:false})} style={style.btnModalClose}
+                            >
 								<Icon name={'times-circle'} style={style.iconCerrar} />
 							</TouchableOpacity>
               <View style={{flexDirection:"row"}}>

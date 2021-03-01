@@ -1,6 +1,6 @@
 import {StyleSheet, Dimensions, Platform} from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
-let size = Dimensions.get('window');
+let {width, height} = Dimensions.get('window');
 
 export const style = MediaQueryStyleSheet.create({
     container:{
@@ -12,7 +12,7 @@ export const style = MediaQueryStyleSheet.create({
         flex:1, 
     },
     cabezera:{
-        width:size.width,
+        width:width,
         height:110
     },  
 	subContainerNuevo:{
@@ -173,7 +173,7 @@ export const style = MediaQueryStyleSheet.create({
 
     btnZona:{
         flexDirection:"row",
-        width:size.width-20,
+        width:width-20,
         borderColor:'rgba(0,0,0, .2)',
         padding:10,
         borderWidth:1,
@@ -182,7 +182,7 @@ export const style = MediaQueryStyleSheet.create({
     },
     textZona:{
         fontFamily: "Comfortaa-Light",
-        width:size.width-150,
+        width:width-150,
         fontSize:12,
         alignItems:"flex-start",
     },
@@ -196,7 +196,7 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems:"center",
 		justifyContent: 'center',
 		backgroundColor:"rgba(0,0,0,.5)",
-		height:size.height,
+		height:height,
 		zIndex:100,
 		width:"100%",
 		bottom:50,
@@ -215,8 +215,67 @@ export const style = MediaQueryStyleSheet.create({
 		top:Platform.OS=='android' ?0 :-8,
 		zIndex:100
 	},
-
 	iconCerrar:{
 		fontSize:22
+    },
+    
+    //////////////////////////////////////////////////////////////////		
+	///////////				MODAL 
+	//////////////////////////////////////////////////////////////////
+	contenedorModalCliente:{
+		alignItems:"center",
+		justifyContent: 'center',
+		backgroundColor:"rgba(0,0,0,.5)",
+		height,
+		zIndex:100,
+		width:"100%",
+		bottom:50,
+		top:0,
+		left:0,	
+		padding:40,
 	},
+	subContenedorModalCliente:{
+		backgroundColor:"#ffffff",
+		borderRadius:7,
+		padding:20,
+		alignItems:"center"
+	},
+ 
+	btnModalClose:{
+		position:"absolute",
+		right:Platform.OS=='android' ?3 :-10,
+		top:Platform.OS=='android' ?0 :-10,
+		zIndex:100
+	},
+	iconCerrar:{
+		fontSize:30
+    },
+    buscarCliente:{
+		backgroundColor:"#002587",
+		alignItems:"center",
+		width:45,
+		height:50,
+		top:5,
+		paddingVertical:11
+    },
+    inputStep2:{
+		fontFamily: "Comfortaa-Regular",
+		borderColor:"rgba(20,20,20,.1)",
+		textAlign:"left",
+		borderWidth:1,
+		width:width/1.7,
+		marginVertical:5,
+		paddingVertical:10,
+		fontSize:10,
+	},
+    iconSearch:{
+		color:"#ffffff",
+		fontSize:22
+	},
+	contenedorUsers:{
+		borderColor:"rgba(0,0,0,.1)",
+		padding:10,
+		borderWidth:1,
+		marginVertical:5
+	}
 })

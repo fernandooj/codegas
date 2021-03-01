@@ -98,7 +98,7 @@ class revisionServices{
 	}
 	editar(_id, data, callback){
 		let editado = moment().subtract(5, 'hours');
-    editado = moment(editado).format('YYYY-MM-DD h:mm');
+    	editado = moment(editado).format('YYYY-MM-DD h:mm');
 		revision.findByIdAndUpdate(_id, {$set: {
 			usuarioId          : data.usuarioId,
 			tanqueId           : data.tanqueId,
@@ -113,22 +113,21 @@ class revisionServices{
 			nMedidorText       : data.nMedidorText,
 			nComodatoText     : data.nComodatoText,
 			ubicacion         : data.ubicacion,
-		 
 		}}, callback);
-  }
+  	}
 	editarImagen(_id,  isometrico, otrosComodato, soporteEntrega, puntoConsumo, visual, callback){
 		console.log({isometrico, otrosComodato, soporteEntrega, puntoConsumo, visual})
 		revision.findByIdAndUpdate(_id, {$set: {
-			isometrico     : isometrico  		?isometrico  		:[],
-			otrosComodato  : otrosComodato  ?otrosComodato  :[],
+			isometrico     : isometrico ?isometrico :[],
+			otrosComodato  : otrosComodato ?otrosComodato :[],
 			soporteEntrega : soporteEntrega ?soporteEntrega :[],
-			puntoConsumo   : puntoConsumo   ?puntoConsumo   :[],
-			visual    		 : visual   		  ?visual   			:[],
+			puntoConsumo   : puntoConsumo ?puntoConsumo :[],
+			visual : visual  ?visual :[],
 		}}, callback);
 	}
 
 	subirPdf(_id, protocoloLlenado, hojaSeguridad, nComodato, otrosSi, callback){
-		console.log({protocoloLlenado, _id})
+		console.log({otrosSi, _id})
 		revision.findByIdAndUpdate(_id, {$set: {
 			protocoloLlenado : protocoloLlenado ?protocoloLlenado : [],
 			hojaSeguridad    : hojaSeguridad    ?hojaSeguridad    : [],
@@ -187,8 +186,8 @@ class revisionServices{
 		revision.findByIdAndUpdate(_id, {$set: {
 			'activo':activo
 		}}, callback);
-  }
-  eliminar(_id, eliminado, callback){
+  	}
+  	eliminar(_id, eliminado, callback){
 		revision.findByIdAndUpdate(_id, {$set: {
 			'eliminado':eliminado
 		}}, callback);

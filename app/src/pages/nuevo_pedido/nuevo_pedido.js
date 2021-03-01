@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert} from 'react-native'
+import {View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert, ScrollView} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import AsyncStorage             from '@react-native-community/async-storage';
 import Icon                     from 'react-native-fa-icons';
@@ -7,7 +7,7 @@ import Toast                    from 'react-native-simple-toast';
 import axios                    from 'axios'
 import moment                   from 'moment-timezone'
 import ModalSelector            from 'react-native-modal-selector'
-import ModalFilterPicker        from 'react-native-modal-filter-picker'
+import {createFilter} from 'react-search-input'
 import {Calendar}               from 'react-native-calendars';
 import { TextInputMask }        from 'react-native-masked-text'
 import TomarFoto                from "../components/tomarFoto";
@@ -16,7 +16,7 @@ import { connect }              from "react-redux";
 import {getUsuariosAcceso}      from '../../redux/actions/usuarioActions' 
 import Footer                   from '../components/footer'
 import {style}                  from './style'
- 
+const KEYS_TO_FILTERS = ["nombre", "email",  "razon_social", 'codt'] 
 const frecuencias = [
     { key: "semanal",   label: 'Semanal' },
     { key: "quincenal", label: 'Quincenal' },
@@ -35,39 +35,44 @@ const dias=[
     { key: "viernes",  label: 'Viernes' },
     { key: "sabado",   label: 'Sabado' },
 ]
-const diasN  = [
-	{label:1, key:1},
-	{label:2, key:2},
-	{label:3, key:3},
-	{label:4, key:4},
-	{label:5, key:5},
-	{label:6, key:6},
-	{label:7, key:7},
-	{label:8,  key:8},
-	{label:9,  key:9},
-	{label:10, key:10},
-	{label:11, key:11},
-	{label:12, key:12},
-	{label:13, key:13},
-	{label:14, key:14},
-	{label:15, key:15},
-	{label:16, key:16},
-	{label:17, key:17},
-	{label:18, key:18},
-	{label:19, key:19},
-	{label:20, key:20},
-	{label:21, key:21},
-	{label:22, key:22},
-	{label:23, key:23},
-	{label:24, key:24},
-	{label:25, key:25},
-	{label:26, key:26},
-	{label:27, key:27},
-	{label:28, key:28},
-	{label:29, key:29},
-	{label:30, key:30},
-	{label:31, key:31}
-]
+const diasN = []
+for (let index = 0; index < 32; index++) {
+    diasN.push({label:index, key:index}); 
+}
+
+// const diasN  = [
+// 	{label:1, key:1},
+// 	{label:2, key:2},
+// 	{label:3, key:3},
+// 	{label:4, key:4},
+// 	{label:5, key:5},
+// 	{label:6, key:6},
+// 	{label:7, key:7},
+// 	{label:8,  key:8},
+// 	{label:9,  key:9},
+// 	{label:10, key:10},
+// 	{label:11, key:11},
+// 	{label:12, key:12},
+// 	{label:13, key:13},
+// 	{label:14, key:14},
+// 	{label:15, key:15},
+// 	{label:16, key:16},
+// 	{label:17, key:17},
+// 	{label:18, key:18},
+// 	{label:19, key:19},
+// 	{label:20, key:20},
+// 	{label:21, key:21},
+// 	{label:22, key:22},
+// 	{label:23, key:23},
+// 	{label:24, key:24},
+// 	{label:25, key:25},
+// 	{label:26, key:26},
+// 	{label:27, key:27},
+// 	{label:28, key:28},
+// 	{label:29, key:29},
+// 	{label:30, key:30},
+// 	{label:31, key:31}
+// ]
 const horaActual = new Date().getHours();
 if (horaActual < 16 ) {
     hora=1
@@ -124,21 +129,94 @@ class Nuevo_pedido extends Component{
     getClientes(){
         axios.get(`users/clientes`)
         .then(res => {
-            console.log(res.data.usuarios)
             if(res.data.status){
-                let clientes = res.data.usuarios.map(e=>{
-                    return {key:e._id, label:e.cedula ?e.razon_social+" - "+e.cedula :e.razon_social, email:e.email}
-                }) 
-                this.setState({clientes, modalCliente:true})
+                this.setState({clientes:res.data.usuarios})
             }
         })
     }
- 
+    renderUsuarios(){
+        const {usuarios, navigation} = this.props
+        const {terminoBuscador, clientes} = this.state
+        let clientesFiltro = clientes.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        return clientesFiltro.map((e, key)=>{
+            return(
+                <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
+                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=> this.filtroClientes(e) }>
+                        <View style={{width:"90%"}}>
+                            {e.acceso=="cliente" &&<Text style={style.textUsers}>{e.idPadre ?"Punto consumo: "+e.idPadre.razon_social :e.razon_social}</Text>}
+                            <Text style={style.textUsers}>{e.nombre}</Text>
+                            <Text style={style.textUsers}>{e.codt}</Text>
+                        </View>
+                        <View style={{justifyContent:"center"}}>
+                            <Icon name={'angle-right'} style={style.iconCerrar} />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            )
+        })
+    }
+    renderCliente(){
+        const {idCliente, cliente} = this.state
+		return (
+			<View>
+                {
+                    idCliente
+                    ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=>this.setState({idCliente:null, cliente:null, puntos:[]})}>
+                        <Icon name="minus" style={style.iconFrecuencia} />
+                        <Text style={style.textGuardar}>{cliente}</Text>
+                    </TouchableOpacity>
+                    :<TouchableOpacity style={style.nuevaFrecuencia} 
+                        onPress={()=>
+                            (this.getClientes(),
+                            this.setState({showClientes:true}))
+                        }>
+                        <Icon name="plus" style={style.iconFrecuencia} />
+                        <Text style={style.textGuardar}>Asignar Cliente</Text>
+                    </TouchableOpacity>
+                }
+            </View>
+		)
+    }
+    modalCliente(){
+        let {showRenderUsuarios, terminoBuscador} = this.state
+		return(
+			<Modal transparent visible={true} animationType="fade" >
+				<TouchableOpacity activeOpacity={1} >
+					<View style={style.contenedorModalCliente}>
+						<View style={style.subContenedorModalCliente}>
+                            <TouchableOpacity activeOpacity={1} 
+                                onPress={()=>this.setState({showClientes:false})} style={style.btnModalClose}
+                            >
+								<Icon name={'times-circle'} style={style.iconCerrar} />
+							</TouchableOpacity>
+                            <View style={{flexDirection:"row"}}>
+                                <TextInput
+                                    placeholder="Buscar cliente"
+                                    value={terminoBuscador}
+                                    style={style.inputStep2}
+                                    onChangeText={(terminoBuscador)=> this.setState({ terminoBuscador })}
+                                />
+                            <TouchableOpacity style={style.buscarCliente} onPress={()=>terminoBuscador.length>1 ?this.setState({showRenderUsuarios:true}) :alert("Inserte un valor") }>
+                                <Icon name='search' style={style.iconSearch} />
+                            </TouchableOpacity>
+                        </View>
+                            {
+                                showRenderUsuarios
+                                &&<ScrollView>
+                                    {this.renderUsuarios()}
+                                </ScrollView>
+                            }
+						</View>
+					</View>
+				</TouchableOpacity>
+			</Modal>
+		)
+    }
 	renderPedido(){
-        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud, guardando} = this.state
-        console.log(puntos)
+        const {forma, acceso, cantidad, showFrecuencia, frecuencia, dia1, dia2, novedad, idCliente, puntoId, puntos, solicitud, fechaSolicitud, guardando, showClientes} = this.state
         return(
             <View style={style.subContainerNuevo}>
+                {showClientes &&this.modalCliente()}
                 <View style={style.contenedorMonto}>
                     <Text style={style.tituloForm}>Realice su pedido</Text>
                     <TouchableOpacity onPress={()=>this.setState({forma:"monto", cantidad:""})} style={style.btnFormaLlenar}>
@@ -360,11 +438,14 @@ class Nuevo_pedido extends Component{
             </View>
         )
     }
-    filtroClientes(idCliente){
-        let cliente = this.state.clientes.filter(e=>{ return e.key==idCliente })
-        console.log({cliente})
-        this.setState({cliente:cliente[0].label, idCliente, emailCliente:cliente[0].email, modalCliente:false})
-        axios.get(`pun/punto/byCliente/${idCliente}`)
+    filtroClientes({_id, email, nombre}){
+        this.setState({
+            cliente:nombre, 
+            idCliente:_id, 
+            emailCliente:email, 
+            showClientes:false
+        })
+        axios.get(`pun/punto/byCliente/${_id}`)
         .then(e=>{
             console.log(e.data.puntos)
             if(e.data.status){
@@ -382,8 +463,8 @@ class Nuevo_pedido extends Component{
         return(
             <Modal transparent visible={modalFechaEntrega} animationType="fade" >
                 <TouchableOpacity activeOpacity={1} onPress={() => {  this.setState({  showFechaEntrega: false }) }} >   
-                    <View style={style.contenedorModal}>
-                        <View style={style.subContenedorModal}>
+                    <View style={style.contenedorModalCliente}>
+                        <View style={style.subContenedorModalCliente}>
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({showFechaEntrega:false})} style={style.btnModalClose}>
                                 <Icon name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
@@ -403,32 +484,8 @@ class Nuevo_pedido extends Component{
             </Modal>
         )
     }
-    renderCliente(){
-        const {idCliente, modalCliente, cliente, clientes} = this.state
-		return (
-			<View>
-				<ModalFilterPicker
-					placeholderText="Filtrar ..."
-					visible={modalCliente}
-					onSelect={(e)=>this.filtroClientes(e.key)}
-					onCancel={()=>this.setState({modalCliente:false})}
-                    options={clientes}
-                    cancelButtonText="CANCELAR"
-                />
-                {
-                    idCliente
-                    ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=>this.setState({idCliente:null, cliente:null, puntos:[]})}>
-                        <Icon name="minus" style={style.iconFrecuencia} />
-                        <Text style={style.textGuardar}>{cliente}</Text>
-                    </TouchableOpacity>
-                    :<TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.getClientes()}>
-                        <Icon name="plus" style={style.iconFrecuencia} />
-                        <Text style={style.textGuardar}>Asignar Cliente</Text>
-                    </TouchableOpacity>
-                }
-            </View>
-		)
-    }	
+    	
+    
      
 	render(){
         const {navigation} = this.props

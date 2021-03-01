@@ -385,12 +385,12 @@ export const style = MediaQueryStyleSheet.create({
 		width:45,
 		padding:10
   },
-  buscarCliente:{
+  	buscarCliente:{
 		backgroundColor:"#002587",
 		alignItems:"center",
-    width:45,
-    height:50,
-    top:5,
+		width:45,
+		height:50,
+		top:5,
 		paddingVertical:11
 	},
 	btnDate3:{

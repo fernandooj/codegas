@@ -12,9 +12,9 @@ WebFont.load({
   }
 });
 const store = configStore();
-export const URL = 'https://releo.co/public/assets/img/';  
-// export const URL2 = "http://localhost:8181" 
-export const URL2 = "https://appcodegas.com"    
+export const URL = 'https://appcodegas.com/public/assets/img/';  
+export const URL2 = "http://localhost:8181"
+// export const URL2 = "https://appcodegas.com"
 axios.defaults.baseURL = URL2+"/x/v1/";  
   
 ReactDom.render( 

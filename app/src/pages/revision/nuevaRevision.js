@@ -999,6 +999,7 @@ class Tanques extends Component{
         // :pdf.forEach(e=>{
         //     data.append('imgOtrosSi', e);
         // })
+         
         data.append('protocoloLlenado',JSON.stringify(protocoloLlenado));
         data.append('hojaSeguridad',   JSON.stringify(hojaSeguridad));
         data.append('nComodato',       JSON.stringify(nComodato));
