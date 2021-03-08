@@ -21,15 +21,14 @@ router.get('/', (req,res)=>{
     }
 })
 
-
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS ACTIVOS
 ////////////////////////////////////////////////////////////
-router.get('/no_eliminados', (req,res)=>{
+router.get('/no_eliminados/:limit', (req,res)=>{
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado',  carro:[] }); 
     }else{
-        carroServices.getNoEliminados((err, carro)=>{
+        carroServices.getNoEliminados(req.params.limit, (err, carro)=>{
             if (!err) {
                 res.json({ status: true, carro }); 
             }else{

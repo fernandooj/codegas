@@ -17,8 +17,8 @@ let sizeOf    	   = promisify(require('image-size'));
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
 ////////////////////////////////////////////////////////////
-router.get('/todos/:fechaEntrega', (req,res)=>{
-
+router.get('/todos/app/:fechaEntrega/:limit', (req,res)=>{
+    let limit = req.params.limit
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado' });
     }else{
@@ -46,7 +46,7 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
             }
         })
         :req.session.usuario.acceso=="veo"
-        ?pedidoServices.getByFechaEntrega(req.params.fechaEntrega, 1000, (err, pedido)=>{
+        ?pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
             if (!err) {
                 let pedido1 = pedido.filter(e=>{
                     return e.kilos=="undefined" || e.kilos==undefined
@@ -59,16 +59,12 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
                 pedido = pedido.filter(e=>{
                     return e.usuarioId.comercialAsignado==req.session.usuario._id
                 })
-
-
                 res.json({ status:true, pedido });
-
             }else{
-
                 res.json({ status:false, message: err, pedido:[] });
             }
         })
-        :pedidoServices.getByFechaEntrega(req.params.fechaEntrega, 1000, (err, pedido)=>{
+        :pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
             if (!err) {
                 let pedido1 = pedido.filter(e=>{
                     return e.kilos=="undefined" || e.kilos==undefined
@@ -95,13 +91,15 @@ router.get('/todos/:fechaEntrega', (req,res)=>{
 })
 
 router.get('/todos/web/:fechaEntrega/', (req,res)=>{
-
-    let limit = req.query.page ?req.query.page :1
+    console.log("req.query")
+    console.log(req.query)
+    let limit = req.query.page ?(req.query.page*20) :40
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado' });
     }else{
         pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
             if (!err) {
+                
                 res.json({ status:true, pedido });
             }else{
                 res.json({ status:false, message: err, pedido:[] });

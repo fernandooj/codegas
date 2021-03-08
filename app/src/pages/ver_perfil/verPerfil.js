@@ -499,7 +499,7 @@ class verPerfil extends Component {
             console.log(res.data)
             if(res.data.status==="SUCCESS"){
                 Toast.show("Este email ya existe!", Toast.LONG)
-                this.setState({email:""})
+                // this.setState({email:""})
             }
         })
 

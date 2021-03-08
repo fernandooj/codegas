@@ -11,6 +11,7 @@ import verPerfilComponent	 	from '../pages/ver_perfil/verPerfil';
 import confirmarComponent 	 	from '../pages/perfil/confirmarCode';
 import registroComponent	 	from '../pages/registro/registro';
 import pedidoComponent	 	 	from '../pages/pedido/pedido';
+import editarPedidoComponent	from '../pages/pedido/editar-pedido';
 import conversacionComponent 	from '../pages/conversacion/conversacion';
 import mensajeComponent	 	 	from '../pages/mensaje/mensaje';
 import vehiculoComponent	 	from '../pages/vehiculo/vehiculo';
@@ -48,6 +49,7 @@ const AppNavigator = createStackNavigator({
 	privacidad   		: {screen: privacidadComponent},
 	mensaje      		: {screen: mensajeComponent, navigationOptions: { gesturesEnabled: false }},
 	pedido       		: {screen: pedidoComponent},
+	editarPedido 		: {screen: editarPedidoComponent},
 	vehiculo     		: {screen: vehiculoComponent},
 	zona		 		: {screen: zonaComponent},
 	nuevo_pedido 		: {screen: nuevoPedidoComponent},

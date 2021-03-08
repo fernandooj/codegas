@@ -377,12 +377,12 @@ class Nuevo_pedido extends Component{
                                 <Text style={style.textZona}>Punto de entrega</Text>
                                 <Text style={style.textZona}>{e.direccion}</Text>   
                                 <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
-                                {e.observacion &&<Text style={style.textZona}>Observacion: {e.observacion=="" ?"&nbsp;" :e.observacion }</Text>}
+                                {e.observacion && e.observacion.length!==0 ?<Text style={style.textZona}>Observacion: {e.observacion=="" ?"&nbsp;" :e.observacion }</Text> :null}
                             </View>
                         </View>    
                     )
                 })
-            }   
+            }
             {
                 solicitud 
                 ?<TouchableOpacity style={style.eliminarFrecuencia} onPress={()=> this.setState({solicitud:null})}>

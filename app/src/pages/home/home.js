@@ -12,7 +12,9 @@ import {URL} from "../../../App"
 import {style} from './style'
 import axios from 'axios';
 import Toast from 'react-native-simple-toast';
- 
+import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
+import {getPedidos, getZonasPedidos} from '../../redux/actions/pedidoActions' 
+  
 class Home extends Component{
 	constructor(props) {
 	  super(props);
@@ -26,6 +28,8 @@ class Home extends Component{
 	}
 	 
 	async componentWillMount(){
+		this.props.getVehiculos(30)
+		this.props.getPedidos(undefined, 80)
 		let usuariosEntrando   = await AsyncStorage.getItem('usuariosEntrando') ///// muestra la suma de usuarios que estan ingresando al chat
 		let userId 						 = await AsyncStorage.getItem('userId');
 		usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"
@@ -325,7 +329,12 @@ const mapState = state => {
   
 const mapDispatch = dispatch => {
 	return {
-	
+		getVehiculos: (limit) => {
+			dispatch(getVehiculos(limit));
+		},
+		getPedidos: (date, limit) => {
+			dispatch(getPedidos(date, limit));
+		},
 	};
 };
   

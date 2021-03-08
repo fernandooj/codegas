@@ -13,8 +13,9 @@ class userServices {
 		User.findOne({'email':email}).exec(callback)
 	}
 	getClienteSinEditar(user, callback){
-		let email = user.email
-		User.findOne({'email':email, eliminado:false, acceso:"cliente"}).exec(callback)
+		let email = user.email.toLowerCase()
+		console.log({email})
+		User.findOne({'email':email, eliminado:false}).exec(callback)
 	}
 	registro(user, callback){
 		let email = user.email.toLowerCase()

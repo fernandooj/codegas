@@ -41,15 +41,17 @@ class verPerfil extends Component{
       const {terminoBuscador, inicio, final} = this.state
       let filtroUsuarios = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
       let newUsuarios = filtroUsuarios.slice(inicio, final) 
-
       return newUsuarios.map((e, key)=>{
         return(
           <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
             <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params ?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
                 <View style={{width:"90%"}}>
                     
-                  {e.acceso=="cliente" &&<Text style={style.textUsers}>{e.idPadre ?"Punto consumo: "+e.idPadre.razon_social.toUpperCase() :e.razon_social.toUpperCase()}</Text>}
-                  <Text style={style.textUsers}>{e.nombre.toUpperCase()}</Text>
+                  {e.acceso=="cliente" 
+                    &&<Text style={style.textUsers}>
+                        {e.idPadre ?"Punto consumo: "+e.idPadre.razon_social.toUpperCase() :e.razon_social && e.razon_social.length!==0  &&e.razon_social.toUpperCase()}
+                    </Text>}
+                  {e.nombre && e.nombre.length!==0 ?<Text style={style.textUsers}>{e.nombre.toUpperCase()}</Text> :null }
                   <Text style={style.textUsers}>{e.email.toUpperCase()}</Text>
                   <Text style={style.textUsers}>{e.acceso.toUpperCase()}</Text>
                 </View>

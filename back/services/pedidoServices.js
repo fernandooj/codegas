@@ -42,7 +42,8 @@ class pedidoServices{
 	}
 	getByFechaEntrega(fechaEntrega, limit, callback){
 		limit = parseInt(limit)
-		limit = limit*20
+		console.log({limit})
+		// limit = limit*20
 		fechaEntrega!="undefined"
 		?pedido.find({fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").limit(limit).sort({orden: 'asc'}).exec(callback)
 		:pedido.find({eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)

@@ -86,7 +86,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontFamily: "Comfortaa-Bold",
 		position:"relative",
 		zIndex:0,
-		width:"90%",
+		width:"85%",
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
 		borderColor: "rgba(150,150,150, .5)",
 		shadowOffset: { height: 2, width: 2 }, // IOS
@@ -160,6 +160,16 @@ export const style = MediaQueryStyleSheet.create({
 		paddingTop:5,
 		paddingVertical:0,
 		paddingHorizontal:10
+	},
+	btnReload:{
+		flexDirection:"row",
+		paddingTop:5,
+		paddingVertical:0,
+		marginHorizontal:0
+	},
+	iconReload:{
+		fontSize:23,
+		marginHorizontal: 5
 	},
 	iconFiltro:{
 		fontSize:15
@@ -489,6 +499,10 @@ export const style = MediaQueryStyleSheet.create({
 		paddingLeft:0,
 		paddingTop:Platform.OS==='android' ?0 :15,
 	},
+	containerEditar:{
+		padding:10,
+		marginBottom:40
+	}
   // inputIOS: {
 	// },
 	// inputAndroid: {

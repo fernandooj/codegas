@@ -27,7 +27,7 @@ const getPedidos = fechaEntrega => {
   console.log({fechaEntrega})
   return dispatch => {
     return axios
-      .get(`ped/pedido/todos/web/${fechaEntrega}`,)
+      .get(`ped/pedido/todos/web/${fechaEntrega}/1000`,)
       .then(res => {
         dispatch({
           type: GET_PEDIDOS,

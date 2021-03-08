@@ -44,12 +44,13 @@ const getPedidoByUser = userId => {
 };
 
 
-const getPedidos = fechaEntrega => {
-  console.log({fechaEntrega})
+const getPedidos = (fechaEntrega, limit) => {
+  console.log({limit})
   return dispatch => {
     return axios
-      .get(`ped/pedido/todos/${fechaEntrega}`,)
+      .get(`ped/pedido/todos/app/${fechaEntrega}/${limit}`,)
       .then(res => {
+        
         dispatch({
           type: GET_PEDIDOS,
           pedidos: res.data.pedido
@@ -80,7 +81,6 @@ const getVehiculosConPedidos = (data) => {
 };
 
 const getZonasPedidos = (fechaEntrega) => {
-  console.log({fechaEntrega})
   return dispatch => {
     return axios
       .get(`zon/zona/pedido/${fechaEntrega}`)

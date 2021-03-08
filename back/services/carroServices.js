@@ -15,8 +15,10 @@ class carroServices{
 	get(callback){
 		carro.find({}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").sort({_id: 'desc'}).exec(callback)
 	}
-	getNoEliminados(callback){
-		carro.find({eliminado:false}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").sort({_id: 'desc'}).exec(callback)
+	getNoEliminados(limit, callback){
+		console.log(limit)
+		limit = parseInt(limit)
+		carro.find({eliminado:false}).populate('usuarioCrea', 'email _id codt acceso nombre cedula celular razon_social').populate("conductor").limit(limit).sort({_id: 'desc'}).exec(callback)
 	}
 	getByCarro(_id, callback){
 		carro.findOne({_id}).populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social').populate("conductor").exec(callback)

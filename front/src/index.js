@@ -18,7 +18,7 @@ export const URL2 = "http://localhost:8181"
 axios.defaults.baseURL = URL2+"/x/v1/";  
   
 ReactDom.render( 
-    <Provider store={store}>
+    <Provider store={store}> 
         <App />
     </Provider>
     , document.getElementById("root")

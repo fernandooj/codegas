@@ -2,7 +2,7 @@
 
 import React, { PureComponent } from "react";
   
-import { Table, Modal, Button, Avatar, notification, DatePicker, Select, Input, Space } from 'antd'; 
+import { Table, Modal, Button, Avatar, notification, DatePicker, Select, Input, Space, Pagination } from 'antd'; 
 import './style.css' 
 import locale              from 'antd/lib/date-picker/locale/es_ES';
 import axios               from "axios";
@@ -24,7 +24,7 @@ const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', "n
 
 class Home extends PureComponent {
   constructor(props){
-    super(props)
+    super(props) 
     this.state={
       modal:false,
       modalFecha:false,
@@ -70,9 +70,9 @@ class Home extends PureComponent {
     this.setState({pedidosFiltro:props.pedidos, vehiculos})
   }
   componentDidMount() {
-    this.fetch();
+    this.fetch({data:true});
   }
-
+ 
   renderBotones(){ 
     return(
       <Space>
@@ -130,7 +130,7 @@ class Home extends PureComponent {
         data: pedidos,
         pagination,
       });
-    });
+    }); 
 
      
   
@@ -279,55 +279,7 @@ class Home extends PureComponent {
    
     
   }
-  handleTableChange = (pagination, filters, sorter) => {
-    const pager = { ...this.state.pagination };
-    pager.current = pagination.current;
-    this.setState({
-      pagination: pager,
-    });
-    this.fetch({
-      results: pagination.pageSize,
-      page: pagination.current,
-      sortField: sorter.field,
-      sortOrder: sorter.order,
-      ...filters,
-    });
-  };
-  fetch = (params = {}) => {
-    console.log('params:', params);
-    this.setState({ loading: true });
-    reqwest({
-      url: `x/v1/ped/pedido/todos/web/undefined`,
-      method: 'get',
-      data: {
-        results: 10,
-        ...params,
-      },
-      type: 'json',
-    }).then(data => {
-      console.log(data)
-      let pedidos = data.pedido.filter(e=>{
-        if(!e.carroId)
-        e["carroId"]={placa:"Sin placa"}
-        return e
-      })
-      pedidos = pedidos.filter(e=>{
-        if(!e.zonaId)
-        e["zonaId"]={nombre:"Sin Zona"}
-        return e
-      })
-
-      const pagination = { ...this.state.pagination };
-      // Read total count from server
-      // pagination.total = data.totalCount;
-      pagination.total = 200;
-      this.setState({
-        loading: false,
-        data: pedidos,
-        pagination,
-      });
-    });
-  };
+  
   renderTable(){
     const columns = [
       {
@@ -507,6 +459,62 @@ class Home extends PureComponent {
         rowClassName={ (e, record) =>  e.estado=="espera" ?"espera" :e.estado=="noentregado" ?"noentregado" :e.estado=="innactivo" ?"innactivo" :e.estado=="activo" &&!e.carroId && !e.entregado ?"activo" :e.estado=="activo" && !e.entregado ?"asignado" :"otro"}
       />)
   }
+  renderPagination(){
+    return <Pagination  onChange={(e)=>console.log(e)} total={50} />
+  }
+  handleTableChange = (pagination, filters, sorter) => {
+    const pager = { ...this.state.pagination };
+    pager.current = pagination.current;
+    this.setState({
+      pagination: pager,
+    });
+    this.fetch({ 
+      results: pagination.pageSize, 
+      page: pagination.current,
+      sortField: sorter.field,
+      sortOrder: sorter.order,
+      ...filters,
+    }); 
+  };
+  fetch = (params = {}) => {
+    console.log(params)
+    console.log(Object.keys(params).length === 0);  
+    if(Object.keys(params).length > 0){
+      this.setState({ loading: true });
+      reqwest({
+        url: `x/v1/ped/pedido/todos/web/undefined`,
+        method: 'get',
+        data: {
+          results: 10,
+          ...params,
+        },
+        type: 'json',
+      }).then(data => {
+        console.log(data)
+        let pedidos = data.pedido.filter(e=>{
+          if(!e.carroId)
+          e["carroId"]={placa:"Sin placa"}
+          return e
+        })
+        pedidos = pedidos.filter(e=>{
+          if(!e.zonaId)
+          e["zonaId"]={nombre:"Sin Zona"}
+          return e
+        })
+  
+        const pagination = { ...this.state.pagination };
+        // Read total count from server
+        // pagination.total = data.totalCount;
+        pagination.total = 20;
+        this.setState({
+          loading: false,
+          data: pedidos,
+          pagination,
+        });
+      }); 
+    }
+    
+  };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////            CAMBIO EL ESTADO DEL PEDIDO
@@ -802,10 +810,11 @@ class Home extends PureComponent {
  
         
         {this.renderTable()}
-          
+        {this.renderPagination()}
+        
         {this.renderModalVehiculo()}
         {this.modalNovedad()}
-        {this.modalFecha()}
+        {this.modalFecha()} 
       </Space>
     );
   }
