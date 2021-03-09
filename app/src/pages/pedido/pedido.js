@@ -12,7 +12,7 @@ import { connect }         from "react-redux";
 import ImageProgress 	   from 'react-native-image-progress';
 import Footer              from '../components/footer'
 import {getPedidos, getZonasPedidos} from '../../redux/actions/pedidoActions' 
- 
+import store from "../../redux/store.js";
  
 import {style}             from './style'
  
@@ -22,12 +22,13 @@ const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'c
 let {height}  = Dimensions.get('window');
  
 
-const Pedido = ({pedidos=[], navigation})=>{
+const Pedido = ({pedidos=[], navigation, getPedidos})=>{
+ 
     const top = new Animated.Value(height)
     const [acceso, setAcceso] = useState("");
     const [terminoBuscador, setTerminoBuscador] = useState("");
     const [inicio, setInicio] = useState(0);
-    const [final, setFinal] = useState(5);
+    const [final, setFinal] = useState(80);
     const [elevation, setElevation] = useState(0);
     const [fechaEntregaFiltro, setFechaEntregaFiltro] = useState("");
     const [textEstado, setTextEstado] = useState("");
@@ -201,9 +202,9 @@ const Pedido = ({pedidos=[], navigation})=>{
 		)
     }
     const actualizarFechaEntrega =(filtro) =>{
-        this.props.getZonasPedidos(filtro) 
-        this.props.getPedidos(filtro, 10) 
-        this.setState({fechaEntregaFiltro:filtro})
+        // this.props.getZonasPedidos(filtro) 
+        // this.props.getPedidos(filtro, 10) 
+        // this.setState({fechaEntregaFiltro:filtro})
     }
     const actualizarTabla =(filtro)=>{
         pedidos = pedidosFiltro.filter(e=>{
@@ -242,8 +243,8 @@ const Pedido = ({pedidos=[], navigation})=>{
     const reload =()=>{
         setShowSpin(true)
           setInterval(()=>setShowSpin(false), 2200)
-        // this.props.getPedidos(undefined, 5) 
-        store.dispatch(getPedidos(undefined, 100));
+        getPedidos(undefined,80) 
+        // store.dispatch(getPedidos(undefined, 100));
         // this.props.getZonasPedidos(this.state.fechaEntregaFiltro)
     }
     const renderPedidos=() => {
@@ -386,7 +387,7 @@ const Pedido = ({pedidos=[], navigation})=>{
             {renderModalFiltro()}
             {/*{this.modalZonas()}
             {openModal &&this.editarPedido()} */}
-            <ScrollView style={style.subContenedor} >
+            <ScrollView style={style.subContenedor}>
                 {
                  
                     pedidos.length==0
@@ -412,6 +413,9 @@ const mapDispatch = dispatch => {
  
         getZonasPedidos: (fechaEntrega) => {
             dispatch(getZonasPedidos(fechaEntrega));
+        },
+        getPedidos: (fechaEntrega, limit) => {
+            dispatch(getPedidos(fechaEntrega, limit));
         },
     };
 };

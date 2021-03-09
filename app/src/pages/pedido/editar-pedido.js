@@ -1018,7 +1018,7 @@ class Pedido extends Component{
             axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${nPedido}`)
             .then((res)=>{
                 if(res.data.status){
-                    this.props.getPedidos(undefined, 5)
+                    this.props.getPedidos(undefined, 80)
                     alert("Vehiculo Agregado con exito")
                 }else{
                     Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
