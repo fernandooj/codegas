@@ -48,6 +48,11 @@ class pedidoServices{
 		?pedido.find({fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").limit(limit).sort({orden: 'asc'}).exec(callback)
 		:pedido.find({eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)
 	}
+	getByTerm(term, limit, callback){
+		limit = parseInt(limit)
+ 
+		pedido.find({}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)
+	}
 	getLastRowConductor(conductorId, fechaEntrega, callback){
 		pedido.findOne({conductorId, fechaEntrega:fechaEntrega}).sort({orden: 'desc'}).exec(callback)
 	}

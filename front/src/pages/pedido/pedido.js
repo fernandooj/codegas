@@ -2,7 +2,7 @@
 
 import React, { PureComponent } from "react";
   
-import { Table, Modal, Button, Avatar, notification, DatePicker, Select, Input, Space, Pagination } from 'antd'; 
+import { Divider, Table, Modal, Button, Avatar, notification, DatePicker, Select, Input, Space, Pagination } from 'antd'; 
 import './style.css' 
 import locale              from 'antd/lib/date-picker/locale/es_ES';
 import axios               from "axios";
@@ -14,7 +14,7 @@ import {getVehiculos}      from '../../redux/actions/vehiculoActions'
 import { connect }         from "react-redux";
 import reqwest from 'reqwest';
 import Zoom from 'react-medium-image-zoom'
-import 'react-medium-image-zoom/dist/styles.css'
+import 'react-medium-image-zoom/dist/styles.css' 
 
 const confirm = Modal.confirm;
 const { Option } = Select;
@@ -106,7 +106,7 @@ class Home extends PureComponent {
     this.setState({ loading: true });
     let params={
       results: 5000,
-      page: 5000,
+      page: 10,
       sortField: 5000,
       sortOrder: 5000,
     }
@@ -129,7 +129,7 @@ class Home extends PureComponent {
         loading: false,
         data: pedidos,
         pagination,
-      });
+      }); 
     }); 
 
      
@@ -141,7 +141,7 @@ class Home extends PureComponent {
     this.setState({ loading: true, fechaCreacion:fechaEntregaFiltro});
     let params={
       results: 1500,
-      page: 1500,
+      page: 5,
       sortField: 1500,
       sortOrder: 1500,
     }
@@ -151,13 +151,16 @@ class Home extends PureComponent {
       data: {
         results: 1500,
         ...params,
-      },
+      }, 
       type: 'json',
     }).then(data => {
       let pedidos = data.pedido
-      pedidos = pedidos.filter(e=>{
-        return e.fechaSolicitud==fechaEntregaFiltro.fechaEntregaFiltro 
-      })
+      console.log(pedidos)
+      if(fechaEntregaFiltro.length){ 
+        pedidos = pedidos.filter(e=>{
+          return e.fechaSolicitud==fechaEntregaFiltro.fechaEntregaFiltro 
+        })
+      }
       const pagination = { ...this.state.pagination };
       pagination.total = 200;
       this.setState({
@@ -171,7 +174,7 @@ class Home extends PureComponent {
     this.setState({ loading: true, fechaEntrega:fechaEntregaFiltro });
     let params={
       results: 1500,
-      page: 1500,
+      page: 5,
       sortField: 1500,
       sortOrder: 1500,
     }
@@ -192,7 +195,7 @@ class Home extends PureComponent {
       pagination.total = 200;
       this.setState({
         loading: false,
-        data: pedidos,
+        data: pedidos, 
         pagination,
       });
     });    
@@ -202,7 +205,7 @@ class Home extends PureComponent {
     this.setState({ loading: true });
     let params={
       results: 1500,
-      page: 1500,
+      page: 10,
       sortField: 1500,
       sortOrder: 1500,
     }
@@ -211,7 +214,7 @@ class Home extends PureComponent {
       method: 'get',
       data: {
         results: 1500,
-        ...params,
+        ...params, 
       },
       type: 'json',
     }).then(data => {
@@ -240,7 +243,7 @@ class Home extends PureComponent {
     this.setState({ loading: true });
     let params={
       results: 2000,
-      page: 2000,
+      page: 20,
       sortField: 2000,
       sortOrder: 2000,
     }
@@ -538,34 +541,41 @@ class Home extends PureComponent {
         confirmar()
       },
       onCancel() {
-        console.log('Cancel');
+        console.log('Cancel'); 
       },
-    });
+    }); 
 
     const confirmar =()=>{
       axios.get(`ped/pedido/cambiarEstado/${id}/${estado}`)
       .then(res=>{
-        console.log(res.data)
-        if(res.data.status){
+        const data = this.state.data.filter(e=>{
+          if(e._id===id) {e.estado=estado}
+          return e
+        })
+        console.log(data) 
+        if(res.data.status){ 
             if(estado=="activo"){
-                //////// esta condicion es para cuando estaba el pedido innactivo y luego lo activaron
+              this.setState({data})
+                //////// esta condicion es para cuando estaba el pedido innactivo y luego lo activaron  
                 if(estadoInicial=="innactivo"){
                     this.setState({modalNovedad:true, estadoEntrega:"asignado"})
                 }else{
-                    // this.setState({modalFechaEntrega:true, estadoEntrega:"asignado"})
+                    // this.setState({modalFechaEntrega:true, estadoEntrega:"asignado"}) 
                     openNotificationWithIcon('success')
                 }
-                ////////////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////////////   
             }else if(estado=="innactivo"){
-                this.setState({modalNovedad:true})
+              this.setState({modalNovedad:true, data})
             } else{
               openNotificationWithIcon('success')
-              this.fetch({
-                results: 1000,
-                page: 1000,
-                sortField: 1000,
-                sortOrder: 1000,
-              })
+              this.setState({data})
+              console.log({id, estado})
+              // this.fetch({
+              //   results: 1000,
+              //   page: 1,
+              //   sortField: 1000,
+              //   sortOrder: 1000,
+              // })
             }
         }else{
             alert("Tenemos un problema, intentelo mas tarde")
@@ -597,7 +607,7 @@ class Home extends PureComponent {
   ////////////////////////           GUARDAR NOVEDAD CUANDO ES INNACTIVO
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   guardarNovedadInnactivo(){
-    let {novedad, id} = this.state
+    let {novedad, id} = this.state 
     axios.post(`nov/novedad/`, {pedidoId:id, novedad})
     .then((res2)=>{
       this.setState({modalNovedad:false, estadoEntrega:"noentregado", novedad:""})
@@ -605,12 +615,17 @@ class Home extends PureComponent {
           alert("Pedido actualizado")
       }, 1000);
       // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
-      this.fetch({
-        results: 1000,
-        page: 1000,
-        sortField: 1000,
-        sortOrder: 1000,
+      const data = this.state.data.filter(e=>{
+        if(e._id===id) {e.estado="innactivo"}
+        return e
       })
+      this.setState({data})
+      // this.fetch({
+      //   results: 1000,
+      //   page: 1000,
+      //   sortField: 1000,
+      //   sortOrder: 1000,
+      // })
     })
   }
 
@@ -638,14 +653,14 @@ class Home extends PureComponent {
               return <div
                       key={e._id}
                       // className={style.contenedorConductor}
-                      style={idVehiculo == e._id ?{backgroundColor:"#5cb85c"} :null}
+                      style={idVehiculo == e._id ?{backgroundColor:"#5cb85c"} :{cursor:"pointer"}}
                       onClick={()=>this.setState({idVehiculo:e._id, placa:e.placa})}
                   >
-                  <div>
+                  <div style={{cursor:"pointer"}}>
                     <p 
-                      
+                      style={{float:"left"}}
                     >{e.placa}</p>       
-                  </div>
+                  </div> 
                   <div>
                     <p 
                     
@@ -653,11 +668,12 @@ class Home extends PureComponent {
                   </div>
                   {
                     e.conductor
-                    ?<div>
-                      <Avatar src={e.conductor.avatar} />
+                    ?<div  style={{float:"right"}}>
+                      <Avatar src={e.conductor.avatar} /> 
                     </div>
                     :null
                   }
+                  <Divider />
               </div>
           })
         }
@@ -665,13 +681,12 @@ class Home extends PureComponent {
     )
   }
   disabledDate(current) {
- 
     // Can not select days before today and today
     return current && current < moment().subtract(1, 'days');
   }
   modalFecha(){
     let {modalFecha, fechaEntrega, loading} = this.state
-    fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
+    fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD") 
     const dateFormat = 'YYYY-MM-DD';
     return(
       <Modal
@@ -730,15 +745,22 @@ class Home extends PureComponent {
           console.log(res.data)
             if(res.data.status){
               openNotificationWithIcon('success')
-              this.setState({modalFecha:false})
-              this.fetch({
-                results: 1000,
-                page: 1000,
-                sortField: 1000,
-                sortOrder: 1000,
+              const data = this.state.data.filter(e=>{
+                if(e._id===id) {e.fechaEntrega=fechaEntrega}
+                return e
               })
+              console.log(data)
+
+              this.setState({modalFecha:false, data})
+              // this.fetch({ 
+              //   results: 1000, 
+              //   page: 1000, 
+              //   sortField: 1000, 
+              //   sortOrder: 1000,
+              // })
             }else{
-                alert("Tenemos un problema, intentelo mas tarde")            }
+              alert("Tenemos un problema, intentelo mas tarde")            
+            }
         })
     }
 }
@@ -773,44 +795,58 @@ class Home extends PureComponent {
         axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${nPedido}`)
         .then((res)=>{
             if(res.data.status){
-                this.fetch({
-                  results: 1000,
-                  page: 1000,
-                  sortField: 1000,
-                  sortOrder: 1000,
-                })
-                openNotificationWithIcon('success')
-                this.setState({modal:false, fechaEntrega:null})
+              const data = this.state.data.filter(e=>{
+                if(e._id===id) {e.carroId.placa=placa}
+                return e
+              })
+              console.log(data)
+
+              // this.fetch({
+              //   results: 1000,
+              //   page: 1000,
+              //   sortField: 1000, 
+              //   sortOrder: 1000,
+              // })
+              openNotificationWithIcon('success')
+              this.setState({modal:false, fechaEntrega:null})
             }else{
               console.log(res.data)
             }
         })
     }
   }
-  buscarRegistro= (terminoBuscador) => {
+  buscarRegistro=async (terminoBuscador) => {
     console.log({terminoBuscador})
       this.setState({
         terminoBuscador
       });
-      this.fetch({
-        results: 1000,
-        page: 1000,
-        sortField: 1000,
-        sortOrder: 1000,
-      });
- 
+      try {
+        const {data} = await axios.get(`ped/pedido/by_term/web/${terminoBuscador}`)
+        console.log(data)
+        this.setState({
+          data:data.pedido
+        });
+      } catch (error) { 
+        
+      }
+      // this.fetch({ 
+      //   results: 1000,
+      //   page: 3, 
+      //   sortField: 1000,
+      //   sortOrder: 1000, 
+      // });
   }
   render() {
     return (
-      <Space direction="vertical" style={{"maxWidth":"1850px", display: "inline"}}> 
-        {this.renderBotones()}  
+      <Space direction="vertical" style={{"maxWidth":"2050px", display: "inline"}}> 
+        {this.renderBotones()}   
         {/* <input className={style.inputSearch} placeholder="Buscar registro" onChange={(e)=>this.setState({terminoBuscador:e.target.value})} /> */}
         <Search  placeholder="Buscar registro"  onSearch={value => this.buscarRegistro(value)} enterButton /> 
  
  
         
         {this.renderTable()}
-        {this.renderPagination()}
+        {/* {this.renderPagination()} */}
         
         {this.renderModalVehiculo()}
         {this.modalNovedad()}

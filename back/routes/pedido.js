@@ -90,9 +90,33 @@ router.get('/todos/app/:fechaEntrega/:limit', (req,res)=>{
     }
 })
 
+/// search by term
+router.get('/by_term/web/:term/', (req,res)=>{
+    let limit = req.query.page ?(req.query.page*20) :40
+    const {term} = req.params
+    console.log(term)
+    if (!req.session.usuario) {
+        res.json({ status:false, message: 'No hay un usuario logueado' });
+    }else{
+        pedidoServices.getByTerm(req.params.term, 1000, (err, pedido)=>{
+            if (!err) {
+                const filterItems = (needle, heystack) => {
+                    let query = needle.toLowerCase();
+                    return heystack.filter(item => {
+                        return item.usuarioId.nombre.toLowerCase().indexOf(query) >= 0 || item.usuarioId.razon_social.toLowerCase().indexOf(query) >= 0
+                    });
+                }
+                let data = filterItems(term, pedido)
+                res.json({ status:true, pedido:data });
+            }else{
+                res.json({ status:false, message: err, pedido:[] });
+            }
+        })
+    }
+})
+
+
 router.get('/todos/web/:fechaEntrega/', (req,res)=>{
-    console.log("req.query")
-    console.log(req.query)
     let limit = req.query.page ?(req.query.page*20) :40
     if (!req.session.usuario) {
         res.json({ status:false, message: 'No hay un usuario logueado' });
@@ -107,6 +131,7 @@ router.get('/todos/web/:fechaEntrega/', (req,res)=>{
         })
     }
 })
+
 
 //////////////////////////////////////////////////////////////////////////
 ////////////        OBTENGO LOS PEDIDOS QUE TIENEN ASIGNADO UN USUARIO, PARA VERIFICAR QUE NO SE REPITAN EN EL MISMO DIA

@@ -29,7 +29,7 @@ class Home extends Component{
 	 
 	async componentWillMount(){
 		this.props.getVehiculos(30)
-		this.props.getPedidos(undefined, 80)
+		this.props.getPedidos(undefined, 160)
 		let usuariosEntrando   = await AsyncStorage.getItem('usuariosEntrando') ///// muestra la suma de usuarios que estan ingresando al chat
 		let userId 						 = await AsyncStorage.getItem('userId');
 		usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"

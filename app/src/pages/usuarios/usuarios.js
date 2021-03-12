@@ -41,6 +41,7 @@ class verPerfil extends Component{
       const {terminoBuscador, inicio, final} = this.state
       let filtroUsuarios = usuarios.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
       let newUsuarios = filtroUsuarios.slice(inicio, final) 
+      console.log(newUsuarios)
       return newUsuarios.map((e, key)=>{
         return(
           <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
@@ -52,8 +53,8 @@ class verPerfil extends Component{
                         {e.idPadre ?"Punto consumo: "+e.idPadre.razon_social.toUpperCase() :e.razon_social && e.razon_social.length!==0  &&e.razon_social.toUpperCase()}
                     </Text>}
                   {e.nombre && e.nombre.length!==0 ?<Text style={style.textUsers}>{e.nombre.toUpperCase()}</Text> :null }
-                  <Text style={style.textUsers}>{e.email.toUpperCase()}</Text>
-                  <Text style={style.textUsers}>{e.acceso.toUpperCase()}</Text>
+                  {e.email && e.email.length!==0 ?<Text style={style.textUsers}>{e.email.toUpperCase()}</Text> :null }
+                  {e.acceso && e.acceso.length!==0 ?<Text style={style.textUsers}>{e.acceso.toUpperCase()}</Text> :null }
                 </View>
                 <View  style={{justifyContent:"center"}}>
                     <Icon name={'angle-right'} style={style.iconCerrar} />

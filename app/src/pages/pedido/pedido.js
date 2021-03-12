@@ -22,13 +22,13 @@ const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'c
 let {height}  = Dimensions.get('window');
  
 
-const Pedido = ({pedidos=[], navigation, getPedidos})=>{
+const Pedido = ({pedidos=[], vehiculos=[], navigation, getPedidos})=>{
  
     const top = new Animated.Value(height)
     const [acceso, setAcceso] = useState("");
     const [terminoBuscador, setTerminoBuscador] = useState("");
     const [inicio, setInicio] = useState(0);
-    const [final, setFinal] = useState(80);
+    const [final, setFinal] = useState(160);
     const [elevation, setElevation] = useState(0);
     const [fechaEntregaFiltro, setFechaEntregaFiltro] = useState("");
     const [textEstado, setTextEstado] = useState("");
@@ -36,6 +36,8 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
     const [pedidosFiltro, setPedidosFiltro] = useState(pedidos);
     const [fechaSolicitudFiltro, setFechaSolicitudFiltro] = useState("");
     const [dates, setDates] = useState("");
+    const [modalCarros, setModalCarros] = useState(false);
+    const [placa, setPlaca] = useState("");
  
     const callObservaciones=(id)=>{
         axios.get(`nov/novedad/byPedido/${id}`)
@@ -56,12 +58,12 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
             <View style={style.contenedorCabezera}>
                 <View style={{flexDirection:"row"}}>
                     {
-                        pedidos &&<Text style={style.titulo}>Pedidos: {pedidos.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
+                        pedidos &&<Text style={style.titulo}>Pedidos: {pedidosFiltro.length} {acceso=="conductor" &&": "+moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
                     }
-                    {/* <TouchableOpacity style={style.btnZonas} onPress={()=>this.setState({modalCarrosFiltro:true, elevation:0})}>
+                    <TouchableOpacity style={style.btnZonas} onPress={()=>{setModalCarros(true), setElevation(0) }}>
                         <Text style={style.textZonas}>Carros</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={style.btnZonas} onPress={()=>this.setState({modalZona:true})}>
+                    {/* <TouchableOpacity style={style.btnZonas} onPress={()=>this.setState({modalZona:true})}>
                         <Text style={style.textZonas}>Zonas</Text>
                     </TouchableOpacity> */}
                 </View>
@@ -86,7 +88,7 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
                             </TouchableOpacity>
                             {/* <TouchableOpacity style={style.btnReload} onPress={()=>showModal()}>
                                 <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />
-                            </TouchableOpacity> */}
+                            </TouchableOpacity>  */}
                         </View>)
                     }
                 </View>
@@ -103,7 +105,7 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
     }
     const hideModal =()=>{
         Animated.timing(top,{
-            toValue:size.height,
+            toValue:height,
 			duration:400,
 			// easing:Easing.inOut
         }).start()
@@ -111,11 +113,13 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
       }
     const limpiar =()=>{
         // this.setState({pedidos:this.state.pedidosFiltro, textEstado:"todos", modalCarrosFiltro:false, placa:null})
-        // this.props.getPedidos(undefined, 5) 
+        setPedidosFiltro(pedidos) 
+        setModalCarros(false)
+        setPlaca(null)
+        setTextEstado("todos")
         // this.props.getZonasPedidos(moment().format("YYYY-MM-DD")) 
     }
-      const renderModalFiltro=()=>{
- 
+    const renderModalFiltro=()=>{
 		return(
 			<Animated.View style={[style.modal, {top}]}>
 				<View style={style.cabezera}>
@@ -201,6 +205,55 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
 			</Animated.View>
 		)
     }
+     
+    const modalCarrosFiltro =()=>{
+        return(
+            <View style={style.contenedorModal2}>
+                <View style={style.subContenedorModal}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        // onPress={() => {this.setState({modalCarrosFiltro:false, placa:null, idVehiculo:null})}}
+                        onPress={() => {setModalCarros(false)}}
+                        style={style.btnModalConductorClose}
+                    >
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                    </TouchableOpacity>
+                    <ScrollView>
+                        {
+                            vehiculos.map(e=>{
+                                return <TouchableOpacity
+                                        key={e._id}
+                                        style={placa == e.placa ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
+                                        onPress={()=>placa == e.placa ?limpiar() :actualizaVehiculos(e.placa)}
+                                    >
+                                    <Text style={style.conductor}>{e.placa}</Text>       
+                                    <Text style={style.conductor}>{e.conductor ? e.conductor.nombre :""}</Text>       
+                                    {e.conductor &&<Image source={{uri:e.conductor.avatar}} style={style.avatar} /> }
+                                </TouchableOpacity>
+                            })
+                        }
+                    </ScrollView>
+                </View>
+            </View>
+        )
+    }
+    const actualizaVehiculos =(placa)=>{
+        
+        let nPedidos = pedidos.filter(e=>{
+            return e.carroId
+        })
+        nPedidos = nPedidos.filter(e=>{
+            return (e.carroId!=="undefined" || e.carroId!==undefined)
+        })
+        nPedidos = nPedidos.filter(e=>{
+            return e.carroId.placa==placa
+        })
+        setModalCarros(false)
+        setPlaca(placa)
+        setPedidosFiltro(nPedidos)
+        // this.setState({pedidos, modalCarrosFiltro:false, placa})
+
+    }
     const actualizarFechaEntrega =(filtro) =>{
         // this.props.getZonasPedidos(filtro) 
         // this.props.getPedidos(filtro, 10) 
@@ -242,14 +295,14 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
     }
     const reload =()=>{
         setShowSpin(true)
-          setInterval(()=>setShowSpin(false), 2200)
-        getPedidos(undefined,80) 
+        setInterval(()=>setShowSpin(false), 2200)
+        getPedidos(undefined,160) 
         // store.dispatch(getPedidos(undefined, 100));
         // this.props.getZonasPedidos(this.state.fechaEntregaFiltro)
     }
     const renderPedidos=() => {
-        let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
-        let newPedidos = pedidosFiltro.slice(inicio, final)
+        let nPedidosFiltro = pedidosFiltro.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        let newPedidos = nPedidosFiltro.slice(inicio, final)
        
         return newPedidos.map((e, key)=>{
             return (
@@ -380,9 +433,9 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
         <View style={style.container}>
             {/* {modalPerfiles &&this.modalPerfiles()}
             {modalConductor &&this.modalVehiculos()}
-            {modalCarrosFiltro &&this.modalCarrosFiltro()}
             {modalFechaEntrega &&this.modalFechaEntrega()}
             {modalNovedad &&this.modalNovedad()} */}
+            {modalCarros &&modalCarrosFiltro()}
             {renderCabezera()}
             {renderModalFiltro()}
             {/*{this.modalZonas()}
@@ -402,15 +455,15 @@ const Pedido = ({pedidos=[], navigation, getPedidos})=>{
 } 
 
 const mapState = state => {
- 
+    console.log(state)
 	return {
-        pedidos: state.pedido.pedidos,
+        pedidos: state.pedido.pedidos ?state.pedido.pedidos :[],
+        vehiculos:state.vehiculo.vehiculos,
 	};
 };
   
 const mapDispatch = dispatch => {
     return {
- 
         getZonasPedidos: (fechaEntrega) => {
             dispatch(getZonasPedidos(fechaEntrega));
         },
