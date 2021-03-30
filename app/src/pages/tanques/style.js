@@ -280,7 +280,6 @@ export const style = MediaQueryStyleSheet.create({
 		width:80,
 		height:80,
 		resizeMode:"contain",
-		
 		marginBottom:5
 	},
 	contenedorRevision:{
@@ -289,17 +288,18 @@ export const style = MediaQueryStyleSheet.create({
 		marginVertical:4
 	},
 	txtUltimaRevTit:{
-		width:"33%",
+		width:"25%",
 		fontFamily: "Comfortaa-Bold",
 		fontSize:17,
 		textAlign:"center",
 		justifyContent:"center"
 	},
 	txtUltimaRev:{
-		width:"33%",
+		width:"25%",
 		fontFamily: "Comfortaa-Regular",
 		fontSize:15,
-		justifyContent:"center"
+		justifyContent:"center",
+		alignItems:"center"
 	},
 	iconFrecuencia:{
 		color:"#002587"

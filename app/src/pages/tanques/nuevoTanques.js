@@ -579,7 +579,8 @@ class Tanques extends Component{
                         <View style={style.contenedorRevision}>
                             <Text style={style.txtUltimaRevTit}>Fecha</Text>
                             <Text style={style.txtUltimaRevTit}>Usuario</Text>
-                            <Text style={style.txtUltimaRevTit}>Imagen</Text>
+                            <Text style={style.txtUltimaRevTit}>Imagen</Text> 
+                            <Text style={style.txtUltimaRevTit}>Eliminar</Text> 
                         </View>       
                         {
                             revisiones.map(e=>{
@@ -588,8 +589,12 @@ class Tanques extends Component{
                                 imagen = `${imagen[0]}Resize${imagen[2]}`
                                 return(
                                     <View style={style.contenedorRevision}>
-                                        <Text style={style.txtUltimaRev}>{e.fecha}</Text>
-                                        <Text style={style.txtUltimaRev}>{e.usuarioId.nombre}</Text>
+                                        <View style={style.txtUltimaRev}>
+                                            <Text>{e.fecha}</Text>
+                                        </View>
+                                        <View style={style.txtUltimaRev}>
+                                            <Text>{e.usuarioId.nombre}</Text>
+                                        </View>
                                         <Lightbox 
                                             backgroundColor="#fff"
                                             renderContent={() => (
@@ -603,7 +608,13 @@ class Tanques extends Component{
                                                 source={{ uri: imagen  }}
                                                 style={style.imagen}
                                             />
-                                        </Lightbox>	  
+                                        </Lightbox>	 
+                                        <TouchableOpacity 
+                                            style={style.txtUltimaRev}
+                                            onPress={()=>this.eliminarRevision(e._id)}
+                                        >
+                                            <Icon name="trash" style={style.iconDrop} />
+                                        </TouchableOpacity> 
                                     </View>
                                 )
                             })
@@ -613,6 +624,33 @@ class Tanques extends Component{
             </View>
         )
     } 
+    eliminarRevision(id){
+        Alert.alert(
+            `Seguro deseas eliminar esta revision`,
+            ``,
+            [
+              {text: 'Confirmar', onPress: () => confirmar()},
+
+              {text: 'Cancelar', onPress: () => console.log()},
+            ],
+            {cancelable: false},
+        );
+        const confirmar =()=>{
+            axios.get(`/ult/ultimaRev/eliminar/${id}/true`, )
+            .then((res)=>{
+                console.log(res.data)
+                if(res.data.status){
+                    axios.get(`ult/ultimaRev/byTanque/${this.state.tanqueId}`)
+                    .then(res=>{
+                        console.log(res.data)
+                        this.setState({revisiones:res.data.revision})
+                    })
+                }else{
+                    Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                }
+            })
+        }
+    }
     step2(){
         let {imgPlaca, imgPlacaMantenimiento, imgPlacaFabricante, imgVisual, imgDossier, imgCerFabricante, imgCerOnac} = this.state
         return(

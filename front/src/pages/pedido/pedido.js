@@ -36,6 +36,7 @@ class Home extends PureComponent {
       data: [],
       pagination: {},
       loading: false,
+      fechaEntrega:undefined,
       fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
     }
   }
@@ -86,9 +87,9 @@ class Home extends PureComponent {
          
          <DatePicker 
           onChange={(data, fechaEntregaFiltro)=>this.actualizaFechaSolicitud({data, fechaEntregaFiltro})} 
-          // value={this.state.fechaCreacion}
+          // value={this.state.fechaSolicitud}
           locale={locale} 
-          placeholder="Fecha Solicitud"
+          placeholder="Fecha Solicitud" 
         />
         <DatePicker 
           onChange={(data, fechaEntregaFiltro)=>this.actualizaFechaEntrega({data, fechaEntregaFiltro})} 
@@ -97,7 +98,13 @@ class Home extends PureComponent {
           placeholder="Fecha entrega"
           style={{margin:"0 8px"}}
         />
-         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} onClick={()=> {this.setState({fechaCreacion:"", fechaEntrega:"", terminoBuscador:""});this.fetch()} }>Limpiar</Button>
+         <Button style={{backgroundColor:"#000000", color:"#ffffff"}} 
+         onClick={()=> {
+           this.setState({fechaSolicitud:undefined, fechaEntrega:undefined, terminoBuscador:""});
+           this.fetch({data:true}); 
+          } 
+          }>Limpiar
+          </Button>
       </Space>
     )
   }
@@ -135,32 +142,27 @@ class Home extends PureComponent {
      
   
   }
-  actualizaFechaSolicitud = fechaEntregaFiltro => {
+  actualizaFechaSolicitud = fecha => {
     console.log("filtro")
-    console.log(fechaEntregaFiltro)
-    this.setState({ loading: true, fechaCreacion:fechaEntregaFiltro});
+    console.log(fecha.fechaEntregaFiltro)
+    this.setState({ loading: true, fechaSolicitud:fecha.fechaEntregaFiltro});
     let params={
       results: 1500,
-      page: 5,
+      page: 5, 
       sortField: 1500,
       sortOrder: 1500,
     }
     reqwest({
-      url: `x/v1/ped/pedido/todos/web/undefined`,
+      url: `x/v1/ped/pedido/todos/webSolicitud/${fecha.fechaEntregaFiltro}`,
       method: 'get',
       data: {
-        results: 1500,
+        results: 1500, 
         ...params,
       }, 
       type: 'json',
     }).then(data => {
+      console.log(data )
       let pedidos = data.pedido
-      console.log(pedidos)
-      if(fechaEntregaFiltro.length){ 
-        pedidos = pedidos.filter(e=>{
-          return e.fechaSolicitud==fechaEntregaFiltro.fechaEntregaFiltro 
-        })
-      }
       const pagination = { ...this.state.pagination };
       pagination.total = 200;
       this.setState({
@@ -171,15 +173,15 @@ class Home extends PureComponent {
     });    
   }
   actualizaFechaEntrega = fechaEntregaFiltro => {
-    this.setState({ loading: true, fechaEntrega:fechaEntregaFiltro });
+    this.setState({ loading: true, fechaEntrega:fechaEntregaFiltro.fechaEntregaFiltro });
     let params={
       results: 1500,
       page: 5,
       sortField: 1500,
-      sortOrder: 1500,
+      sortOrder: 1500, 
     }
     reqwest({
-      url: `x/v1/ped/pedido/todos/web/undefined`,
+      url: `x/v1/ped/pedido/todos/web/${fechaEntregaFiltro.fechaEntregaFiltro}`,
       method: 'get',
       data: {
         results: 1500,
@@ -188,9 +190,7 @@ class Home extends PureComponent {
       type: 'json',
     }).then(data => {
       let pedidos = data.pedido
-      pedidos = pedidos.filter(e=>{
-        return e.fechaEntrega==fechaEntregaFiltro.fechaEntregaFiltro 
-      })
+       
       const pagination = { ...this.state.pagination };
       pagination.total = 200;
       this.setState({
@@ -315,8 +315,8 @@ class Home extends PureComponent {
       {
         title: 'Zona',
         dataIndex: 'zonaId',
-        render: zonaId => <p>{zonaId.nombre}</p>, 
-        filters:this.state.zonas,
+        render: zonaId => <p>{zonaId &&zonaId.nombre}</p>, 
+        filters:this.state.zonas, 
         onFilter: (value, record) => record.zonaId.nombre.indexOf(value) === 0,
         sorter: (a, b) => a.zonaId.nombre.length - b.zonaId.nombre.length,
         sortDirections: ['descend', 'ascend'],
@@ -480,13 +480,17 @@ class Home extends PureComponent {
     }); 
   };
   fetch = (params = {}) => {
-    console.log(params)
+    const {fechaSolicitud, fechaEntrega} = this.state
+    console.log(fechaEntrega)
     console.log(Object.keys(params).length === 0);  
-    if(Object.keys(params).length > 0){
+    if(Object.keys(params).length > 0){ 
       this.setState({ loading: true });
+
+      const api = 'x/v1/ped/pedido'  
+      const url = fechaSolicitud ?`${api}/todos/webSolicitud/${fechaSolicitud}` :`${api}/todos/web/${fechaEntrega}`
       reqwest({
-        url: `x/v1/ped/pedido/todos/web/undefined`,
-        method: 'get',
+        url,
+        method: 'get', 
         data: {
           results: 10,
           ...params,

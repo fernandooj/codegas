@@ -58,5 +58,9 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	iconCerrar:{
 		fontSize:25
+	},
+	iconDrop:{
+		marginLeft:20,
+		fontSize:20
 	}
 })

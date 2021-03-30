@@ -19,7 +19,7 @@ class ultimaRevServices{
 		.sort({_id: 'desc'}).exec(callback)
 	} 
 	getByTanque(tanqueId, callback){
-		ultimaRev.find({tanqueId})
+		ultimaRev.find({tanqueId, eliminado:false})
 		.populate("usuarioId")
 		.populate("tanqueId")
 		.sort({_id: 'desc'}).exec(callback)

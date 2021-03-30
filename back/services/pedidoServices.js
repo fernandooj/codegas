@@ -20,7 +20,8 @@ class pedidoServices{
 		.populate("conductorId")
 		.populate("usuarioAsigna")
 		.populate("usuarioAsignaVehiculo")
-		.populate("zonaId")
+		.populate("usuarioCrea")
+		.populate("zonaId") 
 		.sort({orden: 'desc'}).exec(callback)
 	}
 	totalPedidos(callback){
@@ -40,6 +41,7 @@ class pedidoServices{
 		let fechaEntrega = 	fecha==="undefined" ?moment(fechaHoy).format('YYYY-MM-DD') :fecha
 		pedido.find({conductorId, fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion, valorUnitario').populate("carroId").populate("puntoId").sort({orden: 'asc'}).populate("zonaId").populate("usuarioCrea").exec(callback)
 	}
+ 
 	getByFechaEntrega(fechaEntrega, limit, callback){
 		limit = parseInt(limit)
 		console.log({limit})
@@ -47,6 +49,10 @@ class pedidoServices{
 		fechaEntrega!="undefined"
 		?pedido.find({fechaEntrega, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").limit(limit).sort({orden: 'asc'}).exec(callback)
 		:pedido.find({eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("zonaId").populate("usuarioCrea").populate("conductorId").limit(limit).sort({_id: 'desc'}).exec(callback)
+	}
+	getByFechaSolicitud(fechaSolicitud, limit, callback){
+		limit = parseInt(limit)
+		pedido.find({fechaSolicitud, eliminado:false}).populate('usuarioId', 'email _id acceso nombre cedula celular razon_social tokenPhone codt direccion valorUnitario comercialAsignado').populate("carroId").populate("puntoId").populate("usuarioCrea").populate("zonaId").limit(limit).sort({orden: 'asc'}).exec(callback)
 	}
 	getByTerm(term, limit, callback){
 		limit = parseInt(limit)
@@ -256,6 +262,12 @@ class pedidoServices{
 		console.log({_id, valorUnitario})
 		pedido.findByIdAndUpdate(_id, {$set: {
 			'valorUnitario':valorUnitario
+		}}, callback) ;
+	}
+	eliminarFrecuencia(_id, callback){
+		console.log({_id})
+		pedido.findByIdAndUpdate(_id, {$set: {
+			'frecuencia':null
 		}}, callback) ;
 	}
 }

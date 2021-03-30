@@ -14,7 +14,7 @@ class revisionServices{
 	}
 	get(callback){
 		revision.find({})
-		.populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
+		// .populate('usuarioCrea', 'email _id acceso nombre cedula celular razon_social')
 		.populate("zonaId")
 		.populate("puntoId")
 		.populate("usuarioId")

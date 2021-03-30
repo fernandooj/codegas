@@ -151,7 +151,7 @@ router.post('/', (req,res)=>{
                     let codt   = req.body.codt &&req.body.codt  
                     let razon_social = req.body.razon_social &&req.body.razon_social  
                     let text2  = `N Reporte: ${reportes.length+1} <br/> ${tanque} <br/> ${red} <br/> ${puntos} <br/> ${fuga} <br/> ${pqr}<br/> codt:${codt}<br/> razon social:${razon_social} `
-                    let usuario = {email:"fernandooj@ymail.com"}
+                    let usuario = {email:"fernandooj@ymail.com dptotecnico@codegascolombia.com"}
                     htmlTemplate(req, usuario, titulo, text1, text2,  asunto)
 
                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

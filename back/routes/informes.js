@@ -264,9 +264,9 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
     const {fechaInicio, fechaFinal} = req.params
     pedidoServices.get((err, pedido)=>{
         if(!err){
-            pedido = pedido.filter(e=>{
-                return e.estado!=="noentregado"  
-            })
+            // pedido = pedido.filter(e=>{
+            //     return e.estado!=="noentregado"  
+            // })
             pedido["CV"]=""
             pedido = pedido.filter(e=>{
                 let data=e.usuarioId.cedula.split('-')
@@ -320,6 +320,9 @@ router.get('/pedidos/trazabilidad/:email/:fechaInicio/:fechaFinal', (req,res)=>{
             },{
                 label: 'Kilos',
                 value: 'kilos'
+            },{
+                label: 'Usuario Crea',
+                value: 'usuarioCrea.nombre'
             },{
                 label: 'Usuario Asigna',
                 value: 'usuarioAsigna.nombre'

@@ -226,14 +226,15 @@ class verPerfil extends Component {
             <TextInput
                 type='outlined'
                 placeholder="Email"
-                autoCapitalize = 'none'
+              
                 keyboardType='email-address'
                 placeholderTextColor="#aaa" 
                 value={email}
                 onChangeText={email => this.setState({ email })}
                 onBlur={email => this.verificaEmail()}
                 style={email.length<3 ?[style.input, style.inputRequired] :style.input}
-            />    
+                autoCapitalize="characters"
+            />
 
             {/* RAZON SOCIAL */}	 
                 {
@@ -244,26 +245,27 @@ class verPerfil extends Component {
                             type='outlined'
                             placeholderTextColor="#aaa" 
                             placeholder="Razón Social"
-                            autoCapitalize = 'none'
+                            autoCapitalize="characters"
                             value={razon_social}
                             onChangeText={razon_social => this.setState({ razon_social })}
                             style={razon_social.length<3 ?[style.input, style.inputRequired] :style.input}
+                            
                         />
                     </View>
                 }
 
-        {/* CEDULA */}
-        <Text style={style.textInfo}>Cedula/ Nit</Text>
-        <TextInput
-            type='outlined'
-            placeholder="Cedula / Nit"
-            placeholderTextColor="#aaa" 
-            keyboardType='numeric'
-            value={cedula}
-            onChangeText={cedula => this.setState({ cedula })}
-            style={cedula.length<5 ?[style.input, style.inputRequired] :style.input}
-        />
-        {/* DIRECCION */}	
+            {/* CEDULA */}
+            <Text style={style.textInfo}>Cedula/ Nit</Text>
+            <TextInput
+                type='outlined'
+                placeholder="Cedula / Nit"
+                placeholderTextColor="#aaa" 
+                keyboardType='numeric'
+                value={cedula}
+                onChangeText={cedula => this.setState({ cedula })}
+                style={cedula.length<5 ?[style.input, style.inputRequired] :style.input}
+            />
+            {/* DIRECCION */}
                 {
                     acceso=="cliente"
                     &&<View>
@@ -272,7 +274,7 @@ class verPerfil extends Component {
                             type='outlined'
                             placeholder="Dirección factura"
                             placeholderTextColor="#aaa" 
-                            autoCapitalize = 'none'
+                            autoCapitalize="characters"
                             value={direccion_factura}
                             onChangeText={direccion_factura => this.setState({ direccion_factura })}
                             style={direccion_factura.length<3 ?[style.input, style.inputRequired] :style.input}

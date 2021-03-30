@@ -27,9 +27,9 @@ export const GlobalStyle = createGlobalStyle`
     footer, header, hgroup, menu, nav, section {
         display: block;
     }
-    body {
+    body { 
         line-height: 1;
-        max-width:1500px;
+        max-width:1600px;
         margin:auto;
        
     }

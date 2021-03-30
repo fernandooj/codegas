@@ -6,6 +6,7 @@ import Icon                from 'react-native-fa-icons';
 import {getFrecuencia} from '../../redux/actions/pedidoActions'  
 import { createFilter }    from 'react-native-search-filter';
 import Footer    from '../components/footer'
+import axios from 'axios'
 const KEYS_TO_FILTERS = ["forma", "frecuencia", 'dia1', 'dia2', "usuarioId.nombre", "usuarioId.email", "usuarioId.codt", "usuarioId.cedula", "nPedido"] 
  
  
@@ -62,19 +63,27 @@ class verPerfil extends Component{
                         newPedidos.map((e, key)=>{
                             return(
                                 <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"white" }]} key={key}>
-                                    <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e.usuarioId._id})}>
-                                        <View style={{width:"90%"}}>
+                                    <View style={{flexDirection:"row"}}>
+                                        <TouchableOpacity 
+                                            style={{width:"80%"}}
+                                            onPress={()=>navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e.usuarioId._id})
+                                        }>
                                             <Text style={style.textUsers}>Cliente: {e.usuarioId.nombre} - {e.usuarioId.codt}</Text>
                                             <Text style={style.textUsers}>N Pedido:{e.nPedido}</Text>
                                             <Text style={style.textUsers}>Forma   :{e.forma} {e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :""}</Text>
                                             <Text style={style.textUsers}>Tipo:    {e.frecuencia}</Text>
                                             {e.frecuencia=="semanal"   &&<Text style={style.textUsers}>{"Dia 1: "+e.dia1}</Text>}
                                             {e.frecuencia=="quincenal" &&<Text style={style.textUsers}>{"Dia 1: "+e.dia1+" - Dia 2: "+e.dia2}</Text>}
-                                        </View>
+                                        </TouchableOpacity>
                                         <View  style={{justifyContent:"center"}}>
                                             <Icon name={'angle-right'} style={style.iconCerrar} />
                                         </View>
-                                    </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            onPress={()=>this.eliminarFrecuencia(e._id, e.nPedido)}
+                                            style={{justifyContent:"center"}}>
+                                            <Icon name='trash' style={style.iconDrop} />
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             )
                         })
@@ -83,6 +92,29 @@ class verPerfil extends Component{
                 <Footer navigation={navigation} />
             </View>
         )
+    }
+    eliminarFrecuencia(id, nPedido){
+        Alert.alert(
+            `Seguro deseas eliminar la frecuencia ${nPedido}`,
+            ``,
+            [
+              {text: 'Confirmar', onPress: () => confirmar()},
+
+              {text: 'Cancelar', onPress: () => console.log()},
+            ],
+            {cancelable: false},
+        );
+        const confirmar =()=>{
+            axios.put(`ped/pedido/eliminarFrecuencia/`, {id})
+            .then((res)=>{
+                console.log(res.data)
+                if(res.data.status){
+                    this.props.getFrecuencia()
+                }else{
+                    Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                }
+            })
+        }
     }
 }
 const mapState = state => {

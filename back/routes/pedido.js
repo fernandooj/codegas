@@ -46,19 +46,24 @@ router.get('/todos/app/:fechaEntrega/:limit', (req,res)=>{
             }
         })
         :req.session.usuario.acceso=="veo"
-        ?pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
+        ?pedidoServices.getByFechaEntrega(req.params.fechaEntrega, 10000, (err, pedido)=>{
             if (!err) {
                 let pedido1 = pedido.filter(e=>{
                     return e.kilos=="undefined" || e.kilos==undefined
                 })
-
+                pedido1 = pedido1.filter(e=>{
+                    return e.estado!=="innactivo"
+                })
                 let pedido2 = pedido.filter(e=>{
                     return e.entregado==true && e.estado=="activo"
                 })
                 pedido = pedido1.concat(pedido2)
+                console.log(pedido.length)
+                
                 pedido = pedido.filter(e=>{
                     return e.usuarioId.comercialAsignado==req.session.usuario._id
                 })
+
                 res.json({ status:true, pedido });
             }else{
                 res.json({ status:false, message: err, pedido:[] });
@@ -122,6 +127,22 @@ router.get('/todos/web/:fechaEntrega/', (req,res)=>{
         res.json({ status:false, message: 'No hay un usuario logueado' });
     }else{
         pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
+            if (!err) {
+                
+                res.json({ status:true, pedido });
+            }else{
+                res.json({ status:false, message: err, pedido:[] });
+            }
+        })
+    }
+})
+
+router.get('/todos/webSolicitud/:fechaEntrega/', (req,res)=>{
+    let limit = req.query.page ?(req.query.page*20) :40
+    if (!req.session.usuario) {
+        res.json({ status:false, message: 'No hay un usuario logueado' });
+    }else{
+        pedidoServices.getByFechaSolicitud(req.params.fechaEntrega, limit, (err, pedido)=>{
             if (!err) {
                 
                 res.json({ status:true, pedido });
@@ -512,6 +533,22 @@ router.put('/editarOrden/', (req,res)=>{
 })
 
 
+///////////////////////////////////////////////////////////////
+////////////      EDITAR ORDEN PEDIDOS
+//////////////////////////////////////////////////////////////
+router.put('/eliminarFrecuencia/', (req,res)=>{
+    if (!req.session.usuario) {
+		res.json({ status:false, message: 'No hay un usuario logueado' });
+	}else{
+        pedidoServices.eliminarFrecuencia(req.body.id, (err, pedido)=>{
+            if(!err){
+                res.json({ status:true, pedido });
+            }
+        })
+    }
+})
+
+
 ///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////            CREAR PEDIDOS CON FRECUENCIAS
 ///////////////////////////////////////////////////////////////////////////////////
@@ -540,7 +577,9 @@ router.get('/crear_frecuencia/mensual', (req,res)=>{
                     creado:        moment(fechaFrecuencia).format("YYYY-MM-"+e.dia1),
                 }
                 let letNpedido = pedidos.length+(key+1)
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null,  (err2, pedido)=>{
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido)=>{
+                    console.log("pedido ")
+                    console.log(pedido)
                 })
             })
             res.json({fechaMensual, total:mensual.length, status:true, mensual });
@@ -572,8 +611,8 @@ router.get('/crear_frecuencia/quincenal', (req,res)=>{
                     fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal))),
                     creado:        moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal))),
                 }
-                let letNpedido = pedidos2.length+(key+1)
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null,  (err2, pedido)=>{
+                let letNpedido = pedidos.length+(key+1)
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido)=>{
                 })
             })
             res.json({fechaQuincenal, total:quincenal.length, status:true, quincenal });
@@ -619,7 +658,7 @@ router.get('/crear_frecuencia/semanal', (req,res)=>{
                     creado:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaSemanal))),
                 }
                 let letNpedido = pedidos.length+(key+1) ///////////////// esta variable me permite crear el n0 pedido
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, (err2, pedido)=>{
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido)=>{
 
                 })
             })
