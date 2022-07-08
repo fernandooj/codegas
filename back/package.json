@@ -21,7 +21,7 @@
     "image-size": "^0.6.3",
     "jimp": "^0.6.4",
     "json2csv": "^4.5.2",
-    "moment": "^2.18.1",
+    "moment": "^2.29.4",
     "moment-timezone": "^0.5.25",
     "mongoose": "^4.10.8",
     "mongoose-file": "0.0.2",
