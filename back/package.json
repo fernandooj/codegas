@@ -22,7 +22,7 @@
     "jimp": "^0.6.4",
     "json2csv": "^4.5.2",
     "moment": "^2.18.1",
-    "moment-timezone": "^0.5.25",
+    "moment-timezone": "^0.5.35",
     "mongoose": "^4.10.8",
     "mongoose-file": "0.0.2",
     "morgan": "^1.7.0",
