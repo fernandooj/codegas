@@ -1,0 +1,29 @@
+createUser:
+  name: ${self:custom.base}-save-user
+  handler: services/users/src/save-user.main
+  events:
+    - httpApi: 'POST /users'
+  package:
+    include:
+      - services/users/src/save-user.js
+      - lib/errors/database-error.js
+
+getUsers:
+  name: ${self:custom.base}-get-users
+  handler: services/users/src/get-users.main
+  events:
+    - httpApi: 'GET /users'
+  package:
+    include:
+      - services/users/src/get-users.js
+      - lib/errors/database-error.js
+
+getUserByEmail:
+  name: ${self:custom.base}-get-user-by-email
+  handler: services/users/src/get-user-by-email.handle
+  events:
+    - httpApi: 'GET /users/{email}'
+  package:
+    include:
+      - services/users/src/get-user-by-email.js
+      - lib/errors/database-error.js

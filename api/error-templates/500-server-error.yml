@@ -1,0 +1,6 @@
+|
+  {
+    "type": "InternalError",
+    "message": "Unknown error. The error is shown in logs you can identify with the request id",
+    "requestId": "$context.requestId"
+  }

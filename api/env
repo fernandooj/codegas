@@ -1,0 +1,8 @@
+#
+# AWS RDS
+#
+RDS_HOSTNAME=vohitos.ckkzm51r3im4.us-east-2.rds.amazonaws.com
+RDS_DB=vohitosDB
+RDS_PORT=5432
+RDS_USERNAME=vohitosUser
+RDS_PASSWORD=AccesoDatabase333*_13

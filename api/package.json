@@ -1,0 +1,30 @@
+{
+  "name": "picpuc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "eslint": "^7.9.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "serverless-iam-roles-per-function": "^3.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "jimp": "^0.22.7",
+    "multer": "^1.4.5-lts.1",
+    "parse-multipart": "^1.0.4",
+    "pg": "^8.7.3",
+    "serverless-dotenv-plugin": "^6.0.0",
+    "serverless-offline": "^8.7.0",
+    "serverless-webpack": "^5.7.0",
+    "sharp": "^0.32.0",
+    "uuid": "^9.0.0",
+    "webpack": "^5.72.0"
+  }
+}

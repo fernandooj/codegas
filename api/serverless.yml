@@ -1,0 +1,50 @@
+service: picpuc
+frameworkVersion: '3'
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-offline
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+ 
+  
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, "us-east-1"}
+  httpApi:
+    cors: true
+  apiGateway:
+      binaryMediaTypes:
+          - '*/*'
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+        - "s3:GetObject"
+      Resource:
+        -  "arn:aws:s3:::picpuc/*"
+    
+  # apiGateway:
+  #   restApiId: ${output:${self:custom.n}.ApiId}
+  #   restApiRootResourceId: ${output:${self:custom.n}.ApiResourceId}
+
+custom:
+  dotenv:
+    path: .env
+  webpack:
+    webpackConfig: 'webpack.config.js'   # Name of webpack configuration file
+    includeModules: false   # Node modules configuration for packaging
+    packager: 'npm'   # Packager that will be used to package your external modules
+    excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
+  n: my-app:${self:provider.stage}:${self:provider.region}:api
+  base: ${self:service}-${self:provider.stage}
+
+functions: 
+  - ${file(./services/users/serverless.yml)}
+  # - ${file(./services/events/serverless.yml)}
+  # - ${file(./services/categories/serverless.yml)}
+  
