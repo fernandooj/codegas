@@ -1,7 +1,7 @@
 -- CREATE TABLE USERS
-create table if not exists categories(
-    id_user SERIAL PRIMARY KEY,
-    id_mongo character varying,
+create table if not exists users(
+    _id SERIAL PRIMARY KEY,
+    uid character varying,
     created	timestamp DEFAULT NOW(),
     razon_social character varying,
     cedula character varying,

@@ -1,0 +1,29 @@
+createZona:
+  name: ${self:custom.base}-create-zona
+  handler: services/zonas/src/create-zona.main
+  events:
+    - httpApi: 'POST /zon/zona'
+  package:
+    include:
+      - services/zonas/src/create-zona.js
+      - lib/errors/database-error.js
+
+deleteZona:
+  name: ${self:custom.base}-delete-zonas
+  handler: services/zonas/src/delete-zonas.main
+  events:
+    - httpApi: 'PUT /zon/zona'
+  package:
+    include:
+      - services/zonas/src/delete-zonas.js
+      - lib/errors/database-error.js
+
+getZona:
+  name: ${self:custom.base}-get-zonas
+  handler: services/zonas/src/get-zonas.main
+  events:
+    - httpApi: 'GET /zon/zona'
+  package:
+    include:
+      - services/zonas/src/get-zonas.js
+      - lib/errors/database-error.js

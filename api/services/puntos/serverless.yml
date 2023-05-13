@@ -1,0 +1,69 @@
+createPunto:
+  name: ${self:custom.base}-create-punto
+  handler: services/puntos/src/create-punto.main
+  events:
+    - httpApi: 'POST /pun/punto'
+  package:
+    include:
+      - services/puntos/src/create-punto.js
+      - lib/errors/database-error.js
+
+createPuntoVarios:
+  name: ${self:custom.base}-create-punto-varios
+  handler: services/puntos/src/create-punto-varios.main
+  events:
+    - httpApi: 'POST /pun/punto/varios'
+  package:
+    include:
+      - services/puntos/src/create-punto-varios.js
+      - lib/errors/database-error.js
+
+deletePunto:
+  name: ${self:custom.base}-delete-punto
+  handler: services/puntos/src/delete-punto.main
+  events:
+    - httpApi: 'DELETE /pun/punto'
+  package:
+    include:
+      - services/puntos/src/delete-punto.js
+      - lib/errors/database-error.js
+
+getPunto:
+  name: ${self:custom.base}-get-puntos
+  handler: services/puntos/src/get-punto.main
+  events:
+    - httpApi: 'GET /pun/punto'
+  package:
+    include:
+      - services/puntos/src/get-punto.js
+      - lib/errors/database-error.js
+
+getPuntoById:
+  name: ${self:custom.base}-get-punto-by-id
+  handler: services/puntos/src/get-punto-by-id.main
+  events:
+    - httpApi: 'GET /pun/punto/byId/{_id}'
+  package:
+    include:
+      - services/puntos/src/get-punto-by-id.js
+      - lib/errors/database-error.js
+
+getPuntoByCliente:
+  name: ${self:custom.base}-get-punto-by-cliente
+  handler: services/puntos/src/get-punto-by-cliente.main
+  events:
+    - httpApi: 'GET /pun/punto/byCliente/{_id}'
+  package:
+    include:
+      - services/puntos/src/get-punto-by-cliente.js
+      - lib/errors/database-error.js
+
+editCapacidad:
+  name: ${self:custom.base}-edit-capacidad
+  handler: services/puntos/src/edit-capacidad.main
+  events:
+    - httpApi: 'PUT /pun/punto/editaAlmacenamiento/{_id}/{capacidad}'
+  package:
+    include:
+      - services/puntos/src/edit-capacidad.js
+      - lib/errors/database-error.js

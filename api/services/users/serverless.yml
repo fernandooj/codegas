@@ -18,12 +18,12 @@ getUsers:
       - services/users/src/get-users.js
       - lib/errors/database-error.js
 
-getUserByEmail:
-  name: ${self:custom.base}-get-user-by-email
-  handler: services/users/src/get-user-by-email.handle
+getUserByUid:
+  name: ${self:custom.base}-get-user-by-uid
+  handler: services/users/src/get-user-by-uid.main
   events:
-    - httpApi: 'GET /users/{email}'
+    - httpApi: 'GET /users/perfil/{uid}'
   package:
     include:
-      - services/users/src/get-user-by-email.js
+      - services/users/src/get-user-by-uid.js
       - lib/errors/database-error.js

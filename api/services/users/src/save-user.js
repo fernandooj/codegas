@@ -1,30 +1,67 @@
 const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError  = require('../../../lib/errors/database-error')
+const AWS = require('aws-sdk');
+const ses = new AWS.SES();
 
 /** create user */
-const SAVE_USER = 'SELECT * FROM save_users($1, $2, $3, $4)';
-
+const SAVE_USER = 'SELECT * FROM save_users($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)';
+const SOURCE = 'app@codegascolombia.com'
 
 /** update user info
  *  save user in the table
- * @param {string} name - username user
+ * @param {string} razon_social - username user
+ * @param {string} cedula - zona info user
+ * @param {string} direccion_factura - zona info user
  * @param {string} email - zona info user
- * @param {string} id_social - zona info user
- * @param {string} photo - zona info user
+ * @param {string} nombre - zona info user
+ * @param {string} celular - zona info user
+ * @param {string} tipo - zona info user
+ * @param {string} descuento - zona info user
+ * @param {string} acceso - zona info user
+ * @param {string} tokenPhone - zona info user
+ * @param {string} token - zona info user
+ * @param {string} codMagister - zona info user
+ * @param {string} codt - zona info user
+ * @param {string} codigoRegistro - zona info user
+ * @param {string} valorUnitario - zona info user
+ * @param {string} idPadre - zona info user
+ * @param {string} uid - zona info user
  * @returns {response} Response contains the data
  */
 
+
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
+  const token = Math.floor(1000 + Math.random() * 9000);
+ 
   const {
-    id_social, name, photo, email,  
+    razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, codMagister, codt, codigoRegistro, valorUnitario, idPadre,  
   } = body;
   const client = await poolConection.connect();
 
+  const params = {
+    Destination: {
+      ToAddresses: [SOURCE]
+    },
+    Message: {
+      Body: {
+        Text: {
+          Data: "eres el mejor"
+        }
+      },
+      Subject: {
+        Data: "de parte de codegas"
+      }
+    },
+    Source: email
+  };
+
+
   try {
-    await client.query(SAVE_USER, [name, id_social, photo,  email])
+    await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre])
+    //await ses.sendEmail(params).promise();
     return {status:true}
   } catch (error) {
-    throw JSON.stringify(error);
+    throw new DatabaseError(error);
   }
 };

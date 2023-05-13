@@ -45,6 +45,6 @@ custom:
 
 functions: 
   - ${file(./services/users/serverless.yml)}
-  # - ${file(./services/events/serverless.yml)}
-  # - ${file(./services/categories/serverless.yml)}
+  - ${file(./services/zonas/serverless.yml)}
+  - ${file(./services/puntos/serverless.yml)}
   

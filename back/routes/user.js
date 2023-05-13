@@ -44,7 +44,7 @@ module.exports = function(app, passport){
                     }
                     ////////////////////////////////////////////////////////////////////////   
                 }else{
-                no    userServices.modificaToken(users, token, (err2, user)=>{
+                    userServices.modificaToken(users, token, (err2, user)=>{
                         if(!err2){
                             htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
                             res.json({ status: true, message: 'nuevo codigo enviado', code:2, token });     

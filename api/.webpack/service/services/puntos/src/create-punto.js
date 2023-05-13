@@ -24,30 +24,6 @@ module.exports = {poolConection}
 
 /***/ }),
 
-/***/ "./lib/errors/database-error.js":
-/*!**************************************!*\
-  !*** ./lib/errors/database-error.js ***!
-  \**************************************/
-/***/ ((module) => {
-
-/** @module database-error */
-
-/**
- * Structures the error into a standard format
- * object to be handled by the `Lambdas`
- * @param {Object} error - error caught
- * @returns {void}
- */
-module.exports = function DatabaseError(error) {
-  this.errorType = error.routine || error.code;
-  this.httpStatus = error.statusCode || 500;
-  this.message = (error.error || error.message).replace(/["]/g, "'");
-  this.stack = error.stack;
-};
-
-
-/***/ }),
-
 /***/ "./node_modules/pg-connection-string/index.js":
 /*!****************************************************!*\
   !*** ./node_modules/pg-connection-string/index.js ***!
@@ -5670,90 +5646,49 @@ function extend(target) {
 
 /***/ }),
 
-/***/ "./services/users/src/save-user.js":
-/*!*****************************************!*\
-  !*** ./services/users/src/save-user.js ***!
-  \*****************************************/
+/***/ "./services/puntos/src/create-punto.js":
+/*!*********************************************!*\
+  !*** ./services/puntos/src/create-punto.js ***!
+  \*********************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const {poolConection} = __webpack_require__(/*! ../../../lib/connection-pg.js */ "./lib/connection-pg.js")
-const DatabaseError  = __webpack_require__(/*! ../../../lib/errors/database-error */ "./lib/errors/database-error.js")
-const AWS = __webpack_require__(/*! aws-sdk */ "aws-sdk");
-const ses = new AWS.SES();
 
-/** create user */
-const SAVE_USER = 'SELECT * FROM save_users($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)';
-const SOURCE = 'app@codegascolombia.com'
+/** save point */
+const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7)';
 
-/** update user info
- *  save user in the table
- * @param {string} razon_social - username user
- * @param {string} cedula - zona info user
- * @param {string} direccion_factura - zona info user
- * @param {string} email - zona info user
- * @param {string} nombre - zona info user
- * @param {string} celular - zona info user
- * @param {string} tipo - zona info user
- * @param {string} descuento - zona info user
- * @param {string} acceso - zona info user
- * @param {string} tokenPhone - zona info user
- * @param {string} token - zona info user
- * @param {string} codMagister - zona info user
- * @param {string} codt - zona info user
- * @param {string} codigoRegistro - zona info user
- * @param {string} valorUnitario - zona info user
- * @param {string} idPadre - zona info user
- * @param {string} uid - zona info user
- * @returns {response} Response contains the data
+/**
+ * Inserts a point into the database.
+ *
+ * @param {object} point - Object containing the data of the point to insert.
+ * @param {string} point.id_mongo_punto - Identifier of the point in MongoDB.
+ * @param {string} point.observacion - Observation of the point.
+ * @param {number} point.punto - Capacity of the point.
+ * @param {number} point.idZona - Identifier of the zone where the point is located.
+ * @param {number} point.idCliente - Identifier of the client associated with the point.
+ * @param {number} point.idPadre - Identifier of the parent point, if any.
+ * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
+ * @throws {string} - Throws a string with an error message if the operation fails.
  */
-
 
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
-  const token = Math.floor(1000 + Math.random() * 9000);
- 
   const {
-    razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, codMagister, codt, codigoRegistro, valorUnitario, idPadre,  
+    observacion, direccion, capacidad, punto, idZona, idCliente, idPadre
   } = body;
   const client = await poolConection.connect();
 
-  const params = {
-    Destination: {
-      ToAddresses: [SOURCE]
-    },
-    Message: {
-      Body: {
-        Text: {
-          Data: "eres el mejor"
-        }
-      },
-      Subject: {
-        Data: "de parte de codegas"
-      }
-    },
-    Source: email
-  };
-
-
   try {
-    await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre])
-    //await ses.sendEmail(params).promise();
-    return {status:true}
+    
+    await client.query(SAVE_POINT, [observacion, direccion, capacidad, punto, idZona, idCliente, idPadre])
+    return {
+        status: true
+      }
   } catch (error) {
-    throw new DatabaseError(error);
+    throw JSON.stringify(error);
   }
 };
 
-/***/ }),
-
-/***/ "aws-sdk":
-/*!**************************!*\
-  !*** external "aws-sdk" ***!
-  \**************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("aws-sdk");
 
 /***/ }),
 
@@ -5931,11 +5866,11 @@ module.exports = require("util");
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module used 'module' so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__("./services/users/src/save-user.js");
+/******/ 	var __webpack_exports__ = __webpack_require__("./services/puntos/src/create-punto.js");
 /******/ 	var __webpack_export_target__ = exports;
 /******/ 	for(var i in __webpack_exports__) __webpack_export_target__[i] = __webpack_exports__[i];
 /******/ 	if(__webpack_exports__.__esModule) Object.defineProperty(__webpack_export_target__, "__esModule", { value: true });
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=save-user.js.map
+//# sourceMappingURL=create-punto.js.map

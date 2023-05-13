@@ -1,7 +1,7 @@
 const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError  = require('../../../lib/errors/database-error')
 
-
+const GET_USER_BY_EMAIL = 'SELECT * FROM get_user_by_email($1)';
 /** get user
  *  get user by email
  * @param {email} active - email
@@ -10,12 +10,10 @@ const DatabaseError  = require('../../../lib/errors/database-error')
 
 module.exports.handle = async (event) => {
   const {email} = event.pathParameters
-  console.log(email)
   const client  = await poolConection.connect();
-  const GET_USER_BY_EMAIL = `SELECT * FROM users where email = '${email}'`;
 
   try {
-    const data = await client.query(GET_USER_BY_EMAIL)
+    const data = await client.query(GET_USER_BY_EMAIL[email])
     return data.rows[0]
   } catch (error) { 
     throw new DatabaseError(error);
