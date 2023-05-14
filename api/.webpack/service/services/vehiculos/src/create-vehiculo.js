@@ -24,30 +24,6 @@ module.exports = {poolConection}
 
 /***/ }),
 
-/***/ "./lib/errors/database-error.js":
-/*!**************************************!*\
-  !*** ./lib/errors/database-error.js ***!
-  \**************************************/
-/***/ ((module) => {
-
-/** @module database-error */
-
-/**
- * Structures the error into a standard format
- * object to be handled by the `Lambdas`
- * @param {Object} error - error caught
- * @returns {void}
- */
-module.exports = function DatabaseError(error) {
-  this.errorType = error.routine || error.code;
-  this.httpStatus = error.statusCode || 500;
-  this.message = (error.error || error.message).replace(/["]/g, "'");
-  this.stack = error.stack;
-};
-
-
-/***/ }),
-
 /***/ "./node_modules/pg-connection-string/index.js":
 /*!****************************************************!*\
   !*** ./node_modules/pg-connection-string/index.js ***!
@@ -5670,43 +5646,45 @@ function extend(target) {
 
 /***/ }),
 
-/***/ "./services/puntos/src/edit-capacidad.js":
-/*!***********************************************!*\
-  !*** ./services/puntos/src/edit-capacidad.js ***!
-  \***********************************************/
+/***/ "./services/vehiculos/src/create-vehiculo.js":
+/*!***************************************************!*\
+  !*** ./services/vehiculos/src/create-vehiculo.js ***!
+  \***************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const { poolConection } = __webpack_require__(/*! ../../../lib/connection-pg.js */ "./lib/connection-pg.js");
-const DatabaseError = __webpack_require__(/*! ../../../lib/errors/database-error */ "./lib/errors/database-error.js");
+const {poolConection} = __webpack_require__(/*! ../../../lib/connection-pg.js */ "./lib/connection-pg.js")
 
-/** deactivate zona */
+/** save CAR */
+const SAVE_CAR = 'SELECT * FROM save_carros($1, $2, $3, $4, $5)';
 
 /**
- * Deactivates a zona in the database.
+ * Inserts a vehiculo into the database.
  *
- * @param {object} zona - Object containing the data of the zona to deactivate.
- * @param {number} zona.id_zona - Identifier of the zona in the database.
+ * @param {object} vehiculo - Object containing the data of the vehiculo to insert.
+ * @param {string} vehiculo.centro - Identifier of the vehiculo in MongoDB.
+ * @param {string} vehiculo.bodega - Observation of the vehiculo.
+ * @param {number} vehiculo.placa - Capacity of the vehiculo.
+ * @param {number} vehiculo.conductor - Identifier of the zone where the vehiculo is located.
+ * @param {number} vehiculo.usuarioCrea - Identifier of the client associated with the vehiculo.
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
 
 module.exports.main = async (event) => {
-    const {
-        _id,
-        capacidad
-      } = event.pathParameters;
-  
-  const EDIT_CAPACIDAD = 'UPDATE puntos SET capacidad = $1 WHERE _id = $2';
+  const body = JSON.parse(event.body);
+  const {
+    centro, bodega, placa, conductor, usuarioCrea
+  } = body;
   const client = await poolConection.connect();
 
   try {
-    await client.query(EDIT_CAPACIDAD, [capacidad, _id])
+    
+    const {rows} = await client.query(SAVE_CAR, [centro, bodega, placa, conductor, usuarioCrea])
     return {
-      status: true
+        status: !!rows[0].save_carros
       }
   } catch (error) {
-    console.log(error)
-    throw new DatabaseError(error);
+    throw JSON.stringify(error);
   }
 };
 
@@ -5887,11 +5865,11 @@ module.exports = require("util");
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module used 'module' so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__("./services/puntos/src/edit-capacidad.js");
+/******/ 	var __webpack_exports__ = __webpack_require__("./services/vehiculos/src/create-vehiculo.js");
 /******/ 	var __webpack_export_target__ = exports;
 /******/ 	for(var i in __webpack_exports__) __webpack_export_target__[i] = __webpack_exports__[i];
 /******/ 	if(__webpack_exports__.__esModule) Object.defineProperty(__webpack_export_target__, "__esModule", { value: true });
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=edit-capacidad.js.map
+//# sourceMappingURL=create-vehiculo.js.map

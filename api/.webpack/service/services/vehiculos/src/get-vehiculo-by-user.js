@@ -5670,40 +5670,40 @@ function extend(target) {
 
 /***/ }),
 
-/***/ "./services/puntos/src/edit-capacidad.js":
-/*!***********************************************!*\
-  !*** ./services/puntos/src/edit-capacidad.js ***!
-  \***********************************************/
+/***/ "./services/vehiculos/src/get-vehiculo-by-user.js":
+/*!********************************************************!*\
+  !*** ./services/vehiculos/src/get-vehiculo-by-user.js ***!
+  \********************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const { poolConection } = __webpack_require__(/*! ../../../lib/connection-pg.js */ "./lib/connection-pg.js");
 const DatabaseError = __webpack_require__(/*! ../../../lib/errors/database-error */ "./lib/errors/database-error.js");
-
-/** deactivate zona */
-
+ 
 /**
- * Deactivates a zona in the database.
+ * get a car in the database.
  *
  * @param {object} zona - Object containing the data of the zona to deactivate.
  * @param {number} zona.id_zona - Identifier of the zona in the database.
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
+ const GET_CAR_BY_USER = 'SELECT * FROM get_data_carro_user($1)';
 
 module.exports.main = async (event) => {
-    const {
-        _id,
-        capacidad
-      } = event.pathParameters;
-  
-  const EDIT_CAPACIDAD = 'UPDATE puntos SET capacidad = $1 WHERE _id = $2';
+  const {
+    _id
+  } = event.pathParameters;
+ 
+ 
   const client = await poolConection.connect();
 
   try {
-    await client.query(EDIT_CAPACIDAD, [capacidad, _id])
+    const  { rows: carro } = await client.query(GET_CAR_BY_USER, [_id])
+  
     return {
-      status: true
-      }
+      status: true,
+      carro: carro[0]
+    }
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
@@ -5887,11 +5887,11 @@ module.exports = require("util");
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module used 'module' so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__("./services/puntos/src/edit-capacidad.js");
+/******/ 	var __webpack_exports__ = __webpack_require__("./services/vehiculos/src/get-vehiculo-by-user.js");
 /******/ 	var __webpack_export_target__ = exports;
 /******/ 	for(var i in __webpack_exports__) __webpack_export_target__[i] = __webpack_exports__[i];
 /******/ 	if(__webpack_exports__.__esModule) Object.defineProperty(__webpack_export_target__, "__esModule", { value: true });
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=edit-capacidad.js.map
+//# sourceMappingURL=get-vehiculo-by-user.js.map

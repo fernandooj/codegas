@@ -1,16 +1,15 @@
 -- CREATE TABLE CARRO
 create table if not exists carros(
-    id_carro SERIAL PRIMARY KEY,
-    id_mongo_carro character varying,
+    _id SERIAL PRIMARY KEY,
     creado timestamp DEFAULT NOW(),
     centro INT,
     bodega INT,
 	placa character varying,
-    activo BOOLEAN DEFAULT FALSE,
+    activo BOOLEAN DEFAULT TRUE,
     eliminado BOOLEAN DEFAULT FALSE,
     conductor INT,
     usuarioCrea INT
 );
 
--- COMMENT ON TABLE carros IS 'Info data of PEDIDO';
+-- COMMENT ON TABLE carros IS 'Info data of CARROS';
     

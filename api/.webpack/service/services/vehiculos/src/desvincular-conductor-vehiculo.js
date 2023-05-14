@@ -5670,10 +5670,10 @@ function extend(target) {
 
 /***/ }),
 
-/***/ "./services/puntos/src/edit-capacidad.js":
-/*!***********************************************!*\
-  !*** ./services/puntos/src/edit-capacidad.js ***!
-  \***********************************************/
+/***/ "./services/vehiculos/src/desvincular-conductor-vehiculo.js":
+/*!******************************************************************!*\
+  !*** ./services/vehiculos/src/desvincular-conductor-vehiculo.js ***!
+  \******************************************************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 const { poolConection } = __webpack_require__(/*! ../../../lib/connection-pg.js */ "./lib/connection-pg.js");
@@ -5691,16 +5691,16 @@ const DatabaseError = __webpack_require__(/*! ../../../lib/errors/database-error
  */
 
 module.exports.main = async (event) => {
-    const {
-        _id,
-        capacidad
-      } = event.pathParameters;
+
+  const {
+    _id
+  } = event.pathParameters;
   
-  const EDIT_CAPACIDAD = 'UPDATE puntos SET capacidad = $1 WHERE _id = $2';
+  const CHANGE_STATE = 'UPDATE carros SET conductor = null WHERE _id = $1';
   const client = await poolConection.connect();
 
   try {
-    await client.query(EDIT_CAPACIDAD, [capacidad, _id])
+    await client.query(CHANGE_STATE, [_id])
     return {
       status: true
       }
@@ -5887,11 +5887,11 @@ module.exports = require("util");
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module used 'module' so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__("./services/puntos/src/edit-capacidad.js");
+/******/ 	var __webpack_exports__ = __webpack_require__("./services/vehiculos/src/desvincular-conductor-vehiculo.js");
 /******/ 	var __webpack_export_target__ = exports;
 /******/ 	for(var i in __webpack_exports__) __webpack_export_target__[i] = __webpack_exports__[i];
 /******/ 	if(__webpack_exports__.__esModule) Object.defineProperty(__webpack_export_target__, "__esModule", { value: true });
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=edit-capacidad.js.map
+//# sourceMappingURL=desvincular-conductor-vehiculo.js.map

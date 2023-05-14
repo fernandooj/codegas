@@ -47,4 +47,5 @@ functions:
   - ${file(./services/users/serverless.yml)}
   - ${file(./services/zonas/serverless.yml)}
   - ${file(./services/puntos/serverless.yml)}
+  - ${file(./services/vehiculos/serverless.yml)}
   
