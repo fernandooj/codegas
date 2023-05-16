@@ -20,13 +20,20 @@ provider:
   apiGateway:
       binaryMediaTypes:
           - '*/*'
-  iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - "s3:PutObject"
-        - "s3:GetObject"
-      Resource:
-        -  "arn:aws:s3:::picpuc/*"
+  iam:
+    role:
+      statements:
+        # Allow functions to list all buckets
+        - Effect: Allow
+          Action: 's3:ListBucket'
+          Resource: '*'
+        # Allow functions to read/write objects in a bucket
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+          Resource:
+            - 'arn:aws:s3:::codegas/*'
     
   # apiGateway:
   #   restApiId: ${output:${self:custom.n}.ApiId}
@@ -48,4 +55,5 @@ functions:
   - ${file(./services/zonas/serverless.yml)}
   - ${file(./services/puntos/serverless.yml)}
   - ${file(./services/vehiculos/serverless.yml)}
+  - ${file(./services/pedidos/serverless.yml)}
   

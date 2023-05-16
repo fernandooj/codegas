@@ -1,11 +1,11 @@
-const {poolConection} = require('../../../lib/connection-pg.js')
-const DatabaseError  = require('../../../lib/errors/database-error')
+const { poolConection } = require('../../../lib/connection-pg.js');
+const DatabaseError = require('../../../lib/errors/database-error');
 const AWS = require('aws-sdk');
 const ses = new AWS.SES();
 
 /** create user */
 const SAVE_USER = 'SELECT * FROM save_users($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)';
-const SOURCE = 'app@codegascolombia.com'
+const SOURCE = 'app@codegascolombia.com';
 
 /** update user info
  *  save user in the table
@@ -28,40 +28,40 @@ const SOURCE = 'app@codegascolombia.com'
  * @param {string} uid - zona info user
  * @returns {response} Response contains the data
  */
-
-
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
   const token = Math.floor(1000 + Math.random() * 9000);
- 
   const {
-    razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, codMagister, codt, codigoRegistro, valorUnitario, idPadre,  
+    razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, codMagister, codt, codigoRegistro, valorUnitario, idPadre,
   } = body;
   const client = await poolConection.connect();
 
   const params = {
     Destination: {
-      ToAddresses: [SOURCE]
+      ToAddresses: [SOURCE],
     },
     Message: {
       Body: {
         Text: {
-          Data: "eres el mejor"
-        }
+          Data: 'eres el mejor',
+        },
       },
       Subject: {
-        Data: "de parte de codegas"
-      }
+        Data: 'de parte de codegas',
+      },
     },
-    Source: email
+    Source: email,
   };
 
-
   try {
-    await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre])
+    await client.query('BEGIN');
+    await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
     //await ses.sendEmail(params).promise();
-    return {status:true}
+    await client.query('COMMIT');
+    return { status: true };
   } catch (error) {
+    console.error(error);
+    await client.query('ROLLBACK');
     throw new DatabaseError(error);
   }
-};
+}

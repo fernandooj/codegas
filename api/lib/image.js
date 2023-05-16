@@ -6,11 +6,11 @@ const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
 const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
-
+const {BUCKET} = process.env;
 const uploadImage = async body => {
     try {
 
-        if (!body.image || !body.mime) {
+        if (!body.imagenCerrar || !body.mime) {
             Responses._200({ message: 'incorrect body on request' });
         }
 
@@ -18,9 +18,9 @@ const uploadImage = async body => {
             Responses._200({ message: 'mime is not allowed ' });
         }
 
-        const imageData = body.image.replace(/^data:image\/\w+;base64,/, '');
-        if (body.image.substr(0, 7) === 'base64,') {
-            imageData = body.image.substr(7, body.image.length);
+        const imageData = body.imagenCerrar.replace(/^data:image\/\w+;base64,/, '');
+        if (body.imagenCerrar.substr(0, 7) === 'base64,') {
+            imageData = body.imagenCerrar.substr(7, body.imagenCerrar.length);
         }
 
         const buffer = new Buffer.from(imageData, 'base64');
@@ -42,12 +42,12 @@ const uploadImage = async body => {
             Body: buffer,
             Key: key,
             ContentType: body.mime,
-            Bucket: process.env.BUCKET,
+            Bucket: BUCKET,
             ACL: 'public-read',
         })
         .promise();
         
-        const url = `https://${process.env.BUCKET}.s3.amazonaws.com/${key}`;
+        const url = `https://${BUCKET}.s3.amazonaws.com/${key}`;
         return url;
 
     } catch (error) {

@@ -17,83 +17,83 @@ let sizeOf    	   = promisify(require('image-size'));
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
 ////////////////////////////////////////////////////////////
-router.get('/todos/app/:fechaEntrega/:limit', (req,res)=>{
-    let limit = req.params.limit
-    if (!req.session.usuario) {
-        res.json({ status:false, message: 'No hay un usuario logueado' });
-    }else{
-        req.session.usuario.acceso=="cliente"
-        ?pedidoServices.getByUser(req.session.usuario._id, (err, pedido)=>{
-            if (!err) {
-                res.json({ status: true, pedido });
-            }else{
-                res.json({ status:false, message: err,  pedido:[] });
-            }
-        })
-        :req.session.usuario.acceso=="conductor"
-        ?pedidoServices.getByConductor(req.session.usuario._id, req.params.fechaEntrega, (err, pedido)=>{
-            if (!err) {
-                pedido = pedido.filter(e=>{
-                    return e.carroId
-                })
-                pedido = pedido.filter(e=>{
-                    return e.carroId.conductor==req.session.usuario._id
-                })
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err, pedido:[] });
-                console.log(err)
-            }
-        })
-        :req.session.usuario.acceso=="veo"
-        ?pedidoServices.getByFechaEntrega(req.params.fechaEntrega, 10000, (err, pedido)=>{
-            if (!err) {
-                let pedido1 = pedido.filter(e=>{
-                    return e.kilos=="undefined" || e.kilos==undefined
-                })
-                pedido1 = pedido1.filter(e=>{
-                    return e.estado!=="innactivo"
-                })
-                let pedido2 = pedido.filter(e=>{
-                    return e.entregado==true && e.estado=="activo"
-                })
-                pedido = pedido1.concat(pedido2)
-                console.log(pedido.length)
+// router.get('/todos/app/:fechaEntrega/:limit', (req,res)=>{
+//     let limit = req.params.limit
+//     if (!req.session.usuario) {
+//         res.json({ status:false, message: 'No hay un usuario logueado' });
+//     }else{
+//         req.session.usuario.acceso=="cliente"
+//         ?pedidoServices.getByUser(req.session.usuario._id, (err, pedido)=>{
+//             if (!err) {
+//                 res.json({ status: true, pedido });
+//             }else{
+//                 res.json({ status:false, message: err,  pedido:[] });
+//             }
+//         })
+//         :req.session.usuario.acceso=="conductor"
+//         ?pedidoServices.getByConductor(req.session.usuario._id, req.params.fechaEntrega, (err, pedido)=>{
+//             if (!err) {
+//                 pedido = pedido.filter(e=>{
+//                     return e.carroId
+//                 })
+//                 pedido = pedido.filter(e=>{
+//                     return e.carroId.conductor==req.session.usuario._id
+//                 })
+//                 res.json({ status:true, pedido });
+//             }else{
+//                 res.json({ status:false, message: err, pedido:[] });
+//                 console.log(err)
+//             }
+//         })
+//         :req.session.usuario.acceso=="veo"
+//         ?pedidoServices.getByFechaEntrega(req.params.fechaEntrega, 10000, (err, pedido)=>{
+//             if (!err) {
+//                 let pedido1 = pedido.filter(e=>{
+//                     return e.kilos=="undefined" || e.kilos==undefined
+//                 })
+//                 pedido1 = pedido1.filter(e=>{
+//                     return e.estado!=="innactivo"
+//                 })
+//                 let pedido2 = pedido.filter(e=>{
+//                     return e.entregado==true && e.estado=="activo"
+//                 })
+//                 pedido = pedido1.concat(pedido2)
+//                 console.log(pedido.length)
                 
-                pedido = pedido.filter(e=>{
-                    return e.usuarioId.comercialAsignado==req.session.usuario._id
-                })
+//                 pedido = pedido.filter(e=>{
+//                     return e.usuarioId.comercialAsignado==req.session.usuario._id
+//                 })
 
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err, pedido:[] });
-            }
-        })
-        :pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
-            if (!err) {
-                let pedido1 = pedido.filter(e=>{
-                    return e.kilos=="undefined" || e.kilos==undefined
-                })
-                pedido1 = pedido1.filter(e=>{
-                    return e.estado!=="innactivo"
-                })
-                let pedido2 = pedido.filter(e=>{
-                    return e.entregado==true && e.estado=="activo"
-                })
+//                 res.json({ status:true, pedido });
+//             }else{
+//                 res.json({ status:false, message: err, pedido:[] });
+//             }
+//         })
+//         :pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
+//             if (!err) {
+//                 let pedido1 = pedido.filter(e=>{
+//                     return e.kilos=="undefined" || e.kilos==undefined
+//                 })
+//                 pedido1 = pedido1.filter(e=>{
+//                     return e.estado!=="innactivo"
+//                 })
+//                 let pedido2 = pedido.filter(e=>{
+//                     return e.entregado==true && e.estado=="activo"
+//                 })
 
-                pedido2 = pedido2.filter((e, index)=>{
-                    return index<80
-                })
+//                 pedido2 = pedido2.filter((e, index)=>{
+//                     return index<80
+//                 })
 
-                pedido = pedido1.concat(pedido2)
+//                 pedido = pedido1.concat(pedido2)
 
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err, pedido:[] });
-            }
-        })
-    }
-})
+//                 res.json({ status:true, pedido });
+//             }else{
+//                 res.json({ status:false, message: err, pedido:[] });
+//             }
+//         })
+//     }
+// })
 
 /// search by term
 router.get('/by_term/web/:term/', (req,res)=>{
@@ -178,32 +178,32 @@ router.get('/listadoDia/:usuarioId/:puntoId/', (req,res)=>{
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN PEDIDO POR SU ID
 ////////////////////////////////////////////////////////////
-router.get('/:pedidoId', (req,res)=>{
-	pedidoServices.getByPedido(req.params.pedidoId, (err, pedido)=>{
-		if (err) {
-			res.json({ status:false, message: err });
-		}else{
-			res.json({ status:true,   pedido });
-		}
-	})
-})
+// router.get('/:pedidoId', (req,res)=>{
+// 	pedidoServices.getByPedido(req.params.pedidoId, (err, pedido)=>{
+// 		if (err) {
+// 			res.json({ status:false, message: err });
+// 		}else{
+// 			res.json({ status:true,   pedido });
+// 		}
+// 	})
+// })
 
 ///////////////////////////////////////////////////////////////
 ////////////        OBTENGO UN PEDIDO POR UN USUARIO
 //////////////////////////////////////////////////////////////
-router.get('/byUser/:idUser', (req,res)=>{
-    if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        pedidoServices.getByUser(req.params.idUser, (err, pedido)=>{
-            if (!err) {
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err });
-            }
-        })
-    }
-})
+// router.get('/byUser/:idUser', (req,res)=>{
+//     if (!req.session.usuario) {
+// 		res.json({ status:false, message: 'No hay un usuario logueado' });
+// 	}else{
+//         pedidoServices.getByUser(req.params.idUser, (err, pedido)=>{
+//             if (!err) {
+//                 res.json({ status:true, pedido });
+//             }else{
+//                 res.json({ status:false, message: err });
+//             }
+//         })
+//     }
+// })
 
 //////////////////////////////////////////////////////////////////
 ////////////      OBTENGO TODOS LOS VEHICULOS CON SUS PEDIDOS
@@ -226,108 +226,108 @@ const ubicacionJimp =  '../front/docs/public/uploads/pedido/'
 ///////////////////////////////////////////////////////////////
 ////////////       GUARDO UN PEDIDO
 //////////////////////////////////////////////////////////////
-router.post('/', (req,res)=>{
-	if (!req.session.usuario) {
-		res.json({ status: false, message: 'No hay un usuario logueado' });
-	}else{
-        let id = req.session.usuario.acceso=="cliente" ?req.session.usuario._id : req.body.idCliente
-        userServices.getById(id, (err, clientes)=>{
-            if(!err){
-                pedidoServices.totalPedidos((err3, totalPedidos)=>{
-                    let ruta = [];
-                    if(req.files.imagen){
-                        let esArray = Array.isArray(req.files.imagen)
-                        if(esArray){
-                            req.files.imagen.map(e=>{
-                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+// router.post('/', (req,res)=>{
+// 	if (!req.session.usuario) {
+// 		res.json({ status: false, message: 'No hay un usuario logueado' });
+// 	}else{
+//         let id = req.session.usuario.acceso=="cliente" ?req.session.usuario._id : req.body.idCliente
+//         userServices.getById(id, (err, clientes)=>{
+//             if(!err){
+//                 pedidoServices.totalPedidos((err3, totalPedidos)=>{
+//                     let ruta = [];
+//                     if(req.files.imagen){
+//                         let esArray = Array.isArray(req.files.imagen)
+//                         if(esArray){
+//                             req.files.imagen.map(e=>{
+//                                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                 let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
 
-                                ////////////////////    ruta que se va a guardar en el folder
-                                let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+//                                 ////////////////////    ruta que se va a guardar en el folder
+//                                 let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
 
-                                ////////////////////    ruta que se va a guardar en la base de datos
-                                let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
-                                ruta.push(rutas)
-                                ///////////////////     envio la imagen al nuevo path
+//                                 ////////////////////    ruta que se va a guardar en la base de datos
+//                                 let rutas  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
+//                                 ruta.push(rutas)
+//                                 ///////////////////     envio la imagen al nuevo path
 
-                                let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
-                                fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
-                                resizeImagenes(rutaJim, randonNumber, "jpg", res)
-                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                            })
-                        }else{
-                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                            let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
+//                                 let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+//                                 fs.rename(e.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+//                                 resizeImagenes(rutaJim, randonNumber, "jpg", res)
+//                                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                             })
+//                         }else{
+//                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                             let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
 
-                            ////////////////////    ruta que se va a guardar en el folder
-                            let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+//                             ////////////////////    ruta que se va a guardar en el folder
+//                             let fullUrlimagenOriginal = '../front/docs/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
 
-                            ////////////////////    ruta que se va a guardar en la base de datos
-                            ruta  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
+//                             ////////////////////    ruta que se va a guardar en la base de datos
+//                             ruta  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/--'+fechaImagen+'_'+randonNumber+'.jpg'
 
-                            ///////////////////     envio la imagen al nuevo path
+//                             ///////////////////     envio la imagen al nuevo path
 
-                            let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
-                            fs.rename(req.files.imagen.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
-                            resizeImagenes(rutaJim, randonNumber, "jpg", res)
-                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        }
-                    }
+//                             let rutaJim  = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/Original'+fechaImagen+'_'+randonNumber+'.jpg'
+//                             fs.rename(req.files.imagen.path, fullUrlimagenOriginal, (err)=>{console.log(err)})
+//                             resizeImagenes(rutaJim, randonNumber, "jpg", res)
+//                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                         }
+//                     }
 
-                    pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, ruta, clientes.valorUnitario, (err2, pedido)=>{
-                        if (!err2) {
-                            ////////////////////////        ENVIO EL CORREO AL USUARIO CLIENTE AVISANDOLE DEL NUEVO PEDIDO
-                            const dia1       = req.body.dia1!=="undefined" ?`Dia 1: ${req.body.dia1}<br/>` :""
-                            const dia2       = req.body.dia2=="undefined" || req.body.dia2=="null" ?"" :`Dia 2: ${req.body.dia2}<br/>`
-                            const cantidad   = req.body.cantidad!=="" ?`Cantidad: ${req.body.cantidad}<br/>` :""
-                            // const frecuencia = req.body.frecuencia!=="undefined" ?`Frecuencia: ${req.body.frecuencia}<br/>` :""
-                            const frecuencia = req.body.frecuencia ?`Frecuencia: ${req.body.frecuencia}<br/>` :""
-                            const fechaSolicitud = req.body.fechaSolicitud ?`Fecha Solicitud: ${req.body.fechaSolicitud}<br/>` :""
-                            const codt           = clientes.codt  ?`CODT:  ${clientes.codt}<br/>`  :"Sin Codt <br/>"
-                            const valor_unitario = clientes.valorUnitario  ?`Valor Unitario: ${clientes.valorUnitario}<br/>` :"Sin valor unitario <br/>"
-                            let titulo = `<font size="5">Pedido guardado con exito</font>`;
-                            let text1  = `Hola Estimado/a: su pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
-                            let text2  = `Forma: <b>${req.body.forma}</b><br/> ${cantidad} ${frecuencia} ${fechaSolicitud} ${dia1} ${dia2} ${codt} ${valor_unitario} `
+//                     pedidoServices.create(req.body, id, req.session.usuario._id, totalPedidos+1, ruta, clientes.valorUnitario, (err2, pedido)=>{
+//                         if (!err2) {
+//                             ////////////////////////        ENVIO EL CORREO AL USUARIO CLIENTE AVISANDOLE DEL NUEVO PEDIDO
+//                             const dia1       = req.body.dia1!=="undefined" ?`Dia 1: ${req.body.dia1}<br/>` :""
+//                             const dia2       = req.body.dia2=="undefined" || req.body.dia2=="null" ?"" :`Dia 2: ${req.body.dia2}<br/>`
+//                             const cantidad   = req.body.cantidad!=="" ?`Cantidad: ${req.body.cantidad}<br/>` :""
+//                             // const frecuencia = req.body.frecuencia!=="undefined" ?`Frecuencia: ${req.body.frecuencia}<br/>` :""
+//                             const frecuencia = req.body.frecuencia ?`Frecuencia: ${req.body.frecuencia}<br/>` :""
+//                             const fechaSolicitud = req.body.fechaSolicitud ?`Fecha Solicitud: ${req.body.fechaSolicitud}<br/>` :""
+//                             const codt           = clientes.codt  ?`CODT:  ${clientes.codt}<br/>`  :"Sin Codt <br/>"
+//                             const valor_unitario = clientes.valorUnitario  ?`Valor Unitario: ${clientes.valorUnitario}<br/>` :"Sin valor unitario <br/>"
+//                             let titulo = `<font size="5">Pedido guardado con exito</font>`;
+//                             let text1  = `Hola Estimado/a: su pedido ha sido guardado con exito, y esta en proceso de ser entregado`;
+//                             let text2  = `Forma: <b>${req.body.forma}</b><br/> ${cantidad} ${frecuencia} ${fechaSolicitud} ${dia1} ${dia2} ${codt} ${valor_unitario} `
 
-                            htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
-                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                            //////////////////////      ENVIO UN CORREO A CODEGAS AVINSANDOLE DEL NUEVO PEDIDO CREADO
-                            let userRegistrado = {email:"directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
-                            // let userRegistrado = {email:"fernandooj@ymail.com"}
-                            let email = req.body.email ?req.body.email :req.session.usuario.email
-                            htmlTemplate(req, userRegistrado, email, text2, "",  "Nuevo pedido")
-                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                            let mensajeJson={
-                                badge:1
-                            }
-                            cliente.publish('pedido', JSON.stringify(mensajeJson))
-                            cliente.publish('actualizaPedidos', true)
-                            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                            res.json({ status: true, pedido });
-                        }else{
-                            let titulo = `<font size="5">error en el pedido</font>`
-                            let text1  = err2
-                            let text2  = req.session.usuario.email+" / "+err3
-                            let asunto = err
-                            let user   = {email:"fernandooj@ymail.com"}
-                            htmlTemplate(req, user, titulo, text1, text2,  asunto)
-                            if(err2){
-                                htmlTemplate(req, user, titulo, err2, "text2",  asunto)
-                                res.json({ status: false, code:2, pedido:err2 });
-                            }
-                            res.json({ status: false, err3 });
-                            console.log(err3)
-                        }
-                    })
-                })
-            }
-        })
-	}
-})
+//                             htmlTemplate(req, req.body, titulo, text1, text2,  "Pedido guardado")
+//                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                             //////////////////////      ENVIO UN CORREO A CODEGAS AVINSANDOLE DEL NUEVO PEDIDO CREADO
+//                             let userRegistrado = {email:"directora.comercial@codegascolombia.com, servicioalcliente@codegascolombia.com"}
+//                             // let userRegistrado = {email:"fernandooj@ymail.com"}
+//                             let email = req.body.email ?req.body.email :req.session.usuario.email
+//                             htmlTemplate(req, userRegistrado, email, text2, "",  "Nuevo pedido")
+//                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                             let mensajeJson={
+//                                 badge:1
+//                             }
+//                             cliente.publish('pedido', JSON.stringify(mensajeJson))
+//                             cliente.publish('actualizaPedidos', true)
+//                             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                             res.json({ status: true, pedido });
+//                         }else{
+//                             let titulo = `<font size="5">error en el pedido</font>`
+//                             let text1  = err2
+//                             let text2  = req.session.usuario.email+" / "+err3
+//                             let asunto = err
+//                             let user   = {email:"fernandooj@ymail.com"}
+//                             htmlTemplate(req, user, titulo, text1, text2,  asunto)
+//                             if(err2){
+//                                 htmlTemplate(req, user, titulo, err2, "text2",  asunto)
+//                                 res.json({ status: false, code:2, pedido:err2 });
+//                             }
+//                             res.json({ status: false, err3 });
+//                             console.log(err3)
+//                         }
+//                     })
+//                 })
+//             }
+//         })
+// 	}
+// })
 
 ///////////////////////////////////////////////////////////////
 ////////////      ASIGNA UN VEHICULO
@@ -785,52 +785,52 @@ router.get('/ver_frecuencia/todos', (req,res)=>{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////// CAMBIO LOS TAMAÑOS DE LAS IMAGENES
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const resizeImagenes = (ruta, randonNumber, extension, res) =>{
-	Jimp.read(ruta, (err, imagen)=> {
-		if(err){
-			return err
-		}else{
-			imagen.resize(800, Jimp.AUTO)
-			.quality(90)
-			.write(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`);
-			// res.json({status:true,  code:1})
-		}
-	});
+// const resizeImagenes = (ruta, randonNumber, extension, res) =>{
+// 	Jimp.read(ruta, (err, imagen)=> {
+// 		if(err){
+// 			return err
+// 		}else{
+// 			imagen.resize(800, Jimp.AUTO)
+// 			.quality(90)
+// 			.write(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`);
+// 			// res.json({status:true,  code:1})
+// 		}
+// 	});
 
-	setTimeout(function(){
-		sizeOf(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`)
-	    .then(dimensions => {
-		  	let width  = dimensions.width
-		  	let height = dimensions.height
-		  	let x;
-		  	let y;
-		  	let w;
-		  	let h;
+// 	setTimeout(function(){
+// 		sizeOf(`${ubicacionJimp}Resize${fechaImagen}_${randonNumber}.${extension}`)
+// 	    .then(dimensions => {
+// 		  	let width  = dimensions.width
+// 		  	let height = dimensions.height
+// 		  	let x;
+// 		  	let y;
+// 		  	let w;
+// 		  	let h;
 
-		  	if (width>height) {
-		  		console.log(1)
-		  		x = (width*10)/100
-			  	y = (width*10)/100
-			  	w = (((height*100)/100)-y)
-			  	h = (((height*100)/100)-y)
-		  	}else{
-				x = (height*10)/100
-			  	y = (height*10)/100
-			  	w = (width*90)/100
-			  	h = (width*90)/100
-		  	}
+// 		  	if (width>height) {
+// 		  		console.log(1)
+// 		  		x = (width*10)/100
+// 			  	y = (width*10)/100
+// 			  	w = (((height*100)/100)-y)
+// 			  	h = (((height*100)/100)-y)
+// 		  	}else{
+// 				x = (height*10)/100
+// 			  	y = (height*10)/100
+// 			  	w = (width*90)/100
+// 			  	h = (width*90)/100
+// 		  	}
 
-			Jimp.read(ruta, function (err, imagen) {
-			    if (err) throw err;
-			    imagen.resize(800, Jimp.AUTO)
-				.quality(90)
-				.crop(x,y,w,h)
-				.write(`${ubicacionJimp}Miniatura${fechaImagen}_${randonNumber}.${extension}`);
-			});
-		})
-	.catch(err => console.error(err));
-	},2000)
-}
+// 			Jimp.read(ruta, function (err, imagen) {
+// 			    if (err) throw err;
+// 			    imagen.resize(800, Jimp.AUTO)
+// 				.quality(90)
+// 				.crop(x,y,w,h)
+// 				.write(`${ubicacionJimp}Miniatura${fechaImagen}_${randonNumber}.${extension}`);
+// 			});
+// 		})
+// 	.catch(err => console.error(err));
+// 	},2000)
+// }
 
 
 module.exports = router;

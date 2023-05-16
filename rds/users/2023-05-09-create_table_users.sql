@@ -22,7 +22,8 @@ create table if not exists users(
     editado BOOLEAN DEFAULT FALSE,
     activo  BOOLEAN DEFAULT FALSE,
     eliminado BOOLEAN DEFAULT FALSE,
-    idPadre INT
+    idPadre INTEGER REFERENCES users(_id),
+    CONSTRAINT valid_padre_id CHECK ((idPadre IS NULL) OR (_id <> idPadre))
 );
 
 COMMENT ON TABLE USERS IS 'Info data of USERS';

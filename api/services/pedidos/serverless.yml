@@ -1,0 +1,94 @@
+createPedido:
+  name: ${self:custom.base}-create-pedido
+  handler: services/pedidos/src/create-pedido.main
+  events:
+    - httpApi: 'POST /ped/pedido'
+  package:
+    include:
+      - services/pedidos/src/create-pedido.js
+      - lib/errors/database-error.js
+
+getPedidos:
+  name: ${self:custom.base}-get-pedidos
+  handler: services/pedidos/src/get-pedidos.main
+  events:
+    - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}'
+  package:
+    include:
+      - services/pedidos/src/get-pedidos.js
+      - lib/errors/database-error.js
+
+getPedidoById:
+  name: ${self:custom.base}-get-pedido-by-id
+  handler: services/pedidos/src/get-pedido-by-id.main
+  events:
+    - httpApi: 'GET /ped/pedido/{_id}'
+  package:
+    include:
+      - services/pedidos/src/get-pedido-by-id.js
+      - lib/errors/database-error.js
+
+asignarFechaPedido:
+  name: ${self:custom.base}-asignar-fecha-pedido
+  handler: services/pedidos/src/asignar-fecha-pedido.main
+  events:
+    - httpApi: 'GET /ped/pedido/asignarFechaEntrega/{pedidoId}/{fechaEntrega}'
+  package:
+    include:
+      - services/pedidos/src/asignar-fecha-pedido.js
+      - lib/errors/database-error.js
+
+asignarVehiculoPedido:
+  name: ${self:custom.base}-asignar-conductor-pedido
+  handler: services/pedidos/src/asignar-conductor-pedido.main
+  events:
+    - httpApi: 'GET /ped/pedido/asignarConductor/{pedidoId}/{carroId}/{fechaEntrega}/{nPedido}'
+  package:
+    include:
+      - services/pedidos/src/asignar-conductor-pedido.js
+      - lib/errors/database-error.js
+
+changeStatePedido:
+  name: ${self:custom.base}-cambiar-estado-pedido
+  handler: services/pedidos/src/cambiar-estado-pedido.main
+  events:
+    - httpApi: 'GET /ped/pedido/cambiarEstado/{_id}/{estado}'
+  package:
+    include:
+      - services/pedidos/src/cambiar-estado-pedido.js
+      - lib/errors/database-error.js
+
+deletePedido:
+  name: ${self:custom.base}-eliminar-pedido
+  handler: services/pedidos/src/eliminar-pedido.main
+  events:
+    - httpApi: 'GET /ped/pedido/eliminar/{_id}/{estado}'
+  package:
+    include:
+      - services/pedidos/src/eliminar-pedido.js
+      - lib/errors/database-error.js
+
+novedadPedido:
+  name: ${self:custom.base}-novedad-pedido
+  handler: services/pedidos/src/novedad-pedido.main
+  events:
+    - httpApi: 'POST /ped/pedido/novedad'
+  package:
+    include:
+      - services/pedidos/src/novedad-pedido.js
+      - lib/errors/database-error.js
+
+finalizarPedido:
+  name: ${self:custom.base}-finalizar-pedido
+  handler: services/pedidos/src/finalizar-pedido.main
+  
+  events:
+    - httpApi: 'POST /ped/pedido/finalizar/{idConductor}'
+  environment:
+    BUCKET: codegas
+  package:
+    include:
+      - services/pedidos/src/finalizar-pedido.js
+      - lib/errors/database-error.js
+      - lib/image.js
+      - lib/responses.js

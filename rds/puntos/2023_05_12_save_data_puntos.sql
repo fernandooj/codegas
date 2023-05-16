@@ -15,7 +15,7 @@
 -- BEGIN
 --     INSERT INTO puntos( direccion, capacidad, observacion, punto, idZona, idCliente, idPadre)
 --     VALUES(_direccion, _capacidad, _observacion, _punto, _idZona, _idCliente, _idPadre);
---     RETURN 'PUNT creada exitosamente';
+--     RETURN 'PUNTO creada exitosamente';
 -- END;
 -- $function$
 
