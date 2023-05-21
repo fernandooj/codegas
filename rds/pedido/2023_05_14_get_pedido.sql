@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION get_pedidos(
     _acceso VARCHAR(10)
 )
 RETURNS TABLE (
-    id INT,
+    _id INT,
     creado TIMESTAMP,
     fechaSolicitud VARCHAR(255),
     fechaEntrega VARCHAR(255),
