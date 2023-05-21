@@ -1,20 +1,10 @@
 'use client';
-import react, { Fragment, ReactElement } from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-
- 
-import Box from '@mui/material/Box';
- 
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
+import react, { ReactElement, useContext } from 'react';
+import { Container, Grid, Table, Box, Paper, TableContainer, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
+import { redirect } from 'next/navigation';
  
 import Chart from '../components/chart';
+import {DataContext} from "../context/context"
 import { RenderPedidos } from './renderPedido'; 
 function createData(
     name: string,
@@ -34,20 +24,22 @@ function createData(
     createData('Gingerbread', 356, 16.0, 49, 3.9),
   ];
 const Pedidos = (): ReactElement => {
-    return(
-        <Box
-        component="main"
-        sx={{
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light'
-              ? theme.palette.grey[100]
-              : theme.palette.grey[900],
-          flexGrow: 1,
-          height: '100vh',
-          overflow: 'auto',
-        }}
-      >
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }} component="section">
+  const {user, login}: any = useContext(DataContext)
+  if(!user) redirect('/')
+  return(
+    <Box
+      component="main"
+      sx={{
+        backgroundColor: (theme) =>
+          theme.palette.mode === 'light'
+            ? theme.palette.grey[100]
+            : theme.palette.grey[900],
+        flexGrow: 1,
+        height: '100vh',
+        overflow: 'auto',
+      }}
+    >
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }} component="section">
         <Grid container spacing={3}>
           {/* Chart */}
           <Grid item xs={12} md={8} lg={9}>
@@ -77,32 +69,28 @@ const Pedidos = (): ReactElement => {
           </Grid>
           {/* Recent Orders */}
           <Grid item xs={12}>
-            
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell align="center">&nbsp;</TableCell>
-                          <TableCell align="center">N pedido</TableCell>
-                          <TableCell align="center">Codt</TableCell>
-                          <TableCell align="center">Razon Social</TableCell>
-                          <TableCell align="center">Cedula</TableCell>
-                          <TableCell align="center">Direccion</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                    <RenderPedidos /> 
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-               
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center">&nbsp;</TableCell>
+                      <TableCell align="center">N pedido</TableCell>
+                      <TableCell align="center">Codt</TableCell>
+                      <TableCell align="center">Razon Social</TableCell>
+                      <TableCell align="center">Cedula</TableCell>
+                      <TableCell align="center">Direccion</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                <RenderPedidos /> 
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Grid>
         </Grid>
-     
       </Container>
-
     </Box>
-    )
+  )
 }
 
 export default Pedidos

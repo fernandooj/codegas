@@ -1,19 +1,15 @@
 'use client'
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { createContext, useEffect, useState } from "react";
 import { auth } from "../utils/firebase/firebase-config";
+import {SignIn} from "./types"
+const DataContext = createContext({});
 
-const DataContext = createContext();
+const DataProvider = ({ children }: {children: React.ReactNode}) => {
+  const [user, setUser] = useState(null);
 
-const DataProvider = ({ children }) => {
-  const [user, setUser] = useState();
-  const [initializing, setInitializing] = useState(true);
-
-  const listenAuth = (user) => {
+  const listenAuth = (user: any) => {
     setUser(user);
-    if (initializing) {
-      setInitializing(false);
-    }
   };
 
   useEffect(() => {
@@ -25,14 +21,22 @@ const DataProvider = ({ children }) => {
 
   const data = {
     user,
-    login: async (email, password) => {
+    login: async ({email, password}: SignIn)=> {
       try {
         const response = await signInWithEmailAndPassword(auth, email, password);
-        console.log(response);
       } catch (error) {
         console.error(error);
       }
     },
+    closeSesion: async () => {
+      try {
+        await signOut(auth);
+        setUser(null)
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
   };
 
   return <DataContext.Provider value={data}> {children} </DataContext.Provider>;

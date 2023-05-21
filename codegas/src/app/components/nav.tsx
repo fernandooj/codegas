@@ -1,15 +1,13 @@
 'use client'
-import * as React from 'react';
+import React, { useContext, useState } from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
-import {CssBaseline, Box, Toolbar, List, Typography, Divider, IconButton, Badge, Container, Grid, Paper} from '@mui/material';
+import {CssBaseline, Box, Toolbar, List, Typography, Divider, IconButton} from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar from '@mui/material/AppBar';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import { mainListItems } from './listItems';
-
-
+import {Menu, ChevronLeft, Logout} from '@mui/icons-material';
+import {mainListItems} from './listItems';
+import {DataContext} from '../context/context'
+import {redirect} from 'next/navigation'
 const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
@@ -59,12 +57,16 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-export default function Nav({children}) {
-  const [open, setOpen] = React.useState(true);
+export default function Nav({children}: {children: React.ReactNode}) {
+  const [open, setOpen] = useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
-
+  const {user, closeSesion}: any = useContext(DataContext)
+  const LogOut = () =>{
+    closeSesion()
+    redirect('/')
+  }
   return (
     <ThemeProvider theme={defaultTheme}>
       <Box sx={{ display: 'flex' }}>
@@ -85,7 +87,7 @@ export default function Nav({children}) {
                 ...(open && { display: 'none' }),
               }}
             >
-              <MenuIcon />
+              <Menu />
             </IconButton>
             <Typography
               component="h1"
@@ -94,16 +96,33 @@ export default function Nav({children}) {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Dashboard
+              
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+            <Typography
+              component="h4"
+              color="inherit"
+              noWrap
+            >
+              {user?.email}
+            </Typography>
+            {
+               user
+               ?<IconButton
+                edge="start"
+                color="inherit"
+                onClick={LogOut}
+                sx={{
+                  marginRight: '36px',
+                }}
+              >
+                <Logout />
+              </IconButton> 
+           : null}
+           
           </Toolbar>
         </AppBar>
-        <Drawer variant="permanent" open={open}>
+        {user
+        ?<Drawer variant="permanent" open={open}>
           <Toolbar
             sx={{
               display: 'flex',
@@ -113,7 +132,7 @@ export default function Nav({children}) {
             }}
           >
             <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
+              <ChevronLeft />
             </IconButton>
           </Toolbar>
           <Divider />
@@ -122,6 +141,7 @@ export default function Nav({children}) {
             <Divider sx={{ my: 1 }} />
           </List>
         </Drawer>
+        :null}
         <Box
           component="main"
           sx={{

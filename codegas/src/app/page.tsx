@@ -1,12 +1,10 @@
 'use client'
 import React, { useContext } from 'react';
 import { CssBaseline, Box, TextField, FormControlLabel, Typography, Avatar, Checkbox, Button, Grid, Container } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
- 
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { redirect } from 'next/navigation';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import {signIn} from "./utils/firebase/firebase-signIn"
 import {DataContext} from "./context/context"
 import Link from 'next/link';
 
@@ -26,22 +24,22 @@ function Copyright(props: any) {
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  const data = new FormData(event.currentTarget);
 
-  const dataUser ={
-    email: data.get('email'),
-    password: data.get('password'),
-  };
-  signIn(dataUser)
-};
 
 export default function SignIn() {
-  const {user} = useContext(DataContext)
+  const {user, login}: any = useContext(DataContext)
   
-  if(user) redirect('/pedidos')
-
+  if(user?.email) redirect('/pedidos')
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+  
+    const dataUser ={
+      email: data.get('email'),
+      password: data.get('password'),
+    };
+    login(dataUser)
+  };
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -95,15 +93,11 @@ export default function SignIn() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
-                  Recordar contraseña?
+                <Link href="/pedidos">
+                    Recordar contraseña?
                 </Link>
               </Grid>
-              <Grid item>
-                <Link href="#" variant="body2">
-                  {/* {"Don't have an account? Sign Up"} */}
-                </Link>
-              </Grid>
+              
             </Grid>
           </Box>
         </Box>
