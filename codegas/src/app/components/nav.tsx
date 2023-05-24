@@ -112,7 +112,7 @@ export default function Nav({children}: {children: React.ReactNode}) {
                 color="inherit"
                 onClick={LogOut}
                 sx={{
-                  marginRight: '36px',
+                  marginLeft: '6px',
                 }}
               >
                 <Logout />

@@ -25,7 +25,7 @@ function createData(
   ];
 const Pedidos = (): ReactElement => {
   const {user, login}: any = useContext(DataContext)
-  if(!user) redirect('/')
+  // if(!user) redirect('/')
   return(
     <Box
       component="main"
@@ -77,8 +77,11 @@ const Pedidos = (): ReactElement => {
                       <TableCell align="center">N pedido</TableCell>
                       <TableCell align="center">Codt</TableCell>
                       <TableCell align="center">Razon Social</TableCell>
-                      <TableCell align="center">Cedula</TableCell>
-                      <TableCell align="center">Direccion</TableCell>
+                      <TableCell align="center">F Entrega</TableCell>
+                      <TableCell align="center">Estado</TableCell>
+                      <TableCell align="center">Vehiculo</TableCell>
+                      <TableCell align="center">Observación</TableCell>
+                      <TableCell align="center">Imagen</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
