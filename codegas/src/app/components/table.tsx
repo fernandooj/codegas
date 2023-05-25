@@ -7,14 +7,15 @@ import Image from "next/image"
 import moment from "moment"
 import {colors} from "../utils/colors"
 import {Date} from "./date"
-import {UpdateDatePedido, addCarPedido, UpdateStatePedido} from "../pedidos/fetchPedido"
+import {UpdateDatePedido, UpdateStatePedido} from "../pedidos/fetchPedido"
 import {Snack} from "./snackBar"
 import {AlertDialog} from "./alertDialog"
 import {SelectState} from "./selecState"
-import {RenderVehiculosDialog} from "../pedidos/renderVehiculosDialog"
+import Link from 'next/link';
+
 const {espera, noentregado, innactivo, activo, asignado, otro} = colors
-export default function RenderTable({data}: any) {
-  const {_id, codt, razon_social, cedula, direccion, creado, fechasolicitud, fechaentrega, forma, kilos, valorunitario, placa, novedades, estado, entregado, imagencerrar } = data
+export default function RenderTable({_id, codt, razon_social, cedula, direccion, creado, fechasolicitud, fechaentrega, forma, kilos, valorunitario, placa, novedades, estado, entregado, imagencerrar}: any) {
+ 
   const [open, setOpen] = useState(false);
   const [showSnack, setShowSnack] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
@@ -22,7 +23,7 @@ export default function RenderTable({data}: any) {
   const [newFechaEntrega, setFechaEntrega] = useState(fechaentrega)
   const [newEstado, setNewEstado] = useState(estado)
 
-  const updateDate = async (id, date) => {
+  const updateDate = async (id: any, date: any) => {
       const {status} = await UpdateDatePedido(id, date)
       if (status) {
       setShowSnack(true)
@@ -31,20 +32,12 @@ export default function RenderTable({data}: any) {
       }
   }
 
-  const updateStatus = async (id, state) => {
+  const updateStatus = async (id: any, state: any) => {
     const {status} = await UpdateStatePedido(id, state)
     if (status) {
       setShowSnack(true)
       setMessage(`estado ${state} cambiado!`)
       setNewEstado(state)
-    }
-  }
-  const asignCar = async (id, date) => {
-    const {status} = await addCarPedido(id, date)
-    if (status) {
-    setShowSnack(true)
-    setMessage(`Carro ${placa} agregado!`)
-    setNewEstado(date)
     }
   }
 
@@ -79,7 +72,11 @@ export default function RenderTable({data}: any) {
           <SelectState newEstado={newEstado} setNewEstado={(e)=>updateStatus(_id, e)} />
         </TableCell>
         <TableCell align="center">
-          <Button variant="contained" onClick={()=>setShowDialog(true)}>{placa ?placa :"Sin Placa"}</Button>
+          <Button variant="contained">
+            <Link href={`pedidos/${_id}/${moment(newFechaEntrega).format('YYYY-MM-DD')}`} style={{color: "#ffffff", textDecoration: 'none'}}>
+              {placa ?placa :"Sin Placa"}
+            </Link>
+          </Button>
         </TableCell>
         <TableCell align="center">
           {novedades &&<Button variant="contained">Si</Button>}
@@ -97,33 +94,33 @@ export default function RenderTable({data}: any) {
                 Datos adicionales
               </Typography>
               <TableContainer>
-              <Table sx={{ minWidth: 650 }} aria-label="purchases">
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="center">F. Solicitud</TableCell>
-                    <TableCell align="center">Solicitud</TableCell>
-                    <TableCell align="center">Kilos</TableCell>
-                    <TableCell align="center">Valor</TableCell>
-                    <TableCell align="center">Cedula</TableCell>
-                    <TableCell align="center">Direccion</TableCell>
-                    <TableCell align="center">F Creación</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow>
-                    <TableCell component="th" scope="row" align="center">
-                      {fechasolicitud}
-                    </TableCell>
-                    <TableCell align="center">{forma}</TableCell>
-                    <TableCell align="center">{kilos}</TableCell>
-                    <TableCell align="center">{valorunitario}</TableCell>
-                    <TableCell align="center">{cedula}</TableCell>
-                    <TableCell align="center">{direccion}</TableCell>
-                    <TableCell align="center">{moment(creado).format('YYYY-MM-DD HH:mm')}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
+                <Table sx={{ minWidth: 650 }} aria-label="purchases">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center">F. Solicitud</TableCell>
+                      <TableCell align="center">Solicitud</TableCell>
+                      <TableCell align="center">Kilos</TableCell>
+                      <TableCell align="center">Valor</TableCell>
+                      <TableCell align="center">Cedula</TableCell>
+                      <TableCell align="center">Direccion</TableCell>
+                      <TableCell align="center">F Creación</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell component="th" scope="row" align="center">
+                        {fechasolicitud}
+                      </TableCell>
+                      <TableCell align="center">{forma}</TableCell>
+                      <TableCell align="center">{kilos}</TableCell>
+                      <TableCell align="center">{valorunitario}</TableCell>
+                      <TableCell align="center">{cedula}</TableCell>
+                      <TableCell align="center">{direccion}</TableCell>
+                      <TableCell align="center">{moment(creado).format('YYYY-MM-DD HH:mm')}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </Box>
           </Collapse>
         </TableCell>
@@ -131,8 +128,7 @@ export default function RenderTable({data}: any) {
       <Snack show={showSnack} setShow={()=>setShowSnack(false)} message={message} />
        
       <AlertDialog showDialog={showDialog} setShowDialog={()=>setShowDialog(false)}>
-        {/* {imagencerrar &&<Image src={imagencerrar} alt="codegas colombia" width={200} height={500}/> } */}
-        <RenderVehiculosDialog />
+        {imagencerrar &&<Image src={imagencerrar} alt="codegas colombia" width={200} height={500}/> }
       </AlertDialog>
     </Fragment>
   )

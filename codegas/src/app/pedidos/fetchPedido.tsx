@@ -1,7 +1,9 @@
 const URL = "https://mv5j5mmtck.execute-api.us-east-1.amazonaws.com/ped/pedido"
-export const fetchPedido = async () => {
+const idUser=1
+export const fetchPedido = async (start: any) => {
+    start = start==1 ?1 :(start-1)*10
     try {
-        const response = await fetch(`${URL}/todos/app/1/10/1/admin`, {cache: 'no-store'});
+        const response = await fetch(`${URL}/todos/app/${idUser}/10/${start}/admin`, {cache: 'no-store'});
         const data = await response.json();
         return data;
     } catch (error) {
@@ -19,7 +21,7 @@ export const UpdateDatePedido = async(id: any, date: any) =>{
     }
 }
 
-export const addCarPedido = async(idPedido: any, idCar: any, date: any, idUser=1) =>{
+export const addCarPedido = async(idPedido: any, idCar: any, date: any) =>{
     try {
         const response = await fetch(`${URL}/asignarConductor/${idPedido}/${idCar}/${date}/${idUser}`, {cache: 'no-store'});
         const data = await response.json();

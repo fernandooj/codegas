@@ -18,7 +18,7 @@ export const mainListItems = (
   <React.Fragment>
     {
       menuItems.map(({text, icon, link}, index) => (
-        <Link href={link} key={index}>
+        <Link href={link} key={index} style={{color: "#666565", textDecoration: "none"}} >
           <ListItemButton>
             <ListItemIcon>
                 {icon}
