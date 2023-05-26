@@ -12,7 +12,7 @@ getPedidos:
   name: ${self:custom.base}-get-pedidos
   handler: services/pedidos/src/get-pedidos.main
   events:
-    - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}'
+    - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}/{search}'
   package:
     include:
       - services/pedidos/src/get-pedidos.js

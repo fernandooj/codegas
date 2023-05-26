@@ -2,7 +2,8 @@ CREATE OR REPLACE FUNCTION get_pedidos(
     _usuarioId INT,
     _limit INT,
     _start INT,
-    _acceso VARCHAR(10)
+    _acceso VARCHAR(10),
+    _busqueda VARCHAR(255)
 )
 RETURNS TABLE (
     _id INT,
@@ -41,7 +42,9 @@ BEGIN
         LEFT JOIN users u2 ON p.usuarioCrea = u2._id
         LEFT JOIN carros c ON p.carroId = c._id
         LEFT JOIN users u3 ON p.conductorId = u3._id
-        AND p.eliminado = false
+        WHERE p.eliminado = false
+        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%')
+        ORDER BY p._id DESC
         LIMIT _limit OFFSET _start;
 
     ELSIF _acceso = 'conductor' THEN
@@ -81,6 +84,8 @@ BEGIN
             SELECT _id FROM arbol
         ) 
         AND p.eliminado = false
+        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%')
+        ORDER BY p._id DESC
         LIMIT _limit OFFSET _start;
     END IF;
 
@@ -96,16 +101,16 @@ $func$;
 
 
 
-WITH RECURSIVE arbol AS (
-    SELECT _id, nombre, idPadre
-    FROM users
-    WHERE _id = 4
+-- WITH RECURSIVE arbol AS (
+--     SELECT _id, nombre, idPadre
+--     FROM users
+--     WHERE _id = 4
 
-    UNION ALL
+--     UNION ALL
 
-    SELECT u._id, u.nombre, u.idPadre
-    FROM users u
-    JOIN arbol a ON u.idPadre = a._id
-)
-SELECT *
-FROM arbol;
+--     SELECT u._id, u.nombre, u.idPadre
+--     FROM users u
+--     JOIN arbol a ON u.idPadre = a._id
+-- )
+-- SELECT *
+-- FROM arbol;

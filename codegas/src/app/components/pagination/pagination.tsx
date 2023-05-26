@@ -3,7 +3,7 @@ import React, {useState} from 'react';
 import {Pagination, Stack } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 
-export function PaginationTable() {
+export function PaginationTable({total}) {
   const [page, setPage] = useState(1);
   const router = useRouter();
    const pathname = usePathname();
@@ -16,7 +16,7 @@ export function PaginationTable() {
         <Pagination 
           variant="outlined" 
           shape="rounded" 
-          count={10}
+          count={total+10}
           page={page}
           showFirstButton 
           showLastButton 

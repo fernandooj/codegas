@@ -1,9 +1,9 @@
 const URL = "https://mv5j5mmtck.execute-api.us-east-1.amazonaws.com/ped/pedido"
 const idUser=1
-export const fetchPedido = async (start: any) => {
-    start = start==1 ?1 :(start-1)*10
+export const fetchPedido = async (start: any, search: string) => {
+    start = start==0 ?0 :(start-1)*10
     try {
-        const response = await fetch(`${URL}/todos/app/${idUser}/10/${start}/admin`, {cache: 'no-store'});
+        const response = await fetch(`${URL}/todos/app/${idUser}/10/${start}/admin/${search}`, {cache: 'no-store'});
         const data = await response.json();
         return data;
     } catch (error) {
