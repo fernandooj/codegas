@@ -1,4 +1,4 @@
-const URL = "https://mv5j5mmtck.execute-api.us-east-1.amazonaws.com/ped/pedido"
+const URL = "https://7838wgxv44.execute-api.us-east-1.amazonaws.com/ped/pedido"
 const idUser=1
 export const fetchPedido = async (start: any, search: string) => {
     start = start==0 ?0 :(start-1)*10

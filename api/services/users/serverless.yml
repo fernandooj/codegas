@@ -18,12 +18,42 @@ getUsers:
       - services/users/src/get-users.js
       - lib/errors/database-error.js
 
-getUserByUid:
-  name: ${self:custom.base}-get-user-by-uid
-  handler: services/users/src/get-user-by-uid.main
+getUserByEmail:
+  name: ${self:custom.base}-get-user-by-email
+  handler: services/users/src/get-user-by-email.handle
   events:
-    - httpApi: 'GET /users/perfil/{uid}'
+    - httpApi: 'GET /users/{email}'
   package:
     include:
-      - services/users/src/get-user-by-uid.js
+      - services/users/src/get-user-by-email.js
+      - lib/errors/database-error.js
+
+getUserWithZona:
+  name: ${self:custom.base}-get-user-with-zonas
+  handler: services/users/src/get-user-with-zonas.main
+  events:
+    - httpApi: 'GET /users/zonas/{limit}/{start}/{idZona}/{type}/{search}'
+  package:
+    include:
+      - services/users/src/get-user-with-zonas.js
+      - lib/errors/database-error.js
+
+changeValorUnitario:
+  name: ${self:custom.base}-change-valor-unitario
+  handler: services/users/src/change-valor-unitario.main
+  events:
+    - httpApi: 'GET /users/cambiarValor/{valorunitario}/{_id}'
+  package:
+    include:
+      - services/users/src/change-valor-unitario.js
+      - lib/errors/database-error.js
+
+changeValorUnitarioAll:
+  name: ${self:custom.base}-change-valor-unitario-todos
+  handler: services/users/src/change-valor-unitario-todos.main
+  events:
+    - httpApi: 'PUT /users/cambiarValorTodos'
+  package:
+    include:
+      - services/users/src/change-valor-unitario-todos.js
       - lib/errors/database-error.js

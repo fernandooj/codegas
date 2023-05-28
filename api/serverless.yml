@@ -6,13 +6,13 @@ frameworkVersion: '3'
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline
-  - serverless-webpack
+  # - serverless-webpack
   - serverless-iam-roles-per-function
  
   
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, "us-east-1"}
   httpApi:
@@ -42,11 +42,11 @@ provider:
 custom:
   dotenv:
     path: .env
-  webpack:
-    webpackConfig: 'webpack.config.js'   # Name of webpack configuration file
-    includeModules: false   # Node modules configuration for packaging
-    packager: 'npm'   # Packager that will be used to package your external modules
-    excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
+  # # webpack:
+  # #   webpackConfig: 'webpack.config.js'   # Name of webpack configuration file
+  #   includeModules: false   # Node modules configuration for packaging
+  #   packager: 'npm'   # Packager that will be used to package your external modules
+  #   excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
   n: my-app:${self:provider.stage}:${self:provider.region}:api
   base: ${self:service}-${self:provider.stage}
 

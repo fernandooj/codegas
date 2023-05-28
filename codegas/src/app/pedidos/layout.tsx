@@ -4,8 +4,9 @@ import { Container, Grid, Box, Paper} from '@mui/material';
 import { redirect } from 'next/navigation';
 
 import Chart from '../components/chart';
-import {DataContext} from "../context/context"
+import Incomes from '../components/incomes/incomes'
 
+import {DataContext} from "../context/context"
  
 const LayoutPedidos = ({children}): ReactElement => {
   const {user, login}: any = useContext(DataContext)
@@ -48,7 +49,7 @@ const LayoutPedidos = ({children}): ReactElement => {
                 height: 240,
               }}
             >
-              
+              <Incomes />
             </Paper>
           </Grid>
           {/* Recent Orders */}

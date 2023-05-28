@@ -18,8 +18,8 @@ export default function RenderTable({_id, codt, razon_social, cedula, direccion,
  
   const [open, setOpen] = useState(false);
   const [showSnack, setShowSnack] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
   const [message, setMessage] = useState("");
+  const [showDialog, setShowDialog] = useState(false);
   const [newFechaEntrega, setFechaEntrega] = useState(fechaentrega)
   const [newEstado, setNewEstado] = useState(estado)
 
