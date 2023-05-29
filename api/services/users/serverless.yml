@@ -18,6 +18,17 @@ getUsers:
       - services/users/src/get-users.js
       - lib/errors/database-error.js
 
+getUsersAdiministradores:
+  name: ${self:custom.base}-get-users-administradores
+  handler: services/users/src/get-users-administradores.main
+  events:
+    - httpApi: 'GET /users/administradores'
+  package:
+    include:
+      - services/users/src/get-users-administradores.js
+      - lib/errors/database-error.js
+
+
 getUserByEmail:
   name: ${self:custom.base}-get-user-by-email
   handler: services/users/src/get-user-by-email.handle

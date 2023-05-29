@@ -35,7 +35,7 @@ export const ChangeValorUnitarioAll = async(data: any) =>{
     const newData = {
         seleccionados: data
     }
-    console.log(newData)
+ 
     try {
         const response = await fetch(`${URL}/users/cambiarValorTodos`, {
             method: 'PUT', 

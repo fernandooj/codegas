@@ -29,10 +29,9 @@ export function SelectState({newEstado, setNewEstado}) {
           label="Estado"
           onChange={handleChange}
         >
-            {
-                STATE.map(e=> <MenuItem value={e} key={e}>{e}</MenuItem>)
-            }
-           
+          {
+            STATE.map(e=> <MenuItem value={e} key={e}>{e}</MenuItem>)
+          }
         </Select>
       </FormControl>
     </Box>

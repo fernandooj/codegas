@@ -1,6 +1,6 @@
 'use client' 
-import { Fragment, useEffect, useState } from 'react';
-import { TableRow, TableCell, Checkbox, InputBase, FormControl, InputLabel, InputAdornment, OutlinedInput, Paper, Table, TableBody, TableContainer, TableHead } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { TableRow, TableCell, Checkbox, FormControl, InputLabel, InputAdornment, OutlinedInput, Paper, Table, TableBody, TableContainer, TableHead } from '@mui/material';
 import {Snack} from "../components/snackBar"
 import {ChangeValorUnitario, ChangeValorUnitarioAll} from "./fetchZona"
 import { PaginationTable } from "../components/pagination/pagination";
@@ -24,7 +24,7 @@ const RenderZonas = ({zona, updateValor, addValues}: any) => {
         <TableCell align="center" component="th">{nombrezona}</TableCell>
         <TableCell align="center">{codt}</TableCell>
         <TableCell align="center">{razon_social}</TableCell>
-        <TableCell align="center">{nombre} - {idcliente}</TableCell>
+        <TableCell align="center">{nombre}</TableCell>
         <TableCell align="center">
           <FormControl fullWidth sx={{ m: 1 }}>
           <InputLabel htmlFor="outlined-adornment-amount">Valor Uni</InputLabel>
