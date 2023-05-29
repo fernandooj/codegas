@@ -31,12 +31,20 @@ export const ChangeValorUnitario = async(valor: any, idUser: any) =>{
     }
 }
 
-// export const UpdateStatePedido = async(id: any, state: any) =>{
-//     try {
-//         const response = await fetch(`${URL}/cambiarEstado/${id}/${state}`, {cache: 'no-store'});
-//         const data = await response.json();
-//         return data
-//     } catch (error){
-//         console.error(error)
-//     }
-// }
+export const ChangeValorUnitarioAll = async(data: any) =>{
+    const newData = {
+        seleccionados: data
+    }
+    console.log(newData)
+    try {
+        const response = await fetch(`${URL}/users/cambiarValorTodos`, {
+            method: 'PUT', 
+            body: JSON.stringify(newData),
+            cache: 'no-store'
+        });
+        const dataReponse = await response.json();
+        return dataReponse
+    } catch (error){
+        console.error(error)
+    }
+}

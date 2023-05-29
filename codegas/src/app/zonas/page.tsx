@@ -1,55 +1,31 @@
-'use client';
-import React, { ReactElement, useMemo, useContext, useEffect, useState } from 'react';
-import { Table, Paper, TableContainer, TableHead, TableRow, TableCell, TableBody, Autocomplete, TextField} from '@mui/material';
+'use client'
+import React, { ReactElement, useContext, useEffect, useState } from 'react';
 
-import { usePathname, useRouter } from 'next/navigation';
 import {DataContext} from "../context/context"
 import { RenderZonasUsers } from './renderZonasUsers'; 
-import { PaginationTable } from "../components/pagination/pagination";
 import InputSearch from "../components/search/search"
 
-const Zona = ({searchParams}): ReactElement => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [total, setTotal] = useState(20)
-  const [idZona, setIdZona] = useState(1)
-  const [zonasData, setZonas] = useState([]);
-  const [type, setType] = useState('BySearch')
+const limit=10
+const idZone=110
+const type='BySearch'
+const Zona = ({searchParams}: any): ReactElement => {
   let {page, search} = searchParams
-  const limit =10
-  page =10
-  search=''
+  page = page || 0
+  search = search || ''
   const {user}: any = useContext(DataContext)
-  // if(!user) redirect('/')
- 
-  return(
-    <TableContainer component={Paper}>
-      <InputSearch />
-        
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">&nbsp;</TableCell>
-              <TableCell align="center">Zona</TableCell>
-              <TableCell align="center">Codt</TableCell>
-              <TableCell align="center">Razon Social</TableCell>
-              <TableCell align="center">Nombre</TableCell>
-              <TableCell align="center">Valor Unitario</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-          <RenderZonasUsers 
-            limit={limit} 
-            page={page} 
-            idZona={idZona}
-            type={type}
-            search={search}
- 
-          />
-        </TableBody>
-      </Table>
-      <PaginationTable total={total} />
-    </TableContainer>    
+  // if(!user) redirect('/'))
+
+  return (
+    <>
+      <InputSearch search={search} />
+      <RenderZonasUsers 
+         limit={limit}
+         search={search}
+         page={page} 
+         idZone={idZone}
+         type={type}
+      />
+    </>
   )
 }
 

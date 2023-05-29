@@ -6,13 +6,13 @@ import {Dashboard, ShoppingCart, CalendarToday, Map, FireTruck, AssignmentTurned
 import Link from 'next/link'
 const menuItems = [
   {link: "pedidos", text: "Pedidos", icon: <Dashboard />},
-  {link: "usuarios", text: "Usuarios", icon: <People />}, 
-  {link: "vehiculos", text: "Vehiculos", icon: <ShoppingCart/>},
-  {link: "fechas", text: "Fechas", icon: <CalendarToday/>},
   {link: "zonas", text: "Zonas", icon: <Map />},
-  {link: "tanques", text: "Tanques", icon: <FireTruck/>},
-  {link: "revisiones", text: "Revisiones", icon: <AssignmentTurnedIn/>},
-  {link: "informes", text: "Informes", icon: <AssignmentTurnedIn/>}
+  // {link: "usuarios", text: "Usuarios", icon: <People />}, 
+  // {link: "vehiculos", text: "Vehiculos", icon: <ShoppingCart/>},
+  // {link: "fechas", text: "Fechas", icon: <CalendarToday/>},
+  // {link: "tanques", text: "Tanques", icon: <FireTruck/>},
+  // {link: "revisiones", text: "Revisiones", icon: <AssignmentTurnedIn/>},
+  // {link: "informes", text: "Informes", icon: <AssignmentTurnedIn/>}
 ]
 export const mainListItems = (
   <React.Fragment>
