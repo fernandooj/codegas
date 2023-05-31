@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {Pagination, Stack } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 
-export function PaginationTable({total}) {
+export function PaginationTable({total}: any) {
   const [page, setPage] = useState(0);
   const router = useRouter();
    const pathname = usePathname();

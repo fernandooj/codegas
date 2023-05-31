@@ -16,11 +16,11 @@ module.exports.main = async (event) => {
     type,
     search,
   } = event.pathParameters;
+  const newSearch = search == 'undefined' ||  search == undefined ? '' :search
 
-  
   try {
     const client  = await poolConection.connect();
-    const {rows} = await client.query(GET_USERS_ZONAS, [limit, start, idZona, type, search])
+    const {rows} = await client.query(GET_USERS_ZONAS, [limit, start, idZona, type, newSearch])
     return rows
   } catch (error) { 
     console.log(error)

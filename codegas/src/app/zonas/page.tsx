@@ -1,5 +1,5 @@
-'use client'
-import React, { ReactElement, useContext, useEffect, useState } from 'react';
+'use cliente'
+import React, { ReactElement } from 'react';
 
 import {DataContext} from "../context/context"
 import { RenderZonasUsers } from './renderZonasUsers'; 
@@ -11,8 +11,8 @@ const type='BySearch'
 const Zona = ({searchParams}: any): ReactElement => {
   let {page, search} = searchParams
   page = page || 0
-  search = search || ''
-  const {user}: any = useContext(DataContext)
+  // search = search || ' '
+  // const {user}: any = useContext(DataContext)
   // if(!user) redirect('/'))
 
   return (

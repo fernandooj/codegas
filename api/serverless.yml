@@ -40,6 +40,8 @@ provider:
   #   restApiRootResourceId: ${output:${self:custom.n}.ApiResourceId}
 
 custom:
+  serverless-offline:
+    httpPort: 4000
   dotenv:
     path: .env
   # # webpack:
@@ -56,4 +58,5 @@ functions:
   - ${file(./services/puntos/serverless.yml)}
   - ${file(./services/vehiculos/serverless.yml)}
   - ${file(./services/pedidos/serverless.yml)}
+  - ${file(./services/tanques/serverless.yml)}
   

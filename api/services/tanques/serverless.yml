@@ -1,0 +1,99 @@
+# createVehiculo:
+#   name: ${self:custom.base}-create-vehiculo
+#   handler: services/vehiculos/src/create-vehiculo.main
+#   events:
+#     - httpApi: 'POST /veh/vehiculo'
+#   package:
+#     include:
+#       - services/vehiculos/src/create-vehiculo.js
+#       - lib/errors/database-error.js
+
+getTanques:
+  name: ${self:custom.base}-get-tanques
+  handler: services/tanques/src/get-tanques.main
+  events:
+    - httpApi: 'GET /tan/tanque/{limit}/{start}/{busqueda}'
+  package:
+    include:
+      - services/tanques/src/get-tanques.js
+      - lib/errors/database-error.js
+
+# getVehiculosActivos:
+#   name: ${self:custom.base}-get-vehiculo-activos
+#   handler: services/vehiculos/src/get-vehiculo-activos.main
+#   events:
+#     - httpApi: 'GET /veh/vehiculo/no_eliminados/{limit}'
+#   package:
+#     include:
+#       - services/vehiculos/src/get-vehiculo-activos.js
+#       - lib/errors/database-error.js
+
+# editVehiculo:
+#   name: ${self:custom.base}-edit-vehiculo
+#   handler: services/vehiculos/src/edit-vehiculo.main
+#   events:
+#     - httpApi: 'PUT /veh/vehiculo/editar/{_id}'
+#   package:
+#     include:
+#       - services/vehiculos/src/edit-vehiculo.js
+#       - lib/errors/database-error.js
+
+# changeStateVehiculo:
+#   name: ${self:custom.base}-change-state-vehiculo
+#   handler: services/vehiculos/src/change-state-vehiculo.main
+#   events:
+#     - httpApi: 'GET /veh/vehiculo/cambiarEstado/{_id}/{estado}'
+#   package:
+#     include:
+#       - services/vehiculos/src/change-state-vehiculo.js
+#       - lib/errors/database-error.js
+
+# deleteVehiculo:
+#   name: ${self:custom.base}-delete-vehiculo
+#   handler: services/vehiculos/src/delete-vehiculo.main
+#   events:
+#     - httpApi: 'GET /veh/vehiculo/eliminar/{_id}/{estado}'
+#   package:
+#     include:
+#       - services/vehiculos/src/delete-vehiculo.js
+#       - lib/errors/database-error.js
+
+# desvincularConductorVehiculo:
+#   name: ${self:custom.base}-desvincular-conductor-vehiculo
+#   handler: services/vehiculos/src/desvincular-conductor-vehiculo.main
+#   events:
+#     - httpApi: 'GET /veh/vehiculo/desvincularConductor/{_id}'
+#   package:
+#     include:
+#       - services/vehiculos/src/desvincular-conductor-vehiculo.js
+#       - lib/errors/database-error.js
+
+# asignarConductorVehiculo:
+#   name: ${self:custom.base}-asignar-conductor-vehiculo
+#   handler: services/vehiculos/src/asignar-conductor-vehiculo.main
+#   events:
+#     - httpApi: 'GET /veh/vehiculo/asignarConductor/{_id}/{_idConductor}'
+#   package:
+#     include:
+#       - services/vehiculos/src/asignar-conductor-vehiculo.js
+#       - lib/errors/database-error.js
+
+# getVehiculoById:
+#   name: ${self:custom.base}-get-vehiculo-by-id
+#   handler: services/vehiculos/src/get-vehiculo-by-id.main
+#   events:
+#     - httpApi: 'GET /veh/vehiculo/byId/{_id}'
+#   package:
+#     include:
+#       - services/vehiculos/src/get-vehiculo-by-id.js
+#       - lib/errors/database-error.js
+
+# getVehiculoByUser:
+#   name: ${self:custom.base}-get-vehiculo-by-user
+#   handler: services/vehiculos/src/get-vehiculo-by-user.main
+#   events:
+#     - httpApi: 'GET /veh/vehiculo/byConductor/{_id}'
+#   package:
+#     include:
+#       - services/vehiculos/src/get-vehiculo-by-user.js
+#       - lib/errors/database-error.js

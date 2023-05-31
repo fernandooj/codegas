@@ -1,4 +1,4 @@
-const URL = "https://7838wgxv44.execute-api.us-east-1.amazonaws.com"
+const URL = "http://localhost:4000"
 const idUser=1
 export const fetchZonasByUser = async (limit, start, idZona, type, search) => {
     // start = start==0 ?0 :(start-1)*10
