@@ -6,11 +6,11 @@ import {KeyboardArrowDown, KeyboardArrowUp} from '@mui/icons-material';
 import Image from "next/image"
 import moment from "moment"
 import {colors} from "../utils/colors"
-import {Date} from "./date"
-import {UpdateDatePedido, UpdateStatePedido} from "../pedidos/fetchPedido"
-import {Snack} from "./snackBar"
-import {AlertDialog} from "./alertDialog"
-import {SelectState} from "./selecState"
+import {Date} from "../components/date"
+import {UpdateDatePedido, UpdateStatePedido} from "./fetchPedido"
+import {Snack} from "../components/snackBar"
+import {AlertDialog} from "../components/alertDialog"
+import {SelectState} from "../components/selecState"
 import Link from 'next/link';
 
 const {espera, noentregado, innactivo, activo, asignado, otro} = colors

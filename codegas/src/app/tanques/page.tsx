@@ -1,0 +1,28 @@
+'use cliente'
+import React, { ReactElement } from 'react';
+
+import {DataContext} from "../context/context"
+import { RenderTanques } from './renderTanques'; 
+import InputSearch from "../components/search/search"
+
+const limit=10
+
+
+const Tanque = ({searchParams}: any): ReactElement => {
+  let {page, search} = searchParams
+  page = page || 0
+
+  return (
+    <>
+      <InputSearch search={search} />
+      <RenderTanques 
+         limit={limit}
+         search={search}
+         page={page} 
+      />
+    </>
+  )
+}
+
+export default Tanque
+ 

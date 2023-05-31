@@ -16,9 +16,10 @@ module.exports.main = async (event) => {
     start,
     busqueda
 } = event.pathParameters;
+const newSearch = busqueda == 'undefined' ||  busqueda == undefined ? '' :busqueda
   try {
     const client = await poolConection.connect();
-    const  { rows: tanque } = await client.query(GET_TANQUES, [limit, start, busqueda])
+    const  { rows: tanque } = await client.query(GET_TANQUES, [limit, start, newSearch])
     
     return {
       status: true,
