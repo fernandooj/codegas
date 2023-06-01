@@ -1,20 +1,17 @@
 'use cliente'
 import React, { ReactElement } from 'react';
-
-import { RenderTanques } from './renderTanques'; 
+import { RenderRevisiones } from './renderRevisiones'; 
 import InputSearch from "../components/search/search"
 
 const limit=10
-
-
-const Tanque = ({searchParams}: any): ReactElement => {
+const Revisiones = ({searchParams}: any): ReactElement => {
   let {page, search} = searchParams
   page = page || 0
 
   return (
     <>
       <InputSearch search={search} />
-      <RenderTanques 
+      <RenderRevisiones 
          limit={limit}
          search={search}
          page={page} 
@@ -23,5 +20,5 @@ const Tanque = ({searchParams}: any): ReactElement => {
   )
 }
 
-export default Tanque
+export default Revisiones
  

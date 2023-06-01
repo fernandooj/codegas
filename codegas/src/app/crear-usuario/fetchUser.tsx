@@ -1,4 +1,4 @@
-const URL = "http://localhost:4000"
+import URL from '../utils/url' 
  
 export const getUsersAdministradores = async () => {
     // start = start==0 ?0 :(start-1)*10

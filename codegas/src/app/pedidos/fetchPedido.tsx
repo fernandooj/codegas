@@ -1,5 +1,6 @@
-const URL = "https://7838wgxv44.execute-api.us-east-1.amazonaws.com/ped/pedido"
+import URL from '../utils/url' 
 const idUser=1
+
 export const fetchPedido = async (start: any, search: string) => {
     start = start==0 ?0 :(start-1)*10
     try {

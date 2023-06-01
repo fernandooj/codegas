@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import {DataContext} from "../context/context"
 
  
-const LoyoutRevisiones = ({children}: {children: React.ReactNode}): ReactElement => {
+const LayoutRevisiones = ({children}): ReactElement => {
   const {user, login}: any = useContext(DataContext)
   if(!user) redirect('/')
   return(
@@ -31,5 +31,5 @@ const LoyoutRevisiones = ({children}: {children: React.ReactNode}): ReactElement
   )
 }
 
-export default LoyoutRevisiones
+export default LayoutRevisiones
  

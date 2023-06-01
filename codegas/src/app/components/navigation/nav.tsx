@@ -6,7 +6,7 @@ import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar from '@mui/material/AppBar';
 import {Menu, ChevronLeft, Logout} from '@mui/icons-material';
 import {mainListItems} from './listItems';
-import {DataContext} from '../context/context'
+import {DataContext} from '../../context/context'
 import {redirect} from 'next/navigation'
 const drawerWidth = 240;
 

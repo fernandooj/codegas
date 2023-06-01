@@ -86,7 +86,6 @@ const RenderTanques = ({_id, codigoactivo, capacidad, fabricante, registroonac, 
 }
 
 export default function RenderTable({tanques}: any) {
-  console.log(tanques)
   return(
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
