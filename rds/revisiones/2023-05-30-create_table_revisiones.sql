@@ -9,7 +9,6 @@ create table if not exists revisiones(
 	usuariosAtendidos character varying, --
 	m3                character varying, --
 	nMedidorText      character varying, --
-    nMedidor character varying[], --
 	nComodatoText     character varying, --
     nComodato character varying[], --
 	ubicacion      	  character varying, --

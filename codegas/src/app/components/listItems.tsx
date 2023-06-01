@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 import {ListItemIcon, ListItemButton, ListItemText} from '@mui/material/';
-import {Dashboard, Map, People, FireTruck} from '@mui/icons-material/';
+import {Dashboard, Map, People, FireTruck, AssignmentTurnedIn} from '@mui/icons-material/';
 import Link from 'next/link'
 const menuItems = [
   {link: "pedidos", text: "Pedidos", icon: <Dashboard />},
@@ -11,7 +11,7 @@ const menuItems = [
   {link: "tanques", text: "Tanques", icon: <FireTruck/>},
   // {link: "revisiones", text: "Revisiones", icon: <AssignmentTurnedIn/>},
   // {link: "vehiculos", text: "Vehiculos", icon: <ShoppingCart/>},
-  // {link: "informes", text: "Informes", icon: <AssignmentTurnedIn/>}
+  {link: "informes", text: "Informes", icon: <AssignmentTurnedIn/>}
 ]
 export const mainListItems = (
   <React.Fragment>

@@ -29,7 +29,7 @@ const defaultTheme = createTheme();
 export default function SignIn() {
   const {user, login}: any = useContext(DataContext)
   
-  if(user?.email) redirect('/tanques')
+  if(user?.email) redirect('/informes')
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
