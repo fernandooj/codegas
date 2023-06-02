@@ -1,16 +1,35 @@
 'use client'
+import {FC, useEffect, useMemo} from "react"
 import { Table, TableContainer, Paper, TableHead, TableRow, TableCell, TableBody, Breadcrumbs, Typography } from "@mui/material"
 import Link from "next/link"
 import {RenderVehiculos} from "./renderVehiculos"
 
-export default function vehiculos({params}: any){
+const Vehiculos: FC = ({params}: any) => {
+  const {idPedido} = params 
+  // const data = useMemo(() => {
+  //   const idPedido = params.idPedido;
+
+  //   if (idPedido.includes("%2C")) {
+  //     return idPedido.split("%2C").filter((value) => value !== "");
+  //   } else {
+  //     return [idPedido];
+  //   }
+  // }, [params.idPedido]);
+
+ ;
   return(
     <TableContainer component={Paper}>
       <Breadcrumbs aria-label="breadcrumb" sx={{padding: "15px"}}>
         <Link style={{color: "#a2a1a1"}}  href="/pedidos">
           Pedidos
         </Link>
-        <Typography color="#a2a1a1"> Pedido N {params.idPedido}</Typography>
+        <Typography color="#a2a1a1"> Pedido N:  
+          {
+            idPedido.includes("%2C")
+            ?idPedido.split("%2C").filter((value) => value !== "").map((e: any)=> `${e} / `)
+            :idPedido
+          }
+        </Typography>
       </Breadcrumbs>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
@@ -30,3 +49,5 @@ export default function vehiculos({params}: any){
     </TableContainer>   
   )  
 }
+
+export default Vehiculos

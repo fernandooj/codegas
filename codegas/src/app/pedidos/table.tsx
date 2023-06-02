@@ -1,6 +1,6 @@
 'use client' 
-import { Fragment, useState } from 'react';
-import { TableRow, TableCell, Box, Collapse, Table, TableBody, TableHead, Typography, Button, TableContainer } from '@mui/material';
+import { Fragment, useEffect, useState } from 'react';
+import { TableRow, TableCell, Box, Collapse, Table, TableBody, TableHead, Typography, Button, TableContainer, Paper, Checkbox } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import {KeyboardArrowDown, KeyboardArrowUp} from '@mui/icons-material';
 import Image from "next/image"
@@ -14,16 +14,16 @@ import {SelectState} from "../components/selecState"
 import Link from 'next/link';
 
 const {espera, noentregado, innactivo, activo, asignado, otro} = colors
-export default function RenderTable({_id, codt, razon_social, cedula, direccion, creado, fechasolicitud, fechaentrega, forma, kilos, valorunitario, placa, novedades, estado, entregado, imagencerrar}: any) {
- 
-  const [open, setOpen] = useState(false);
-  const [showSnack, setShowSnack] = useState(false);
-  const [message, setMessage] = useState("");
-  const [showDialog, setShowDialog] = useState(false);
-  const [newFechaEntrega, setFechaEntrega] = useState(fechaentrega)
-  const [newEstado, setNewEstado] = useState(estado)
 
-  const updateDate = async (id: any, date: any) => {
+const RenderPedidos = ({_id, codt, razon_social, cedula, direccion, creado, fechasolicitud, 
+  fechaentrega, forma, kilos, valorunitario, placa, novedades, estado, entregado, imagencerrar, addValues}: any) => {
+    const [open, setOpen] = useState(false);
+    const [showSnack, setShowSnack] = useState(false);
+    const [message, setMessage] = useState("");
+    const [showDialog, setShowDialog] = useState(false);
+    const [newFechaEntrega, setFechaEntrega] = useState(fechaentrega)
+    const [newEstado, setNewEstado] = useState(estado)
+    const updateDate = async (id: any, date: any) => {
       const {status} = await UpdateDatePedido(id, date)
       if (status) {
       setShowSnack(true)
@@ -40,7 +40,6 @@ export default function RenderTable({_id, codt, razon_social, cedula, direccion,
       setNewEstado(state)
     }
   }
-
   return(
     <Fragment>
       <TableRow
@@ -49,6 +48,12 @@ export default function RenderTable({_id, codt, razon_social, cedula, direccion,
           background: newEstado=="espera" ?espera :newEstado=="noentregado" ?noentregado :newEstado=="innactivo" ?innactivo :newEstado=="activo" &&!placa && !entregado ?activo :newEstado=="activo" && !entregado ?asignado :otro
         }}
       >
+        <TableCell align="center">
+          <Checkbox
+            onChange={()=>addValues(_id, fechaentrega)}
+            inputProps={{ 'aria-label': 'controlled' }}
+          />
+        </TableCell>
         <TableCell align="center">
           <IconButton
             aria-label="expand row"
@@ -132,5 +137,65 @@ export default function RenderTable({_id, codt, razon_social, cedula, direccion,
       </AlertDialog>
     </Fragment>
   )
+}
+export default function RenderTable({data}: any) {
+ 
+  const [newData, setNewData] = useState(data)
+  const [valorWithArray, setValorWithArray] = useState([])
+  const [newValorWithArray, setNewValorWithArray] = useState()
+
+  const addValues = (id: any, newFechaEntrega: any) => {
+    const index = valorWithArray.some(({ _id }) => _id === id);
+    if (!index) {
+      setValorWithArray((state) => [...state, {id, newFechaEntrega}])
+    }else{
+      setValorWithArray(valorWithArray.filter(({_id})=> {return _id !== id})) 
+    }
+  }
+  useEffect(()=> {
+    let data = ''
+    for(let i=0; i<valorWithArray.length; i ++){
+      data += valorWithArray[i].id
+      data += ','
+    }
+    setNewValorWithArray(data)
+  }, [valorWithArray])
+  
+  return (
+    <TableContainer component={Paper}>
+      <Button variant="contained"  sx={{ marginTop: 1, marginLeft: 1 }}>
+        <Link 
+          href={`pedidos/${newValorWithArray}/${moment().format('YYYY-MM-DD')}`} 
+          style={{
+            color: "#ffffff", 
+            textDecoration: 'none'
+          }}
+        >
+          Vehiculos
+        </Link>
+      </Button>
+      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="center">&nbsp;</TableCell>
+              <TableCell align="center">&nbsp;</TableCell>
+              <TableCell align="center">N pedido</TableCell>
+              <TableCell align="center">Codt</TableCell>
+              <TableCell align="center">Razon Social</TableCell>
+              <TableCell align="center">F Entrega</TableCell>
+              <TableCell align="center">Estado</TableCell>
+              <TableCell align="center">Placa</TableCell>
+              <TableCell align="center">Obervacion</TableCell>
+              <TableCell align="center">Imagen</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+          { newData.map((row: any, index: any): any => <RenderPedidos key={index} {...row} addValues={addValues} />) }
+        </TableBody>
+      </Table>
+    
+    </TableContainer>    
+  )
+  
 }
 
