@@ -18,10 +18,10 @@ module.exports.main = async (event) => {
     acceso,
     search
   } = event.pathParameters;
-  
+  const newSearch = search == 'undefined' ||  search == undefined ? '' :search
   try {
     const client = await poolConection.connect();
-    const  { rows: pedido } = await client.query(GET_PEDIDOS, [usuarioId, limit, inicio = start, acceso, search])
+    const  { rows: pedido } = await client.query(GET_PEDIDOS, [usuarioId, limit, inicio = start, acceso, newSearch])
     
     return {
       status: true,

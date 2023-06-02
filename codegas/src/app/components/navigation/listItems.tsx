@@ -2,16 +2,17 @@
 import * as React from 'react';
 
 import {ListItemIcon, ListItemButton, ListItemText} from '@mui/material/';
-import {Dashboard, Map, People, AssignmentTurnedIn, PropaneTank, VerifiedUser} from '@mui/icons-material/';
+import {Dashboard, Map, People, AssignmentTurnedIn, PropaneTank, VerifiedUser, BorderColor} from '@mui/icons-material/';
 import Link from 'next/link'
 const menuItems = [
   {link: "pedidos", text: "Pedidos", icon: <Dashboard />},
   {link: "zonas", text: "Zonas", icon: <Map />},
-  {link: "crear-usuario", text: "Crear Usuario", icon: <People />}, 
   {link: "tanques", text: "Tanques", icon: <PropaneTank/>},
   {link: "revisiones", text: "Revisiones", icon: <VerifiedUser />},
   // {link: "vehiculos", text: "Vehiculos", icon: <ShoppingCart/>},
-  {link: "informes", text: "Informes", icon: <AssignmentTurnedIn />}
+  {link: "informes", text: "Informes", icon: <AssignmentTurnedIn />},
+  {link: "crear-usuario", text: "Crear Usuario", icon: <People />}, 
+  {link: "crear-pedido", text: "Crear Pedido", icon: <BorderColor />}
 ]
 export const mainListItems = (
   <React.Fragment>

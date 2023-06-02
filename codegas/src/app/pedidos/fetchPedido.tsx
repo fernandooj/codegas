@@ -1,5 +1,5 @@
 import URL from '../utils/url' 
-const idUser=1
+const idUser=2
 
 export const fetchPedido = async (start: any, search: string) => {
     start = start==0 ?0 :(start-1)*10

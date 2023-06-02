@@ -6,15 +6,10 @@ CREATE OR REPLACE FUNCTION save_pedidos(
     _dia1 character varying,
     _dia2 character varying,
     _fechaSolicitud character varying,
-    _pedidoPadre INT,
     _puntoId INT,
-    _zonaId INT,
-    _conductorId INT,
-    _carroId INT,
-    _usuarioAsigna INT,
-    _usuarioAsignaVehiculo INT,
     _usuarioCrea INT,
-    _usuarioId INT
+    _usuarioId INT,
+    _pedidoPadre INT
 )
 RETURNS text
 LANGUAGE plpgsql
@@ -28,12 +23,12 @@ BEGIN
     SELECT _id, acceso, valorunitario INTO idUser, user_acceso, user_valor_unitario FROM users WHERE _id = _usuarioCrea;
 
     IF user_acceso = 'cliente' THEN
-        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, valorUnitario, pedidoPadre, puntoId, zonaId, conductorId, carroId, usuarioAsigna, usuarioAsignaVehiculo, usuarioCrea, usuarioId)
-        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, user_valor_unitario, _pedidoPadre, _puntoId, _zonaId, _conductorId, _carroId, _usuarioAsigna, _usuarioAsignaVehiculo, _usuarioCrea, idUser)
+        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, puntoId, valorUnitario, pedidoPadre, usuarioCrea, usuarioId)
+        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, _puntoId, user_valor_unitario, _pedidoPadre, _usuarioCrea, idUser)
         RETURNING _id INTO new_id;
     ELSE
-        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, valorUnitario, pedidoPadre, puntoId, zonaId, conductorId, carroId, usuarioAsigna, usuarioAsignaVehiculo, usuarioCrea, usuarioId)
-        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, user_valor_unitario, _pedidoPadre, _puntoId, _zonaId, _conductorId, _carroId, _usuarioAsigna, _usuarioAsignaVehiculo, _usuarioCrea, _usuarioId)
+        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, valorUnitario, pedidoPadre, puntoId, usuarioCrea, usuarioId)
+        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, user_valor_unitario, _pedidoPadre, _puntoId, _usuarioCrea, _usuarioId)
         RETURNING _id INTO new_id;
     END IF;
 

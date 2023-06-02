@@ -12,7 +12,7 @@ export const Date = ({value, setValueDate}: any) => {
             <DemoContainer components={['DatePicker']}>
             <DatePicker value={value} onChange={(newValue) => setValueDate(newValue)} 
                 sx={{ 
-                    marginLeft: "80px"
+                    width: "100%"
                 }}
             />
             </DemoContainer>

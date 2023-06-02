@@ -48,15 +48,15 @@ getPuntoById:
       - services/puntos/src/get-punto-by-id.js
       - lib/errors/database-error.js
 
-# getPuntoByClient:
-#   name: ${self:custom.base}-get-punto-by-client
-#   handler: services/puntos/src/get-punto-by-client.main
-#   events:
-#     - httpApi: 'GET /pun/punto/byCliente/{_id}'
-#   package:
-#     include:
-#       - services/puntos/src/get-punto-by-client.js
-#       - lib/errors/database-error.js
+getPuntoByClient:
+  name: ${self:custom.base}-get-punto-by-client
+  handler: services/puntos/src/get-punto-by-client.main
+  events:
+    - httpApi: 'GET /pun/punto/byCliente/{_id}'
+  package:
+    include:
+      - services/puntos/src/get-punto-by-client.js
+      - lib/errors/database-error.js
 
 editCapacidad:
   name: ${self:custom.base}-edit-capacidad

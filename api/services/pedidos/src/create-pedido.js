@@ -2,7 +2,7 @@ const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError = require('../../../lib/errors/database-error');
 
 /** save PEDIDO */
-const SAVE_PEDIDOS = 'SELECT * FROM save_pedidos($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)';
+const SAVE_PEDIDOS = 'SELECT * FROM save_pedidos($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)';
 
 /**
  * Inserts a vehiculo into the database.
@@ -21,7 +21,7 @@ module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
   const {
     forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, pedidoPadre, 
-    puntoId, zonaId, conductorId, carroId, usuarioAsigna, usuarioAsignaVehiculo, usuarioCrea, usuarioId
+    puntoId, usuarioCrea, usuarioId
   } = body;
   
   try {
@@ -29,8 +29,8 @@ module.exports.main = async (event) => {
 
  
     await client.query(SAVE_PEDIDOS, [
-      forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, pedidoPadre, 
-      puntoId, zonaId, conductorId, carroId, usuarioAsigna, usuarioAsignaVehiculo, usuarioCrea, usuarioId
+      forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, puntoId,  
+      usuarioCrea, usuarioId, pedidoPadre
     ])
     return {
         status: true
@@ -40,8 +40,3 @@ module.exports.main = async (event) => {
     throw new DatabaseError(error);
   }
 };
-
-// 1 - inicio sesion logistica
-// 2 - 
-
-//1 - inicio sesion cliente 
