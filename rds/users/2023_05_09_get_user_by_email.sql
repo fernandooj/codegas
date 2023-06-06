@@ -2,8 +2,7 @@ CREATE FUNCTION get_user_by_email(
     _email character varying
 )
 RETURNS TABLE(
-    id_user INT,
-    id_mongo character varying,
+    _id INT,
     uid character varying,
     created	timestamp,
     razon_social character varying,
@@ -25,18 +24,18 @@ RETURNS TABLE(
     editado BOOLEAN,
     activo  BOOLEAN,
     eliminado BOOLEAN,
-    idPadre INT
+    idPadre INT,
+    nombrePadre character varying,
+    cedulaPadre character varying
 )
 LANGUAGE plpgsql
 AS $function$
 BEGIN
     RETURN QUERY
-    SELECT u.id_user, u.id_mongo, u.uid, u.created, u.razon_social, u.cedula, u.direccion_factura, u.email, u.nombre, u.celular, u.tipo, u.descuento, u.acceso, u.tokenPhone, u.token, u.codMagister, u.avatar, u.codt, u.codigoRegistro, u.valorUnitario, u.editado, u.activo, u.eliminado, u.idPadre
+    SELECT u._id, u.uid, u.created, u.razon_social, u.cedula, u.direccion_factura, u.email, u.nombre, u.celular, u.tipo, u.descuento, u.acceso, u.tokenPhone, u.token, u.codMagister, u.avatar, u.codt, u.codigoRegistro, u.valorUnitario, u.editado, u.activo, u.eliminado, u.idPadre, u2.nombre, u2.cedula
     FROM users u
+    LEFT JOIN users u2 ON u.idPadre = u2._id
     WHERE u.email = _email;
 END;
 $function$;
-
-
--- select get_categorie_by_uid(1)
 

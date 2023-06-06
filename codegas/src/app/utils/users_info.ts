@@ -1,11 +1,11 @@
 export const accesos = [
+  {label: 'Cliente', value: 'cliente', key: 'cliente'},
   {label: 'Administrador', value: 'admin', key: 'administrador'},
+  {label: 'Veo', value: 'veo', key: 'veo'},
+  {label: 'Comercial', value: 'comercial', key: 'comercial'},
   {label: 'Solución Cliente', value: 'solucion', key:'solucion'},
   {label: 'Despachos', value: 'despacho', key:'despacho'},
   {label: 'Conductor', value: 'conductor', key: 'conductor'},
-  {label: 'Veo', value: 'veo', key: 'veo'},
-  {label: 'Cliente', value: 'cliente', key: 'cliente'},
-  {label: 'Comercial', value: 'comercial', key: 'comercial'},
   {label: 'Departamento Tecnico', value: 'depTecnico', key: 'depTecnico'},
   {label: 'Inspector Seguridad', value: 'insSeguridad', key: 'insSeguridad'},
   {label: 'Administrador Tanques', value: 'adminTanque', key: 'adminTanque'}

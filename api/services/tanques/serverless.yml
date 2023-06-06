@@ -1,12 +1,12 @@
-# createVehiculo:
-#   name: ${self:custom.base}-create-vehiculo
-#   handler: services/vehiculos/src/create-vehiculo.main
-#   events:
-#     - httpApi: 'POST /veh/vehiculo'
-#   package:
-#     include:
-#       - services/vehiculos/src/create-vehiculo.js
-#       - lib/errors/database-error.js
+createTanque:
+  name: ${self:custom.base}-create-tanque
+  handler: services/tanques/src/create-tanque.main
+  events:
+    - httpApi: 'POST /tan/tanque'
+  package:
+    include:
+      - services/tanques/src/create-tanque.js
+      - lib/errors/database-error.js
 
 getTanques:
   name: ${self:custom.base}-get-tanques
@@ -18,15 +18,20 @@ getTanques:
       - services/tanques/src/get-tanques.js
       - lib/errors/database-error.js
 
-# getVehiculosActivos:
-#   name: ${self:custom.base}-get-vehiculo-activos
-#   handler: services/vehiculos/src/get-vehiculo-activos.main
-#   events:
-#     - httpApi: 'GET /veh/vehiculo/no_eliminados/{limit}'
-#   package:
-#     include:
-#       - services/vehiculos/src/get-vehiculo-activos.js
-#       - lib/errors/database-error.js
+addImages:
+  name: ${self:custom.base}-add-images
+  handler: services/tanques/src/add-images.main
+  
+  events:
+    - httpApi: 'PUT /tan/tanque/images/{idTanque}/{type}'
+  environment:
+    BUCKET: codegas
+  package:
+    include:
+      - services/tanques/src/add-images.js
+      - lib/errors/database-error.js
+      - lib/image.js
+      - lib/responses.js
 
 # editVehiculo:
 #   name: ${self:custom.base}-edit-vehiculo

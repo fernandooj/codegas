@@ -5,7 +5,7 @@ import {Avatar, Box, Button, FormControl, Container, CssBaseline, InputLabel, Gr
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {Snack} from "../components/snackBar"
 import {accesos, fields, tipos} from "../utils/users_info"
-import {createUser} from "./fetchUser"
+import {createUser} from "../store/fetch-user"
 export default function SelectUser({data}: any) {
 
   const [idPadre, setIdPadre] = useState('');

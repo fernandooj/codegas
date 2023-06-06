@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { TableRow, TableCell, Checkbox, FormControl, InputLabel, InputAdornment, OutlinedInput, Paper, Table, TableBody, TableContainer, TableHead } from '@mui/material';
 import {Snack} from "../components/snackBar"
-import {ChangeValorUnitario, ChangeValorUnitarioAll} from "./fetchZona"
+import {ChangeValorUnitario, ChangeValorUnitarioAll} from "../store/fetch-zona"
 import { PaginationTable } from "../components/pagination/pagination";
 import InputZones from '../components/input_zones/input_zones';
 
@@ -66,7 +66,9 @@ export default function RenderTable({zona}: any) {
     }
   } 
  
-
+  useEffect(() => {
+    setNewZona(zona)
+  }, [zona])
   useEffect(() => {
     const {value, replace, type}: any = newValorUnitario
  

@@ -1,4 +1,4 @@
-import {getUsersAdministradores} from './fetchUser' 
+import {getUsersAdministradores} from '../store/fetch-user' 
 import SelectUser from './SelectUser'
 export const RenderUsers = async function RenderUsers() {
     const {users} = await getUsersAdministradores();

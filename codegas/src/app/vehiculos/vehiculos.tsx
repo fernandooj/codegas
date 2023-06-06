@@ -2,7 +2,7 @@
 import react, {Fragment, useState} from 'react';
 import {Button, Avatar, List, ListItemAvatar, Checkbox, TableCell, TableRow} from '@mui/material';
 import {Person, Add} from '@mui/icons-material';
-import {addCarPedido} from "../pedidos/fetchPedido"
+import {addCarPedido} from "../store/fetch-pedido"
 import { blue } from '@mui/material/colors';
 import {Snack} from "../components/snackBar"
 export interface VehiculoProps {

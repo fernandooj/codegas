@@ -1,27 +1,29 @@
 const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError  = require('../../../lib/errors/database-error')
-/** create user update*/
-const GET_USERS = 'SELECT * FROM users order by id_user desc';
-
+ 
+const GET_USERS = 'SELECT * FROM get_users($1, $2, $3, $4)';
 
 /** get user
  *  save user active in the table
- * @param {boolean} active - username user
+ * @param {string} uid - username user
  * @returns {response} Response contains the data of cognito
  */
 
 module.exports.main = async (event) => {
   const {
-    email
-  } = event;
-  const client  = await poolConection.connect();
-
+    limit, 
+    start,
+    acceso,
+    search
+  } = event.pathParameters;
+  const newSearch = search == 'undefined' ||  search == undefined ? '' :search
   try {
-    const data = await client.query(GET_USERS)
-    const total = data.rowCount;
+    const client  = await poolConection.connect();
+    const {rows: user} = await client.query(GET_USERS, [limit, start, acceso, newSearch])
+  
     return {
-      total,
-      rows:data.rows
+      status: true,
+      user
     }
   } catch (error) { 
     throw new DatabaseError(error);

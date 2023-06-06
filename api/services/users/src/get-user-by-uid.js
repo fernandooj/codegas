@@ -14,15 +14,12 @@ module.exports.main = async (event) => {
   const {
     uid
   } = event.pathParameters;
-  const client  = await poolConection.connect();
-
+  
   try {
-    const {data} = await client.query(GET_USER_BY_UID, [uid])
+    const client  = await poolConection.connect();
+    const {rows} = await client.query(GET_USER_BY_UID, [uid])
 
-    return {
-      status: true,
-      user:data.rows[0]    
-    }
+    return  rows[0]
   } catch (error) { 
     throw new DatabaseError(error);
   }

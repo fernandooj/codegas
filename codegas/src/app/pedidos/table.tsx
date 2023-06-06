@@ -7,7 +7,7 @@ import Image from "next/image"
 import moment from "moment"
 import {colors} from "../utils/colors"
 import {Date} from "../components/date"
-import {UpdateDatePedido, UpdateStatePedido} from "./fetchPedido"
+import {UpdateDatePedido, UpdateStatePedido} from "../store/fetch-pedido"
 import {Snack} from "../components/snackBar"
 import {AlertDialog} from "../components/alertDialog"
 import {SelectState} from "../components/selecState"
@@ -190,7 +190,7 @@ export default function RenderTable({data}: any) {
             </TableRow>
           </TableHead>
           <TableBody>
-          { newData.map((row: any, index: any): any => <RenderPedidos key={index} {...row} addValues={addValues} />) }
+          { data.map((row: any, index: any): any => <RenderPedidos key={index} {...row} addValues={addValues} />) }
         </TableBody>
       </Table>
     

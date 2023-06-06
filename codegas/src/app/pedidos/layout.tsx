@@ -1,5 +1,5 @@
 'use client';
-import react, { ReactElement, useContext, useState } from 'react';
+import react, { ReactElement, useContext, ReactNode } from 'react';
 import { Container, Grid, Box, Paper} from '@mui/material';
 import { redirect } from 'next/navigation';
 
@@ -8,7 +8,7 @@ import Incomes from '../components/incomes/incomes'
 
 import {DataContext} from "../context/context"
  
-const LayoutPedidos = ({children}): ReactElement => {
+const LayoutPedidos = ({children}: {children: ReactNode}): ReactElement => {
   const {user, login}: any = useContext(DataContext)
   if(!user) redirect('/')
   return(

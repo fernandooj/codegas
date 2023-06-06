@@ -15,7 +15,6 @@ create table if not exists tanques(
 	propiedad	   	   character varying,
     usuarioId INT,
     usuarioCrea INT,
-    zonaId INT,
     puntoId INT,
     placa              character varying[],
 	placaMantenimiento character varying[],
