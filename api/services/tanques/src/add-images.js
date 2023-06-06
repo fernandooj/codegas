@@ -18,7 +18,7 @@ module.exports.main = async (event) => {
       const imageUrl = await uploadImage(image);
       uploadedUrls.push(imageUrl);
     }
-    console.log(uploadedUrls)
+
     await client.query(ADD_IMAGES_TANQUE, [idTanque, type, uploadedUrls]);
 
     return {

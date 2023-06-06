@@ -51,7 +51,7 @@ export default function Step1({setActiveStep}: any) {
       setShowSnack(true)
       setMessage("Tanque Guardado con exito")
       setActiveStep(1)
-      router.push(`${pathname}?tanque=${code}`, undefined)
+      router.push(`${pathname}?tanqueId=${code}`, undefined)
     }
   }
 

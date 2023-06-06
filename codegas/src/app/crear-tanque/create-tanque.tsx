@@ -5,13 +5,14 @@ import {Avatar, Box, Container, CssBaseline, Typography,  Stepper, Step, StepLab
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {Snack} from "../components/snackBar"
 import Step1 from "./step1"
+import Step2 from "./step2"
 
 const steps = ['Datos Generales', 'Imagenes', 'Info Usuario', 'Alertas'];
 
-export default function CreateTanque({data, puntos}: any) {
+export default function CreateTanque({data, puntos, tanqueId}: any) {
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(1);
 
   const RenderTitleSteper = () =>(
     <Stepper activeStep={activeStep}>
@@ -55,9 +56,9 @@ export default function CreateTanque({data, puntos}: any) {
           activeStep===0
           ?<Step1 setActiveStep={setActiveStep} />
           :activeStep===1
-          ?null
+          ?<Step2 setActiveStep={setActiveStep} tanqueId={tanqueId} />
           :activeStep===2
-          ?<Step1 users={data} puntos={puntos} />
+          ?<Step1 users={data} puntos={puntos} tanqueId={tanqueId} />
           :null
         }
        
