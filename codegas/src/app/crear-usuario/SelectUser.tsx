@@ -1,39 +1,57 @@
 'use client'
-import React, {useState} from 'react';
- 
+import React, {useState, useContext} from 'react';
 import {Avatar, Box, Button, FormControl, Container, CssBaseline, InputLabel, Grid, MenuItem, Select, TextField, Typography, SelectChangeEvent} from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {Snack} from "../components/snackBar"
 import {accesos, fields, tipos} from "../utils/users_info"
 import {createUser} from "../store/fetch-user"
-export default function SelectUser({data}: any) {
+import {DataContext} from '../context/context'
 
+
+export default function SelectUser({data}: any) {
+  const {createUserFirebase}: any = useContext(DataContext)
   const [idPadre, setIdPadre] = useState('');
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
+  const [severity, setSeverity] = useState("");
   const handleChangeSelect = (event: SelectChangeEvent) => {
     setIdPadre(event.target.value as string);
   };
 
   const [newAcceso, setNewAcceso] = useState('')
   const [newTipo, setTipo] = useState('')
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const newData = {
-      email: data.get('email'),
-      cedula: data.get('cedula'),
-      nombre: data.get('nombre'),
-      celular: data.get('celular'),
-      codMagister: data.get('codMagister'),
-      razon_social: data.get('razon_social'),
-      direccion_factura: data.get('direccion_factura'),
-      codt: data.get('codt'),
-      valorUnitario: data.get('valorUnitario'),
-      acceso: data.get('acceso'),
-      idPadre: data.get('idPadre')
-    };
-    saveData(newData)
+    
+    try {
+      const response = await createUserFirebase(data.get('email'));
+      if (typeof response === 'string') {
+        setSeverity("error")
+        setShowSnack(true)
+        setMessage("Este email ya existe")
+        console.log('Error:', response);
+      } else {
+        const newData = {
+          email: data.get('email'),
+          cedula: data.get('cedula'),
+          nombre: data.get('nombre'),
+          celular: data.get('celular'),
+          codMagister: data.get('codMagister'),
+          razon_social: data.get('razon_social'),
+          direccion_factura: data.get('direccion_factura'),
+          codt: data.get('codt'),
+          valorUnitario: data.get('valorUnitario'),
+          acceso: data.get('acceso'),
+          idPadre: idPadre,
+          uid: response.uid
+        };
+        saveData(newData);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
   };
   const handleChange = (event: SelectChangeEvent) => {
     setNewAcceso(event.target.value as string);
@@ -46,6 +64,7 @@ export default function SelectUser({data}: any) {
     if (status) {
       setShowSnack(true)
       setMessage("Usuario Guardado con exito")
+      setSeverity("success")
     }
   }
 
@@ -135,7 +154,7 @@ export default function SelectUser({data}: any) {
                       onChange={handleChangeSelect}
                     >
                     {
-                        data.map(({_id, nombre})=> <MenuItem value={_id} key={_id}>{nombre}</MenuItem>)
+                        data.map(({_id, nombre}: any)=> <MenuItem value={_id} key={_id}>{nombre}</MenuItem>)
                     }
                     </Select>
                 </FormControl>
@@ -152,7 +171,7 @@ export default function SelectUser({data}: any) {
           </Button>
         </Box>
       </Box>
-      <Snack show={showSnack} setShow={()=>setShowSnack(false)} message={message} />
+      <Snack show={showSnack} setShow={()=>setShowSnack(false)} message={message} severity={severity} />
     </Container>
   );
 }

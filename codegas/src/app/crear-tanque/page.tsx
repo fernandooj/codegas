@@ -5,8 +5,7 @@ const ACCESS = 'clientes'
 const LIMIT = 10
 export default function Tanque({searchParams}: any) { 
     let {page, search, tanqueId, idUser} = searchParams
-    page = page || 0 
-    console.log(searchParams)
+    page = page || 0
     return (
         <RenderCrearTanque
             idUser={idUser}

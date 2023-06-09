@@ -1,7 +1,6 @@
 import URL from '../utils/url' 
-const idUser=2
 
-export const fetchPedido = async (start: any, search: string) => {
+export const fetchPedido = async (idUser: any, start: any, search: string) => {
     start = start==0 ?0 :(start-1)*10
     try {
         const response = await fetch(`${URL}/ped/pedido/todos/app/${idUser}/10/${start}/admin/${search}`, {cache: 'no-store'});

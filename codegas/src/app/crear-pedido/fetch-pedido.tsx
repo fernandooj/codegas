@@ -1,7 +1,6 @@
 import URL from '../utils/url' 
  
 export const getClients = async () => {
-    // start = start==0 ?0 :(start-1)*10
     try {
         const response = await fetch(`${URL}/users/administradores`, {
             next: { revalidate: 100 } 
@@ -14,8 +13,7 @@ export const getClients = async () => {
 };
 
 
-export const getPuntos = async (id) => {
-    // start = start==0 ?0 :(start-1)*10
+export const getPuntos = async (id: any) => {
     try {
         const response = await fetch(`${URL}/pun/punto/byCliente/${id}`, {
             next: { revalidate: 100 } 
