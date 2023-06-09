@@ -110,16 +110,16 @@ export default function CrearPedido({data, puntos}: any) {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={12}>
-            <FormControl fullWidth>
-              <TextField
-                id="outlined-Observaciones"
-                label="Observaciones"
-                name="observaciones"
-                multiline
-                rows={4}
-              />
-            </FormControl>
-          </Grid> 
+              <FormControl fullWidth>
+                <TextField
+                  id="outlined-Observaciones"
+                  label="Observaciones"
+                  name="observaciones"
+                  multiline
+                  rows={4}
+                />
+              </FormControl>
+            </Grid> 
           <Grid item xs={12} sm={12}>
             <FormControl fullWidth>
               <InputLabel id="usuarioId">Cliente</InputLabel>

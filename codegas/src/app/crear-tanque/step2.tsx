@@ -138,7 +138,7 @@ export default function Step2({ setActiveStep, tanqueId }: any) {
                     type="file"
                     hidden
                     name="imagen"
-                    multiple // Allow multiple file selection
+                    multiple
                     onChange={(e) => handleImageChange(e, value)}
                   />
                 </Button>

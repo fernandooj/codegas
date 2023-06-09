@@ -3,18 +3,15 @@ import React, {useState} from 'react';
  
 import {Avatar, Box, Container, CssBaseline, Typography,  Stepper, Step, StepLabel, Button} from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import {Snack} from "../components/snackBar"
 import Step1 from "./step1"
 import Step2 from "./step2"
 import Step3 from "./step3"
+import Step4 from "./step4"
 
 const steps = ['Datos Generales', 'Imagenes', 'Info Usuario', 'Alertas'];
 
-export default function CreateTanque({data, puntos, tanqueId}: any) {
-
-  const [showSnack, setShowSnack] = useState(false);
-  const [message, setMessage] = useState("");
-  const [activeStep, setActiveStep] = useState(2);
+export default function CreateTanque({data, puntos, tanqueId, alerts}: any) {
+  const [activeStep, setActiveStep] = useState(3);
 
   const RenderTitleSteper = () =>(
     <Stepper activeStep={activeStep}  sx={{ mt: 3 }}>
@@ -59,7 +56,7 @@ export default function CreateTanque({data, puntos, tanqueId}: any) {
           ?<Step2 setActiveStep={setActiveStep} tanqueId={tanqueId} />
           :activeStep===2
           ?<Step3 users={data} puntos={puntos} tanqueId={tanqueId} />
-          :null
+          :<Step4 tanqueId={tanqueId} alerts={alerts} />
         }
 
 
@@ -72,10 +69,7 @@ export default function CreateTanque({data, puntos, tanqueId}: any) {
             {activeStep === steps.length - 1 ? '' : 'Siguiente'}
           </Button>
         </Box>
-
-
       </Box>
-      <Snack show={showSnack} setShow={()=>setShowSnack(false)} message={message} />
     </Container>
   );
 }

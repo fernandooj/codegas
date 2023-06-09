@@ -1,8 +1,17 @@
 import {getUsers} from '../store/fetch-user' 
-import {getPuntos} from '../store/fetch-punto' 
+import {getPuntos} from '../store/fetch-punto'
+import {getAlerts} from '../store/fetch-tanque'
 import CreateTanque from './create-tanque'
 export const RenderCrearTanque = async function RenderCrearTanque({start, limit, access, search, tanqueId, idUser}) {
     const {user} = await getUsers(start, limit, access, search);
     const {puntos} = await getPuntos(idUser);
-    return <CreateTanque data={user} tanqueId={tanqueId} puntos={puntos} />;
+    const alerts = await getAlerts(tanqueId);
+    return (
+      <CreateTanque 
+        data={user} 
+        tanqueId={tanqueId} 
+        puntos={puntos} 
+        alerts={alerts}
+      />
+    )
   } as unknown as () => JSX.Element;

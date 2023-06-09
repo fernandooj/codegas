@@ -5,14 +5,12 @@ import {Autocomplete, Box, Button, FormControl, Container, CssBaseline, InputLab
   MenuItem, Select, TextField, SelectChangeEvent} from '@mui/material';
 import {Snack} from "../components/snackBar"
 import {addUserTanque} from "../store/fetch-tanque"
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
  
 
-export default function Step1({users, puntos}: any) {
+export default function Step1({users, puntos, tanqueId}: any) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const tanqueId = searchParams.get('tanqueId');
   const [usuarioId, setUsuarioId] = useState('');
   const [puntoId, setPuntoId] = useState('');
   const [showSnack, setShowSnack] = useState(false);
