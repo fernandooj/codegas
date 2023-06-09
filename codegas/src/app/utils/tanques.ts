@@ -69,3 +69,13 @@ export const capacidad = [
   '70',
   '50',
 ];
+
+export const imagenes = [
+  {label: "Placa", value: "placa"},
+  {label: "Placa Mantenimiento", value: "placaMantenimiento"},
+  {label: "Placa Fabricante", value: "placaFabricante"},
+  {label: "Dossier", value: "dossier"},
+  {label: "Certificado Fabricante", value: "cerFabricante"},
+  {label: "Certificado Onac", value: "cerOnac"},
+  {label: "Visual", value: "visual"},
+];

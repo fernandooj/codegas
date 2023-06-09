@@ -15,4 +15,4 @@ END;
 $function$
 
 
-select * from save_alerta_tanques('alerta de prueba 3', 2, 1)
+-- select * from save_alerta_tanques('alerta de prueba 3', 2, 1)

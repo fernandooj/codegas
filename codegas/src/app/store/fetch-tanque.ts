@@ -51,3 +51,23 @@ export const addImagesTanque = async(date: any, id:number, type:string) =>{
         return []
     }
 }
+
+
+export const addUserTanque = async(date: any) =>{
+    try {
+        const response = await fetch(`${URL}/tan/tanque/add-user`, {
+            method: 'PUT', 
+            body: JSON.stringify(date),
+            cache: 'no-store'
+        });
+        const data = await response.json();
+        console.log(date)
+        if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`)
+        }
+        return data
+    } catch (error){
+        console.error(error)
+        return []
+    }
+}

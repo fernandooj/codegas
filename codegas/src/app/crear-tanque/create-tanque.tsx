@@ -1,28 +1,28 @@
 'use client'
 import React, {useState} from 'react';
  
-import {Avatar, Box, Container, CssBaseline, Typography,  Stepper, Step, StepLabel} from '@mui/material';
+import {Avatar, Box, Container, CssBaseline, Typography,  Stepper, Step, StepLabel, Button} from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {Snack} from "../components/snackBar"
 import Step1 from "./step1"
 import Step2 from "./step2"
+import Step3 from "./step3"
 
 const steps = ['Datos Generales', 'Imagenes', 'Info Usuario', 'Alertas'];
 
 export default function CreateTanque({data, puntos, tanqueId}: any) {
+
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(2);
 
   const RenderTitleSteper = () =>(
-    <Stepper activeStep={activeStep}>
+    <Stepper activeStep={activeStep}  sx={{ mt: 3 }}>
       {steps.map((label, index) => {
         const stepProps: { completed?: boolean } = {};
         const labelProps: {
           optional?: React.ReactNode;
         } = {};
-        
-      
         return (
           <Step key={label} {...stepProps}>
             <StepLabel {...labelProps}>{label}</StepLabel>
@@ -58,10 +58,22 @@ export default function CreateTanque({data, puntos, tanqueId}: any) {
           :activeStep===1
           ?<Step2 setActiveStep={setActiveStep} tanqueId={tanqueId} />
           :activeStep===2
-          ?<Step1 users={data} puntos={puntos} tanqueId={tanqueId} />
+          ?<Step3 users={data} puntos={puntos} tanqueId={tanqueId} />
           :null
         }
-       
+
+
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', pt: 2 }}>
+          <Button onClick={()=>setActiveStep(activeStep-1)}>
+            {activeStep>0 &&'Anterior'}
+          </Button>
+           
+          <Button onClick={()=>setActiveStep(activeStep+1)}>
+            {activeStep === steps.length - 1 ? '' : 'Siguiente'}
+          </Button>
+        </Box>
+
+
       </Box>
       <Snack show={showSnack} setShow={()=>setShowSnack(false)} message={message} />
     </Container>

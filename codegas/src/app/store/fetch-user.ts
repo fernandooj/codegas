@@ -1,14 +1,15 @@
 import URL from '../utils/url' 
  
 export const getUsers = async (start: any, limit: any, access: any, search: any) => {
+    console.log(`${URL}/users/acceso/${limit}/${start}/${access}/${search}`)
     // start = start==0 ?0 :(start-1)*10
     try {
-        const response = await fetch(`${URL}/users/acceso/${start}/${limit}/${access}/${search}`, {
+        const response = await fetch(`${URL}/users/acceso/${limit}/${start}/${access}/${search}`, {
             next: { revalidate: 10 } 
         });
         const data = await response.json();
-
-        if(response.status !==200){
+            
+        if(!response.ok){
             throw new Error(`Ruquest failed with status ${response.status}`)
         }
         return data;

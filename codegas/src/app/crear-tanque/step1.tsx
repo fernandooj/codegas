@@ -10,7 +10,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {Date} from "../components/date"
 import moment from 'moment';
 
-export default function Step1({setActiveStep}: any) {
+export default function Step1() {
   const router = useRouter();
   const pathname = usePathname()
   const [showSnack, setShowSnack] = useState(false);
@@ -18,7 +18,7 @@ export default function Step1({setActiveStep}: any) {
   const [newForma, setNewForma] = useState()
   const [date, setDate] = useState({})
 
-  const handleDate = (event: SelectChangeEvent, prop) => {
+  const handleDate = (event: SelectChangeEvent, prop: any) => {
     setDate({...date, [prop]: event});
   };
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -50,7 +50,6 @@ export default function Step1({setActiveStep}: any) {
     if (status) {
       setShowSnack(true)
       setMessage("Tanque Guardado con exito")
-      setActiveStep(1)
       router.push(`${pathname}?tanqueId=${code}`, undefined)
     }
   }
@@ -102,7 +101,7 @@ export default function Step1({setActiveStep}: any) {
                         label={label}
                         name={value}
                       />
-                      :<Date setValueDate={(e)=>handleDate(e, value)} label={label} />
+                      :<Date setValueDate={(e: any)=>handleDate(e, value)} label={label} />
                     }
                   </FormControl>
                 </Grid>
