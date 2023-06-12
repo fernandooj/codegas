@@ -3,33 +3,39 @@ import { Box, Button, Container, CssBaseline, Divider, Grid, Typography, IconBut
 import { Snack } from "../components/snackBar";
 import { addImagesTanque } from "../store/fetch-tanque";
 import DeleteIcon from '@mui/icons-material/Delete';
+import Image from 'next/image'
 import {imagenes} from "../utils/tanques"
 
-export default function Step2({ setActiveStep, tanqueId }: any) {
+
+export default function Step2({ tanqueId }: any) {
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
   const [base64Images, setBase64Images] = useState([]); // Array to store base64 images
-  const [imageSections, setImageSections] = useState({});
+  const [imageSections, setImageSections] = useState<{ [key: string]: File[] }>({} as { [key: string]: File[] });
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>, type) => {
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>, type: string) => {
     event.preventDefault();
 
     const newData = {
       images: [],
     };
 
-    for (const section in imageSections) {
-      const sectionImages = imageSections[section];
+    for (const [section, sectionImages] of Object.entries(imageSections)) {
       const convertedImages = await Promise.all(sectionImages.map(convertToBase64));
-      setBase64Images((prevImages) => prevImages.concat(convertedImages));
-
+      // setBase64Images((prevImages) => prevImages.concat(convertedImages));
+    
       const images = convertedImages.map((image, index) => ({
         mime: sectionImages[index].type,
         imagen: image,
       }));
-
-      newData.images = newData.images.concat(images);
+    
+      const newData: { images: { mime: string; imagen: unknown }[] } = {
+        images: [],
+      };
+      
     }
+    
 
     saveData(newData, type);
   };
@@ -44,7 +50,7 @@ export default function Step2({ setActiveStep, tanqueId }: any) {
     }
   };
 
-  const convertToBase64 = (file) => {
+  const convertToBase64 = (file: any) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -58,14 +64,13 @@ export default function Step2({ setActiveStep, tanqueId }: any) {
     if (status) {
       setShowSnack(true);
       setMessage("Tanque Guardado con éxito");
-      // setActiveStep(2)
     }
   };
 
   const renderImages = (section: string) => {
     const sectionImages = imageSections[section];
     if (sectionImages) {
-      return sectionImages.map((image, index) => (
+      return sectionImages.map((image: any, index: any) => (
         <Box key={index} sx={{ display: 'inline-block', marginRight: '10px' }}>
           <Box
             sx={{
@@ -77,7 +82,7 @@ export default function Step2({ setActiveStep, tanqueId }: any) {
               marginBottom: '5px',
             }}
           >
-            <img src={URL.createObjectURL(image)} alt={`Image ${index}`} width={150} />
+            <Image src={URL.createObjectURL(image)} alt={`Image ${index}`} width={150} />
             <IconButton
               sx={{ position: 'absolute', top: '5px', right: '5px', backgroundColor: '#fff' }}
               onClick={() => handleImageDelete(section, index)}

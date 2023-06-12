@@ -72,11 +72,11 @@ const RenderPedidos = ({_id, codt, razon_social, cedula, direccion, creado, fech
           {
             newFechaEntrega 
             ?moment(newFechaEntrega).format('YYYY-MM-DD')
-            :<Date setValueDate={(e) => updateDate(_id, e)} />
+            :<Date setValueDate={(e: any) => updateDate(_id, e)} />
           }
         </TableCell>
         <TableCell align="center">
-          <SelectState newEstado={newEstado} setNewEstado={(e)=>updateStatus(_id, e)} />
+          <SelectState newEstado={newEstado} setNewEstado={(e: any)=>updateStatus(_id, e)} />
         </TableCell>
         <TableCell align="center">
           <Button variant="contained">
@@ -142,26 +142,27 @@ const RenderPedidos = ({_id, codt, razon_social, cedula, direccion, creado, fech
 }
 export default function RenderTable({data}: any) {
  
-  const [newData, setNewData] = useState(data)
-  const [valorWithArray, setValorWithArray] = useState([])
-  const [newValorWithArray, setNewValorWithArray] = useState()
+const [valorWithArray, setValorWithArray] = useState<{ id: any; newFechaEntrega: any }[]>([]);
+const [newValorWithArray, setNewValorWithArray] = useState<string | undefined>();
 
-  const addValues = (id: any, newFechaEntrega: any) => {
-    const index = valorWithArray.some(({ _id }) => _id === id);
-    if (!index) {
-      setValorWithArray((state) => [...state, {id, newFechaEntrega}])
-    }else{
-      setValorWithArray(valorWithArray.filter(({_id})=> {return _id !== id})) 
-    }
+const addValues = (id: any, newFechaEntrega: any) => {
+  const index = valorWithArray.some(({ id: _id }) => _id === id);
+  if (!index) {
+    setValorWithArray((state) => [...state, { id, newFechaEntrega }]);
+  } else {
+    setValorWithArray(valorWithArray.filter(({ id: _id }) => _id !== id));
   }
-  useEffect(()=> {
-    let data = ''
-    for(let i=0; i<valorWithArray.length; i ++){
-      data += valorWithArray[i].id
-      data += ','
-    }
-    setNewValorWithArray(data)
-  }, [valorWithArray])
+};
+
+useEffect(() => {
+  let data = '';
+  for (let i = 0; i < valorWithArray.length; i++) {
+    data += valorWithArray[i].id;
+    data += ',';
+  }
+  setNewValorWithArray(data);
+}, [valorWithArray]);
+
   
   return (
     <TableContainer component={Paper}>

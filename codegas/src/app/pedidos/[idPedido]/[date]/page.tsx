@@ -29,7 +29,7 @@ const Vehiculos: FC = ({params}: any) => {
         <Typography color="#a2a1a1"> Pedido N:  
           {
             idPedido.includes("%2C")
-            ?idPedido.split("%2C").filter((value) => value !== "").map((e: any)=> `${e} / `)
+            ?idPedido.split("%2C").filter((value: any) => value !== "").map((e: any)=> `${e} / `)
             :idPedido
           }
         </Typography>
