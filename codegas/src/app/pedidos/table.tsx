@@ -141,42 +141,43 @@ const RenderPedidos = ({_id, codt, razon_social, cedula, direccion, creado, fech
   )
 }
 export default function RenderTable({data}: any) {
- 
-const [valorWithArray, setValorWithArray] = useState<{ id: any; newFechaEntrega: any }[]>([]);
-const [newValorWithArray, setNewValorWithArray] = useState<string | undefined>();
+  const [valorWithArray, setValorWithArray] = useState<{ id: any; newFechaEntrega: any }[]>([]);
+  const [newValorWithArray, setNewValorWithArray] = useState<string | undefined>();
 
-const addValues = (id: any, newFechaEntrega: any) => {
-  const index = valorWithArray.some(({ id: _id }) => _id === id);
-  if (!index) {
-    setValorWithArray((state) => [...state, { id, newFechaEntrega }]);
-  } else {
-    setValorWithArray(valorWithArray.filter(({ id: _id }) => _id !== id));
-  }
-};
-
-useEffect(() => {
-  let data = '';
-  for (let i = 0; i < valorWithArray.length; i++) {
-    data += valorWithArray[i].id;
-    data += ',';
-  }
-  setNewValorWithArray(data);
-}, [valorWithArray]);
-
+  const addValues = (id: any, newFechaEntrega: any) => {
+    const index = valorWithArray.some(({ id: _id }) => _id === id);
+    if (!index) {
+      setValorWithArray((state) => [...state, { id, newFechaEntrega }]);
+    } else {
+      setValorWithArray(valorWithArray.filter(({ id: _id }) => _id !== id));
+    }
+  };
+  useEffect(()=> {
+    let data = ''
+    for(let i=0; i<valorWithArray.length; i ++){
+      data += valorWithArray[i].id
+      data += ','
+    }
+    setNewValorWithArray(data)
+  }, [valorWithArray])
   
   return (
     <TableContainer component={Paper}>
-      <Button variant="contained"  sx={{ marginTop: 1, marginLeft: 1 }}>
-        <Link 
-          href={`pedidos/${newValorWithArray}/${moment().format('YYYY-MM-DD')}`} 
-          style={{
-            color: "#ffffff", 
-            textDecoration: 'none'
-          }}
-        >
-          Vehiculos
-        </Link>
-      </Button>
+      {
+        newValorWithArray
+        &&<Button variant="contained"  sx={{ marginTop: 1, marginLeft: 1 }}>
+          <Link 
+            href={`pedidos/${newValorWithArray}/${moment().format('YYYY-MM-DD')}`} 
+            style={{
+              color: "#ffffff", 
+              textDecoration: 'none'
+            }}
+          >
+            Vehiculos
+          </Link>
+        </Button>
+      }
+      
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
