@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { Snack } from '../components/snackBar';
-import { AlertDialog } from '../components/alertDialog';
+import { AlertDialog } from '../components/alertDialog/alertDialog';
 import { addAlert } from '../store/fetch-tanque';
 
 const renderAlertsTable = (alertsList: any[]) => (

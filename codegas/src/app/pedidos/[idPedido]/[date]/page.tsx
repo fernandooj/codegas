@@ -1,11 +1,14 @@
 'use client'
-import {FC, useEffect, useMemo} from "react"
+import {FC, useEffect, useContext} from "react"
 import { Table, TableContainer, Paper, TableHead, TableRow, TableCell, TableBody, Breadcrumbs, Typography } from "@mui/material"
 import Link from "next/link"
 import {RenderVehiculos} from "./renderVehiculos"
+import {DataContext} from "../../../context/context"
 
 const Vehiculos: FC = ({params}: any) => {
   const {idPedido} = params 
+  const {idUser} = useContext(DataContext)
+
   // const data = useMemo(() => {
   //   const idPedido = params.idPedido;
 
@@ -43,7 +46,7 @@ const Vehiculos: FC = ({params}: any) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          <RenderVehiculos {...params} />
+          <RenderVehiculos {...params} idUser= {idUser} />
         </TableBody>
       </Table>
     </TableContainer>   

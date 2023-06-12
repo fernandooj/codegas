@@ -5,4 +5,4 @@ export const RenderTanques = async function RenderTanques({limit, page, search}:
   let tanque = await fetchTanques(limit, page, search);
 
   return <RenderTable tanques={tanque} />;
-} as unknown as () => JSX.Element;
+}  

@@ -11,7 +11,7 @@ import Step4 from "./step4"
 const steps = ['Datos Generales', 'Imagenes', 'Info Usuario', 'Alertas'];
 
 export default function CreateTanque({data, puntos, tanqueId, alerts}: any) {
-  const [activeStep, setActiveStep] = useState(3);
+  const [activeStep, setActiveStep] = useState(0);
 
   const RenderTitleSteper = () =>(
     <Stepper activeStep={activeStep}  sx={{ mt: 3 }}>
@@ -51,9 +51,9 @@ export default function CreateTanque({data, puntos, tanqueId, alerts}: any) {
         
         {
           activeStep===0
-          ?<Step1 setActiveStep={setActiveStep} />
+          ?<Step1 />
           :activeStep===1
-          ?<Step2 setActiveStep={setActiveStep} tanqueId={tanqueId} />
+          ?<Step2 tanqueId={tanqueId} />
           :activeStep===2
           ?<Step3 users={data} puntos={puntos} tanqueId={tanqueId} />
           :<Step4 tanqueId={tanqueId} alerts={alerts} />
@@ -66,7 +66,7 @@ export default function CreateTanque({data, puntos, tanqueId, alerts}: any) {
           </Button>
            
           <Button onClick={()=>setActiveStep(activeStep+1)}>
-            {activeStep === steps.length - 1 ? '' : 'Siguiente'}
+            {(activeStep !== steps.length - 1) && tanqueId  &&'Siguiente'}
           </Button>
         </Box>
       </Box>

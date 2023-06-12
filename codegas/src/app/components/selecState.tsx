@@ -12,7 +12,7 @@ const STATE = [
     "noentregado"
 ]
 
-export function SelectState({newEstado, setNewEstado}) {
+export function SelectState({newEstado, setNewEstado}: any) {
 
   const handleChange = (event: SelectChangeEvent) => {
     setNewEstado(event.target.value as string);

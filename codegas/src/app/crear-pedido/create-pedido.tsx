@@ -1,5 +1,5 @@
 'use client'
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
  
 import {Avatar, Box, Button, FormControl, Container, CssBaseline, InputLabel, Grid, MenuItem, Select, TextField, Typography, SelectChangeEvent} from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -9,14 +9,20 @@ import {createPedido} from "./fetch-pedido"
 import { usePathname, useRouter } from 'next/navigation';
 import {Date} from "../components/date"
 import moment from 'moment';
+import {DataContext} from '../context/context'
+
 
 export default function CrearPedido({data, puntos}: any) {
+  const {idUser: usuarioCrea}: any = useContext(DataContext)
+
   const router = useRouter();
   const pathname = usePathname();
   const [usuarioId, setUsuarioId] = useState('');
   const [puntoId, setPuntoId] = useState('');
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
+  const [newForma, setNewForma] = React.useState<string | undefined>(undefined);
+
   const handleChangeSelect = (event: SelectChangeEvent) => {
     setUsuarioId(event.target.value as string);
     router.push(`${pathname}?idUser=${event.target.value}`, undefined)
@@ -25,7 +31,6 @@ export default function CrearPedido({data, puntos}: any) {
     setPuntoId(event.target.value as string);
   };
 
-  const [newForma, setNewForma] = useState()
   const [date, setDate] = useState('')
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,15 +41,18 @@ export default function CrearPedido({data, puntos}: any) {
       cantidadPrecio: Number(data.get('cantidadPrecio')),
       fechaSolicitud: moment(date).format('YYYY-MM-DD'),
       puntoId: Number(data.get('puntoId')),
+      usuarioId: Number(data.get('usuarioId')),
       observaciones: data.get('observaciones'),
-      usuarioCrea: 2,
+      usuarioCrea,
       pedidoPadre: 1
     };
     saveData(newData)
   };
   const handleChange = (event: SelectChangeEvent) => {
-    setNewForma(event.target.value as string);
+    const newValue = event.target.value as string;
+    setNewForma(newValue || undefined);
   };
+  
  
   const saveData = async (data: any) => {
     const {status} = await createPedido(data)
@@ -132,7 +140,7 @@ export default function CrearPedido({data, puntos}: any) {
                   onChange={handleChangeSelect}
                 >
                 {
-                    data.map(({_id, nombre})=> <MenuItem value={_id} key={_id}>{nombre}</MenuItem>)
+                    data.map(({_id, nombre}: any)=> <MenuItem value={_id} key={_id}>{nombre}</MenuItem>)
                 }
                 </Select>
             </FormControl>
@@ -151,7 +159,7 @@ export default function CrearPedido({data, puntos}: any) {
                         onChange={handleChangePunto}
                       >
                       {
-                          puntos.map(({_id, direccion})=> <MenuItem value={_id} key={_id}>{direccion}</MenuItem>)
+                          puntos.map(({_id, direccion}: any)=> <MenuItem value={_id} key={_id}>{direccion}</MenuItem>)
                       }
                       </Select>
                   </FormControl>

@@ -1,4 +1,4 @@
-export const ano = []
+export const ano: number[] = [];
 for(let i=1950; i<=2023; i++) ano.push(i)
 
 export const ubicacion = [

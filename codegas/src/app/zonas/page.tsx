@@ -13,13 +13,7 @@ const Zona = ({searchParams}: any): ReactElement => {
   return (
     <>
       <InputSearch search={search} />
-      <RenderZonasUsers 
-         limit={limit}
-         search={search}
-         page={page} 
-         idZone={idZone}
-         type={type}
-      />
+      {RenderZonasUsers({limit, search, page, idZone, type})}
     </>
   )
 }

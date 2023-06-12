@@ -58,20 +58,31 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 export default function Nav({children}: {children: React.ReactNode}) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const toggleDrawer = () => {
     setOpen(!open);
   };
   const {user, closeSesion}: any = useContext(DataContext)
-  const LogOut = () =>{
-    closeSesion()
-    redirect('/')
+  const LogOut = async () =>{
+    try {
+      const response = await closeSesion()
+      redirect('/')
+      console.log(response)
+    } catch (error) {
+      console.log(error)
+    }
   }
+  
   return (
     <ThemeProvider theme={defaultTheme}>
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
-        <AppBar position="absolute" open={open}>
+        <AppBar position="absolute" 
+          // open={open}
+          style={{
+            transform: open ? "translateX(240px)" : "none",
+          }}
+        >
           <Toolbar
             sx={{
               pr: '24px', // keep right padding when drawer closed

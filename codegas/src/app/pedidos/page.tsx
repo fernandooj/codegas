@@ -8,11 +8,11 @@ import {DataContext} from "../context/context"
 const Pedidos = ({searchParams}: any): ReactElement => {
   let {page, search} = searchParams
   page = page || 0 
-  const {idUser}: any = useContext(DataContext)
+  const {idUser, acceso}: any = useContext(DataContext)
   return(
     <>
       <InputSearch search={search} />
-        <RenderPedidos page={page} search={search} idUser={idUser} />
+      {RenderPedidos({page, search, idUser, acceso})}
       <PaginationTable total={30} />
     </>
   )

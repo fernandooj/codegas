@@ -18,7 +18,7 @@ export default function VehiculosDialog({_id, placa, centro, conductor, idPedido
   const [message, setMessage] = useState("");
 
   const asignCar = async () => {
-    const {status} = await addCarPedido(idPedido, _id, date)
+    const {status} = await addCarPedido(idPedido, _id, date, 2)
     if (status) {
       setShowSnack(true)
       setMessage(`Carro ${placa} agregado!`)

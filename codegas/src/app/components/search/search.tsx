@@ -7,22 +7,22 @@ import SearchIcon from '@mui/icons-material/Search';
 import { usePathname, useRouter } from 'next/navigation';
 
 
-export default function InputSearch({search}) {
+export default function InputSearch({search}: any) {
   const [url, setUrl] = useState(1);
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleChangeUrl = (newUrl) => {
+  const handleChangeUrl = (newUrl: any) => {
     router.push(`${pathname}?search=${newUrl}`, undefined)
   }
 
-  const handleKeyPress = (event) => {
+  const handleKeyPress = (event: any) => {
     if (event.key === 'Enter') {
       event.preventDefault()
       handleChangeUrl(url);
     } 
   };
-  const handleChange = (event) => {
+  const handleChange = (event: any) => {
     setUrl(event.target.value)
   };
     

@@ -1,5 +1,5 @@
 'use client'
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
  
 import {Box, Button, FormControl, Container, CssBaseline, InputLabel, Grid, 
   MenuItem, Select, TextField, SelectChangeEvent} from '@mui/material';
@@ -9,14 +9,18 @@ import {createTanque} from "../store/fetch-tanque"
 import { usePathname, useRouter } from 'next/navigation';
 import {Date} from "../components/date"
 import moment from 'moment';
+import {DataContext} from '../context/context'
+
 
 export default function Step1() {
+  const {idUser: usuarioCrea}: any = useContext(DataContext)
   const router = useRouter();
   const pathname = usePathname()
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
-  const [newForma, setNewForma] = useState()
-  const [date, setDate] = useState({})
+  const [newForma, setNewForma] = useState<string | undefined>(undefined);
+  const [date, setDate] = useState({ fechaUltimaRev: null, ultimRevTotal: null });
+
 
   const handleDate = (event: SelectChangeEvent, prop: any) => {
     setDate({...date, [prop]: event});
@@ -36,7 +40,7 @@ export default function Step1() {
       propiedad: data.get('propiedad'),
       registroOnac: data.get('registroOnac'),
       ultimRevTotal: moment(date.ultimRevTotal).format("YYYY-MM-DD"),
-      usuarioCrea: 2,
+      usuarioCrea,
     };
     
     saveData(newData)

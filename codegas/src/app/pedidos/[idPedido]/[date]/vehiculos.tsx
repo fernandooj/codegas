@@ -1,28 +1,28 @@
 'use client'
 import react, {Fragment, useState} from 'react';
 import {FormControl, Avatar, RadioGroup, ListItemAvatar, FormControlLabel, TableCell, TableRow, Radio} from '@mui/material';
-import {Person, Add} from '@mui/icons-material';
+import {Person} from '@mui/icons-material';
 import {addCarPedido} from "../../../store/fetch-pedido"
 import { blue } from '@mui/material/colors';
 import {Snack} from "../../../components/snackBar"
 export interface VehiculoProps {
   _id: number;
   placa: string;
-  // onClose: (value: string) => void;
   centro: string;
   conductor: Object;
 }
 
  
 
-export default function VehiculosDialog({_id, placa, centro, conductor, idPedido, date}: any) {
+export default function VehiculosDialog({_id, placa, centro, conductor, idPedido, date, idUser}: any) {
+
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
   const asignCar = async () => {
-    const idPedidoArray = idPedido.split("%2C").filter((value) => value !== "");
+    const idPedidoArray = idPedido.split("%2C").filter((value: any) => value !== "");
   
     await Promise.all(idPedidoArray.map(async (e: any) => {
-      const { status } = await addCarPedido(e, _id, date);
+      const { status } = await addCarPedido(e, _id, date, idUser);
       console.log(status)
       if (status) {
         setShowSnack(true)

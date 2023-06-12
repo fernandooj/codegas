@@ -27,7 +27,7 @@ const LayoutPedidos = ({children}: {children: ReactNode}): ReactElement => {
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }} component="section">
         <Grid container spacing={3}>
           {/* Chart */}
-          <Grid item xs={12} md={8} lg={9}>
+          {/* <Grid item xs={12} md={8} lg={9}>
             <Paper
               sx={{
                 p: 2,
@@ -36,11 +36,11 @@ const LayoutPedidos = ({children}: {children: ReactNode}): ReactElement => {
                 height: 240,
               }}
             >
-                {/* <Chart />  */}
+                <Chart /> 
             </Paper>
-          </Grid>
+          </Grid> */}
           {/* Recent Deposits */}
-          <Grid item xs={12} md={4} lg={3}>
+          {/* <Grid item xs={12} md={4} lg={3}>
             <Paper
               sx={{
                 p: 2,
@@ -51,7 +51,7 @@ const LayoutPedidos = ({children}: {children: ReactNode}): ReactElement => {
             >
               <Incomes />
             </Paper>
-          </Grid>
+          </Grid> */}
           {/* Recent Orders */}
           <Grid item xs={12}>
             {children}

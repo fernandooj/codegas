@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import {DataContext} from "../context/context"
 
  
-const LayoutZonas = ({children}): ReactElement => {
+const LayoutZonas = ({children}: any): ReactElement => {
   const {user, login}: any = useContext(DataContext)
   if(!user) redirect('/')
   return(

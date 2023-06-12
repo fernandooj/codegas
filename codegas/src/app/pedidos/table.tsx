@@ -9,7 +9,7 @@ import {colors} from "../utils/colors"
 import {Date} from "../components/date"
 import {UpdateDatePedido, UpdateStatePedido} from "../store/fetch-pedido"
 import {Snack} from "../components/snackBar"
-import {AlertDialog} from "../components/alertDialog"
+import {AlertDialog} from "../components/alertDialog/alertDialog"
 import {SelectState} from "../components/selecState"
 import Link from 'next/link';
 
@@ -23,14 +23,16 @@ const RenderPedidos = ({_id, codt, razon_social, cedula, direccion, creado, fech
     const [showDialog, setShowDialog] = useState(false);
     const [newFechaEntrega, setFechaEntrega] = useState(fechaentrega)
     const [newEstado, setNewEstado] = useState(estado)
+    const background=newEstado=="espera" ?espera :newEstado=="noentregado" ?noentregado :newEstado=="innactivo" ?innactivo :newEstado=="activo" &&!placa && !entregado ?activo :newEstado=="activo" && !entregado ?asignado :otro
+    
     const updateDate = async (id: any, date: any) => {
       const {status} = await UpdateDatePedido(id, date)
       if (status) {
-      setShowSnack(true)
-      setMessage("Fecha Actualizada")
-      setFechaEntrega(date)
+        setShowSnack(true)
+        setMessage("Fecha Actualizada")
+        setFechaEntrega(date)
       }
-  }
+    }
 
   const updateStatus = async (id: any, state: any) => {
     const {status} = await UpdateStatePedido(id, state)
@@ -45,7 +47,7 @@ const RenderPedidos = ({_id, codt, razon_social, cedula, direccion, creado, fech
       <TableRow
         key={_id}
         sx={{ 
-          background: newEstado=="espera" ?espera :newEstado=="noentregado" ?noentregado :newEstado=="innactivo" ?innactivo :newEstado=="activo" &&!placa && !entregado ?activo :newEstado=="activo" && !entregado ?asignado :otro
+          background
         }}
       >
         <TableCell align="center">

@@ -44,7 +44,8 @@ const RenderZonas = ({zona, updateValor, addValues}: any) => {
 export default function RenderTable({zona}: any) {
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
-  const [valorWithArray, setValorWithArray] = useState([])
+  const [valorWithArray, setValorWithArray] = useState<{ _id: any; valorunitario: number; }[]>([]);
+
   const [newValorUnitario, setNewValorUnitario] = useState({})
   const [newZona, setNewZona] = useState(zona)
   const updateValor = async (event: any, idcliente: any, nombre: any) => {

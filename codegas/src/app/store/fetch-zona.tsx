@@ -1,6 +1,6 @@
-const URL = "https://7838wgxv44.execute-api.us-east-1.amazonaws.com"
-const idUser=1
-export const fetchZonasByUser = async (limit, start, idZona, type, search) => {
+import URL from '../utils/url' 
+
+export const fetchZonasByUser = async (limit: any, start: any, idZona: any, type: any, search: any) => {
     // start = start==0 ?0 :(start-1)*10
     try {
         const response = await fetch(`${URL}/users/zonas/${limit}/${start}/${idZona}/${type}/${search}`, {cache: 'no-store'});

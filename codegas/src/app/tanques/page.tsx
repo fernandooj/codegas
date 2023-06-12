@@ -14,11 +14,7 @@ const Tanque = ({searchParams}: any): ReactElement => {
   return (
     <>
       <InputSearch search={search} />
-      <RenderTanques 
-         limit={limit}
-         search={search}
-         page={page} 
-      />
+      {RenderTanques({limit, search, page})} 
     </>
   )
 }

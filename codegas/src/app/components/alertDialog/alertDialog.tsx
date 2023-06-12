@@ -2,10 +2,9 @@
 import React, {useState} from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
+import type {AlertDialogProps} from "./alertDialog.types"
 
-
-export function AlertDialog({children, showDialog, setShowDialog}) {
+export function AlertDialog({children, showDialog, setShowDialog}: AlertDialogProps) {
   return (
     <Dialog
         open={showDialog}
