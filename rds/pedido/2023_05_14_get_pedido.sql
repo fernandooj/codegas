@@ -93,24 +93,4 @@ BEGIN
 END
 $func$;
 
-
-
-
-
--- SELECT get_pedidos(1, 10, 0,  10, '2023-05-14 22:58:28.152', 'cliente') ;
-
-
-
--- WITH RECURSIVE arbol AS (
---     SELECT _id, nombre, idPadre
---     FROM users
---     WHERE _id = 4
-
---     UNION ALL
-
---     SELECT u._id, u.nombre, u.idPadre
---     FROM users u
---     JOIN arbol a ON u.idPadre = a._id
--- )
--- SELECT *
--- FROM arbol;
+ 

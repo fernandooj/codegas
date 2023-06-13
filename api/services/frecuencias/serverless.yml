@@ -1,0 +1,32 @@
+createFrecuenciaSemanal:
+  name: ${self:custom.base}-crear-frecuencia-semanal
+  handler: services/frecuencias/src/crear-frecuencia-semanal.main
+  events:
+    - schedule: cron(0 7 * * ? *)
+    - httpApi: 'GET /fre/frecuencia/semanal'
+  package:
+    include:
+      - services/frecuencias/src/crear-frecuencia-semanal.js
+      - lib/errors/database-error.js
+
+createFrecuenciaQuincenal:
+  name: ${self:custom.base}-crear-frecuencia-quincenal
+  handler: services/frecuencias/src/crear-frecuencia-quincenal.main
+  events:
+    - schedule: cron(5 7 * * ? *)
+    - httpApi: 'GET /fre/frecuencia/quincenal'
+  package:
+    include:
+      - services/frecuencias/src/crear-frecuencia-quincenal.js
+      - lib/errors/database-error.js
+
+createFrecuenciaMensual:
+  name: ${self:custom.base}-crear-frecuencia-mensual
+  handler: services/frecuencias/src/crear-frecuencia-mensual.main
+  events:
+    - schedule: cron(10 7 * * ? *)
+    - httpApi: 'GET /fre/frecuencia/mensual'
+  package:
+    include:
+      - services/frecuencias/src/crear-frecuencia-mensual.js
+      - lib/errors/database-error.js
