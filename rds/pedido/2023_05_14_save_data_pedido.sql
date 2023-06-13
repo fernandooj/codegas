@@ -3,13 +3,12 @@ CREATE OR REPLACE FUNCTION save_pedidos(
     _cantidadKl INT,
     _cantidadPrecio INT,
     _frecuencia character varying,
-    _dia1 character varying,
-    _dia2 character varying,
+    _dia1 INT,
+    _dia2 INT,
     _fechaSolicitud character varying,
     _puntoId INT,
     _usuarioCrea INT,
-    _usuarioId INT,
-    _pedidoPadre INT
+    _usuarioId INT
 )
 RETURNS text
 LANGUAGE plpgsql
@@ -19,16 +18,18 @@ DECLARE
     idUser integer;
     user_acceso character varying;
     user_valor_unitario integer;
+    user_valor_unitario_no_cliente integer;
 BEGIN
     SELECT _id, acceso, valorunitario INTO idUser, user_acceso, user_valor_unitario FROM users WHERE _id = _usuarioCrea;
 
     IF user_acceso = 'cliente' THEN
-        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, puntoId, valorUnitario, pedidoPadre, usuarioCrea, usuarioId)
-        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, _puntoId, user_valor_unitario, _pedidoPadre, _usuarioCrea, idUser)
+        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, puntoId, valorUnitario, usuarioCrea, usuarioId)
+        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, _puntoId, user_valor_unitario, _usuarioCrea, idUser)
         RETURNING _id INTO new_id;
     ELSE
-        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, valorUnitario, pedidoPadre, puntoId, usuarioCrea, usuarioId)
-        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, user_valor_unitario, _pedidoPadre, _puntoId, _usuarioCrea, _usuarioId)
+        SELECT valorunitario INTO user_valor_unitario_no_cliente FROM users WHERE _id = _usuarioId;
+        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, valorUnitario, puntoId, usuarioCrea, usuarioId)
+        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, user_valor_unitario_no_cliente, _puntoId, _usuarioCrea, _usuarioId)
         RETURNING _id INTO new_id;
     END IF;
 

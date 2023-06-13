@@ -2,7 +2,7 @@ const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError = require('../../../lib/errors/database-error');
 
 /** save PEDIDO */
-const SAVE_PEDIDOS = 'SELECT * FROM save_pedidos($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)';
+const SAVE_PEDIDOS = 'SELECT * FROM save_pedidos($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
 
 /**
  * Inserts a vehiculo into the database.
@@ -20,7 +20,7 @@ const SAVE_PEDIDOS = 'SELECT * FROM save_pedidos($1, $2, $3, $4, $5, $6, $7, $8,
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
   const {
-    forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, pedidoPadre, 
+    forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, 
     puntoId, usuarioCrea, usuarioId
   } = body;
   
@@ -30,7 +30,7 @@ module.exports.main = async (event) => {
  
     await client.query(SAVE_PEDIDOS, [
       forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, puntoId,  
-      usuarioCrea, usuarioId, pedidoPadre
+      usuarioCrea, usuarioId
     ])
     return {
         status: true

@@ -1,10 +1,10 @@
 'use client'
 import React, {useState, useContext} from 'react';
  
-import {Avatar, Box, Button, FormControl, Container, CssBaseline, InputLabel, Grid, MenuItem, Select, TextField, Typography, SelectChangeEvent} from '@mui/material';
+import {Avatar, Box, Button, FormControl, Container, CssBaseline, InputLabel, Grid, MenuItem, Select, TextField, Typography, SelectChangeEvent, Autocomplete} from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {Snack} from "../components/snackBar"
-import {forma} from "../utils/pedido_info"
+import {forma, mes, dia1, dia2, diaSemana, frecuencia} from "../utils/pedido_info"
 import {createPedido} from "./fetch-pedido"
 import { usePathname, useRouter } from 'next/navigation';
 import {Date} from "../components/date"
@@ -18,14 +18,27 @@ export default function CrearPedido({data, puntos}: any) {
   const router = useRouter();
   const pathname = usePathname();
   const [usuarioId, setUsuarioId] = useState('');
+  const [search, setSearch] = useState('');
   const [puntoId, setPuntoId] = useState('');
   const [showSnack, setShowSnack] = useState(false);
   const [message, setMessage] = useState("");
-  const [newForma, setNewForma] = React.useState<string | undefined>(undefined);
+  const [form, setForm] = useState({
+    forma: null,
+    frecuencia: null,
+    dia1: null,
+    dia2: null
+  });
 
-  const handleChangeSelect = (event: SelectChangeEvent) => {
-    setUsuarioId(event.target.value as string);
-    router.push(`${pathname}?idUser=${event.target.value}`, undefined)
+  const handleChangeSelect = (event: any, value: any) => {
+    event.preventDefault();
+    setUsuarioId(value._id as string);
+    router.push(`${pathname}?search=${search}&idUser=${value._id}`, undefined)
+
+    if(event.key === 'Enter') {
+      setSearch(event.target.value)
+      router.push(`${pathname}?search=${event.target.value}`, undefined)
+    }
+
   };
   const handleChangePunto = (event: SelectChangeEvent) => {
     setPuntoId(event.target.value as string);
@@ -40,17 +53,20 @@ export default function CrearPedido({data, puntos}: any) {
       cantidadKl: Number(data.get('cantidadKl')),
       cantidadPrecio: Number(data.get('cantidadPrecio')),
       fechaSolicitud: moment(date).format('YYYY-MM-DD'),
+      usuarioId,
       puntoId: Number(data.get('puntoId')),
-      usuarioId: Number(data.get('usuarioId')),
       observaciones: data.get('observaciones'),
-      usuarioCrea,
-      pedidoPadre: 1
+      usuarioCrea, 
+      frecuencia: data.get('frecuencia'),
+      dia1: data.get('dia1'),
+      dia2: data.get('dia2')
     };
+    
+    if(!newData.forma || !newData.usuarioId || !newData.puntoId ) alert("Llena los campos obligatorios")
     saveData(newData)
   };
-  const handleChange = (event: SelectChangeEvent) => {
-    const newValue = event.target.value as string;
-    setNewForma(newValue || undefined);
+  const handleChange = (prop:string, value: string | null) => {
+    setForm({...form, [prop]: value});
   };
   
  
@@ -61,8 +77,8 @@ export default function CrearPedido({data, puntos}: any) {
       setMessage("Pedido Guardado con exito")
     }
   }
-
-
+ 
+  console.log(moment(date).format('YYYY-MM-DD'))
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -86,12 +102,13 @@ export default function CrearPedido({data, puntos}: any) {
               <FormControl fullWidth>
                 <InputLabel id="forma">Forma</InputLabel>
                 <Select
+                  required
                   name="forma"
                   labelId="forma"
                   id="forma"
-                  value={newForma}
+                  value={form.forma}
                   label="Forma"
-                  onChange={handleChange}
+                  onChange={({target})=>handleChange('forma', target.value)}
                 >
                   {
                     forma.map(({value, label})=> <MenuItem value={value} key={value}>{label}</MenuItem>)
@@ -100,15 +117,15 @@ export default function CrearPedido({data, puntos}: any) {
               </FormControl>
             </Grid>
             {
-              (newForma && newForma!=="lleno")
+              (form.forma && form.forma!=="lleno")
               &&<Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
-                  name={newForma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
-                  label={newForma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
-                  type={newForma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
-                  id={newForma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  name={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  label={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  type={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  id={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
                 />
               </Grid>
             }
@@ -120,7 +137,7 @@ export default function CrearPedido({data, puntos}: any) {
             <Grid item xs={12} sm={12}>
               <FormControl fullWidth>
                 <TextField
-                  id="outlined-Observaciones"
+                  id="Observaciones"
                   label="Observaciones"
                   name="observaciones"
                   multiline
@@ -130,44 +147,155 @@ export default function CrearPedido({data, puntos}: any) {
             </Grid> 
           <Grid item xs={12} sm={12}>
             <FormControl fullWidth>
-              <InputLabel id="usuarioId">Cliente</InputLabel>
-              <Select
-                  labelId="usuarioId"
+              <Autocomplete
+                  sx={{ width: 400 }}
+                  freeSolo
                   id="usuarioId"
-                  name="usuarioId"
-                  value={usuarioId}
-                  label="Padre"
+                  disableClearable
+                  options={data}
+                  getOptionLabel={(option) => option.razon_social?? ""}
                   onChange={handleChangeSelect}
-                >
-                {
-                    data.map(({_id, nombre}: any)=> <MenuItem value={_id} key={_id}>{nombre}</MenuItem>)
-                }
-                </Select>
+                  // onClose={()=>alert("close")}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Buscar Usuarios..."
+                      InputProps={{
+                        ...params.InputProps,
+                        type: 'search',
+                        // onKeyDown: searchUser,
+                      }}
+                    />
+                  )}
+                />
             </FormControl>
           </Grid> 
               {
-                puntos
+                puntos && puntos.length!==0
                 &&<Grid item xs={12} sm={12}>
                   <FormControl fullWidth>
                     <InputLabel id="puntoId">Punto</InputLabel>
                     <Select
-                        labelId="puntoId"
-                        id="puntoId"
-                        name="puntoId"
-                        value={puntoId}
-                        label="Punto"
-                        onChange={handleChangePunto}
-                      >
+                      required
+                      labelId="puntoId"
+                      id="puntoId"
+                      name="puntoId"
+                      value={puntoId}
+                      label="Punto"
+                      onChange={handleChangePunto}
+                    >
                       {
                           puntos.map(({_id, direccion}: any)=> <MenuItem value={_id} key={_id}>{direccion}</MenuItem>)
                       }
-                      </Select>
+                    </Select>
                   </FormControl>
                 </Grid> 
               }
-             
+              {
+                puntos && puntos.length===0
+                &&<p>este usuario no tiene Puntos</p>
+              }
           
-          </Grid>
+              <Grid item xs={12} sm={12}>
+                <FormControl fullWidth>
+                  <InputLabel id="forma">Frecuencia</InputLabel>
+                  <Select
+                    required
+                    name="frecuencia"
+                    labelId="frecuencia"
+                    id="frecuencia"
+                    value={form.frecuencia}
+                    label="Frecuencia"
+                    onChange={({target})=>handleChange('frecuencia', target.value)}
+                  >
+                    {
+                      frecuencia.map(({value, label})=> <MenuItem value={value} key={value}>{label}</MenuItem>)
+                    }
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {
+                form.frecuencia==='mensual'
+                ?<Grid item xs={12} sm={12}>
+                  <FormControl fullWidth>
+                    <InputLabel id="forma">Dia</InputLabel>
+                    <Select
+                      required
+                      name="dia1"
+                      labelId="dia1"
+                      id="dia1"
+                      value={form?.dia1}
+                      label="Dia"
+                      onChange={({target})=>handleChange('dia1', target.value)}
+                    >
+                      {
+                        mes.map(e=> <MenuItem value={e} key={e}>{e}</MenuItem>)
+                      }
+                    </Select>
+                  </FormControl>
+                </Grid>
+                :form.frecuencia==='quincenal'
+                ?<>
+                  <Grid item xs={12} sm={12}>
+                    <FormControl fullWidth>
+                      <InputLabel id="forma">Dia 1</InputLabel>
+                      <Select
+                        required
+                        name="dia1"
+                        labelId="dia1"
+                        id="dia1"
+                        value={form?.dia1}
+                        label="Dia 1"
+                        onChange={({target})=>handleChange('dia1', target.value)}
+                      >
+                        {
+                          dia1.map(e=> <MenuItem value={e} key={e}>{e}</MenuItem>)
+                        }
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={12}>
+                      <FormControl fullWidth>
+                        <InputLabel id="forma">Dia 2</InputLabel>
+                        <Select
+                          required
+                          name="dia2"
+                          labelId="dia2"
+                          id="dia2"
+                          value={form.dia2}
+                          label="Dia 2"
+                          onChange={({target})=>handleChange('dia2', target.value)}
+                        >
+                          {
+                            dia2.map(e=> <MenuItem value={e} key={e}>{e}</MenuItem>)
+                          }
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </>
+                :form.frecuencia==='semanal'
+                &&<Grid item xs={12} sm={12}>
+                    <FormControl fullWidth>
+                      <InputLabel id="forma">Dia 1</InputLabel>
+                      <Select
+                        required
+                        name="dia1"
+                        labelId="dia1"
+                        id="dia1"
+                        value={form.dia1}
+                        label="Dia 1"
+                        onChange={({target})=>handleChange('dia1', target.value)}
+                      >
+                        {
+                          diaSemana.map(({value, label})=> <MenuItem value={value} key={value}>{label}</MenuItem>)
+                        }
+                      </Select>
+                    </FormControl>
+                  </Grid>
+              }
+              
+            </Grid>
           <Button
             type="submit"
             fullWidth

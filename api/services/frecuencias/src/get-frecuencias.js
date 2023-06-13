@@ -28,7 +28,10 @@ module.exports.main = async (event) => {
       status: true,
       totalSemanal: semanal.length,
       totalQuincenal: quincenal.length,
-      totalMensual: mensual.length
+      totalMensual: mensual.length,
+      semanal,
+      quincenal,
+      mensual
     }
   } catch (error) {
     console.log(error)

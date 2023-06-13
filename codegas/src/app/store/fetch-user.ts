@@ -5,11 +5,11 @@ export const getUsers = async (start: any, limit: any, access: any, search: any)
         const response = await fetch(`${URL}/users/acceso/${limit}/${start}/${access}/${search}`, {
             next: { revalidate: 10 } 
         });
-        const {user} = await response.json();
-        
         if(!response.ok){
             throw new Error(`Ruquest failed with status ${response.status}`)
         }
+        const {user} = await response.json();
+        console.log(user)
         return user;
     } catch (error) {
         console.error(error);

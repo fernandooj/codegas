@@ -27,6 +27,7 @@ export const getPuntos = async (id: any) => {
 
 
 export const createPedido = async(date: any) =>{
+    console.log(date)
     try {
         const response = await fetch(`${URL}/ped/pedido`, {
             method: 'POST', 

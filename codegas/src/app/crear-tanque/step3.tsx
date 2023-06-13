@@ -1,8 +1,6 @@
 'use client'
 import React, {useState} from 'react';
- 
-import {Autocomplete, Box, Button, FormControl, Container, CssBaseline, InputLabel, Grid, 
-  MenuItem, Select, TextField, SelectChangeEvent} from '@mui/material';
+import {Autocomplete, Box, Button, FormControl, Container, CssBaseline, InputLabel, Grid, MenuItem, Select, TextField, SelectChangeEvent} from '@mui/material';
 import {Snack} from "../components/snackBar"
 import {addUserTanque} from "../store/fetch-tanque"
 import { usePathname, useRouter } from 'next/navigation';
@@ -65,11 +63,10 @@ export default function Step1({users, puntos, tanqueId}: any) {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={12}>
               <FormControl fullWidth>
-                
                 <Autocomplete
                   sx={{ width: 400 }}
                   freeSolo
-                  id="free-solo-2-demo"
+                  id="users"
                   disableClearable
                   options={users}
                   getOptionLabel={(option) => option.razon_social?? ""}
