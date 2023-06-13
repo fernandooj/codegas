@@ -12,7 +12,7 @@ const Pedidos = ({searchParams}: any): ReactElement => {
   return(
     <>
       <InputSearch search={search} />
-      {RenderPedidos({page, search, idUser, acceso})}
+        {RenderPedidos({page, search, idUser, acceso})}
       <PaginationTable total={30} />
     </>
   )

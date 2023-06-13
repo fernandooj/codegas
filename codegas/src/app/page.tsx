@@ -1,5 +1,5 @@
 'use client'
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { CssBaseline, Box, TextField, FormControlLabel, Typography, Avatar, Checkbox, Button, Grid, Container } from '@mui/material';
 
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -28,8 +28,11 @@ const defaultTheme = createTheme();
 
 export default function SignIn() {
   const {user, login}: any = useContext(DataContext)
- 
-  if(user?.email) redirect('/pedidos')
+  
+  useEffect(()=>{
+    if(user?.email) redirect('/pedidos')
+  }, [user])
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -38,8 +41,19 @@ export default function SignIn() {
       email: data.get('email'),
       password: data.get('password'),
     };
-    login(dataUser)
+    signIn(dataUser)
   };
+
+  const signIn = async (dataUser: any) =>{
+    try {
+      const response = await  login(dataUser)
+      redirect('/pedidos')
+      console.log(response)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
