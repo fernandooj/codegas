@@ -16,18 +16,18 @@ RETURNS TABLE (
 LANGUAGE plpgsql AS
 $func$
 DECLARE
-    currentDayOfWeek INT;
+    currentDayOfMonth INT;
 BEGIN
     currentDayOfMonth := EXTRACT(DAY FROM current_date)+1;
 
     SET TIME ZONE 'America/Bogota';
 
     RETURN QUERY 
-        SELECT currentDayOfWeek, p._id, p.dia1, p.forma, p.cantidadKl, p.cantidadPrecio, p.usuarioId, p.puntoId, p.usuarioCrea, u.valorUnitario
+        SELECT currentDayOfMonth, p._id, p.dia1, p.forma, p.cantidadKl, p.cantidadPrecio, p.usuarioId, p.puntoId, p.usuarioCrea, u.valorUnitario
         FROM pedidos p
         JOIN users u ON u._id = p.usuarioId
         WHERE p.frecuencia = _frecuencia
-        AND p.dia1 = currentDayOfWeek;
+        AND p.dia1 = currentDayOfMonth;
 
     INSERT INTO pedidos (
         pedidoPadre,
@@ -55,7 +55,7 @@ BEGIN
     FROM pedidos p
     JOIN users u ON u._id = p.usuarioId
     WHERE p.frecuencia = _frecuencia
-    AND p.dia1 = currentDayOfWeek;
+    AND p.dia1 = currentDayOfMonth;
 
     RETURN;
 END

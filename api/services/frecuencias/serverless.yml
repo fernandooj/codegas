@@ -30,3 +30,13 @@ createFrecuenciaMensual:
     include:
       - services/frecuencias/src/crear-frecuencia-mensual.js
       - lib/errors/database-error.js
+
+getFrecuencias:
+  name: ${self:custom.base}-get-frecuencias
+  handler: services/frecuencias/src/get-frecuencias.main
+  events:
+    - httpApi: 'GET /fre/frecuencia'
+  package:
+    include:
+      - services/frecuencias/src/get-frecuencias.js
+      - lib/errors/database-error.js
