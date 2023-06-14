@@ -21,7 +21,7 @@ RETURNS TABLE (
     propiedad VARCHAR(255),
     direccion VARCHAR(255),
     data JSONB[],
-    total BIGINT
+    total INT
 )
 LANGUAGE plpgsql AS
 $func$
@@ -45,7 +45,39 @@ BEGIN
         t.propiedad,
         p.direccion AS direccion,
         CASE WHEN count(at._id) > 0 THEN array_agg(jsonb_build_object('texto', at.alertaText, 'activo', at.activo)) ELSE '{}' END AS data,
-        count(at._id) AS total
+        (
+            SELECT count(*)::INT
+            FROM (
+                SELECT DISTINCT t._id
+                FROM tanques t
+                LEFT JOIN users u ON t.usuarioId = u._id
+                LEFT JOIN puntos p ON t.puntoId = p._id
+                LEFT JOIN alertaTanques at ON t._id = at.tanqueId
+                WHERE
+                    t.eliminado = false
+                    AND t.activo = true
+                    AND (
+                        CONCAT(
+                            t._id::VARCHAR,
+                            t.capacidad,
+                            t.placaText,
+                            u.nombre,
+                            u.codt,
+                            t.codigoActivo,
+                            t.fabricante,
+                            t.registroOnac,
+                            t.fechaUltimaRev,
+                            t.nPlaca,
+                            t.serie,
+                            t.anoFabricacion,
+                            t.existeTanque,
+                            t.ultimRevTotal,
+                            t.propiedad,
+                            p.direccion
+                        ) ILIKE '%' || _busqueda || '%'
+                    )
+            ) AS subquery
+        ) AS total
     FROM
         tanques t
         LEFT JOIN users u ON t.usuarioId = u._id

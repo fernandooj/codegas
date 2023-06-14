@@ -51,7 +51,8 @@ CREATE OR REPLACE FUNCTION get_revisiones(
     codt VARCHAR(255),
     razon_social VARCHAR(255),
     zonaId INTEGER,
-    tanqueId JSONB[]
+    tanqueId JSONB[],
+    total INT
   )
 AS $$
 BEGIN
@@ -104,11 +105,48 @@ BEGIN
       u.codt,
       u.razon_social,
       t.zonaId,
-      CASE WHEN count(t._id) > 0 THEN array_agg(jsonb_build_object('_id', t._id, 'capacidad', t.capacidad)) ELSE '{}' END AS tanqueId
+      CASE WHEN count(t._id) > 0 THEN array_agg(jsonb_build_object('_id', t._id, 'capacidad', t.capacidad)) ELSE '{}' END AS tanqueId,
+      (
+          SELECT count(*)::INT
+          FROM revisiones r
+          LEFT JOIN puntos p ON r.puntoId = p._id
+          LEFT JOIN users u ON r.usuarioId = u._id
+          LEFT JOIN tanques t ON t._id = ANY(r.tanqueId)
+          WHERE r.eliminado = FALSE
+                AND r.activo = TRUE
+                AND (
+                    CONCAT(
+                        r._id::VARCHAR,
+                        r.sector,
+                        r.barrio,
+                        r.propiedad,
+                        r.lote,
+                        r.usuariosAtendidos,
+                        r.m3,
+                        r.nMedidorText,
+                        r.ubicacion,
+                        r.nComodatoText,
+                        r.poblado,
+                        r.ciudad,
+                        r.dpto,
+                        r.observaciones,
+                        r.solicitudServicio,
+                        r.usuarioSolicita,
+                        r.alertaText,
+                        r.alertaFecha,
+                        r.nActa,
+                        r.usuarioCrea,
+                        r.depTecnicoText,
+                        p.direccion,
+                        u.razon_social,
+                        u.codt
+                    ) ILIKE '%' || _busqueda || '%'
+                )
+            ) AS total
     FROM revisiones r
-    JOIN puntos p ON r.puntoId = p._id
-    JOIN users u ON r.usuarioId = u._id
-    JOIN tanques t ON t._id = ANY(r.tanqueId)
+    LEFT JOIN puntos p ON r.puntoId = p._id
+    LEFT JOIN users u ON r.usuarioId = u._id
+    LEFT JOIN tanques t ON t._id = ANY(r.tanqueId)
     WHERE r.eliminado = false
     AND r.activo = true
     AND (
