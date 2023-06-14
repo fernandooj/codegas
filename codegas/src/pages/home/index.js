@@ -1,14 +1,14 @@
 import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Platform, Dimensions, Modal, TextInput, ImageBackground, Image} from 'react-native'
-import AsyncStorage from '@react-native-community/async-storage';
-import Icon from 'react-native-fa-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/dist/FontAwesome';
 // import FCM, { NotificationActionType } from "react-native-fcm";
-import moment 			       from 'moment-timezone'
+import moment 			       from 'moment'
 // import { registerAppListener } from "../push/Listeners";
 import Footer   from '../components/footer'
 import { connect } from "react-redux";
-import SocketIOClient from 'socket.io-client';
-import {URL} from "../../../App" 
+ 
+import {URL} from "../../utils/url" 
 import {style} from './style'
 import axios from 'axios';
 import Toast from 'react-native-simple-toast';
@@ -30,46 +30,9 @@ class Home extends Component{
 	async componentWillMount(){
 		this.props.getVehiculos(30)
 		this.props.getPedidos(undefined, 160)
-		let usuariosEntrando   = await AsyncStorage.getItem('usuariosEntrando') ///// muestra la suma de usuarios que estan ingresando al chat
-		let userId 						 = await AsyncStorage.getItem('userId');
-		usuariosEntrando = usuariosEntrando ?usuariosEntrando :"[]"
-		usuariosEntrando = JSON.parse(usuariosEntrando)
-		let url = (userId===null || userId==='0') ? 'user/perfil/' :`user/perfil/${userId}`
-		axios.get(url)
-		.then((res)=>{
-			if(res.data.status){
-				const userId = res.data.user._id
-				const nombre = res.data.user.nombre
-				const email  = res.data.user.email
-				const avatar = res.data.user.avatar
-				const acceso = res.data.user.acceso
-				const celular = res.data.user.celular
-			
-				if(!nombre &&userId){
-					 
-					this.props.navigation.navigate("verPerfil", {tipoAcceso:null}) ///// si se registro y no lleno los datos lo envio a editar el perfil
-				}else{
-					if(acceso=="solucion" || acceso=="admin"){
-						this.socket = SocketIOClient(URL);
-						this.socket.on(`nuevoChat`, 	this.reciveMensanje.bind(this));
-					}else{
-					 
-						this.setState({nombre:"", email:"", celular:""})
-					}
-					userId ?this.setState({userId, nombre, email, celular, avatar, acceso, usuariosEntrando}) :null
-				}
-			}else{
-				//////////////////////// para saber si muestra el formulario del chat //////////////////////////
-				// FCM.getFCMToken().then(token => {
-				// 	axios.get(`users/formulario_chat/${token}/${true}`)
-				// 	.then(res2=>{
-					 
-				// 		res2.data.status ?this.setState({formularioChat:true}) :this.setState({formularioChat:false})
-				// 	})
-				// })
-				////////////////////////////////////////////////////////////////////////////////////////////////
-			}
-		})
+ 
+  
+		 
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +167,7 @@ class Home extends Component{
 						<View style={style.contenedorModal}>
 								<View style={style.subContenedorModal}>
 									<TouchableOpacity activeOpacity={1} onPress={() => this.setState({modal:false})} style={style.btnModalClose}>
-											<Icon name={'times-circle'} style={style.iconCerrar} />
+											<Icon name='times-circle' style={style.iconCerrar} />
 									</TouchableOpacity>
 									<Text style={style.tituloModal}>Bienvenido a nuestro chat </Text>
 									<Text style={style.tituloModal2}>Horario de atención de lunes a viernes 7:00AM - 5:00PM. </Text>
