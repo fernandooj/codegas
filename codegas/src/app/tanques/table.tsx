@@ -8,7 +8,7 @@ import { PaginationTable } from "../components/pagination/pagination";
  
 
 
-const RenderTanques = ({_id, codigoactivo, capacidad, fabricante, registroonac, fechaUltimaRev: fechaMto, nplaca: placaMan, serie, anofabricacion, existeTanque: ubicacion, ultimrevtotal, propiedad, direccion, razon_social, codt, total}: any) => {
+const RenderTanques = ({_id, codigoactivo, capacidad, fabricante, registroonac, fechaUltimaRev: fechaMto, nplaca: placaMan, serie, anofabricacion, existeTanque: ubicacion, ultimrevtotal, propiedad, direccion, razon_social, codt, data, total}: any) => {
   const [open, setOpen] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   return (
@@ -33,9 +33,9 @@ const RenderTanques = ({_id, codigoactivo, capacidad, fabricante, registroonac, 
         <TableCell align="center">{placaMan} </TableCell>
         <TableCell align="center">
           {
-            total==="0"
+            data.length===0
             ?<Button variant="contained">No</Button>
-            :<Button variant="contained" onClick={()=>setShowDialog(true)} color='error'>{total} Alertas</Button>
+            :<Button variant="contained" onClick={()=>setShowDialog(true)} color='error'>{data.length} Alertas</Button>
           }
         </TableCell>
         <TableCell align="center">
@@ -86,6 +86,7 @@ const RenderTanques = ({_id, codigoactivo, capacidad, fabricante, registroonac, 
 }
 
 export default function RenderTable({tanques}: any) {
+  console.log(tanques)
   return(
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -109,7 +110,7 @@ export default function RenderTable({tanques}: any) {
           
         </TableBody>
       </Table>
-      <PaginationTable total={50} />
+      <PaginationTable total={tanques[0]?.total ?? 0} />
     </TableContainer>
   )
 }

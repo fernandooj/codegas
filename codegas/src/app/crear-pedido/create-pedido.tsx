@@ -5,7 +5,7 @@ import {Avatar, Box, Button, FormControl, Container, CssBaseline, InputLabel, Gr
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import {Snack} from "../components/snackBar"
 import {forma, mes, dia1, dia2, diaSemana, frecuencia} from "../utils/pedido_info"
-import {createPedido} from "./fetch-pedido"
+import {createPedido} from "../store/fetch-pedido"
 import { usePathname, useRouter } from 'next/navigation';
 import {Date} from "../components/date"
 import moment from 'moment';

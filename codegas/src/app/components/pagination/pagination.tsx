@@ -1,30 +1,29 @@
 'use client' 
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Pagination, Stack } from '@mui/material';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export function PaginationTable({total}: any) {
-  const [page, setPage] = useState(0);
   const router = useRouter();
-   const pathname = usePathname();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.get('search');
+
   const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-    router.push(`${pathname}?page=${value}`);
+    router.push(`${pathname}?page=${value}&search=${search ?? undefined}`);
   };
-  useEffect(()=>{
-    router.push(`${pathname}?page=${page}`);
-  }, [])
+
   return (
     <Stack spacing={2} sx={{padding: 3}}>
-        <Pagination 
-          variant="outlined" 
-          shape="rounded" 
-          count={total+10}
-          page={page}
-          showFirstButton 
-          showLastButton 
-          onChange={handleChange} 
-        />
+      <Pagination
+        variant="outlined"
+        shape="rounded"
+        count={Math.ceil(total/10)}
+        page={Number(searchParams.get('page')) ?? 1}
+        showFirstButton
+        showLastButton
+        onChange={handleChange} 
+      />
     </Stack>
   );
 }

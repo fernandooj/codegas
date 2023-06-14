@@ -13,7 +13,7 @@ export default function InputSearch({search}: any) {
   const pathname = usePathname();
 
   const handleChangeUrl = (newUrl: any) => {
-    router.push(`${pathname}?search=${newUrl}`, undefined)
+    router.push(`${pathname}?page=1&search=${newUrl}`, undefined)
   }
 
   const handleKeyPress = (event: any) => {
@@ -35,7 +35,6 @@ export default function InputSearch({search}: any) {
       <InputBase
         sx={{ ml: 1, flex: 1 }}
         placeholder="Buscar ..."
-        defaultValue={search &&search}
         inputProps={{ 'aria-label': 'search google maps' }}
         onChange={handleChange}
         onKeyPress={handleKeyPress}

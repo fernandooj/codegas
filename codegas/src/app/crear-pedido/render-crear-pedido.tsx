@@ -5,6 +5,9 @@ import type {RenderPedidoProps} from "./crear-pedido.types"
 
 export const RenderCrearPedido = async function RenderCrearPedido({page, limit, access, search, idUser}: RenderPedidoProps) {
   const user = await getUsers(page, limit, access, search);
-  const {puntos} = await getPuntos(idUser);
-  return <CrearPedido data={user} puntos={puntos}  />;
+  let puntos = {puntos: null}
+  if(idUser){
+    puntos = await getPuntos(idUser);
+  }
+  return <CrearPedido data={user} puntos={puntos.puntos}  />;
 }  

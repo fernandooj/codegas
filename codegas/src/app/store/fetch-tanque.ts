@@ -1,13 +1,13 @@
 import URL from '../utils/url' 
 
 export const fetchTanques = async (limit: any, start: any, search: any) => {
-    // start = start==0 ?0 :(start-1)*10
+    start = start==0 ?0 :(start-1)*10
     try {
         const response = await fetch(`${URL}/tan/tanque/${limit}/${start}/${search}`, {cache: 'no-store'});
-        const {tanque} = await response.json();
         if (response.status !== 200) {
           throw new Error(`Request failed with status ${response.status}`);
         }
+        const {tanque} = await response.json();
         return tanque;
     } catch (error) {
         console.error(error);

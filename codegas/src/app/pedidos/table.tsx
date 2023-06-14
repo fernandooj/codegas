@@ -1,17 +1,18 @@
 'use client' 
 import { Fragment, useEffect, useState } from 'react';
-import { TableRow, TableCell, Box, Collapse, Table, TableBody, TableHead, Typography, Button, TableContainer, Paper, Checkbox } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import { IconButton, TableRow, TableCell, Box, Collapse, Table, TableBody, TableHead, Typography, Button, TableContainer, Paper, Checkbox } from '@mui/material';
+ 
 import {KeyboardArrowDown, KeyboardArrowUp} from '@mui/icons-material';
 import Image from "next/image"
 import moment from "moment"
+import Link from 'next/link';
 import {colors} from "../utils/colors"
 import {Date} from "../components/date"
 import {UpdateDatePedido, UpdateStatePedido} from "../store/fetch-pedido"
 import {Snack} from "../components/snackBar"
 import {AlertDialog} from "../components/alertDialog/alertDialog"
 import {SelectState} from "../components/selecState"
-import Link from 'next/link';
+import { PaginationTable } from "../components/pagination/pagination";
 
 const {espera, noentregado, innactivo, activo, asignado, otro} = colors
 
@@ -197,7 +198,8 @@ export default function RenderTable({data}: any) {
           { data.map((row: any, index: any): any => <RenderPedidos key={index} {...row} addValues={addValues} />) }
         </TableBody>
       </Table>
-    
+      
+      <PaginationTable total={data[0]?.total} />
     </TableContainer>    
   )
   

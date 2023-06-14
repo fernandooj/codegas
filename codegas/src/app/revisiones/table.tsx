@@ -105,7 +105,7 @@ export default function RenderTable({revision}: any) {
           
         </TableBody>
       </Table>
-      <PaginationTable total={50} />
+      <PaginationTable total={revision[0]?.total ?? 0} />
     </TableContainer>
   )
 }

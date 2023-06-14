@@ -1,5 +1,5 @@
 'use client'
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import {CssBaseline, Box, Toolbar, List, Typography, Divider, IconButton} from '@mui/material';
 import MuiDrawer from '@mui/material/Drawer';
@@ -58,7 +58,8 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 export default function Nav({children}: {children: React.ReactNode}) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
+  const [appBarWidth, setAppBarWidth] = useState('');
   const toggleDrawer = () => {
     setOpen(!open);
   };
@@ -72,17 +73,28 @@ export default function Nav({children}: {children: React.ReactNode}) {
       console.log(error)
     }
   }
+
+  useEffect(() => {
+    const handleResize = () => {
+      const screenWidth = window.innerWidth;
+      const adjustedWidth = open ? screenWidth - 240 : screenWidth;
+      setAppBarWidth(`${adjustedWidth}px`);
+    };
+
+    handleResize(); // Initial calculation
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [open]);
+
   
   return (
     <ThemeProvider theme={defaultTheme}>
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
-        <AppBar position="absolute" 
-          // open={open}
-          style={{
-            transform: open ? "translateX(240px)" : "none",
-          }}
-        >
+        <AppBar position="absolute" style={{ width: appBarWidth }}>
           <Toolbar
             sx={{
               pr: '24px', // keep right padding when drawer closed
