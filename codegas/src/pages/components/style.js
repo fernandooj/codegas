@@ -43,7 +43,7 @@ export const style = MediaQueryStyleSheet.create({
 		height:34,
 	},
 	textFooter:{
-		// fontFamily: "Comfortaa-Regular",
+		fontFamily: "Comfortaa-Regular",
 		textAlign:"center",
 		color:"#002587",
 		fontSize:12,
@@ -62,7 +62,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:0
 	},
 	textBadge:{
-		// fontFamily: "Comfortaa-Light",
+		fontFamily: "Comfortaa-Light",
 		textAlign:"center",
 		color:"#ffffff",
 		fontSize:9
@@ -87,13 +87,13 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:22,
 	},
 	textPortada:{
-		// fontFamily: "Comfortaa-Regular",
+		fontFamily: "Comfortaa-Regular",
 		color:"#ffffff",
 		fontSize:15,
 		marginVertical:5
 	},
 	textPortada2:{
-		// fontFamily: "Comfortaa-Regular",
+		fontFamily: "Comfortaa-Regular",
 		color:"#00218b",
 		fontSize:15,
 		marginVertical:0
@@ -133,7 +133,7 @@ export const style = MediaQueryStyleSheet.create({
 		padding:12
 	},
 	textModal:{
-		// fontFamily: "Comfortaa-Light",
+		fontFamily: "Comfortaa-Light",
 		fontSize:19
 	},
 	avatarPerfil:{
@@ -149,7 +149,7 @@ export const style = MediaQueryStyleSheet.create({
         width:size.width/1.3,
 		paddingVertical:10,
 		paddingLeft:10,
-		// fontFamily: "Comfortaa-Light",
+		fontFamily: "Comfortaa-Light",
 		backgroundColor:'#ffffff',
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
 		borderColor:"rgba(0,0,0,0)",
@@ -173,7 +173,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize:17
 	},
 	textPdf:{
-		// fontFamily: "Comfortaa-Light",
+		fontFamily: "Comfortaa-Light",
 	}
 
 },{

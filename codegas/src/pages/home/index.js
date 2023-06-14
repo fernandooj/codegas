@@ -11,7 +11,7 @@ import { connect } from "react-redux";
 import {URL} from "../../utils/url" 
 import {style} from './style'
 import axios from 'axios';
-import Toast from 'react-native-simple-toast';
+// import Toast from 'react-native-simple-toast';
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
 import {getPedidos, getZonasPedidos} from '../../redux/actions/pedidoActions' 
   
@@ -270,7 +270,7 @@ class Home extends Component{
 			if(res.data.status){
 				this.eliminaUsuarioEntrando(usuariosEntrando.slice(1, usuariosEntrando.length), res.data.conversacion._id, tokenPhone)
 			}else{
-				Toast.show("Tenemos un problema, intentelo mas tarde")
+				// Toast.show("Tenemos un problema, intentelo mas tarde")
 			}
 		})
 	}
