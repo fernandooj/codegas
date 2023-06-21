@@ -30,7 +30,7 @@ export default function SignIn() {
   const {user, login}: any = useContext(DataContext)
   
   useEffect(()=>{
-    if(user?.email) redirect('/pedidos')
+    if(user?.email) redirect('/zonas')
   }, [user])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -47,8 +47,7 @@ export default function SignIn() {
   const signIn = async (dataUser: any) =>{
     try {
       const response = await  login(dataUser)
-      redirect('/pedidos')
-      console.log(response)
+      redirect('/zonas')
     } catch (error) {
       console.log(error)
     }
@@ -107,7 +106,7 @@ export default function SignIn() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="/pedidos">
+                <Link href="/">
                     Recordar contraseña?
                 </Link>
               </Grid>

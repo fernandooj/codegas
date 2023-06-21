@@ -82,7 +82,13 @@ export default function Step2({ tanqueId }: any) {
               marginBottom: '5px',
             }}
           >
-            <Image src={URL.createObjectURL(image)} alt={`Image ${index}`} width={150} />
+            <Image 
+              src={URL.createObjectURL(image)} 
+              alt={`Image ${index}`} 
+              width={150}
+              placeholder="blur"
+              blurDataURL={URL.createObjectURL(image)}
+            />
             <IconButton
               sx={{ position: 'absolute', top: '5px', right: '5px', backgroundColor: '#fff' }}
               onClick={() => handleImageDelete(section, index)}

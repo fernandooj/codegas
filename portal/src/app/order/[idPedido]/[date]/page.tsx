@@ -23,7 +23,7 @@ const Vehiculos: FC = ({params}: any) => {
   return(
     <TableContainer component={Paper}>
       <Breadcrumbs aria-label="breadcrumb" sx={{padding: "15px"}}>
-        <Link style={{color: "#a2a1a1"}}  href="/pedidos">
+        <Link style={{color: "#a2a1a1"}}  href="/order">
           Pedidos
         </Link>
         <Typography color="#a2a1a1"> Pedido N:  

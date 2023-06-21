@@ -66,35 +66,18 @@ module.exports.main = async (event) => {
   // };
 
 
-  const titulo = "Nueva cuenta en codegas"
-  const text1 = `Hola ${nombre} ya puede ingresar a su cuenta en la app de Codegas, sus datos de acceso son:`
-  const text2 = `usuario: ${email}<br/>Contraseña: ${pass}`
-  const htmlTemplate=(titulo, text1, text2)=>{
-    return `
-        <h1>${titulo}</h1> 
-        <p>${text1}</p>
-        <p>${text2}</p>
-    `
-  };
-  let options = {
-    from: '<app@codegascolombia.com>',         
-    to: email,                       
-    subject: "nueva cuenta creada",                          
-    html:  htmlTemplate(titulo, text1, text2)
-  };
-  transporter.sendMail(options, (error, info) => {
-      if (error) {
-          return console.log(error);
-      }
-  });
-
+ 
 
   try {
     await client.query('BEGIN');
-    await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
+    const {rows} = await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
     // await ses.sendEmail(params).promise();
+ 
     await client.query('COMMIT');
-    return { status: true };
+    return { 
+      status: !!rows[0].save_users,
+      code: rows[0].save_users || "email exist"
+    };
   } catch (error) {
     console.error(error);
     await client.query('ROLLBACK');

@@ -6,12 +6,12 @@ import {createStackNavigator} from "react-navigation-stack"
 //////  IMPORTO LOS COMPONENTES
 //////////////////////////////////////////////////////////////////////////////////////////
 import homeComponent   	   	 	from '../pages/home';
-// import perfilComponent   	 	from '../pages/perfil/perfil';
+import pedidoComponent	 	 	from '../pages/pedido/pedido';
+import IniciarSesion   	 	from '../pages/iniciar_sesion';
+// import editarPedidoComponent	from '../pages/pedido/editar-pedido';
 // import verPerfilComponent	 	from '../pages/ver_perfil/verPerfil';
 // import confirmarComponent 	 	from '../pages/perfil/confirmarCode';
 // import registroComponent	 	from '../pages/registro/registro';
-// import pedidoComponent	 	 	from '../pages/pedido/pedido';
-// import editarPedidoComponent	from '../pages/pedido/editar-pedido';
 // import conversacionComponent 	from '../pages/conversacion/conversacion';
 // import mensajeComponent	 	 	from '../pages/mensaje/mensaje';
 // import vehiculoComponent	 	from '../pages/vehiculo/vehiculo';
@@ -41,14 +41,14 @@ import homeComponent   	   	 	from '../pages/home';
  
 const AppNavigator = createStackNavigator({
 	Home  		 	 	: {screen: homeComponent},
+	pedido       		: {screen: pedidoComponent},
+	IniciarSesion       : {screen: IniciarSesion},
 	// inicio 		 	 	: {screen: homeComponent},
-	// perfil       		: {screen: perfilComponent},
 	// verPerfil    		: {screen: verPerfilComponent},
 	// confirmar    		: {screen: confirmarComponent},
 	// registro     		: {screen: registroComponent},
 	// privacidad   		: {screen: privacidadComponent},
 	// mensaje      		: {screen: mensajeComponent, navigationOptions: { gesturesEnabled: false }},
-	// pedido       		: {screen: pedidoComponent},
 	// editarPedido 		: {screen: editarPedidoComponent},
 	// vehiculo     		: {screen: vehiculoComponent},
 	// zona		 		: {screen: zonaComponent},

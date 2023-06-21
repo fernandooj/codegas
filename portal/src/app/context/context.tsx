@@ -53,7 +53,7 @@ const DataProvider = ({ children }: { children: React.ReactNode }) => {
           localStorage.setItem("idUser", JSON.stringify(_id));
           localStorage.setItem("acceso", acceso);
         }
-        console.log({idUser, acceso})
+      
         setUser(user);
         setIdUser(_id);
         setAcceso(acceso);

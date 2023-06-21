@@ -21,8 +21,8 @@ export const fetchZonas = async() =>{
          if(!response.ok){
             throw new Error(`Ruquest failed with status ${response.status}`)
         }
-        const data = await response.json();
-        return data
+        const {zona} = await response.json();
+        return zona
     } catch (error){
         console.error(error)
         return []

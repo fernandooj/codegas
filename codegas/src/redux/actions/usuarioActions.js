@@ -77,6 +77,23 @@ const getUsuariosAcceso = acceso => {
 };
   
 
+export const getUserByUid = async (uid) => {
+  try {
+      const response = await axios.get(`/users/uid/${uid}`, {
+          next: { revalidate: 10 } 
+      });
+
+      if(response.status!==200 ){
+          throw new Error(`Ruquest failed with status ${response.status}`)
+      }
+      
+      return response.data;
+  } catch (error) {
+      console.error(error);
+      return []
+  }
+};
+
 export {
   getPerfil,
   getUsuarios,

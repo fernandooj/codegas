@@ -12,7 +12,7 @@ import moment from 'moment';
 import {DataContext} from '../context/context'
 
 
-export default function CrearPedido({data, puntos}: any) {
+export default function CrearPedido({user, puntos}: any) {
   const {idUser: usuarioCrea}: any = useContext(DataContext)
 
   const router = useRouter();
@@ -77,8 +77,8 @@ export default function CrearPedido({data, puntos}: any) {
       setMessage("Pedido Guardado con exito")
     }
   }
+  console.log(user)
  
-  console.log(moment(date).format('YYYY-MM-DD'))
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -106,7 +106,7 @@ export default function CrearPedido({data, puntos}: any) {
                   name="forma"
                   labelId="forma"
                   id="forma"
-                  value={form.forma}
+                  value={form?.forma}
                   label="Forma"
                   onChange={({target})=>handleChange('forma', target.value)}
                 >
@@ -117,15 +117,15 @@ export default function CrearPedido({data, puntos}: any) {
               </FormControl>
             </Grid>
             {
-              (form.forma && form.forma!=="lleno")
+              (form?.forma && form?.forma!=="lleno")
               &&<Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
-                  name={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
-                  label={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
-                  type={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
-                  id={form.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  name={form?.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  label={form?.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  type={form?.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
+                  id={form?.forma === 'monto' ?'cantidadPrecio' :'cantidadKl'}
                 />
               </Grid>
             }
@@ -152,7 +152,7 @@ export default function CrearPedido({data, puntos}: any) {
                   freeSolo
                   id="usuarioId"
                   disableClearable
-                  options={data}
+                  options={user}
                   getOptionLabel={(option) => option.razon_social?? ""}
                   onChange={handleChangeSelect}
                   // onClose={()=>alert("close")}
@@ -204,7 +204,7 @@ export default function CrearPedido({data, puntos}: any) {
                     name="frecuencia"
                     labelId="frecuencia"
                     id="frecuencia"
-                    value={form.frecuencia}
+                    value={form?.frecuencia}
                     label="Frecuencia"
                     onChange={({target})=>handleChange('frecuencia', target.value)}
                   >
@@ -216,7 +216,7 @@ export default function CrearPedido({data, puntos}: any) {
               </Grid>
 
               {
-                form.frecuencia==='mensual'
+                form?.frecuencia==='mensual'
                 ?<Grid item xs={12} sm={12}>
                   <FormControl fullWidth>
                     <InputLabel id="forma">Dia</InputLabel>
@@ -235,7 +235,7 @@ export default function CrearPedido({data, puntos}: any) {
                     </Select>
                   </FormControl>
                 </Grid>
-                :form.frecuencia==='quincenal'
+                :form?.frecuencia==='quincenal'
                 ?<>
                   <Grid item xs={12} sm={12}>
                     <FormControl fullWidth>
@@ -263,7 +263,7 @@ export default function CrearPedido({data, puntos}: any) {
                           name="dia2"
                           labelId="dia2"
                           id="dia2"
-                          value={form.dia2}
+                          value={form?.dia2}
                           label="Dia 2"
                           onChange={({target})=>handleChange('dia2', target.value)}
                         >
@@ -274,7 +274,7 @@ export default function CrearPedido({data, puntos}: any) {
                       </FormControl>
                     </Grid>
                   </>
-                :form.frecuencia==='semanal'
+                :form?.frecuencia==='semanal'
                 &&<Grid item xs={12} sm={12}>
                     <FormControl fullWidth>
                       <InputLabel id="forma">Dia 1</InputLabel>
@@ -283,7 +283,7 @@ export default function CrearPedido({data, puntos}: any) {
                         name="dia1"
                         labelId="dia1"
                         id="dia1"
-                        value={form.dia1}
+                        value={form?.dia1}
                         label="Dia 1"
                         onChange={({target})=>handleChange('dia1', target.value)}
                       >

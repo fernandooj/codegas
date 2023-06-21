@@ -10,6 +10,6 @@ export type RenderPedidoProps = {
   page: number;
   limit: number;
   access: string;
-  search: string;
+  search?: string | undefined;
   idUser?: number;
 }

@@ -14,6 +14,7 @@ const getPedido = pedidoId => {
     return axios
       .get(`/ped/pedido/${pedidoId}`)
       .then(res => {
+
         dispatch({
           type: GET_PEDIDO,
           pedido: res.data.pedido
@@ -44,23 +45,32 @@ const getPedidoByUser = userId => {
 };
 
 
-const getPedidos = (fechaEntrega, limit) => {
-  console.log({limit})
-  return dispatch => {
-    return axios
-      .get(`ped/pedido/todos/app/${fechaEntrega}/${limit}`,)
-      .then(res => {
-        
-        dispatch({
-          type: GET_PEDIDOS,
-          pedidos: res.data.pedido
-        });
-      })
-      .catch(err => {
-        console.log(err);
+const getPedidos = (idUser, start, limit, acceso, search) => {
+  console.log("{idUser, start, limit, acceso, search}")
+  console.log({idUser, start, limit, acceso, search})
+  // start = start == 0 ? 0 : (start - 1) * 10;
+  return async (dispatch) => {
+    try {
+      const response = await axios.get(`/ped/pedido/todos/app/${idUser}/${limit}/${start}/${acceso}/${search}`);
+      console.log(response)
+      if(response.status!==200){
+        throw new Error(`Ruquest failed with status ${response.status}`)
+      }
+      console.log("response.data.pedido")
+      dispatch({
+        type: GET_PEDIDOS,
+        pedidos: response.data.pedido,
       });
+    } catch (err) {
+      console.log(err)
+      dispatch({
+        type: GET_PEDIDOS,
+        pedidos: [] ,
+      });
+    }
   };
 };
+
 
 const getVehiculosConPedidos = (data) => {
   console.log({data})

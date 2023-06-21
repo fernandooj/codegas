@@ -1,10 +1,13 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
 import axios from 'axios';
+import { DataContext } from '../../context/context';
 
 export default function FooterComponent({ navigation }) {
+  const {userId} = useContext(DataContext)  
+
   const [user, setUser] = useState({});
   const [badgeMessage, setBadgeMessage] = useState(true);
   const [badgeCuenta, setBadgeCuenta] = useState(true);
@@ -12,30 +15,7 @@ export default function FooterComponent({ navigation }) {
   const [badgeSocketCuenta, setBadgeSocketCuenta] = useState(0);
   const [badgeSocketPedido, setBadgeSocketPedido] = useState(0);
   const [badgeSocketConversacion, setBadgeSocketConversacion] = useState(0);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const status = await AsyncStorage.getItem('status');
-      const idUsuario = await AsyncStorage.getItem('userId');
-      const nombre = await AsyncStorage.getItem('nombre');
-      const email = await AsyncStorage.getItem('email');
-      const avatar = await AsyncStorage.getItem('avatar');
-      const acceso = await AsyncStorage.getItem('acceso');
-      let badgeSocketPedido = await AsyncStorage.getItem('badgeSocketPedido');
-      badgeSocketPedido ? badgeSocketPedido : 0;
-
-      setUser({ nombre, email, avatar, idUsuario, acceso, badgeSocketPedido: JSON.parse(badgeSocketPedido) });
-
-      axios.get('user/perfil/').then((e) => {
-        setUser({ status: e.data.status, user: e.data.user });
-      });
-
-      // Remove socket related code
-    };
-
-    fetchData();
-  }, []);
-
+ 
   const reciveMensanje = (messages) => {
     setBadgeSocketMessage(badgeSocketMessage + 1);
     setBadgeMessage(true);
@@ -85,7 +65,7 @@ export default function FooterComponent({ navigation }) {
  
   return (
     <View style={style.contenedorFooter}>
-      <TouchableOpacity style={style.subContenedorFooter} onPress={() => navigation.navigate('inicio')}>
+      <TouchableOpacity style={style.subContenedorFooter} onPress={() => navigation.navigate('Home')}>
         <Image source={require('../../assets/img/footer/img1.png')} style={style.icon} resizeMode={'contain'} />
         <Text style={style.textFooter}>Inicio</Text>
         {badgeSocketConversacion > 0 && badgeCuenta && (
@@ -110,12 +90,10 @@ export default function FooterComponent({ navigation }) {
         </TouchableOpacity>
       )}
 
-      {user.acceso !== 'pedidos' && (
+    
         <TouchableOpacity
-          style={user.acceso == 'conductor' ? style.subContenedorFooterConductor : style.subContenedorFooter3}
-          onPress={() => {
-            userId ? pedidos() : navigation.navigate('perfil');
-          }}
+          style={style.subContenedorFooter3}
+          onPress={() => { navigation.navigate('pedido') }}          
         >
           <Image source={require('../../assets/img/footer/img3.png')} style={style.icon} resizeMode={'contain'} />
           <Text style={style.textFooter}>Pedidos</Text>
@@ -125,9 +103,16 @@ export default function FooterComponent({ navigation }) {
             </View>
           )}
         </TouchableOpacity>
-      )}
+     
 
-      <TouchableOpacity style={style.subContenedorFooter} onPress={() => navigation.navigate('perfil', { userId })}>
+      <TouchableOpacity 
+        style={style.subContenedorFooter} 
+        onPress={() => 
+          userId
+          ?navigation.navigate('Perfil')
+          :navigation.navigate('IniciarSesion')
+        }
+      >
         <Image source={require('../../assets/img/footer/img4.png')} style={style.icon} resizeMode={'contain'} />
         <Text style={style.textFooter}>Perfil</Text>
       </TouchableOpacity>

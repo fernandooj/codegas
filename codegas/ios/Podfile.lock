@@ -9,8 +9,18 @@ PODS:
     - React-Core (= 0.71.10)
     - React-jsi (= 0.71.10)
     - ReactCommon/turbomodule/core (= 0.71.10)
+  - Firebase/Auth (10.10.0):
+    - Firebase/CoreOnly
+    - FirebaseAuth (~> 10.10.0)
   - Firebase/CoreOnly (10.10.0):
     - FirebaseCore (= 10.10.0)
+  - FirebaseAppCheckInterop (10.11.0)
+  - FirebaseAuth (10.10.0):
+    - FirebaseAppCheckInterop (~> 10.0)
+    - FirebaseCore (~> 10.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.8)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GTMSessionFetcher/Core (< 4.0, >= 2.1)
   - FirebaseCore (10.10.0):
     - FirebaseCoreInternal (~> 10.0)
     - GoogleUtilities/Environment (~> 7.8)
@@ -19,11 +29,22 @@ PODS:
     - "GoogleUtilities/NSData+zlib (~> 7.8)"
   - fmt (6.2.1)
   - glog (0.3.5)
+  - GoogleUtilities/AppDelegateSwizzler (7.11.1):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
   - GoogleUtilities/Environment (7.11.1):
     - PromisesObjC (< 3.0, >= 1.2)
   - GoogleUtilities/Logger (7.11.1):
     - GoogleUtilities/Environment
+  - GoogleUtilities/Network (7.11.1):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Reachability
   - "GoogleUtilities/NSData+zlib (7.11.1)"
+  - GoogleUtilities/Reachability (7.11.1):
+    - GoogleUtilities/Logger
+  - GTMSessionFetcher/Core (3.1.1)
   - hermes-engine (0.71.10):
     - hermes-engine/Pre-built (= 0.71.10)
   - hermes-engine/Pre-built (0.71.10)
@@ -375,6 +396,10 @@ PODS:
   - RNFBApp (18.0.0):
     - Firebase/CoreOnly (= 10.10.0)
     - React-Core
+  - RNFBAuth (18.0.0):
+    - Firebase/Auth (= 10.10.0)
+    - React-Core
+    - RNFBApp
   - RNGestureHandler (2.12.0):
     - React-Core
   - RNVectorIcons (9.2.0):
@@ -420,6 +445,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
+  - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -427,10 +453,13 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Firebase
+    - FirebaseAppCheckInterop
+    - FirebaseAuth
     - FirebaseCore
     - FirebaseCoreInternal
     - fmt
     - GoogleUtilities
+    - GTMSessionFetcher
     - libevent
     - PromisesObjC
 
@@ -507,6 +536,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
+  RNFBAuth:
+    :path: "../node_modules/@react-native-firebase/auth"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNVectorIcons:
@@ -520,11 +551,14 @@ SPEC CHECKSUMS:
   FBLazyVector: ddb55c55295ea51ed98aa7e2e08add2f826309d5
   FBReactNativeSpec: 90fc1a90b4b7a171e0a7c20ea426c1bf6ce4399c
   Firebase: facd334e557a979bd03a0b58d90fd56b52b8aba0
+  FirebaseAppCheckInterop: 255b6c0292fe5da995c8b2df0c02f6a3ca7f61b4
+  FirebaseAuth: 5ddbe23ebc4e647469261f5c59cd12a04f37c8e6
   FirebaseCore: d027ff503d37edb78db98429b11f580a24a7df2a
   FirebaseCoreInternal: 9e46c82a14a3b3a25be4e1e151ce6d21536b89c0
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   GoogleUtilities: 9aa0ad5a7bc171f8bae016300bfcfa3fb8425749
+  GTMSessionFetcher: e8647203b65cee28c5f73d0f473d096653945e72
   hermes-engine: d27603b55a48402501ad1928c05411dae9cd6b85
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
@@ -558,6 +592,7 @@ SPEC CHECKSUMS:
   ReactCommon: e7a0cdbb67f8da60677db83d693dea816780a6e9
   RNCAsyncStorage: ddc4ee162bfd41b0d2c68bf2d95acd81dd7f1f93
   RNFBApp: 10aa0ab560e30186c39a9756846945cac6499ea7
+  RNFBAuth: a9817ae1e23f852b58514f9122809a5dc4c4071a
   RNGestureHandler: dec4645026e7401a0899f2846d864403478ff6a5
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   Yoga: e7ea9e590e27460d28911403b894722354d73479

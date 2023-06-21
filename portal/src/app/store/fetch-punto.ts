@@ -11,6 +11,7 @@ export const getPuntos = async (id: any) => {
             throw new Error(`Ruquest failed with status ${response.status}`)
         }
         const data = await response.json();
+
         return data;
     } catch (error) {
         console.error(error);
@@ -19,3 +20,20 @@ export const getPuntos = async (id: any) => {
 };
 
  
+export const addPuntoUser = async(date: any) =>{
+    try {
+        const response = await fetch(`${URL}/pun/punto`, {
+            method: 'POST', 
+            body: JSON.stringify(date),
+            cache: 'no-store'
+        });
+        const data = await response.json();
+        if (response.status !==200) {
+            throw new Error(`Request failed with status ${response.status}`)
+        }
+        return data
+    } catch (error){
+        console.error(error)
+        return []
+    }
+}
