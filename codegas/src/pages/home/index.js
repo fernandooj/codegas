@@ -11,14 +11,12 @@ import { style } from './style';
 
 const Home = ({ navigation }) => {
   const {login, acceso, userId} = useContext(DataContext)  
-
+ 
   const dispatch = useDispatch();
   useEffect(() => {
-    console.log(userId)
     dispatch(getVehiculos(30));
     dispatch(getPedidos(userId, 0, 10, acceso, undefined));
- 
-  }, []);
+  }, [userId, acceso]);
 
   const renderBotones = () => {
     return (
