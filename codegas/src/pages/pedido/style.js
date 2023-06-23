@@ -77,7 +77,7 @@ export const style = MediaQueryStyleSheet.create({
 	//////////////////////////////////////////////////////////////////
 	contenedorCabezera:{
 		width:"90%",
-		marginTop:Platform.OS==='android' ?0 :10,
+		marginTop:Platform.OS==='android' ?0 :15,
 	},
 	subContenedorCabezera:{
 		flexDirection:"row"
@@ -86,7 +86,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontFamily: "Comfortaa-Bold",
 		position:"relative",
 		zIndex:0,
-		width:"85%",
+		width:"93%",
 		shadowColor: 'rgba(0,0,0, .4)', // IOS
 		borderColor: "rgba(150,150,150, .5)",
 		shadowOffset: { height: 2, width: 2 }, // IOS
@@ -95,15 +95,30 @@ export const style = MediaQueryStyleSheet.create({
 		backgroundColor: '#fff',
 		paddingLeft:10,
 		marginBottom:20,
-		borderRadius:5,
-		paddingTop:9,
+		borderTopLeftRadius:7,
+		borderBottomLeftRadius:7,
+		paddingTop:2,
 		borderWidth:1,
-		height:Platform.OS==="ios" ?30 :35
+		height:Platform.OS==="ios" ?35 :35
+	},
+	buscarCliente:{
+		backgroundColor:"#002587",
+		alignItems:"center",
+		width:30,
+		height:35,
+		top:-1,
+		borderTopRightRadius:7,
+		borderBottomRightRadius:7,
+		paddingVertical: 9
+    },
+	iconSearch:{
+		color:"#ffffff",
+		fontSize:15
 	},
 	imgFiltro:{
 		width:28,
 		height:28,
-		marginLeft:10
+		marginLeft:20
 	},	
 	titulo:{
 		fontFamily: "Comfortaa-Regular",
@@ -165,7 +180,8 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection:"row",
 		paddingTop:5,
 		paddingVertical:0,
-		marginHorizontal:0
+		marginHorizontal:0,
+ 
 	},
 	iconReload:{
 		fontSize:23,
@@ -482,6 +498,8 @@ export const style = MediaQueryStyleSheet.create({
 		top:0,
 		left:(size.width/2)-5
 	},
+
+	
 
 	/////////////////////////////////////////////////////////////////
 	////////////////////        PICKER

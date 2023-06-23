@@ -66,36 +66,7 @@ const IniciarSesion = ({ navigation }) => {
     );
   };
 
-  const searchUser = () => {
-    axios.get(`users/by/asefsfxf323-dxc/${idUsuario}`)
-      .then(res => {
-        console.log(res.data)
-        if (res.data) {
-          cambioPerfil(res.data.users);
-        } else {
-          Toast.show("Tenemos un problema, intentelo mas tarde");
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        Toast.show("Tenemos un problema, intentelo mas tarde");
-      });
-  };
 
- 
-
-
-  const cambioPerfil = (user) => {
- 
-
-    AsyncStorage.setItem('userId', user._id);
-    AsyncStorage.setItem('nombre', user.nombre);
-    AsyncStorage.setItem('email', user.email);
-    AsyncStorage.setItem('acceso', user.acceso);
-    AsyncStorage.setItem('avatar', user.avatar ? user.avatar : "null");
-    AsyncStorage.setItem('tokenPhone', tokenPhone);
-    navigation.navigate("Home");
-  };
 
   // const loginExitoso = (user) => {
   //   AsyncStorage.setItem('userId', user._id);

@@ -34,7 +34,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop:45,
 		marginBottom:45
 	},
-	cabezera1:{
+	cabezera:{
 		width:size.width,
 		height:110
 	},  

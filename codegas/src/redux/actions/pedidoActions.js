@@ -46,23 +46,19 @@ const getPedidoByUser = userId => {
 
 
 const getPedidos = (idUser, start, limit, acceso, search) => {
-  console.log("{idUser, start, limit, acceso, search}")
-  console.log({idUser, start, limit, acceso, search})
-  // start = start == 0 ? 0 : (start - 1) * 10;
+  // console.log("{idUser, start, limit, acceso, search}")
+  // console.log({idUser, start, limit, acceso, search})
   return async (dispatch) => {
     try {
       const response = await axios.get(`/ped/pedido/todos/app/${idUser}/${limit}/${start}/${acceso}/${search}`);
-      console.log(response)
       if(response.status!==200){
         throw new Error(`Ruquest failed with status ${response.status}`)
       }
-      console.log("response.data.pedido")
       dispatch({
         type: GET_PEDIDOS,
         pedidos: response.data.pedido,
       });
     } catch (err) {
-      console.log(err)
       dispatch({
         type: GET_PEDIDOS,
         pedidos: [] ,

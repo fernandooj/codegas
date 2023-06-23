@@ -1,8 +1,8 @@
 import React, {Component} from 'react'
 import {View, Text, Image, TouchableOpacity, Modal, Alert} from 'react-native'
 import ImagePicker  from 'react-native-image-crop-picker';
-import Icon         from 'react-native-fa-icons' 
-import Lightbox 	from 'react-native-lightbox';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Lightbox from 'react-native-lightbox-v2';
 import {style}      from './style'
  
 export default class tomarPhoto extends Component{
@@ -12,21 +12,21 @@ export default class tomarPhoto extends Component{
             imagenes:props.source
         }
     }
-    subirImagen(){
+    async subirImagen(){
         let {imagenes} = this.state
         const options = {
-            compressImageMaxWidth:800,
-            compressImageMaxHeight:800,
-            width: 800,
-            height: 800,
+            compressImageMaxWidth:900,
+            compressImageMaxHeight:900,
+            width: 900,
+            height: 900,
+            includeBase64: true,
+            mediaType: 'photo',
             forgeJpg: true,
-            // cropping: true,
-            compressImageQuality:0.5
         };
        
         ImagePicker.openPicker(options).then(response => {
-		    if (response) {
-				let source = { uri: response.path };
+            if (response) {
+                let base64 = `data:${response.mime};base64,${response.data}`
 			    let imagen = {
 				    uri:  response.path,
 				    type: response.mime ?response.mime :'image/jpeg',
@@ -36,7 +36,7 @@ export default class tomarPhoto extends Component{
                 
                 imagenes.push(imagen)
 			    this.setState({ imagenes, showModal:false, isAndroidShareOpen:false });
-                this.props.imagenes(imagenes)
+                this.props.imagenes(base64)
 			}
 		});
     }
@@ -44,17 +44,17 @@ export default class tomarPhoto extends Component{
     tomarFoto(){
         let {imagenes} = this.state
         const options = {
-            compressImageMaxWidth:800,
-            compressImageMaxHeight:800,
-            width: 800,
-            height: 800,
-            // cropping: true,
+            compressImageMaxWidth:900,
+            compressImageMaxHeight:900,
+            width: 900,
+            height: 900,
+            includeBase64: true,
+            mediaType: 'photo',
             forgeJpg: true,
         };
         ImagePicker.openCamera(options).then(response => {
-            
             if (response) {
-				let source = { uri: response.path };
+                let base64 = `data:${response.mime};base64,${response.data}`
 			    let imagen = {
 				    uri:  response.path,
 				    type: response.mime ?response.mime :'image/jpeg',
@@ -63,7 +63,7 @@ export default class tomarPhoto extends Component{
 				};
                 imagenes.push(imagen)
 			    this.setState({ imagenes, showModal:false, isAndroidShareOpen:false });
-                this.props.imagenes(imagenes)
+                this.props.imagenes(base64)
 			}
 		 });
 		
@@ -90,7 +90,7 @@ export default class tomarPhoto extends Component{
                     renderContent={() => (
                         <Image 
                             source={{uri: e.uri }}
-                            style={{ width: "100%", height:600, backgrundColor:"white"}}
+                            style={{ width: "100%", height:600}}
                             resizeMode="contain"
                         />
                     )}

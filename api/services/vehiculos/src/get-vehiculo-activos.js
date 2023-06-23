@@ -8,13 +8,13 @@ const DatabaseError = require('../../../lib/errors/database-error');
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
- const GET_CAR_BY_USER = 'SELECT * FROM get_data_carro_user($1)';
+ const GET_CAR_S = 'SELECT * FROM get_data_carro_user($1)';
 
 module.exports.main = async (event) => {
   const _id = null  
   try {
     const client = await poolConection.connect();
-    const  { rows: carro } = await client.query(GET_CAR_BY_USER, [_id])
+    const  { rows: carro } = await client.query(GET_CAR_S, [_id])
     
     return {
       status: true,

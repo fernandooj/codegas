@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {
   ScrollView,
   View,
@@ -6,21 +6,51 @@ import {
   Image,
   Text,
   TextInput,
+  ImageBackground
 } from 'react-native';
 import {style} from './style';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { DataContext } from '../../context/context';
+import Footer                   from '../components/footer'
 
-const RenderPerfil: FC = ({
+const Perfil = ({
   navigation,
-  userInfo,
-  cerrarSesion,
-  searchUser,
-}: any) => {
-  const [user, setUser] = useState(userInfo);
-  const {nombre, avatar, email, err, acceso} = user;
+}) => {
+ 
+  const {nombre, avatar, email, userInfo, acceso, cerrarSesion} = useContext(DataContext)  
 
-  return (
-    <ScrollView style={style.containerRegistro}>
+  const searchUser = () => {
+    axios.get(`users/by/asefsfxf323-dxc/${idUsuario}`)
+      .then(res => {
+        console.log(res.data)
+        if (res.data) {
+          cambioPerfil(res.data.users);
+        } else {
+          Toast.show("Tenemos un problema, intentelo mas tarde");
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        Toast.show("Tenemos un problema, intentelo mas tarde");
+      });
+  };
+
+ 
+
+
+  const cambioPerfil = (user) => {
+    AsyncStorage.setItem('userId', user._id);
+    AsyncStorage.setItem('nombre', user.nombre);
+    AsyncStorage.setItem('email', user.email);
+    AsyncStorage.setItem('acceso', user.acceso);
+    AsyncStorage.setItem('avatar', user.avatar ? user.avatar : "null");
+    AsyncStorage.setItem('tokenPhone', tokenPhone);
+    navigation.navigate("Home");
+  };
+  const RenderPerfil = () => {
+    return(
+
+      <ScrollView style={style.containerRegistro}>
       <View style={style.perfilContenedor}>
         <View style={style.columna4}>
           {avatar === 'null' ? (
@@ -221,10 +251,22 @@ const RenderPerfil: FC = ({
         <TouchableOpacity style={style.btnLista}>
           <Text style={[style.txtLista, {fontSize: 11}]}>Ver 11.5.3-1</Text>
         </TouchableOpacity>
-        {err && <Text>{err}</Text>}
+        {/* {err && <Text>{err}</Text>} */}
       </View>
     </ScrollView>
-  );
+    )
+  }
+  return (
+    <View style={style.container} >
+      <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera} />
+      <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
+        {RenderPerfil()}
+        <View style={style.footer}>
+          <Footer navigation={navigation} />
+        </View>
+      </ImageBackground>
+    </View>
+  )
 };
 
-export default RenderPerfil;
+export default Perfil;

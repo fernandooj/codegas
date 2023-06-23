@@ -2,7 +2,7 @@ import {StyleSheet, Dimensions, Platform} from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
  
 let size = Dimensions.get('window').width;
- 
+
 export const style = MediaQueryStyleSheet.create({
 	container:{
 		flex:1,

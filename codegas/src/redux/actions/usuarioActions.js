@@ -41,15 +41,15 @@ const getUsuario = userId => {
   };
 };
 
-const getUsuarios = data => {
+const getUsuarios = (limit, start, acceso, search) => {
   return dispatch => {
     return axios
-      .get(`users/`)
+      .get(`users/acceso/${limit}/${start}/${acceso}/${search}`)
       .then(res => {
         console.log(res.data)
         dispatch({
           type: GET_USUARIOS,
-          usuarios: res.data.usuarios
+          usuarios: res.data.user
         });
       })
       .catch(err => {

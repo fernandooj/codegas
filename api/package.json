@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.1403.0",
     "busboy": "^1.6.0",
     "jimp": "^0.22.7",
     "multer": "^1.4.5-lts.1",

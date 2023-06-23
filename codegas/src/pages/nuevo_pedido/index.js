@@ -505,8 +505,6 @@ class Nuevo_pedido extends Component{
    
         const cantidadKl     = forma=="cantidad" ?cantidad :0
         const cantidadPrecio = forma=="monto" 	?this.campoMonto.getRawValue() :0
-        console.log(dia1)
-        console.log(dia2)
         
         const data = {
             forma,
