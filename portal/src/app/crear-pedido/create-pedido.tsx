@@ -55,7 +55,7 @@ export default function CrearPedido({user, puntos}: any) {
       fechaSolicitud: moment(date).format('YYYY-MM-DD'),
       usuarioId,
       puntoId: Number(data.get('puntoId')),
-      observaciones: data.get('observaciones'),
+      observacion: data.get('observaciones'),
       usuarioCrea, 
       frecuencia: data.get('frecuencia'),
       dia1: data.get('dia1'),

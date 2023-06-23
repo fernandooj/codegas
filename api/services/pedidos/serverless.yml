@@ -18,6 +18,17 @@ getPedidos:
       - services/pedidos/src/get-pedidos.js
       - lib/errors/database-error.js
 
+
+getPedidosToday:
+  name: ${self:custom.base}-get-pedidos-today
+  handler: services/pedidos/src/get-pedidos-today.main
+  events:
+    - httpApi: 'GET /ped/pedido/today/{usuarioId}/{puntoId}'
+  package:
+    include:
+      - services/pedidos/src/get-pedidos-today.js
+      - lib/errors/database-error.js
+
 getPedidoById:
   name: ${self:custom.base}-get-pedido-by-id
   handler: services/pedidos/src/get-pedido-by-id.main

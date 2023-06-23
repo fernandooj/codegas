@@ -8,6 +8,7 @@ import {createStackNavigator} from "react-navigation-stack"
 import homeComponent   	   	 	from '../pages/home';
 import pedidoComponent	 	 	from '../pages/pedido/pedido';
 import IniciarSesion   	 	from '../pages/iniciar_sesion';
+import nuevoPedidoComponent	 	from '../pages/nuevo_pedido/';
 // import editarPedidoComponent	from '../pages/pedido/editar-pedido';
 // import verPerfilComponent	 	from '../pages/ver_perfil/verPerfil';
 // import confirmarComponent 	 	from '../pages/perfil/confirmarCode';
@@ -16,7 +17,6 @@ import IniciarSesion   	 	from '../pages/iniciar_sesion';
 // import mensajeComponent	 	 	from '../pages/mensaje/mensaje';
 // import vehiculoComponent	 	from '../pages/vehiculo/vehiculo';
 // import zonaComponent	 	 	from '../pages/zona/zona';
-// import nuevoPedidoComponent	 	from '../pages/nuevo_pedido/nuevo_pedido';
 // import recuperarComponent	 	from '../pages/recuperar_pass/recuperar_pass';
 // import cambiarComponent	 		from '../pages/recuperar_pass/cambiar_pass';
 // import usuariosComponent	 	from '../pages/usuarios/usuarios';
@@ -43,6 +43,7 @@ const AppNavigator = createStackNavigator({
 	Home  		 	 	: {screen: homeComponent},
 	pedido       		: {screen: pedidoComponent},
 	IniciarSesion       : {screen: IniciarSesion},
+	nuevo_pedido 		: {screen: nuevoPedidoComponent},
 	// inicio 		 	 	: {screen: homeComponent},
 	// verPerfil    		: {screen: verPerfilComponent},
 	// confirmar    		: {screen: confirmarComponent},
@@ -52,7 +53,6 @@ const AppNavigator = createStackNavigator({
 	// editarPedido 		: {screen: editarPedidoComponent},
 	// vehiculo     		: {screen: vehiculoComponent},
 	// zona		 		: {screen: zonaComponent},
-	// nuevo_pedido 		: {screen: nuevoPedidoComponent},
 	// conversacion 		: {screen: conversacionComponent},
 	// recuperar 	 		: {screen: recuperarComponent},
 	// usuarios 	 	 	: {screen: usuariosComponent},

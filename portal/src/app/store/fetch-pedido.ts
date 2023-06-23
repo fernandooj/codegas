@@ -47,15 +47,15 @@ export const UpdateStatePedido = async(id: any, state: any) =>{
 }
 
 
-export const createPedido = async(date: any) =>{
+export const createPedido = async(data: any) =>{
     try {
         const response = await fetch(`${URL}/ped/pedido`, {
             method: 'POST', 
-            body: JSON.stringify(date),
+            body: JSON.stringify(data),
             cache: 'no-store'
         });
-        const data = await response.json();
-        return data
+        const res = await response.json();
+        return res
     } catch (error){
         console.error(error)
     }

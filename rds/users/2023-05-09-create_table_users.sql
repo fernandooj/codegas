@@ -20,7 +20,7 @@ create table if not exists users(
     codigoRegistro character varying,
     valorUnitario INT,
     editado BOOLEAN DEFAULT FALSE,
-    activo  BOOLEAN DEFAULT FALSE,
+    activo  BOOLEAN DEFAULT TRUE,
     eliminado BOOLEAN DEFAULT FALSE,
     idPadre INTEGER REFERENCES users(_id),
     CONSTRAINT valid_padre_id CHECK ((idPadre IS NULL) OR (_id <> idPadre))

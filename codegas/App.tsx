@@ -3,7 +3,6 @@ import {Provider} from 'react-redux';
 import configStore from './src/redux/store.js';
 import MainRoutes from './src/routes/MainRoutes';
 import axios from 'axios';
-import {ToastProvider} from 'react-native-toast-notifications';
 import {DataProvider} from './src/context/context';
 const store = configStore();
 
@@ -17,9 +16,7 @@ function App(): JSX.Element {
   return (
     <DataProvider>
       <Provider store={store}>
-        <ToastProvider>
-          <MainRoutes />
-        </ToastProvider>
+        <MainRoutes />
       </Provider>
     </DataProvider>
   );

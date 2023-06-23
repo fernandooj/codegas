@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, Keyboard} from 'react-native'
-import { useToast } from "react-native-toast-notifications";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment 			   from 'moment'
 import axios               from 'axios';
@@ -12,13 +11,12 @@ import ImageProgress 	   from 'react-native-image-progress';
 import Footer              from '../components/footer'
 import {getPedidos, getZonasPedidos} from '../../redux/actions/pedidoActions' 
 import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
-// import {sendRemoteNotification} from '../push/envioNotificacion';
-// import TomarFoto           from "../components/tomarFoto";
+ 
 import RNPickerSelect      from 'react-native-picker-select';
-// import SocketIOClient      from 'socket.io-client';
+ 
 import {DataContext} from "../../context/context"
 import {style}             from './style'
-import {URL} from "../../../App"
+ 
 LocaleConfig.locales['es'] = {
     monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
     monthNamesShort: ['Ener.','Febr.','Marzo.','Abril.','Mayo.','Jun.','Jul.','Agos','Sept.','Oct.','Nov.','Dic.'],
@@ -143,9 +141,7 @@ class Pedido extends Component{
     renderPedidos(){
         const {acceso, terminoBuscador, pedidos, inicio, final, limit} = this.state
  
-        console.log("pedidos")
-        console.log(pedidos)
-        console.log(limit)
+  
         return pedidos.map((e, key)=>{
             return (
                 <TouchableOpacity 
@@ -1045,7 +1041,7 @@ class Pedido extends Component{
         </View>)
     }
     onScroll(event) {
-		  const {final, limit} =  this.state
+	    const {final, limit} =  this.state
       const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
       const reachedEnd = contentOffset.y + layoutMeasurement.height >= contentSize.height;
       

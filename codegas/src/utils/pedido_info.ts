@@ -1,33 +1,36 @@
 export const forma = [
-  {label: "Monto $", value: "monto" },
-  {label: "Cantidad KG", value: "cantidad" },
-  {label: "Lleno Total", value: "lleno" },
-]
+  {label: 'Monto $', key: 'monto'},
+  {label: 'Cantidad KG', key: 'cantidad'},
+  {label: 'Lleno Total', key: 'lleno'},
+];
 
-export const frecuencia = [
-  {label: "Semanal", value: "semanal" },
-  {label: "Quincenal", value: "quincenal" },
-  {label: "Mensual", value: "mensual" },
-]
+export const frecuencias = [
+  {label: 'Semanal', key: 'semanal'},
+  {label: 'Quincenal', key: 'quincenal'},
+  {label: 'Mensual', key: 'mensual'},
+];
 
-export const mes: number[] = [];
-for(let i=1; i<=31; i++) mes.push(i)
-
+export const diasN: number[] = [];
+for (let i = 1; i <= 31; i++) {
+  diasN.push(i);
+}
 
 export const dia1: number[] = [];
-for(let i=1; i<=15; i++) dia1.push(i)
-
+for (let i = 1; i <= 15; i++) {
+  dia1.push(i);
+}
 
 export const dia2: number[] = [];
-for(let i=16; i<=31; i++) dia2.push(i)
+for (let i = 16; i <= 31; i++) {
+  dia2.push(i);
+}
 
-
-export const diaSemana = [
-  {label: "Lunes", value: 1 },
-  {label: "Martes", value: 2 },
-  {label: "Miercoles", value: 3 },
-  {label: "Jueves", value: 4 },
-  {label: "Viernes", value: 5 },
-  {label: "Sabado", value: 6 },
-  {label: "Domingo", value: 7 }
-]
+export const dias = [
+  {label: 'Lunes', key: 1},
+  {label: 'Martes', key: 2},
+  {label: 'Miercoles', key: 3},
+  {label: 'Jueves', key: 4},
+  {label: 'Viernes', key: 5},
+  {label: 'Sabado', key: 6},
+  {label: 'Domingo', key: 7},
+];

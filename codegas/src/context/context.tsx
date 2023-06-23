@@ -6,15 +6,23 @@ export const DataContext = createContext({});
 const DataProvider = ({children}: any) => {
   const [userInfo, setUser] = useState();
   const [userId, setUserId] = useState();
+  const [_nombre, setNombre] = useState();
   const [_acceso, setAcceso] = useState();
+  const [_email, setEmail] = useState();
   const [initializing, setInitializing] = useState(true);
 
+  const getUserInfo = async (uid: any) => {
+    const {_id, acceso, nombre, email: newEmail} = await getUserByUid(uid);
+
+    setUserId(_id);
+    setAcceso(acceso);
+    setNombre(nombre);
+    setEmail(newEmail);
+  };
   const onAuthStateChanged = async (user: any) => {
     setUser(user);
     if (user) {
-      const {_id, acceso} = await getUserByUid(user.uid);
-      setUserId(_id);
-      setAcceso(acceso);
+      getUserInfo(user.uid);
     }
     if (initializing) {
       setInitializing(false);
@@ -30,12 +38,12 @@ const DataProvider = ({children}: any) => {
     user: userInfo,
     userId,
     acceso: _acceso,
+    nombre: _nombre,
+    email: _email,
     login: async ({email, password}: any) => {
       try {
         const {user} = await auth().signInWithEmailAndPassword(email, password);
-        const {_id, acceso} = await getUserByUid(user.uid);
-        setUserId(_id);
-        setAcceso(acceso);
+        getUserInfo(user.uid);
         return true;
       } catch (error) {
         console.error(error);
