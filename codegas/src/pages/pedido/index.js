@@ -269,7 +269,7 @@ class Pedido extends Component{
 	}
     modalFechaEntrega(){
         let {modalFechaEntrega, fechaEntrega} = this.state
-        fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
+        // fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
         let diaActual =  moment().format('YYYY-MM-DD')
         return(
              
@@ -282,7 +282,7 @@ class Pedido extends Component{
                     <Calendar
                         style={style.calendar}
                         current={fechaEntrega ?fechaEntrega :diaActual}
-                        //minDate={diaActual}
+                        minDate={diaActual}
                         firstDay={1}
                         onDayPress={(day) => {console.log('selected day', day); this.setState({fechaEntrega:day.dateString})}}
                         markedDates={{[fechaEntrega]: {selected: true,  marked: true}}}
