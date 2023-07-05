@@ -58,11 +58,21 @@ changeValorUnitario:
       - services/users/src/change-valor-unitario.js
       - lib/errors/database-error.js
 
+changeValorUnitarioSelected:
+  name: ${self:custom.base}-change-valor-unitario-selected
+  handler: services/users/src/change-valor-unitario-selected.main
+  events:
+    - httpApi: 'PUT /users/cambiarValorSelected/'
+  package:
+    include:
+      - services/users/src/change-valor-unitario-selected.js
+      - lib/errors/database-error.js
+
 changeValorUnitarioAll:
   name: ${self:custom.base}-change-valor-unitario-todos
   handler: services/users/src/change-valor-unitario-todos.main
   events:
-    - httpApi: 'PUT /users/cambiarValorTodos'
+    - httpApi: 'PUT /users/cambiarValorTodos/'
   package:
     include:
       - services/users/src/change-valor-unitario-todos.js

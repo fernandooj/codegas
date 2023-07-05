@@ -2,15 +2,14 @@ import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, Keyboard} from 'react-native'
 import moment 			   from 'moment'
 import axios               from 'axios';
-import ModalSelector            from 'react-native-modal-selector'
+import RNPickerSelect      from 'react-native-picker-select';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Calendar, LocaleConfig}     from 'react-native-calendars';
 import { connect }         from "react-redux";
 import ImageProgress 	   from 'react-native-image-progress';
 import Footer              from '../components/footer'
-import {getPedidos, getZonasPedidos} from '../../redux/actions/pedidoActions' 
-import {getVehiculos}      from '../../redux/actions/vehiculoActions' 
+import {getPedidos} from '../../redux/actions/pedidoActions' 
  
 import TomarFoto           from "../components/tomarFoto";
 import {DataContext} from "../../context/context"
@@ -68,9 +67,6 @@ class Pedido extends Component{
 	}
 	 
     componentWillMount = async () =>{
-        this.props.getZonasPedidos(this.state.fechaEntregaFiltro)
-        this.props.getVehiculos()
-        
         const value = this.context;
         const {acceso, userId: idUsuario} = value
         this.setState({idUsuario, acceso})
@@ -82,7 +78,7 @@ class Pedido extends Component{
     }
     
     componentWillReceiveProps(props){
-        this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos, zonaPedidos:props.zonaPedidos})   
+        this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})   
     }    
     componentWillUnmount () {
         this.keyboardDidShowListener.remove();
@@ -559,30 +555,30 @@ class Pedido extends Component{
                                             style={style.inputTerminarPedido}
                                         />
                                         
-                                        <View>
-                                            {/* <RNPickerSelect
-                                                placeholder={{
-                                                    label: 'Forma de pago',
-                                                    value: null,
-                                                    color: '#00218b',
-                                                }}
-                                                items={[
-                                                    {label: 'Contado', value: 'Contado'},
-                                                    {label: 'Credito', value: 'Credito'},
-                                                    
-                                                ]}
-                                                onValueChange={forma_pagoTexto => {this.setState({ forma_pagoTexto })}}
-                                                mode="dropdown"
-                                                style={{
-                                                    // ...style,
-                                                    placeholder: {
-                                                    color: 'rgba(0,0,0,.4)',
-                                                    fontSize: 14,
-                                                    },
-                                                }}
-                                                value={forma_pagoTexto}
-                                            />   */}
-                                            <ModalSelector
+                                        <View style={style.contenedorSelect}>
+                                          <RNPickerSelect
+                                            placeholder={{
+                                                label: 'Forma de pago',
+                                                value: null,
+                                                color: '#00218b',
+                                            }}
+                                            items={[
+                                                {label: 'Contado', value: 'Contado'},
+                                                {label: 'Credito', value: 'Credito'},
+                                                
+                                            ]}
+                                            onValueChange={forma_pagoTexto => {this.setState({ forma_pagoTexto })}}
+                                            mode="dropdown"
+                                            style={{
+                                                // ...style,
+                                                placeholder: {
+                                                color: 'rgba(0,0,0,.4)',
+                                                fontSize: 14,
+                                                },
+                                            }}
+                                            value={forma_pagoTexto}
+                                          />  
+                                            {/* <ModalSelector
                                               style={style.btnFrecuencia}
                                               data={[
                                                 {label: 'Contado', key: 'Contado'},
@@ -599,7 +595,7 @@ class Pedido extends Component{
                                                 fontSize: 14,
                                                 },
                                               }}
-                                            />
+                                            /> */}
                                         </View>
                                                 
                                         <TextInput
@@ -813,8 +809,6 @@ class Pedido extends Component{
         this.setState({pedidos, textEstado:filtro})
     }
     actualizarFechaEntrega(filtro){
-        this.props.getZonasPedidos(filtro) 
-        this.props.getPedidos(filtro) 
         this.setState({fechaEntregaFiltro:filtro})
     }
     actualizaVehiculos(placa){
@@ -832,20 +826,11 @@ class Pedido extends Component{
         this.setState({pedidos, modalCarrosFiltro:false, placa})
     }
     actualizarFechaSolicitud(filtro){ 
-        axios.get(`zon/zona/pedidoSolicitud/${filtro}`)
-        .then(res => {
-            this.setState({fechaSolicitudFiltro:filtro, zonaPedidos:res.data.zona})
-        })
-        let {pedidos, pedidosFiltro, acceso} = this.state
-        pedidos = pedidosFiltro.filter(e=>{
-          return e.fechaSolicitud==filtro
-        })
-        this.setState({pedidos})  
+        
     }
     limpiar(){
         this.setState({pedidos:this.state.pedidosFiltro, textEstado:"todos", modalCarrosFiltro:false, placa:null})
         this.props.getPedidos() 
-        this.props.getZonasPedidos(moment().format("YYYY-MM-DD")) 
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1353,13 +1338,8 @@ class Pedido extends Component{
 }
 
 const mapState = state => {
-    let vehiculos = state.vehiculo.vehiculos.filter(e=>{
-        return e.conductor!=null
-    })
 	return {
-        pedidos: state.pedido.pedidos,
-        vehiculos:vehiculos,
-        zonaPedidos:state.pedido.zonaPedidos,
+    pedidos: state.pedido.pedidos,
 	};
 };
   
@@ -1368,12 +1348,7 @@ const mapDispatch = dispatch => {
         getPedidos: (idUser, start, limit, acceso, search) => {
             dispatch(getPedidos(idUser, start, limit, acceso, search));
         },
-        getZonasPedidos: (fechaEntrega) => {
-            dispatch(getZonasPedidos(fechaEntrega));
-        },
-        getVehiculos: () => {
-            dispatch(getVehiculos());
-        },
+      
     };
 };
   

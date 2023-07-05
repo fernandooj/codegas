@@ -1,10 +1,10 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
 
-const CHANGE_VALOR_UNITARIO_TODOS = 'SELECT change_valor_unitario_todos($1, $2)';
+const CHANGE_VALOR_UNITARIO_TODOS = 'SELECT change_valor_unitario_selected($1::jsonb)';
 
 /**
- * change valor unitario todos in the database.
+ * Deactivates a zona in the database.
  *
  * @param {object} zona - Object containing the data of the zona to deactivate.
  * @param {number} zona.id_zona - Identifier of the zona in the database.
@@ -16,14 +16,13 @@ module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
 
   const {
-    valorUnitario,
-    type
+    seleccionados
   } = body;
 
   const client = await poolConection.connect();
 
   try {
-    await client.query(CHANGE_VALOR_UNITARIO_TODOS, [valorUnitario, type])
+    await client.query(CHANGE_VALOR_UNITARIO_TODOS, [JSON.stringify(seleccionados)])
     return {
       status: true
       }

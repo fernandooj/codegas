@@ -1,24 +1,25 @@
--- CREATE OR REPLACE FUNCTION change_valor_unitario_todos(p_datos jsonb)
--- RETURNS void
--- LANGUAGE plpgsql
--- AS $$
--- BEGIN
---     -- Recorre el array de datos
---     FOR i IN 0 .. jsonb_array_length(p_datos) - 1 LOOP
---         -- Obtiene el id y valor de cada elemento del array
---         DECLARE
---             v_id INT := (p_datos->i->>'_id')::INT;
---             v_valor INT := (p_datos->i->>'valorUnitario')::INT;
---         BEGIN
---             -- Actualiza el usuario con el id correspondiente
---             UPDATE users
---             SET valorUnitario = v_valor
---             WHERE _id = v_id;
---         END;
---     END LOOP;
--- END;
--- $$;
+CREATE OR REPLACE FUNCTION change_valor_unitario_todos(
+    _valorUnitario INT, 
+    _type VARCHAR(10)
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF _type = 'adicion' THEN
+    UPDATE users
+    SET valorUnitario = valorUnitario + _valorUnitario;
+  ELSIF _type = 'porcentaje' THEN
+    UPDATE users
+    SET valorUnitario = valorUnitario +((valorUnitario*_valorUnitario)/100);
+  ELSE
+    UPDATE users
+    SET valorUnitario = _valorUnitario;
+  END IF;
+END;
+$$;
 
 
-SELECT change_valor_unitario_todos('[{"_id": 20, "valorUnitario": 1500}, {"_id": 27, "valorUnitario": 1800}]'::jsonb);
+-- SELECT change_valor_unitario_todos('porcentaje', 15);
 
+-- drop function change_valor_unitario_todos(INT, VARCHAR)
