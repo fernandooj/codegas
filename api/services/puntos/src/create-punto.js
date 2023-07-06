@@ -20,13 +20,13 @@ const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7)';
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
   const {
-    observacion, direccion, capacidad, punto, idZona, idCliente, idPadre
+    direccion, capacidad, observacion, punto, idZona, idCliente, idPadre
   } = body;
   const client = await poolConection.connect();
 
   try {
     
-    await client.query(SAVE_POINT, [observacion, direccion, capacidad, punto, idZona, idCliente, idPadre])
+    await client.query(SAVE_POINT, [direccion, capacidad, observacion, punto, idZona, idCliente, idPadre])
     return {
         status: true
       }
