@@ -160,7 +160,7 @@ module.exports.main = async (event) => {
       statusCode: 200,
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="Pedidos-${type}-${nombre}.csv"`
+        'Content-Disposition': `attachment; filename="Pedidos-${fecha}-${type}-${nombre}.csv"`
       },
       body: csv
     };

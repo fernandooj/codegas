@@ -116,7 +116,7 @@ module.exports.main = async (event) => {
       statusCode: 200,
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="Usuarios-${acceso}-${nombre}.csv"`
+        'Content-Disposition': `attachment; filename="Usuarios-${fecha}-${acceso}-${nombre}.csv"`
       },
       body: csv
     };

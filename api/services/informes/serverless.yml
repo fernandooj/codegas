@@ -17,3 +17,23 @@ getPedidos:
     include:
       - services/informes/src/get-pedidos.js
       - lib/errors/database-error.js
+
+getVehiculos:
+  name: ${self:custom.base}-get-vehiculos
+  handler: services/informes/src/get-vehiculos.main
+  events:
+    - httpApi: 'GET /informe/vehiculos/{start}/{end}/{nombre}'
+  package:
+    include:
+      - services/informes/src/get-vehiculos.js
+      - lib/errors/database-error.js
+
+getTanques:
+  name: ${self:custom.base}-get-tanques
+  handler: services/informes/src/get-tanques.main
+  events:
+    - httpApi: 'GET /informe/tanques/{start}/{end}/{nombre}'
+  package:
+    include:
+      - services/informes/src/get-tanques.js
+      - lib/errors/database-error.js
