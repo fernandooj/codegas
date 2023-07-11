@@ -16,7 +16,8 @@ BEGIN
     FROM puntos p
     INNER JOIN zonas ON p.idZona = zonas._id
     INNER JOIN users ON users._id = p.idCliente
-    WHERE users._id = idUser;
+    WHERE users._id = idUser
+    and p.activo=true;
 END;
 $$ LANGUAGE plpgsql;
 

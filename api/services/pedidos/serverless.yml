@@ -43,7 +43,7 @@ asignarFechaPedido:
   name: ${self:custom.base}-asignar-fecha-pedido
   handler: services/pedidos/src/asignar-fecha-pedido.main
   events:
-    - httpApi: 'GET /ped/pedido/asignarFechaEntrega/{pedidoId}/{fechaEntrega}'
+    - httpApi: 'POST /ped/pedido/asignarFechaEntrega'
   package:
     include:
       - services/pedidos/src/asignar-fecha-pedido.js
@@ -63,7 +63,7 @@ changeStatePedido:
   name: ${self:custom.base}-cambiar-estado-pedido
   handler: services/pedidos/src/cambiar-estado-pedido.main
   events:
-    - httpApi: 'GET /ped/pedido/cambiarEstado/{_id}/{estado}'
+    - httpApi: 'POST /ped/pedido/cambiarEstado'
   package:
     include:
       - services/pedidos/src/cambiar-estado-pedido.js

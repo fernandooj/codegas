@@ -10,6 +10,7 @@ RETURNS TABLE (
   codt varchar(45),
   razon_social varchar(45),
   capacidad varchar(45),
+  direccion varchar(45),
   activo boolean, 
   idCliente INT, 
   nombre varchar(45), 
@@ -29,7 +30,7 @@ BEGIN
         FROM puntos as p
         JOIN users ON p.idCliente = users._id
         JOIN zonas ON p.idZona = zonas._id
-        WHERE (CONCAT(p._id, users.codt, users.razon_social, p.activo, users.codt, users.razon_social, users.nombre, users.cedula, p.direccion, p.capacidad, zonas.nombre) ILIKE '%' || _busqueda || '%');
+        WHERE (CONCAT(p._id, users.codt, users.razon_social, p.activo, users.razon_social, users.nombre, users.cedula, p.direccion, p.capacidad, p.direccion, zonas.nombre) ILIKE '%' || _busqueda || '%');
 
         RETURN QUERY 
         SELECT
@@ -37,6 +38,7 @@ BEGIN
             users.codt AS "codt",
             users.razon_social AS "razon_social",
             p.capacidad AS "capacidad",
+            p.direccion AS "direccion",
             p.activo AS "activo",
             p.idCliente AS "idCliente",
             users.nombre AS "nombre",
@@ -50,7 +52,8 @@ BEGIN
         FROM puntos as p
         JOIN users ON p.idCliente = users._id
         JOIN zonas ON p.idZona = zonas._id
-        WHERE (CONCAT(p._id, users.codt, users.razon_social, p.activo, users.codt, users.razon_social, users.nombre, users.cedula, p.direccion, p.capacidad, zonas.nombre) ILIKE '%' || _busqueda || '%')
+        WHERE (CONCAT(p._id, users.codt, users.razon_social, users.nombre, users.cedula, p.direccion, p.capacidad, zonas.nombre) ILIKE '%' || _busqueda || '%')
+        order by p._id DESC
         LIMIT _limit OFFSET _start;
     ELSE
         SELECT COUNT(*) INTO _total FROM puntos as p
@@ -64,6 +67,7 @@ BEGIN
             users.codt AS "codt",
             users.razon_social AS "razon_social",
             p.capacidad AS "capacidad",
+            p.direccion AS "direccion",
             p.activo AS "activo",
             p.idCliente AS "idCliente",
             users.nombre AS "nombre",
@@ -78,6 +82,7 @@ BEGIN
         JOIN users ON p.idCliente = users._id
         JOIN zonas ON p.idZona = zonas._id
         WHERE zonas._id = _idZona
+        order by p._id DESC
         LIMIT _limit OFFSET _start;
     END IF;
 

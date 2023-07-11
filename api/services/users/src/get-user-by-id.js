@@ -4,7 +4,7 @@ const DatabaseError = require('../../../lib/errors/database-error');
 /** deactivate zona */
 
 /**
- * Deactivates a zona in the database.
+ * GET uiser bi id
  *
  * @param {object} zona - Object containing the data of the zona to deactivate.
  * @param {number} zona.id_zona - Identifier of the zona in the database.
@@ -13,19 +13,19 @@ const DatabaseError = require('../../../lib/errors/database-error');
  */
 
 module.exports.main = async (event) => {
-    const {
-        _id,
-        valorunitario
-      } = event.pathParameters;
+  const {
+    _id
+  } = event.pathParameters;
   
-  const CHANGE_VALOR_UNITARIO = 'UPDATE users SET valorunitario = $1 WHERE _id = $2';
+  const GET_USER_BY_ID = 'SELECT * FROM users WHERE _id = $1';
   
   try {
     const client = await poolConection.connect();
-    await client.query(CHANGE_VALOR_UNITARIO, [valorunitario, _id])
+    const {rows} =  await client.query(GET_USER_BY_ID, [_id])
     return {
-      status: true
-      }
+      status: true,
+      user: rows[0]
+    }
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);

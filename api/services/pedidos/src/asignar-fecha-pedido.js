@@ -1,10 +1,10 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
 
-/** deactivate zona */
+const CHANGE_ORDER = 'SELECT change_multiple_date_entrega($1::jsonb)';
 
 /**
- * Deactivates a zona in the database.
+ * add date order in the database.
  *
  * @param {object} zona - Object containing the data of the zona to deactivate.
  * @param {number} zona.id_zona - Identifier of the zona in the database.
@@ -14,16 +14,14 @@ const DatabaseError = require('../../../lib/errors/database-error');
 
 module.exports.main = async (event) => {
 
+  const body = JSON.parse(event.body);
   const {
-    pedidoId,
-    fechaEntrega
-  } = event.pathParameters;
-  
-  const CHANGE_STATE = 'UPDATE pedidos SET fechaEntrega = $2 WHERE _id = $1';
-  const client = await poolConection.connect();
-
+    seleccionados
+  } = body;
+  console.log(seleccionados)
   try {
-    await client.query(CHANGE_STATE, [pedidoId, fechaEntrega])
+    const client = await poolConection.connect();
+    await client.query(CHANGE_ORDER, [JSON.stringify(seleccionados)])
     return {
       status: true
       }

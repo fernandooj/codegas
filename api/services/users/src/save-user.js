@@ -1,16 +1,8 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
-// const AWS = require('aws-sdk');
-// const ses = new AWS.SES();
-const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'app@codegascolombia.com',
-        pass: 'C0D3G@S-2020-4PP'
-    }
-});
-
+const AWS = require('aws-sdk');
+const ses = new AWS.SES();
+ 
 
 
 
@@ -48,22 +40,22 @@ module.exports.main = async (event) => {
   } = body;
   const client = await poolConection.connect();
 
-  // const params = {
-  //   Destination: {
-  //     ToAddresses: [SOURCE],
-  //   },
-  //   Message: {
-  //     Body: {
-  //       Text: {
-  //         Data: `Hola ${nombre} ya puede ingresar a su cuenta en la app de Codegas, sus datos de acceso son: <br>usuario: ${email}<br/>Contraseña: ${pass}`,
-  //       },
-  //     },
-  //     Subject: {
-  //       Data: 'de parte de codegas',
-  //     },
-  //   },
-  //   Source: email,
-  // };
+  const params = {
+    Destination: {
+      ToAddresses: [email],
+    },
+    Message: {
+      Body: {
+        Html: {
+          Data: `Hola ${nombre}, ya puede ingresar a su cuenta en la app de Codegas. Sus datos de acceso son:<br/>Usuario: <strong>${email}</strong> <br/>Contraseña: <strong>${pass}</strong>`,
+        },
+      },
+      Subject: {
+        Data: 'Nueva Cuenta codegas',
+      },
+    },
+    Source: SOURCE,
+  };
 
 
  
@@ -71,7 +63,7 @@ module.exports.main = async (event) => {
   try {
     await client.query('BEGIN');
     const {rows} = await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
-    // await ses.sendEmail(params).promise();
+    await ses.sendEmail(params).promise();
  
     await client.query('COMMIT');
     return { 

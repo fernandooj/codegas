@@ -39,6 +39,3 @@ BEGIN
 END;
 $function$;
 
-
--- select * from get_user_by_uid('123asd')
-

@@ -20,6 +20,14 @@ RETURNS TABLE (
     ultimRevTotal VARCHAR(255),
     propiedad VARCHAR(255),
     direccion VARCHAR(255),
+    placa              character varying[],
+	placaMantenimiento character varying[],
+	placaFabricante    character varying[],
+	dossier			   character varying[],
+	cerFabricante	   character varying[],
+	cerOnac	   		   character varying[],
+	visual	   		   character varying[],
+
     data JSONB[],
     total INT
 )
@@ -44,6 +52,13 @@ BEGIN
         t.ultimRevTotal,
         t.propiedad,
         p.direccion AS direccion,
+        COALESCE(t.placa, ARRAY[]::character varying[]) AS placa,
+        COALESCE(t.placaMantenimiento, ARRAY[]::character varying[]) AS placaMantenimiento,
+        COALESCE(t.placaFabricante, ARRAY[]::character varying[]) AS placaFabricante,
+        COALESCE(t.dossier, ARRAY[]::character varying[]) AS dossier,
+        COALESCE(t.cerFabricante, ARRAY[]::character varying[]) AS cerFabricante,
+        COALESCE(t.cerOnac, ARRAY[]::character varying[]) AS cerOnac,
+        COALESCE(t.visual, ARRAY[]::character varying[]) AS visual,
         CASE WHEN count(at._id) > 0 THEN array_agg(jsonb_build_object('texto', at.alertaText, 'activo', at.activo)) ELSE '{}' END AS data,
         (
             SELECT count(*)::INT

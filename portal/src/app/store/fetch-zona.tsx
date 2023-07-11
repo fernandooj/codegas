@@ -40,6 +40,7 @@ export const ChangeValorUnitario = async(valor: any, idUser: any) =>{
 }
 
 export const ChangeValorUnitarioAll = async(data: any) =>{
+    console.log(data)
     const newData = {
         seleccionados: data
     }
