@@ -18,7 +18,7 @@ module.exports.main = async (event) => {
   const {
     seleccionados
   } = body;
-  console.log(seleccionados)
+
   try {
     const client = await poolConection.connect();
     await client.query(CHANGE_ORDER, [JSON.stringify(seleccionados)])

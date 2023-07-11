@@ -62,4 +62,5 @@ functions:
   - ${file(./services/revisiones/serverless.yml)}
   - ${file(./services/alerta-tanque/serverless.yml)}
   - ${file(./services/frecuencias/serverless.yml)}
+  - ${file(./services/informes/serverless.yml)}
   

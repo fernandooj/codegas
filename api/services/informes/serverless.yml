@@ -1,0 +1,19 @@
+getUsers:
+  name: ${self:custom.base}-get-users
+  handler: services/informes/src/get-users.main
+  events:
+    - httpApi: 'GET /informe/users/{acceso}/{start}/{end}/{nombre}'
+  package:
+    include:
+      - services/informes/src/get-users.js
+      - lib/errors/database-error.js
+
+getPedidos:
+  name: ${self:custom.base}-get-pedidos
+  handler: services/informes/src/get-pedidos.main
+  events:
+    - httpApi: 'GET /informe/pedidos/{type}/{start}/{end}/{nombre}'
+  package:
+    include:
+      - services/informes/src/get-pedidos.js
+      - lib/errors/database-error.js
