@@ -34,6 +34,11 @@ provider:
             - 's3:PutObject'
           Resource:
             - 'arn:aws:s3:::codegas/*'
+        - Effect: Allow
+          Action:
+            - 'ses:SendEmail'
+            - 'ses:SendRawEmail'
+          Resource: '*'
     
   # apiGateway:
   #   restApiId: ${output:${self:custom.n}.ApiId}

@@ -1,5 +1,5 @@
-getUsers:
-  name: ${self:custom.base}-get-users
+informeGetUsers:
+  name: ${self:custom.base}-informe-users
   handler: services/informes/src/get-users.main
   events:
     - httpApi: 'GET /informe/users/{acceso}/{start}/{end}/{nombre}'
@@ -8,8 +8,8 @@ getUsers:
       - services/informes/src/get-users.js
       - lib/errors/database-error.js
 
-getPedidos:
-  name: ${self:custom.base}-get-pedidos
+informeGetPedidos:
+  name: ${self:custom.base}-informe-pedidos
   handler: services/informes/src/get-pedidos.main
   events:
     - httpApi: 'GET /informe/pedidos/{type}/{start}/{end}/{nombre}'
@@ -18,8 +18,8 @@ getPedidos:
       - services/informes/src/get-pedidos.js
       - lib/errors/database-error.js
 
-getVehiculos:
-  name: ${self:custom.base}-get-vehiculos
+informeGetVehiculos:
+  name: ${self:custom.base}-informe-vehiculos
   handler: services/informes/src/get-vehiculos.main
   events:
     - httpApi: 'GET /informe/vehiculos/{start}/{end}/{nombre}'
@@ -28,8 +28,8 @@ getVehiculos:
       - services/informes/src/get-vehiculos.js
       - lib/errors/database-error.js
 
-getTanques:
-  name: ${self:custom.base}-get-tanques
+informeGetTanques:
+  name: ${self:custom.base}-informe-tanques
   handler: services/informes/src/get-tanques.main
   events:
     - httpApi: 'GET /informe/tanques/{start}/{end}/{nombre}'
@@ -38,8 +38,8 @@ getTanques:
       - services/informes/src/get-tanques.js
       - lib/errors/database-error.js
 
-getRevisiones:
-  name: ${self:custom.base}-get-revisiones
+informeGetRevisiones:
+  name: ${self:custom.base}-informe-revisiones
   handler: services/informes/src/get-revisiones.main
   events:
     - httpApi: 'GET /informe/revisiones/{start}/{end}/{nombre}'
