@@ -35,6 +35,7 @@ getFrecuencias:
   name: ${self:custom.base}-get-frecuencias
   handler: services/frecuencias/src/get-frecuencias.main
   events:
+    - schedule: cron(15 7 * * ? *)
     - httpApi: 'GET /fre/frecuencia'
   package:
     include:

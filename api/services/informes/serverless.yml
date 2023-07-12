@@ -37,3 +37,13 @@ getTanques:
     include:
       - services/informes/src/get-tanques.js
       - lib/errors/database-error.js
+
+getRevisiones:
+  name: ${self:custom.base}-get-revisiones
+  handler: services/informes/src/get-revisiones.main
+  events:
+    - httpApi: 'GET /informe/revisiones/{start}/{end}/{nombre}'
+  package:
+    include:
+      - services/informes/src/get-revisiones.js
+      - lib/errors/database-error.js

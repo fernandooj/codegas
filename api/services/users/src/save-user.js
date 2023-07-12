@@ -38,8 +38,7 @@ module.exports.main = async (event) => {
     razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, codMagister, codt, codigoRegistro, valorUnitario, idPadre,
     pass
   } = body;
-  const client = await poolConection.connect();
-
+  
   const params = {
     Destination: {
       ToAddresses: [email],
@@ -56,11 +55,12 @@ module.exports.main = async (event) => {
     },
     Source: SOURCE,
   };
-
-
- 
-
+  
+  
+  
+  
   try {
+    const client = await poolConection.connect();
     await client.query('BEGIN');
     const {rows} = await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
     await ses.sendEmail(params).promise();
