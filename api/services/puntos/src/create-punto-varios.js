@@ -1,7 +1,7 @@
 const {poolConection} = require('../../../lib/connection-pg.js')
 
 /** save point */
-const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7)';
+const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7, $8, $9)';
 
 /**
  * Inserts a point into the database.
@@ -25,9 +25,9 @@ const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7)';
     try {
       await Promise.all(points.map(point => {
         const {
-           observacion, direccion, capacidad, punto, idZona, idCliente, idPadre
+           observacion, direccion, capacidad, punto, location, place_name, idZona, idCliente, idPadre
         } = point;
-        return client.query(SAVE_POINT, [ observacion, direccion, capacidad, punto, idZona, idCliente, idPadre]);
+        return client.query(SAVE_POINT, [observacion, direccion, capacidad, punto, location, place_name, idZona, idCliente, idPadre]);
       }));
   
       return {

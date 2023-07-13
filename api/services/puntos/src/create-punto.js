@@ -1,7 +1,7 @@
 const {poolConection} = require('../../../lib/connection-pg.js')
 
 /** save point */
-const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7)';
+const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7, $8, $9)';
 
 /**
  * Inserts a point into the database.
@@ -20,13 +20,13 @@ const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7)';
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
   const {
-    direccion, capacidad, observacion, punto, idZona, idCliente, idPadre
+    direccion, capacidad, observacion, punto, location, place_name, idZona, idCliente, idPadre
   } = body;
   const client = await poolConection.connect();
 
   try {
     
-    await client.query(SAVE_POINT, [direccion, capacidad, observacion, punto, idZona, idCliente, idPadre])
+    await client.query(SAVE_POINT, [direccion, capacidad, observacion, punto, location, place_name, idZona, idCliente, idPadre])
     return {
         status: true
       }
