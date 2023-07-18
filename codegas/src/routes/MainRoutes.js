@@ -14,6 +14,7 @@ import usuariosComponent	 	from '../pages/usuarios';
 import vehiculoComponent	 	from '../pages/vehiculo/vehiculo';
 import zonaComponent	 	 	from '../pages/zona/zona';
 import capacidadComponent 		from '../pages/capacidad/capacidad';
+import editarPerfilComponent	 	from '../pages/editar_perfil/editarPerfil';
 // import editarPedidoComponent	from '../pages/pedido/editar-pedido';
 // import confirmarComponent 	 	from '../pages/perfil/confirmarCode';
 // import registroComponent	 	from '../pages/registro/registro';
@@ -21,14 +22,14 @@ import capacidadComponent 		from '../pages/capacidad/capacidad';
 // import mensajeComponent	 	 	from '../pages/mensaje/mensaje';
 // import recuperarComponent	 	from '../pages/recuperar_pass/recuperar_pass';
 // import cambiarComponent	 		from '../pages/recuperar_pass/cambiar_pass';
-// import puntosComponent	 		from '../pages/puntos/puntos';
+import puntosComponent	 		from '../pages/puntos/puntos';
 // import calificacionComponent 	from '../pages/calificacion/calificacion';
 // import verCalificacionComponent from '../pages/calificacion/verCalificacion';
 // import privacidadComponent 		from '../pages/privacidad/privacidad';
 // import frecuenciaComponent 		from '../pages/frecuencia/frecuencia';
 // import tanquesComponent 		from '../pages/tanques/tanques';
 // import nuevoTanqueComponent 	from '../pages/tanques/nuevoTanques';
-// import revisionComponent 		from '../pages/revision/revision';
+import revisionComponent 		from '../pages/revision/revision';
 // import nuevaRevisionComponent 	from '../pages/revision/nuevaRevision';
 // import chartComponent 			from '../pages/chart/chart';
 // import cerrarRevisionComponent 	from '../pages/revision/cerrarRevision';
@@ -40,7 +41,7 @@ import capacidadComponent 		from '../pages/capacidad/capacidad';
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 	: {screen: homeComponent},
+	Home  		 	 	: {screen: usuariosComponent},
 	pedido       		: {screen: pedidoComponent},
 	IniciarSesion       : {screen: IniciarSesion},
 	nuevo_pedido 		: {screen: nuevoPedidoComponent},
@@ -49,6 +50,7 @@ const AppNavigator = createStackNavigator({
 	vehiculo     		: {screen: vehiculoComponent},
 	zona		 		: {screen: zonaComponent},
 	capacidad			: {screen: capacidadComponent},
+	editarPerfil	 	: {screen: editarPerfilComponent},
 	// inicio 		 	 	: {screen: homeComponent},
 	// confirmar    		: {screen: confirmarComponent},
 	// registro     		: {screen: registroComponent},
@@ -57,13 +59,13 @@ const AppNavigator = createStackNavigator({
 	// editarPedido 		: {screen: editarPedidoComponent},
 	// conversacion 		: {screen: conversacionComponent},
 	// recuperar 	 		: {screen: recuperarComponent},
-	// puntos 	 	 		: {screen: puntosComponent},
+	puntos 	 	 		: {screen: puntosComponent},
 	// calificacion 		: {screen: calificacionComponent},
 	// verCalificacion 	: {screen: verCalificacionComponent},
 	// frecuencia 			: {screen: frecuenciaComponent},
 	// tanques 			: {screen: tanquesComponent},
 	// nuevoTanque 		: {screen: nuevoTanqueComponent},
-	// revision 			: {screen: revisionComponent},
+	revision 			: {screen: revisionComponent},
 	// nuevaRevision 		: {screen: nuevaRevisionComponent},
 	// chart 				: {screen: chartComponent},
 	// cambiar 			: {screen: cambiarComponent},

@@ -44,7 +44,7 @@ const getUsuario = userId => {
 const getUsuarios = (limit, start, acceso, search) => {
   return dispatch => {
     return axios
-      .get(`users/acceso/${limit}/${start}/${acceso}/${search}`)
+      .get(`/users/acceso/${limit}/${start}/${acceso}/${search}`)
       .then(res => {
         console.log(res.data)
         dispatch({
@@ -53,7 +53,7 @@ const getUsuarios = (limit, start, acceso, search) => {
         });
       })
       .catch(err => {
-        console.log(err);
+        console.error(err);
       });
   };
 };
@@ -62,7 +62,7 @@ const getUsuariosAcceso = acceso => {
   console.log(acceso)
   return dispatch => {
     return axios
-      .get(`users/acceso/${acceso}`)
+      .get(`/users/acceso/${acceso}`)
       .then(res => {
         console.log(res.data)
         dispatch({
@@ -71,6 +71,10 @@ const getUsuariosAcceso = acceso => {
         });
       })
       .catch(err => {
+        dispatch({
+          type: GET_USUARIOS_ACCESO,
+          usuariosAcceso: []
+        });
         console.log(err);
       });
   };

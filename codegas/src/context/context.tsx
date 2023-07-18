@@ -57,7 +57,7 @@ const DataProvider = ({children}: any) => {
         console.error(error);
       }
     },
-    logOut: async () => {
+    cerrarSesion: async () => {
       try {
         auth().signOut();
       } catch (error) {

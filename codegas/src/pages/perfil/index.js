@@ -151,17 +151,7 @@ const Perfil = ({
             />
           </TouchableOpacity>
         )}
-        {acceso === 'admin' && (
-          <TouchableOpacity
-            style={style.btnLista}
-            onPress={() => navigation.navigate('verCalificacion')}>
-            <Text style={style.txtLista}>Calificaciones</Text>
-            <Image
-              source={require('../../assets/img/pg1/icon6.png')}
-              style={style.icon}
-            />
-          </TouchableOpacity>
-        )}
+        
         {(acceso === 'admin' ||
           acceso === 'comercial' ||
           acceso === 'depTecnico' ||
@@ -241,6 +231,8 @@ const Perfil = ({
           style={style.btnLista}
           onPress={() => {
             cerrarSesion();
+            navigation.navigate('Home')
+
           }}>
           <Text style={style.txtLista}>Cerrar Sesion</Text>
           <Image

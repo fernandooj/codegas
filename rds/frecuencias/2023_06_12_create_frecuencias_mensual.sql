@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION create_frecuencias_semanal(
+CREATE OR REPLACE FUNCTION create_frecuencias_mensual(
     _frecuencia VARCHAR(20)
 )
 RETURNS TABLE (

@@ -10,20 +10,23 @@ create table if not exists revisiones(
 	m3                character varying, --
 	nMedidorText      character varying, --
 	nComodatoText     character varying, --
-    nComodato character varying[], --
 	ubicacion      	  character varying, --
 	poblado     	    character varying,   
 	ciudad     	      character varying,   
 	dpto     	        character varying,   
 	
+    nComodato character varying[], --
 	isometrico      character varying[],
 	otrosComodato	  character varying[],
-	soporteEntrega	character varying[],
-	puntoConsumo	  character varying[],
-	visual	  		  character varying[],
 	protocoloLlenado character varying[],
 	hojaSeguridad  	character varying[],
 	otrosSi	   		  character varying[], --
+    documento character varying[], 
+    depTecnico  character varying[],
+
+	soporteEntrega	character varying[],
+	puntoConsumo	  character varying[],
+	visual	  		  character varying[],
 	
     observaciones	  character varying,
 	solicitudServicio character varying,
@@ -44,10 +47,8 @@ create table if not exists revisiones(
     eliminado BOOLEAN DEFAULT FALSE,
     usuarioCrea INT, --
 	tanqueId INT[], --
-    documento character varying[], 
 
 
-    depTecnico  character varying[],
 	depTecnicoText character varying,
 	depTecnicoEstado  BOOLEAN DEFAULT FALSE,
 

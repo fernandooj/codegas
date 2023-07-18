@@ -18,6 +18,16 @@ getRevisiones:
       - services/vehiculos/src/get-revisiones.js
       - lib/errors/database-error.js
 
+getRevisionByPunto:
+  name: ${self:custom.base}-get-revision-by-punto
+  handler: services/revisiones/src/get-revision-by-punto.main
+  events:
+    - httpApi: 'GET /rev/revision/byPunto/{_id}'
+  package:
+    include:
+      - services/revisiones/src/get-revision-by-punto.js
+      - lib/errors/database-error.js  
+
 # getVehiculosActivos:
 #   name: ${self:custom.base}-get-vehiculo-activos
 #   handler: services/vehiculos/src/get-vehiculo-activos.main
@@ -88,12 +98,4 @@ getRevisiones:
 #       - services/vehiculos/src/get-vehiculo-by-id.js
 #       - lib/errors/database-error.js
 
-# getVehiculoByUser:
-#   name: ${self:custom.base}-get-vehiculo-by-user
-#   handler: services/vehiculos/src/get-vehiculo-by-user.main
-#   events:
-#     - httpApi: 'GET /veh/vehiculo/byConductor/{_id}'
-#   package:
-#     include:
-#       - services/vehiculos/src/get-vehiculo-by-user.js
-#       - lib/errors/database-error.js
+

@@ -13,7 +13,7 @@ class verPerfil extends Component{
 	constructor(props) {
         super(props);
         this.state={
-            terminoBuscador:"",
+            terminoBuscador:undefined,
             inicio:0,
             final:false,
             limit:10,
@@ -43,7 +43,7 @@ class verPerfil extends Component{
       return usuarios.map((e, key)=>{
         return(
           <View style={[style.contenedorUsers, {backgroundColor: e.activo ?"white" :"red" }]} key={key}>
-            <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params ?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("verPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
+            <TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.state.params ?navigation.navigate("puntos", {idUsuario:e._id}) :navigation.navigate("editarPerfil", {tipoAcceso:"editar", idUsuario:e._id})}>
                 <View style={{width:"90%"}}>
                     
                   {e.acceso=="cliente" 
@@ -128,7 +128,7 @@ const mapDispatch = dispatch => {
 	return {
 		getUsuarios: (limit, inicio, ACCESO, terminoBuscador) => {
 			dispatch(getUsuarios(limit, inicio, ACCESO, terminoBuscador));
-        },
+      },
 	};
 };
 verPerfil.defaultProps={

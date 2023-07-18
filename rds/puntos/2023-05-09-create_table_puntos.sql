@@ -10,6 +10,8 @@ create table if not exists puntos(
     idZona INT,
     idCliente INT,
     idPadre INT
+    coordenadas POINT
+    place_name character varying,
 );
 
 COMMENT ON TABLE puntos IS 'Info data of PUNTOS';

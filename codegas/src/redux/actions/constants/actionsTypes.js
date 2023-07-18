@@ -43,3 +43,14 @@ export const GET_VEHICULO          = "GET_VEHICULO";
 export const GET_VEHICULOS         = "GET_VEHICULOS";
 export const GET_VEHICULOS_PEDIDOS = "GET_VEHICULOS_PEDIDOS";
 export const GET_ZONA_PEDIDOS      = "GET_ZONA_PEDIDOS";
+
+
+
+///////////////////////////////////////////////////////////////////////////
+/*
+   Acciones para revisiones
+*/
+///////////////////////////////////////////////////////////////////////////
+export const GET_REVISION          = "GET_REVISION";
+export const GET_REVISIONES        = "GET_REVISIONES";
+export const GET_REVISION_BY_PUNTO = "GET_REVISION_BY_PUNTO";
