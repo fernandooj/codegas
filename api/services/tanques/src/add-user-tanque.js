@@ -21,7 +21,6 @@ module.exports.main = async (event) => {
     tanqueId
   } = body;
 
-
   const client = await poolConection.connect();
 
   try {

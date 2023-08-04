@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-nativ
 import { style } from './style';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import axios from 'axios';
 import { DataContext } from '../../context/context';
 import { getRevisiones, getRevisionByPunto } from '../../redux/actions/revisionActions';
 import Footer from '../components/footer';
@@ -13,20 +12,27 @@ const Revision = (props) => {
   const {acceso} = useContext(DataContext)
   const [terminoBuscador, setTerminoBuscador] = useState(undefined);
   const [data, setData] = useState(navigation.state.params ? revision_by_punto : revisiones);
-  console.log("revisiones")
-  console.log(data)
  
   const [inicio, setInicio] = useState(0);
   const [limit, setLimit] = useState(10);
   const [final, setFinal] = useState(false);
+  const [areRevisionesLoaded, setAreRevisionesLoaded] = useState(false);
 
   useEffect(() => {
-    loadRevisiones()
-  }, [loadRevisiones]);
+    loadRevisiones();
+  }, []);
 
+  useEffect(() => {
+    if (revisiones.length > 0) {
+      setAreRevisionesLoaded(true);
+    }
+  }, [revisiones]);
+  
+  
   const loadRevisiones =(last) => {
     if (navigation.state.params) {
       getRevisionByPunto(navigation.state.params.puntoId)
+      setAreRevisionesLoaded(true);
     } else {
       getRevisiones(0, last, terminoBuscador)
     }
@@ -57,7 +63,7 @@ const Revision = (props) => {
             navigation.state.params
             ?<><TouchableOpacity style={{flexDirection:"row"}} onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:navigation.state.params.puntoId, clienteId:navigation.state.params.clienteId, revisionId:e._id})}>
                 <View style={{width:"90%"}}>
-                  <Text style={style.textUsers}>N Control: {e.nControl}</Text>
+                  <Text style={style.textUsers}>N Control: {e._id}</Text>
                   <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
                 
                   
@@ -89,7 +95,7 @@ const Revision = (props) => {
               onPress={()=>navigation.navigate(acceso=="depTecnico" ?"cerrarRevision" :acceso=="insSeguridad" ?"cerrarSeguridad" :"nuevaRevision", {puntoId:e.puntoId &&e.puntoId._id, clienteId:e.usuarioId &&e.usuarioId._id, revisionId:e._id})}
               >
                 <View style={{width:"90%"}}>
-                <Text style={style.textUsers}>N Control: {e.nControl}</Text>
+                <Text style={style.textUsers}>N Control: {e._id}</Text>
                 <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
                 {e.usuarioId &&<Text style={style.textUsers}>{e.usuarioId.razon_social+" / "+e.usuarioId.codt}</Text>}
                 {e.puntoId &&<Text style={style.textUsers}>{e.puntoId.direccion}</Text>}
@@ -157,7 +163,7 @@ const Revision = (props) => {
 
       <ScrollView style={{ marginBottom: 85 }} onScroll={(e) => onScroll(e)} keyboardDismissMode="on-drag">
         {
-          renderRevisiones()
+          areRevisionesLoaded &&renderRevisiones()
         }
       </ScrollView>
       <Footer navigation={navigation} />
@@ -166,8 +172,6 @@ const Revision = (props) => {
 };
 
 const mapState = (state) => {
-  console.log("state.revision.revision_by_punto")
-  console.log(state.revision.revision_by_punto)
   return {
     usuarios: state.usuario.usuarios,
     usuariosFiltro: state.usuario.usuarios,

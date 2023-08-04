@@ -76,12 +76,10 @@ export default class tomarPhoto extends Component{
             if(e.uri){
                 img.push(e)
             }else{
-                let img2 = e.split("-")
-                img2 = `${img2[0]}Resize${img2[2]}`
-                img.push({uri:img2})
+                img.push({uri: e})
             }
         })
-      
+   
         return  img.map((e, key)=>{
             return(
                 <Lightbox 

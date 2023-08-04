@@ -28,4 +28,30 @@
 -- $function$
 
 
-select * from save_revisiones(1, ARRAY[3], 1,  'propiedad 5', 'lote 5', 'sector 5', 'barrio 5', 'usuariosAtendidos 5', 'm3', 'nMedidorText', ARRAY['nMedidor'], ARRAY['nComodato'], 'nComodatoText', 'ubicacion', ARRAY['otrosSi'], 1);
+
+
+CREATE OR REPLACE FUNCTION save_revision(
+    _tanqueId INT[],
+    _usuarioId INT,
+    _puntoId INT,
+    _usuarioCrea INT
+)
+RETURNS INT
+LANGUAGE plpgsql
+AS $function$
+DECLARE
+    revision_id INT;
+BEGIN
+    INSERT INTO revisiones(tanqueId, usuarioId, puntoId, usuarioCrea)
+    VALUES (_tanqueId, _usuarioId, _puntoId, _usuarioCrea)
+    RETURNING id INTO revision_id;
+    
+    RETURN revision_id;
+END;
+$function$
+
+
+
+
+
+-- select * from save_revisiones(1, ARRAY[3], 1,  'propiedad 5', 'lote 5', 'sector 5', 'barrio 5', 'usuariosAtendidos 5', 'm3', 'nMedidorText', ARRAY['nMedidor'], ARRAY['nComodato'], 'nComodatoText', 'ubicacion', ARRAY['otrosSi'], 1);

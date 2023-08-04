@@ -24,13 +24,10 @@ const getRevisiones = (start, limit, search) => {
 };
 
 const getRevisionByPunto = (idPunto) => {
-  console.log(idPunto)
   return dispatch => {
     return axios
       .get(`/rev/revision/byPunto/${idPunto}`)
       .then(res => {
-        console.log("res.data")
-        console.log(res.data)
         dispatch({
           type: GET_REVISION_BY_PUNTO,
           revision_by_punto: res.data.revision

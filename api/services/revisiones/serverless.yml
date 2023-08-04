@@ -1,12 +1,12 @@
-# createVehiculo:
-#   name: ${self:custom.base}-create-vehiculo
-#   handler: services/vehiculos/src/create-vehiculo.main
-#   events:
-#     - httpApi: 'POST /veh/vehiculo'
-#   package:
-#     include:
-#       - services/vehiculos/src/create-vehiculo.js
-#       - lib/errors/database-error.js
+createRevision:
+  name: ${self:custom.base}-create-revision
+  handler: services/revisiones/src/create-revision.main
+  events:
+    - httpApi: 'POST /rev/revision'
+  package:
+    include:
+      - services/revisiones/src/create-revision.js
+      - lib/errors/database-error.js
 
 getRevisiones:
   name: ${self:custom.base}-get-revisiones
@@ -15,7 +15,7 @@ getRevisiones:
     - httpApi: 'GET /rev/revision/{limit}/{start}/{busqueda}'
   package:
     include:
-      - services/vehiculos/src/get-revisiones.js
+      - services/revisiones/src/get-revisiones.js
       - lib/errors/database-error.js
 
 getRevisionByPunto:
@@ -28,15 +28,46 @@ getRevisionByPunto:
       - services/revisiones/src/get-revision-by-punto.js
       - lib/errors/database-error.js  
 
-# getVehiculosActivos:
-#   name: ${self:custom.base}-get-vehiculo-activos
-#   handler: services/vehiculos/src/get-vehiculo-activos.main
-#   events:
-#     - httpApi: 'GET /veh/vehiculo/no_eliminados/{limit}'
-#   package:
-#     include:
-#       - services/vehiculos/src/get-vehiculo-activos.js
-#       - lib/errors/database-error.js
+getRevisionById:
+  name: ${self:custom.base}-get-revision-by-id
+  handler: services/revisiones/src/get-revision-by-id.main
+  events:
+    - httpApi: 'GET /rev/revision/byId/{_id}'
+  package:
+    include:
+      - services/revisiones/src/get-revision-by-id.js
+      - lib/errors/database-error.js
+
+addImages:
+  name: ${self:custom.base}-add-images
+  handler: services/revisiones/src/add-images.main
+  timeout: 25
+  events:
+    - httpApi: 'PUT /rev/revision/add-images'
+  environment:
+    BUCKET: codegas
+  package:
+    include:
+      - services/revisiones/src/add-images.js
+      - lib/errors/database-error.js
+      - lib/image.js
+      - lib/responses.js
+
+removeImages:
+  name: ${self:custom.base}-add-images
+  handler: services/revisiones/src/add-images.main
+  timeout: 25
+  events:
+    - httpApi: 'PUT /tan/tanque/images/{idTanque}/{type}'
+  environment:
+    BUCKET: codegas
+  package:
+    include:
+      - services/revisiones/src/add-images.js
+      - lib/errors/database-error.js
+      - lib/image.js
+      - lib/responses.js
+
 
 # editVehiculo:
 #   name: ${self:custom.base}-edit-vehiculo

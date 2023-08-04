@@ -27,12 +27,10 @@ const getPedido = pedidoId => {
 };
 
 const getPedidoByUser = userId => {
-  console.log({userId})
   return dispatch => {
     return axios
       .get(`/ped/pedido/byUser/${userId}`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_PEDIDOS_USER,
           pedidosUser: res.data.pedido
@@ -46,8 +44,6 @@ const getPedidoByUser = userId => {
 
 
 const getPedidos = (idUser, start, limit, acceso, search) => {
-  // console.log("{idUser, start, limit, acceso, search}")
-  // console.log({idUser, start, limit, acceso, search})
   return async (dispatch) => {
     try {
       const response = await axios.get(`/ped/pedido/todos/app/${idUser}/${limit}/${start}/${acceso}/${search}`);
@@ -69,12 +65,10 @@ const getPedidos = (idUser, start, limit, acceso, search) => {
 
 
 const getVehiculosConPedidos = (data) => {
-  console.log({data})
   return dispatch => {
     return axios
       .get(`ped/pedido/vehiculosConPedidos/${data}`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_VEHICULOS_PEDIDOS,
           vehiculosPedidos: res.data.carro
@@ -91,7 +85,6 @@ const getZonasPedidos = (fechaEntrega) => {
     return axios
       .get(`zon/zona/pedido/${fechaEntrega}`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_ZONA_PEDIDOS,
           zonaPedidos: res.data.zona
@@ -108,7 +101,6 @@ const getFrecuencia = () => {
     return axios
       .get(`ped/pedido/ver_frecuencia/todos`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_PEDIDOS_FRECUENCIA,
           pedidosFrecuencia: res.data.pedidos

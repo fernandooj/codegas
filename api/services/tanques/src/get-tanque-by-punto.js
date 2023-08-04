@@ -1,30 +1,31 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
-
+ 
 /**
- * add drivers car in the database.
+ * get a tanque by punto in the database.
  *
- * @param {object} zona - Object containing the data of the zona to deactivate.
- * @param {number} zona.id_zona - Identifier of the zona in the database.
+ * @param {object} tanque - Object containing the data of the tanque to deactivate.
+ * @param {number} tanque.puntoId - Identifier of the tanque in the database.
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
+ const GET_TANQUE_BY_PUNTO = 'SELECT * FROM get_tanque_by_punto($1)';
 
 module.exports.main = async (event) => {
-
   const {
-    _id,
-    _idConductor
+    _id
   } = event.pathParameters;
+ 
+ 
   
-  const CHANGE_STATE = 'UPDATE carros SET conductor = $1 WHERE _id = $2';
-  const client = await poolConection.connect();
-
   try {
-    await client.query(CHANGE_STATE, [_idConductor, _id])
+    const client = await poolConection.connect();
+    const  { rows: tanque } = await client.query(GET_TANQUE_BY_PUNTO, [_id])
+  
     return {
-      status: true
-      }
+      status: true,
+      tanque: tanque
+    }
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);

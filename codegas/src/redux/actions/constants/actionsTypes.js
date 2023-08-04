@@ -54,3 +54,11 @@ export const GET_ZONA_PEDIDOS      = "GET_ZONA_PEDIDOS";
 export const GET_REVISION          = "GET_REVISION";
 export const GET_REVISIONES        = "GET_REVISIONES";
 export const GET_REVISION_BY_PUNTO = "GET_REVISION_BY_PUNTO";
+
+
+///////////////////////////////////////////////////////////////////////////
+/*
+   Acciones para tanques
+*/
+///////////////////////////////////////////////////////////////////////////
+export const GET_TANQUES          = "GET_TANQUES";

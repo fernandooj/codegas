@@ -13,7 +13,6 @@ const getPerfil = data => {
     return axios
       .get(`user/perfil/`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_PERFIL,
           usuario: res.data
@@ -46,7 +45,6 @@ const getUsuarios = (limit, start, acceso, search) => {
     return axios
       .get(`/users/acceso/${limit}/${start}/${acceso}/${search}`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_USUARIOS,
           usuarios: res.data.user

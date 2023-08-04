@@ -15,7 +15,6 @@ const getRevisiones = (state = [], action) => {
 };
 
 const getRevisionByPunto = (state = [], action) => {
-  console.log(action)
   switch (action.type) {
     case GET_REVISION_BY_PUNTO:
       return action.revision_by_punto;

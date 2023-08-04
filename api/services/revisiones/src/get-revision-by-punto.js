@@ -2,10 +2,10 @@ const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
  
 /**
- * get a car in the database.
+ * get a revision in the database.
  *
- * @param {object} zona - Object containing the data of the zona to deactivate.
- * @param {number} zona.id_zona - Identifier of the zona in the database.
+ * @param {object} revision - Object containing the data of the revision to deactivate.
+ * @param {number} revision.id_revision - Identifier of the revision in the database.
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
@@ -24,7 +24,7 @@ module.exports.main = async (event) => {
   
     return {
       status: true,
-      revision: revision
+      revision
     }
   } catch (error) {
     console.log(error)

@@ -79,7 +79,6 @@ class verPerfil extends Component {
     const value = this.context;
     const {acceso: accesoPerfil, userId} = value
 
-    console.log(accesoPerfil, acceso, userId)
     // const accesoPerfil = await AsyncStorage.getItem('acceso');
     let acceso = accesoPerfil == 'despacho' ? 'cliente' : 'usuario';
     this.setState({accesoPerfil, acceso, userId});
@@ -200,7 +199,6 @@ class verPerfil extends Component {
     direccion_factura = direccion_factura ?direccion_factura.toUpperCase() :direccion_factura;
     nombre = nombre ?nombre.toUpperCase() :nombre;
         
-    console.log({accesoPerfil, tipoAcceso, imagen, acceso, editado})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }
@@ -500,7 +498,6 @@ class verPerfil extends Component {
         let {valorUnitario, idUsuario} = this.state
         axios.get(`users/cambiarValor/${valorUnitario}/${idUsuario}`)
         .then(res=>{
-            console.log(res.data)
             if(res.data.status){
                 Toast.show("Valor unitario editado", Toast.LONG)
             }
@@ -510,7 +507,6 @@ class verPerfil extends Component {
         let {email} = this.state
         axios.post("user/checkEmail", {email})
         .then(res=>{
-            console.log(res.data)
             if(res.data.status==="SUCCESS"){
                 Toast.show("Este email ya existe!", Toast.LONG)
                 // this.setState({email:""})

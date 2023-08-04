@@ -27,7 +27,6 @@ const getConversacion = idConversacion => {
       return axios
         .get(`con/conversacion/${idConversacion}`)
         .then(res => {
-            console.log(res.data)
             dispatch({
                 type: GET_CONVERSACION,
                 conversacion: res.data.conversacion,
@@ -44,7 +43,6 @@ const getMensajes = idConversacion => {
       return axios
         .get(`men/mensaje/${idConversacion}`)
         .then(res => {
-            console.log(res.data)
  
             dispatch({
                 type: GET_MENSAJES,

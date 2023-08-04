@@ -1,33 +1,58 @@
 import React, {Component} from 'react'
 import {View, Text, Image, TouchableOpacity, Modal, Alert} from 'react-native'
 import DocumentPicker from 'react-native-document-picker';
-import Icon           from 'react-native-fa-icons' 
+import Icon from 'react-native-vector-icons/FontAwesome';
  
 import {style}        from './style'
  
+const getBase64FromUri = async (uri) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(blob);
+      });
+      return base64;
+    } catch (error) {
+      console.error('Error converting to base64:', error);
+      return null;
+    }
+  };
+
+
 export default class subirDocumento extends Component{
     constructor(props) {
         super(props);
         this.state={
-            imagenes:props.source
+            imagenes:  props.source.length > 1 ? props.source.map(item => JSON.parse(item)) : []
         }
+      
+   
     }
+  
+   
     async subirDocumento(){
         let {imagenes} = this.state
         try {
             const response = await DocumentPicker.pick({
               type: [DocumentPicker.types.pdf],
             });
+    
+            const base64 = await getBase64FromUri(response[0].uri);
+            
+   
             let imagen = {
-                uri:  response.uri,
-                type: response.type,
-                name: response.name,
-                path: response.uri
+                imagen:  base64,
+                name: response[0].name,
+                uri: response[0].uri
             };
             
             imagenes.push(imagen)
             this.setState({ imagenes, showModal:false, isAndroidShareOpen:false });
-            this.props.imagenes(imagenes)
+            this.props.imagenes(imagen)
           } catch (err) {
             if (DocumentPicker.isCancel(err)) {
               // User cancelled the picker, exit any dialogs or menus and move on
@@ -35,45 +60,18 @@ export default class subirDocumento extends Component{
               throw err;
             }
           }
-          
-          // Pick multiple files
-        //   try {
-        //     const results = await DocumentPicker.pickMultiple({
-        //       type: [DocumentPicker.types.pdf],
-        //     });
-        //     for (const res of results) {
-        //       console.log(
-        //         res.uri,
-        //         res.type, // mime type
-        //         res.name,
-        //         res.size
-        //       );
-        //     }
-        //   } catch (err) {
-        //     if (DocumentPicker.isCancel(err)) {
-        //       // User cancelled the picker, exit any dialogs or menus and move on
-        //     } else {
-        //       throw err;
-        //     }
-        //   }
     }
      
    
 	renderDocumentos(){
         let {imagenes} = this.state
-        let img = []
- 
-        imagenes.map(e=>{
-            if(e.uri){
-                img.push(e)
-            }else{
-                let img2 = e.split("--")
-                
-                img.push({uri:e, name:img2[1]})
-            }
-        })
-   
-        return img.map((e, key)=>{
+        // let img = []
+        // imagenes.map(e=>{
+        //     img.push({uri:e, name:e}) 
+        // })
+        // console.log(props.titulo)
+        console.log(imagenes)
+        return imagenes.map((e, key)=>{
             return(
                 <View key={key} style={style.contenedorPdf}>   
                     <TouchableOpacity onPress={()=>this.props.navigate("pdf", {uri:e.uri}) }>
@@ -138,9 +136,7 @@ export default class subirDocumento extends Component{
         )
     }
 
-    /*
-        TIPOMENSAJE == cuando la foto es para el chat, no muestra, la opcion de tomar foto, si no que muestra directamente el modal
-    */
+   
     render(){
         const {imagenes, showModal} = this.state
         const {width, avatar, limiteImagenes, tipoMensaje, titulo} = this.props

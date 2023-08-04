@@ -1,31 +1,31 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
-
-/** deactivate zona */
-
+ 
 /**
- * Deactivates a zona in the database.
+ * get a revision in the database.
  *
- * @param {object} zona - Object containing the data of the zona to deactivate.
- * @param {number} zona.id_zona - Identifier of the zona in the database.
+ * @param {object} revision - Object containing the data of the revision to deactivate.
+ * @param {number} revision.id_revision - Identifier of the revision in the database.
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
+ const GET_REVISION_BY_ID = 'SELECT * FROM get_revision_by_id($1)';
 
 module.exports.main = async (event) => {
-    const {
-        _id,
-    } = event.pathParameters;
-  
-  const GET_PUNTO = 'SELECT * FROM carros WHERE _id = $1';
+  const {
+    _id
+  } = event.pathParameters;
+ 
+ 
   const client = await poolConection.connect();
 
   try {
-    const { rows } =await client.query(GET_PUNTO, [_id])
+    const  { rows: revision } = await client.query(GET_REVISION_BY_ID, [_id])
+  
     return {
       status: true,
-      punto: rows[0]
-      }
+      revision: revision[0]
+    }
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);

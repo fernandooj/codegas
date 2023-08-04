@@ -18,6 +18,16 @@ getTanques:
       - services/tanques/src/get-tanques.js
       - lib/errors/database-error.js
 
+getTanqueByPunto:
+  name: ${self:custom.base}-get-tanque-by-punto
+  handler: services/tanques/src/get-tanque-by-punto.main
+  events:
+    - httpApi: 'GET /tan/tanque/byPunto/{_id}'
+  package:
+    include:
+      - services/tanques/src/get-tanque-by-punto.js
+      - lib/errors/database-error.js
+
 addImages:
   name: ${self:custom.base}-add-images
   handler: services/tanques/src/add-images.main

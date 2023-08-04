@@ -30,14 +30,14 @@ import puntosComponent	 		from '../pages/puntos/puntos';
 // import tanquesComponent 		from '../pages/tanques/tanques';
 // import nuevoTanqueComponent 	from '../pages/tanques/nuevoTanques';
 import revisionComponent 		from '../pages/revision/revision';
-// import nuevaRevisionComponent 	from '../pages/revision/nuevaRevision';
+import nuevaRevisionComponent 	from '../pages/revision/nuevaRevision';
 // import chartComponent 			from '../pages/chart/chart';
 // import cerrarRevisionComponent 	from '../pages/revision/cerrarRevision';
 // import cerrarSeguridadComponent from '../pages/revision/cerrarSeguridad';
 // import cerrarTanqueComponent 	from '../pages/tanques/cerrarTanque';
 // import reporteEmergenciaComponent from '../pages/reporteEmergencia/reporteEmergencia';
 // import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoReporteEmergencia';
-// import pdfComponent 				from '../pages/pdf/pdf';
+import pdfComponent 				from '../pages/pdf/pdf';
  
  
 const AppNavigator = createStackNavigator({
@@ -66,14 +66,14 @@ const AppNavigator = createStackNavigator({
 	// tanques 			: {screen: tanquesComponent},
 	// nuevoTanque 		: {screen: nuevoTanqueComponent},
 	revision 			: {screen: revisionComponent},
-	// nuevaRevision 		: {screen: nuevaRevisionComponent},
+	nuevaRevision 		: {screen: nuevaRevisionComponent},
 	// chart 				: {screen: chartComponent},
 	// cambiar 			: {screen: cambiarComponent},
 	// cerrarRevision 		: {screen: cerrarRevisionComponent},
 	// cerrarSeguridad 	: {screen: cerrarSeguridadComponent},
 	// cerrarTanque 		: {screen: cerrarTanqueComponent},
 	// reporteEmergencia	: {screen: reporteEmergenciaComponent},
-	// pdf					: {screen: pdfComponent},
+	pdf					: {screen: pdfComponent},
 	// nuevoReporteEmergencia : {screen: nuevoReporteEmergenciaComponent},
   },{ headerMode: 'none'});
 

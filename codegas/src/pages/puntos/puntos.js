@@ -18,27 +18,31 @@ class Puntos extends Component{
         }
     }
  
-    componentWillMount(){
-        axios.get(`pun/punto/byCliente/${this.props.navigation.state.params.idUsuario}`)
-        .then(e=>{
-            console.log(e.data.puntos)
-            if(e.data.status){
-                this.setState({puntos:e.data.puntos})
-            }else{
-                Toast.show("Tuvimos un problema, intentele mas tarde")
+    componentDidMount() {
+        const { idUsuario } = this.props.navigation.state.params;
+        axios.get(`pun/punto/byCliente/${idUsuario}`)
+          .then(response => {
+            if (response.data.status) {
+              this.setState({ puntos: response.data.puntos, idUsuario });
+            } else {
+              Toast.show("Tuvimos un problema, inténtelo más tarde");
             }
-        })
-    }
+          })
+          .catch(error => {
+            console.error("Error en la petición:", error);
+            Toast.show("Error en la conexión, inténtelo más tarde");
+          });
+      }
      
     renderPuntos(){
         const {navigation} = this.props
-        const {terminoBuscador, puntos} = this.state
+        const {idUsuario, puntos} = this.state
  
       
         return puntos.map((e, key)=>{
             return(
                 <View key={key}>
-                    <TouchableOpacity key={key} style={style.btnZona} onPress={()=>navigation.navigate("revision", { direccion:e.direccion, capacidad:e.capacidad, observacion:e.observacion, puntoId:e._id, clienteId:e.idPadre}) }>
+                    <TouchableOpacity key={key} style={style.btnZona} onPress={()=>navigation.navigate("revision", { direccion:e.direccion, capacidad:e.capacidad, observacion:e.observacion, puntoId:e._id, clienteId:idUsuario}) }>
                         <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
                         <View>
                             <Text style={style.textZona}>{e.direccion}</Text>   
