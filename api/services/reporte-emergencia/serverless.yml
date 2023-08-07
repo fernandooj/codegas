@@ -1,0 +1,64 @@
+createReporteEmergencia:
+  name: ${self:custom.base}-create-reporte-emergencia
+  handler: services/reporte-emergencia/src/create-reporte-emergencia.main
+  events:
+    - httpApi: 'POST /rep/reporte-emergencia'
+  package:
+    include:
+      - services/puntos/src/create-punto.js
+      - lib/errors/database-error.js
+
+getReporteEmergencia:
+  name: ${self:custom.base}-get-reporte-emergencia
+  handler: services/reporte-emergencia/src/get-reporte-emergencia.main
+  events:
+    - httpApi: 'GET /rep/reporte-emergencia/{start}/{limit}/{search}'
+  package:
+    include:
+      - services/reporte-emergencia/src/get-reporte-emergencia.js
+      - lib/errors/database-error.js
+
+cerrarReporteEmergencia:
+  name: ${self:custom.base}-cerrar-reporte-emergencia
+  handler: services/reporte-emergencia/src/cerrar-reporte-emergencia.main
+  events:
+    - httpApi: 'PUT /rep/reporte-emergencia/cerrar'
+  package:
+    include:
+      - services/reporte-emergencia/src/cerrar-reporte-emergencia.js
+      - lib/errors/database-error.js
+
+addImageReporteEmergencia:
+  name: ${self:custom.base}-add-images-reporte-emergencia
+  handler: services/revisiones/src/add-images-reporte-emergencia.main
+  timeout: 25
+  events:
+    - httpApi: 'PUT /rep/reporte-emergencia/add-images-reporte-emergencia'
+  environment:
+    BUCKET: codegas
+  package:
+    include:
+      - services/revisiones/src/add-images-reporte-emergencia.js
+      - lib/errors/database-error.js
+      - lib/image.js
+      - lib/responses.js
+
+getReporteEmergenciaByUser:
+  name: ${self:custom.base}-get-reporte-emergencia-by-user
+  handler: services/reporte-emergencia/src/get-reporte-emergencia-by-user.main
+  events:
+    - httpApi: 'GET /rep/reporte-emergencia/byUser/{start}/{limit}/{id}/{search}'
+  package:
+    include:
+      - services/reporte-emergencia/src/get-reporte-emergencia-by-id.js
+      - lib/errors/database-error.js
+
+getReporteEmergenciaById:
+  name: ${self:custom.base}-get-reporte-emergencia-by-id
+  handler: services/reporte-emergencia/src/get-reporte-emergencia-by-id.main
+  events:
+    - httpApi: 'GET /rep/reporte-emergencia/byId/{id}'
+  package:
+    include:
+      - services/reporte-emergencia/src/get-reporte-emergencia-by-id.js
+      - lib/errors/database-error.js

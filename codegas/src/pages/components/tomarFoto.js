@@ -31,12 +31,13 @@ export default class tomarPhoto extends Component{
 				    uri:  response.path,
 				    type: response.mime ?response.mime :'image/jpeg',
 				    name: response.fileName ?response.fileName :`imagen.jpg`,
-				    path: response.path
+				    path: response.path,
+                    imagen: base64
                 };
                 
                 imagenes.push(imagen)
 			    this.setState({ imagenes, showModal:false, isAndroidShareOpen:false });
-                this.props.imagenes(base64)
+                this.props.imagenes(imagen)
 			}
 		});
     }

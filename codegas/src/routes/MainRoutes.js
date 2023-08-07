@@ -31,17 +31,17 @@ import puntosComponent	 		from '../pages/puntos/puntos';
 // import nuevoTanqueComponent 	from '../pages/tanques/nuevoTanques';
 import revisionComponent 		from '../pages/revision/revision';
 import nuevaRevisionComponent 	from '../pages/revision/nuevaRevision';
-// import chartComponent 			from '../pages/chart/chart';
+import chartComponent 			from '../pages/chart/chart';
 // import cerrarRevisionComponent 	from '../pages/revision/cerrarRevision';
 // import cerrarSeguridadComponent from '../pages/revision/cerrarSeguridad';
 // import cerrarTanqueComponent 	from '../pages/tanques/cerrarTanque';
-// import reporteEmergenciaComponent from '../pages/reporteEmergencia/reporteEmergencia';
-// import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoReporteEmergencia';
+import reporteEmergenciaComponent from '../pages/reporteEmergencia/reporteEmergencia';
+import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoReporteEmergencia';
 import pdfComponent 				from '../pages/pdf/pdf';
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 	: {screen: usuariosComponent},
+	Home  		 	 	: {screen: reporteEmergenciaComponent},
 	pedido       		: {screen: pedidoComponent},
 	IniciarSesion       : {screen: IniciarSesion},
 	nuevo_pedido 		: {screen: nuevoPedidoComponent},
@@ -67,14 +67,14 @@ const AppNavigator = createStackNavigator({
 	// nuevoTanque 		: {screen: nuevoTanqueComponent},
 	revision 			: {screen: revisionComponent},
 	nuevaRevision 		: {screen: nuevaRevisionComponent},
-	// chart 				: {screen: chartComponent},
+	chart 				: {screen: chartComponent},
 	// cambiar 			: {screen: cambiarComponent},
 	// cerrarRevision 		: {screen: cerrarRevisionComponent},
 	// cerrarSeguridad 	: {screen: cerrarSeguridadComponent},
 	// cerrarTanque 		: {screen: cerrarTanqueComponent},
-	// reporteEmergencia	: {screen: reporteEmergenciaComponent},
+	reporteEmergencia	: {screen: reporteEmergenciaComponent},
+	nuevoReporteEmergencia : {screen: nuevoReporteEmergenciaComponent},
 	pdf					: {screen: pdfComponent},
-	// nuevoReporteEmergencia : {screen: nuevoReporteEmergenciaComponent},
   },{ headerMode: 'none'});
 
 export default createAppContainer(AppNavigator)

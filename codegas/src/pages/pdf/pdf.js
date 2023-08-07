@@ -1,20 +1,19 @@
 import React from 'react';
-import { StyleSheet, Dimensions, View } from 'react-native';
-
+import { StyleSheet, Dimensions, View, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import Pdf from 'react-native-pdf';
 
 export default class PDFExample extends React.Component {
     render() {
-        console.log(this.props.navigation.state.params.uri)
         const source = {uri:this.props.navigation.state.params.uri,cache:true};
-        //const source = require('./test.pdf');  // ios only
-        //const source = {uri:'bundle-assets://test.pdf'};
-
-        //const source = {uri:'file:///sdcard/test.pdf'};
-        //const source = {uri:"data:application/pdf;base64,JVBERi0xLjcKJc..."};
-
         return (
             <View style={styles.container}>
+                <TouchableOpacity
+                    onPress={() => this.props.navigation.goBack()}
+                    style={styles.backButton}
+                >
+                    <Icon name="arrow-left" style={styles.icon} />
+                </TouchableOpacity>
                 <Pdf
                     source={source}
                     onLoadComplete={(numberOfPages,filePath)=>{
@@ -47,5 +46,15 @@ const styles = StyleSheet.create({
         flex:1,
         width:Dimensions.get('window').width,
         height:Dimensions.get('window').height,
-    }
+    },
+    backButton: {
+        position: 'absolute',
+        top: 30,
+        left: 15,
+        zIndex: 1,
+    },
+    icon: {
+        fontSize: 24,
+        color: 'black',
+    },
 });

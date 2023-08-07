@@ -14,7 +14,6 @@ const getPedido = pedidoId => {
     return axios
       .get(`/ped/pedido/${pedidoId}`)
       .then(res => {
-
         dispatch({
           type: GET_PEDIDO,
           pedido: res.data.pedido

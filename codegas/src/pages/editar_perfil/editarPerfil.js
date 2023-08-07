@@ -499,7 +499,7 @@ class verPerfil extends Component {
         axios.get(`users/cambiarValor/${valorUnitario}/${idUsuario}`)
         .then(res=>{
             if(res.data.status){
-                Toast.show("Valor unitario editado", Toast.LONG)
+                Toast.show({type: 'success', text1: 'Valor unitario editado'})
             }
         })
     }
@@ -508,8 +508,7 @@ class verPerfil extends Component {
         axios.post("user/checkEmail", {email})
         .then(res=>{
             if(res.data.status==="SUCCESS"){
-                Toast.show("Este email ya existe!", Toast.LONG)
-                // this.setState({email:""})
+                Toast.show({type: 'error', text1: 'Este email ya existe!'})
             }
         })
 
@@ -525,7 +524,7 @@ class verPerfil extends Component {
         .then(res=>{
             if(res.data.status){
                 setTimeout(() => {
-                    Toast.show("Usuario asignado", Toast.LONG)
+                    Toast.show({type: 'success', text1: 'Usuario asignado'})
                 }, 100);
             }
         })
@@ -550,7 +549,7 @@ class verPerfil extends Component {
             .then(res=>{
                 if(res.data.status){
                     this.props.navigation.navigate("Home")
-                    Toast.show("Usuario eliminado con exito")
+                    Toast.show({type: 'error', text1: 'Usuario eliminado con exito"'})
                 }
             })
         }
@@ -573,7 +572,7 @@ class verPerfil extends Component {
             .then(res=>{
                 if(res.data.status){
                     this.props.navigation.navigate("Home")
-                    Toast.show("Usuario guardado con exito")
+                    Toast.show({type: 'success', text1: 'Usuario guardado con exito'})
                 }
             })
 
@@ -908,10 +907,10 @@ class verPerfil extends Component {
                     { cancelable: false }
                 )
             }else if(celular.length<7){
-                Toast.show("Telefono incorrecto")
+                Toast.show({type: 'error', text1: 'Telefono incorrecto'})
     
             }else if(cedula.length<5){
-                Toast.show("Cedula incorrecta")
+                Toast.show({type: 'error', text1: 'Cedula incorrecta'})
             }else{
                 esEditar=="editar" ?this.editarUsuario() :this.guardarUsuario()
             }
@@ -971,7 +970,8 @@ class verPerfil extends Component {
                         axios.post("user/crea_varios", {clientes, idPadre:e.data.user._id, nombrePadre:e.data.user.nombre})
                         .then(res=>{
                             this.props.navigation.navigate("Home")
-                            Toast.show("Usuario guardado con exito")
+                            Toast.show({type: 'success', text1: 'Usuario guardado con exito'})
+                             
                         })
                         .catch(err2=>{
                             console.log(err2)
@@ -982,7 +982,7 @@ class verPerfil extends Component {
                         .then(res=>{
                             console.log(res.data)
                             this.props.navigation.navigate("Home")
-                            Toast.show("Usuario guardado con exito")
+                            Toast.show({type: 'success', text1: 'Usuario guardado con exito'})
                         })
                         .catch(err2=>{
                             console.log(err2)
@@ -992,14 +992,14 @@ class verPerfil extends Component {
                 }else{
                     if(imagen.length===0){
                         this.props.navigation.navigate("Home")
-                        Toast.show("Usuario eliminado con exito")
+                        Toast.show({type: 'error', text1: 'Usuario eliminado con exito'})
                     }else{
                         this.avatar(imagen, e.data.user._id)
                     }
                 }
             }else{
                 this.setState({cargando:false})
-                Toast.show("Este email ya existe")
+                Toast.show({type: 'error', text1: 'Este email ya existe'})
             }
         })
         .catch(err=>{
@@ -1043,7 +1043,7 @@ class verPerfil extends Component {
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
-                        Toast.show("Usuario guardado con exito")
+                        Toast.show({type: 'success', text1: 'Usuario guardado con exito'})
                     })
                     .catch(err2=>{
                         console.log(err2)
@@ -1057,7 +1057,7 @@ class verPerfil extends Component {
                     .then(res=>{
                         AsyncStorage.setItem('nombre', e.data.user.nombre)
                         this.props.navigation.navigate("Home")
-                        Toast.show("Usuario guardado con exito")
+                        Toast.show({type: 'success', text1: 'Usuario guardado con exito'})
                     })
                     .catch(err2=>{
                         console.log(err2)
@@ -1096,7 +1096,7 @@ class verPerfil extends Component {
                 }else{
                     AsyncStorage.setItem('nombre', e.data.user.nombre)
                     this.props.navigation.navigate("Home")
-                    Toast.show("Usuario editado con exito")
+                    Toast.show({type: 'success', text1: 'Usuario editado con exito'})
                     this.setState({cargando:false})
 
                 }
@@ -1105,7 +1105,7 @@ class verPerfil extends Component {
                 if(editaAvatar){
                     if(imagen.length===0){
                         this.props.navigation.navigate("Home")
-                        Toast.show("Usuario eliminado con exito")
+                        Toast.show({type: 'success', text1: 'Usuario eliminado con exito'})
                     }else{
                         this.avatar(imagen, e.data.user._id)
                     }
@@ -1131,10 +1131,10 @@ class verPerfil extends Component {
             .then(e=>{
                 console.log(e.data)
                 if(e.data.status) {
-                    Toast.show("Informacion editada")
+                    Toast.show({type: 'success', text1: 'Información editada'})
                     this.props.navigation.navigate("Home")
                 }else{
-                    Toast.show("Tenemos un problema, intentelo mas tarde")
+                    Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
                 }
             })
             .catch(err=>{
@@ -1147,7 +1147,7 @@ class verPerfil extends Component {
     async edicionExitosa(nombre){
         
         this.setState({cargando:false})
-        Toast.show("Usuario editado")
+        Toast.show({type: 'success', text1: 'Usuario Editado'})
         this.props.navigation.navigate("Home")
     }
     async loginExitoso(user){
@@ -1155,7 +1155,7 @@ class verPerfil extends Component {
         AsyncStorage.setItem('nombre', user.nombre)
         AsyncStorage.setItem('avatar', user.avatar)
         this.setState({cargando:false})
-        Toast.show("Usuario guardado con exito")
+        Toast.show({type: 'success', text1: 'Informacion guardado'})
         this.props.navigation.navigate("Home")
         // this.setState({userId:user._id, cargando:false, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
     }

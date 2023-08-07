@@ -450,23 +450,7 @@ class Tanques extends Component{
                     </View>
                 }
 
-                {/* PROPIEDAD */}  
-                 {/* <ModalFilterPicker
-					placeholderText="Propiedad ..."
-					visible={modalPropiedad}
-					onSelect={(e)=>this.setState({propiedad:e, modalPropiedad:false})}
-					onCancel={()=>this.setState({modalPropiedad:false})}
-                    options={propiedades}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Propiedad</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={()=>this.setState({modalPropiedad:true})}>
-                        <Text style={propiedad ?style.textBtnActive :style.textBtn}>{propiedad ?propiedad :"Propiedad"}</Text>
-                    </TouchableOpacity>
-                </View> */}
-
+                 
                 {/* UBICACIONES */}
                 <ModalFilterPicker
 					placeholderText="ubicaciones ..."
@@ -507,10 +491,7 @@ class Tanques extends Component{
                     cancelButtonText="CANCELAR"
                     optionTextStyle={style.filterText}
                 />
-                {/* <TouchableOpacity style={style.nuevaFrecuencia} onPress={()=>this.getClientes()}>
-                    <Icon name="plus" style={style.iconFrecuencia} />
-                    <Text style={style.textGuardar}>Asignar Cliente</Text>
-                </TouchableOpacity> */}
+           
                 {
                     usuarioId
                     &&<View style={style.contenedorUsuario}>
@@ -552,38 +533,7 @@ class Tanques extends Component{
                             <Text style={style.textZona}>Observacion: {observacion}</Text>
                         </View>
                     </View>    
-                {
-                    //  puntos.length>1
-                    //  ?<View>
-                    //  <Text style={style.textZona}>Punto de entrega</Text>
-                    //      {
-                    //          puntos.map((e, key)=>{
-                    //              return (
-                    //                  <TouchableOpacity key={key} style={puntoId==e._id ?style.btnZonaActiva :style.btnZona} onPress={()=>this.setState({puntoId:e._id, zonaId:e.idZona})}>
-                    //                      <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                    //                      <View>
-                    //                          <Text style={style.textZona}>{e.direccion}</Text>   
-                    //                          <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
-                    //                      </View>
-                                        
-                    //                  </TouchableOpacity>
-                    //              )
-                    //          })
-                    //      }
-                    //  </View>
-                    //  :puntos.map((e, key)=>{
-                    //      return (
-                    //          <View key={key} style={style.btnZonaActiva} >
-                    //             <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon}  resizeMode={'contain'} />	
-                    //             <View>
-                    //                 <Text style={style.textZona}>{e.direccion}</Text>
-                    //                 <Text style={style.textZona}>Almacenamiento: {e.capacidad}</Text>
-                    //             </View>
-                    //          </View>    
-                    //      )
-                    //  })
-                }
-
+                
             </View>
         )
     }
@@ -784,7 +734,7 @@ class Tanques extends Component{
                 this.setState({loading:false})
                 Toast.show({type: 'success', text1: 'Imagen Subida'})
             }else{
-                Toast.show({type: 'fail', text1: 'Tenemos un problema, intentelo mas tarde'})
+                Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
             }
           })
     }
@@ -824,7 +774,6 @@ class Tanques extends Component{
     buscarPoblado(ciudad){
         axios.get(`https://resources-codegas.s3.amazonaws.com/poblado.json`)
         .then(res=>{
-            console.log(res.data)
             let poblados = res.data
             poblados = poblados.filter(e=>{
                 return ciudad===e.ciudad
@@ -953,10 +902,10 @@ class Tanques extends Component{
         axios.post(`rev/revision/solicitudServicio/${revisionId}`, {solicitudServicio, nControl, codtCliente, direccion, razon_socialCliente})
         .then((res)=>{
             if(res.data.status){
-                Toast.show("Solicitud enviada")
+                Toast.show({type: 'success', text1: 'Solicitud enviada'})
                 this.setState({modalAlerta:false, solicitudServicio:""})
             }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
             }
         })
     }
@@ -1051,7 +1000,7 @@ class Tanques extends Component{
                 this.setState({capacidad:totalCapacidad})
 
             }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
             }
         })
     }
@@ -1075,7 +1024,7 @@ class Tanques extends Component{
       
                 this.setState({capacidad:totalCapacidad})
             }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
             }
         })
     }
@@ -1095,7 +1044,7 @@ class Tanques extends Component{
                 //     console.log(res.data)
                 // })
             }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
             }
         })
     }
@@ -1144,9 +1093,9 @@ class Tanques extends Component{
                  
                 alert("Revisión Guardado")
                 const {navigation} = this.props
-                navigation.navigate("Home")
+                // navigation.navigate("Home")
             }else{
-                Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
             }
         })
     }

@@ -3,38 +3,42 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-nativ
 import { style } from './style';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios'
 import { DataContext } from '../../context/context';
 import { getRevisiones, getRevisionByPunto } from '../../redux/actions/revisionActions';
 import Footer from '../components/footer';
 
 const Revision = (props) => {
-  const {revisiones=[], revision_by_punto=[], navigation, getRevisiones, getRevisionByPunto} = props
+  const { navigation, getRevisiones, getRevisionByPunto} = props
   const {acceso} = useContext(DataContext)
   const [terminoBuscador, setTerminoBuscador] = useState(undefined);
-  const [data, setData] = useState(navigation.state.params ? revision_by_punto : revisiones);
+  const [data, setData] = useState([]);
  
   const [inicio, setInicio] = useState(0);
   const [limit, setLimit] = useState(10);
   const [final, setFinal] = useState(false);
-  const [areRevisionesLoaded, setAreRevisionesLoaded] = useState(false);
+  // const [revisiones, setRevisiones]= useState([])
+  // const [revision_by_punto,, setRevision_by_punto]= useState([])
 
   useEffect(() => {
     loadRevisiones();
   }, []);
 
-  useEffect(() => {
-    if (revisiones.length > 0) {
-      setAreRevisionesLoaded(true);
-    }
-  }, [revisiones]);
-  
-  
+ 
   const loadRevisiones =(last) => {
     if (navigation.state.params) {
-      getRevisionByPunto(navigation.state.params.puntoId)
-      setAreRevisionesLoaded(true);
+      // getRevisionByPunto(navigation.state.params.puntoId)
+      axios.get(`rev/revision/byPunto/${navigation.state.params.puntoId}`)
+      .then(res=>{
+          console.log(res)
+          setData(res.data.revision)
+      })
     } else {
-      getRevisiones(0, last, terminoBuscador)
+      axios.get(`/rev/revision/${last}/${0}/${terminoBuscador}`)
+        .then(res=>{
+          setData(res.data.revision)
+        })
+      // getRevisiones(0, last, terminoBuscador)
     }
   }
   const onScroll = (event) => {
@@ -163,7 +167,7 @@ const Revision = (props) => {
 
       <ScrollView style={{ marginBottom: 85 }} onScroll={(e) => onScroll(e)} keyboardDismissMode="on-drag">
         {
-          areRevisionesLoaded &&renderRevisiones()
+           renderRevisiones()
         }
       </ScrollView>
       <Footer navigation={navigation} />

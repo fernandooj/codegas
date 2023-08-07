@@ -38,13 +38,11 @@ class Revision extends Component{
         this.props.navigation.state.params
         ?axios.get(`rev/revision/byPunto/${this.props.navigation.state.params.puntoId}`)
         .then(res=>{
-            console.log(res)
             this.setState({revisiones:res.data.revision})
         })
         :axios.get(`rev/revision/`)
         .then(res=>{
-            console.log("res")
-            console.log(res.data)
+
             this.setState({revisiones:res.data.revision})
         })
        

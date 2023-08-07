@@ -12,6 +12,7 @@ RETURNS TABLE (
     fechaEntrega VARCHAR(255),
     forma VARCHAR(255),
     cantidadKl INT,
+    kilos VARCHAR(30),
     cantidadPrecio INT,
     estado VARCHAR(255),
     entregado BOOLEAN,
@@ -43,18 +44,6 @@ DECLARE
 BEGIN
     IF _acceso = 'admin' THEN
         SELECT COUNT(*) INTO _total 
-         FROM pedidos p
-        LEFT JOIN puntos pt ON p.puntoId = pt._id
-        LEFT JOIN zonas z ON pt.idZona = z._id
-        LEFT JOIN users u ON p.usuarioId = u._id
-        LEFT JOIN users u2 ON p.usuarioCrea = u2._id
-        LEFT JOIN carros c ON p.carroId = c._id
-        LEFT JOIN users u3 ON p.conductorId = u3._id
-        WHERE p.eliminado = false
-        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%');
-
-        RETURN QUERY 
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre,  u2.nombre, u3.nombre, p.puntoId, _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -63,7 +52,19 @@ BEGIN
         LEFT JOIN carros c ON p.carroId = c._id
         LEFT JOIN users u3 ON p.conductorId = u3._id
         WHERE p.eliminado = false
-        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%')
+        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%');
+
+        RETURN QUERY 
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, _total
+        FROM pedidos p
+        LEFT JOIN puntos pt ON p.puntoId = pt._id
+        LEFT JOIN zonas z ON pt.idZona = z._id
+        LEFT JOIN users u ON p.usuarioId = u._id
+        LEFT JOIN users u2 ON p.usuarioCrea = u2._id
+        LEFT JOIN carros c ON p.carroId = c._id
+        LEFT JOIN users u3 ON p.conductorId = u3._id
+        WHERE p.eliminado = false
+        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%')
         ORDER BY p._id DESC
         LIMIT _limit OFFSET _start;
 
@@ -81,7 +82,7 @@ BEGIN
         AND p.conductorId = _usuarioId;
 
         RETURN QUERY 
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre,  u2.nombre, u3.nombre, p.puntoId, _total
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -96,7 +97,8 @@ BEGIN
         OFFSET _start;
 
     ELSE
-        SELECT COUNT(*) INTO _total
+        RETURN QUERY
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario AS valorUnitarioUsuario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre AS zona, u2.nombre AS usuarioCrea, u3.nombre AS conductor, p.puntoId, _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -106,44 +108,21 @@ BEGIN
         LEFT JOIN users u3 ON p.conductorId = u3._id
         WHERE p.usuarioId IN (
             WITH RECURSIVE arbol AS (
-                SELECT _id
-                FROM users
-                WHERE _id = _usuarioId
+                SELECT u._id
+                FROM users u
+                WHERE u._id = _usuarioId
                 UNION ALL
                 SELECT u._id
                 FROM users u
                 JOIN arbol a ON u.idPadre = a._id
             )
-            SELECT _id FROM arbol
+            SELECT arbol._id FROM arbol
         ) 
         AND p.eliminado = false
-        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%');
-
-        RETURN QUERY 
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre,  u2.nombre, u3.nombre, p.puntoId, _total
-        FROM pedidos p
-        LEFT JOIN puntos pt ON p.puntoId = pt._id
-        LEFT JOIN zonas z ON pt.idZona = z._id
-        LEFT JOIN users u ON p.usuarioId = u._id
-        LEFT JOIN users u2 ON p.usuarioCrea = u2._id
-        LEFT JOIN carros c ON p.carroId = c._id
-        LEFT JOIN users u3 ON p.conductorId = u3._id
-        WHERE p.usuarioId IN (
-            WITH RECURSIVE arbol AS (
-                SELECT _id
-                FROM users
-                WHERE _id = _usuarioId
-                UNION ALL
-                SELECT u._id
-                FROM users u
-                JOIN arbol a ON u.idPadre = a._id
-            )
-            SELECT _id FROM arbol
-        ) 
-        AND p.eliminado = false
-        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%')
+        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre) ILIKE '%' || _busqueda || '%')
         ORDER BY p._id DESC
-        LIMIT _limit OFFSET _start;
+        LIMIT _limit
+        OFFSET _start;
     END IF;
 
     RETURN;

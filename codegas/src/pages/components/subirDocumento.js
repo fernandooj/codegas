@@ -65,12 +65,6 @@ export default class subirDocumento extends Component{
    
 	renderDocumentos(){
         let {imagenes} = this.state
-        // let img = []
-        // imagenes.map(e=>{
-        //     img.push({uri:e, name:e}) 
-        // })
-        // console.log(props.titulo)
-        console.log(imagenes)
         return imagenes.map((e, key)=>{
             return(
                 <View key={key} style={style.contenedorPdf}>   

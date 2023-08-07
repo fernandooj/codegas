@@ -46,7 +46,7 @@ class Pedido extends Component{
         modalConductor:false,
         modalFechaEntrega:false,
         modalZona:false,
-        terminoBuscador:"",
+        terminoBuscador:undefined,
         kilosTexto:"",
         remisionTexto:"",
         facturaTexto:"",
@@ -65,21 +65,26 @@ class Pedido extends Component{
         fechaEntregaFiltro:  moment().format("YYYY-MM-DD")
 	  }
 	}
-	 
-    componentWillMount = async () =>{
+    static getDerivedStateFromProps(nextProps, prevState) {
+        if (nextProps.pedidos !== prevState.pedidos) {
+          return { pedidos: nextProps.pedidos, pedidosFiltro: nextProps.pedidos };
+        }
+        return null;
+      }
+    
+      componentDidMount = async () =>{
         const value = this.context;
         const {acceso, userId: idUsuario} = value
         this.setState({idUsuario, acceso})
-         
         // this.socket = SocketIOClient(URL);
         // this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
     }
     
-    componentWillReceiveProps(props){
-        this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})   
-    }    
+    // componentWillReceiveProps(props){
+    //     this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})   
+    // }    
     componentWillUnmount () {
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
@@ -1333,13 +1338,14 @@ class Pedido extends Component{
     let {idUsuario, acceso, limit, terminoBuscador} = this.state
     limit = type==='load' ?20 :limit
     terminoBuscador = type==='load' ?'' :terminoBuscador
+   
     this.props.getPedidos(idUsuario, 0, limit, acceso, terminoBuscador)
   }
 }
 
 const mapState = state => {
 	return {
-    pedidos: state.pedido.pedidos,
+        pedidos: state.pedido.pedidos,
 	};
 };
   
