@@ -7,7 +7,7 @@ const ADD_IMAGES_REVISION = 'SELECT * FROM add_images_revisiones($1, $2, $3)';
 
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
-  const { images, revisionId, type, name } = body;
+  const { revisionId, type, name } = body;
 
   try {
     const client = await poolConection.connect();

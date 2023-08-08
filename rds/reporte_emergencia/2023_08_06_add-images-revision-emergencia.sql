@@ -16,6 +16,10 @@ BEGIN
     UPDATE reporte_emergencia
     SET rutaCerrar = array_cat(rutaCerrar, param_nuevos)
     WHERE _id = _idReporte;
+  ELSIF _type = 'ruta' THEN
+    UPDATE reporte_emergencia
+    SET ruta = array_cat(ruta, param_nuevos)
+    WHERE _id = _idReporte;
   END IF;
 
   RETURN 'Images added successfully';

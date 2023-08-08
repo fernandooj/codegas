@@ -7,7 +7,7 @@ const ADD_IMAGES_REPORTE_EMERGENCIA = 'SELECT * FROM add_images_reporte_emergenc
 
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
-  const { images, idReporte, type, name } = body;
+  const { idReporte, type, name } = body;
 
   try {
     const client = await poolConection.connect();

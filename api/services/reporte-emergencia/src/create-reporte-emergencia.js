@@ -1,5 +1,13 @@
 const {poolConection} = require('../../../lib/connection-pg.js')
 
+const AWS = require('aws-sdk');
+const ses = new AWS.SES();
+ 
+
+const CREATE_REPORT = 'select * from save_reporte_emergencia($1, $2, $3, $4, $5, $6, $7, $8, $9)'
+const GET_USER_BY_ID = 'SELECT * FROM users WHERE _id = $1';
+const SOURCE = 'app@codegascolombia.com';
+
 /**
  * Inserts reporte emergencia into the database.
  *
@@ -16,19 +24,61 @@ const {poolConection} = require('../../../lib/connection-pg.js')
 
 module.exports.main = async (event) => {
   const body = JSON.parse(event.body);
-  const {
-    tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, ruta, usuarioCrea
+  let {
+    tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea
   } = body;
-  const client = await poolConection.connect();
-  const CREATE_REPORT = 'INSERT INTO reporte_emergencia(tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, ruta, usuarioCrea) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)'
+
+ 
+  let asunto =  "Nuevo reporte de emergencia"  
+  let titulo = `<font size="5">Nuevo reporte de emergencia </font>`
+  tanque  ?"Tanque en mal estado" :""
+  red     ?"Red en mal estado" :""
+  puntos  ?"Puntos de ignición cerca" :""
+  fuga    ?"Fuga" :""
+  pqr     ?"PQR"  :""
   
   try {
+    const client = await poolConection.connect();
+       
+    const {rows: user} = await client.query(CREATE_REPORT, [tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea])
+    const _id = user[0].save_reporte_emergencia
+     
+    const {rows} =  await client.query(GET_USER_BY_ID, [usuarioId])
+    const {rows: userReporta} =  await client.query(GET_USER_BY_ID, [usuarioCrea])
     
-    await client.query(CREATE_REPORT, [tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, ruta, usuarioCrea])
+    const {codt, razon_social} = rows[0] 
+    const {nombre} = userReporta[0] 
+ 
+    let text2  = `N Reporte: ${_id} <br/> ${tanque} <br/> ${red} <br/> ${puntos} <br/> ${fuga} <br/> ${pqr}<br/> ${otrosText}<br/> codt: ${codt}<br/> Usuario: ${razon_social} / ${rows[0].nombre} `
+    let text3  = `Usuario Reporta: ${nombre}`
+    let email1 = "fernandooj@ymail.com"
+    let email2 = "dptotecnico@codegascolombia.com"
+     
+  
+    const params = {
+      Destination: {
+        ToAddresses: [email1, email2],
+      },
+      Message: {
+        Body: {
+          Html: {
+            Data: `${titulo} <br/> ${text2}<br/> ${text3}`,
+          },
+        },
+        Subject: {
+          Data: asunto,
+        },
+      },
+      Source: SOURCE,
+    };
+    await ses.sendEmail(params).promise();
+
     return {
-        status: true
+        status: true,
+        reporte: _id
       }
   } catch (error) {
+    console.error(error)
     throw JSON.stringify(error);
   }
 };

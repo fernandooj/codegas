@@ -30,7 +30,7 @@ cerrarReporteEmergencia:
 
 addImageReporteEmergencia:
   name: ${self:custom.base}-add-images-reporte-emergencia
-  handler: services/revisiones/src/add-images-reporte-emergencia.main
+  handler: services/reporte-emergencia/src/add-images-reporte-emergencia.main
   timeout: 25
   events:
     - httpApi: 'PUT /rep/reporte-emergencia/add-images-reporte-emergencia'
@@ -38,7 +38,7 @@ addImageReporteEmergencia:
     BUCKET: codegas
   package:
     include:
-      - services/revisiones/src/add-images-reporte-emergencia.js
+      - services/reporte-emergencia/src/add-images-reporte-emergencia.js
       - lib/errors/database-error.js
       - lib/image.js
       - lib/responses.js

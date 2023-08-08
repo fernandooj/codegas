@@ -5,11 +5,9 @@ let Height = Dimensions.get('window').height;
 
 export const style = MediaQueryStyleSheet.create({
     container:{
-		flex:.95,
+ 
 		backgroundColor:'#ffffff',
-		paddingTop:Platform.OS==='android' ?10 :35,
-		alignItems:"center",
-		justifyContent: 'center'
+		paddingTop: 10,
 	},
 	
 	nuevoBtn:{
@@ -91,6 +89,7 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection:"row",
 		alignItems:"center",
 		width:Width-20,
+		marginTop: 20
 	},
 	row1Step2:{
 		fontFamily: "Comfortaa-Regular",

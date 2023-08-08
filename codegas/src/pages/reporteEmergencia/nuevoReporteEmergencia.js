@@ -3,12 +3,14 @@ import {View, Text, Image, ScrollView, TouchableOpacity, TextInput, Switch, Plat
 import {style}        from './style'
 import {connect}      from 'react-redux' 
 import axios          from 'axios';
+import Toast from 'react-native-toast-message';
 import SubirDocumento from "../components/subirDocumento";
 import TomarFoto      from "../components/tomarFoto";
 import Footer         from '../components/footer'
- 
+import {DataContext} from "../../context/context"
  
 class nuevoReporteEmergencia extends Component{
+    static contextType = DataContext;
 	constructor(props) {
         super(props);
         this.state={
@@ -30,11 +32,21 @@ class nuevoReporteEmergencia extends Component{
     }
  
     componentDidMount(){
+        const value = this.context;
+        const {acceso, userId: usuarioCrea} = value
+        this.setState({usuarioCrea, acceso})
+        this.getData()
+    }
+    getData() {
         let reporteId = this.props.navigation.state.params ?this.props.navigation.state.params.reporteId :null
+        let usuarioId = this.props.navigation.state.params ?this.props.navigation.state.params.usuarioId :null
+        let puntoId = this.props.navigation.state.params ?this.props.navigation.state.params.puntoId :null
+        let codt = this.props.navigation.state.params ?this.props.navigation.state.params.codt :null
+        let razon_social = this.props.navigation.state.params ?this.props.navigation.state.params.razon_social :null
+         
         if(reporteId){
             axios.get(`rep/reporte-emergencia/byId/${reporteId}`)
             .then(res => {
-                console.log(res.data)
                 const {reporte} = res.data
                 this.setState({
                     nReporte      : reporte._id,
@@ -56,18 +68,24 @@ class nuevoReporteEmergencia extends Component{
                     otrosText     : reporte.otrostext   ?reporte.otrostext :"",
                 })
             })
+        } else {
+            this.setState({
+                usuarioId,
+                puntoId,
+                usuariocodt: codt,
+                usuarioRazonSocial: razon_social
+            })
         }
     }
-     
     rendercontenido(){
         let {tanque, red, puntos, fuga, imgRuta, otrosText, cerradoText, nReporte, cargando, pqr, usuariocodt, usuarioCreaNombre, usuarioCreaRazonSocial, usuarioNombre, usuarioRazonSocial, puntodireccion, imgDocumento} = this.state
-        console.log(nReporte)
+         console.log(imgDocumento)
         return(
-            <View>
+            <View style={style.container}>
                 {/* BARRIO */}
                 {nReporte  &&<Text style={style.textCerrar}>N Reporte: {nReporte}</Text>}
                 {nReporte &&<Text style={style.textCerrar}>Usuario Reporta: {usuariocodt ?usuarioCreaNombre :usuarioCreaRazonSocial} </Text>}
-                {usuarioNombre   &&<Text style={style.textUsers}>Cliente:   {usuarioRazonSocial} - {usuarioNombre}</Text>}
+                {usuarioRazonSocial   &&<Text style={style.textUsers}>Cliente:   {usuarioRazonSocial} - {usuarioNombre}</Text>}
                 {usuariocodt   &&<Text style={style.textUsers}>codt:      {usuariocodt}</Text>}
                 {puntodireccion     && <Text style={style.textUsers}>Ubicacion: {puntodireccion}</Text>}
                 <View style={style.contenedorSetp2}>
@@ -143,15 +161,19 @@ class nuevoReporteEmergencia extends Component{
                 </View>
                  {/* IMAGEN */}
                 <View style={style.separador}></View>
-                <TomarFoto 
-                    source={imgRuta}
-                    width={180}
-                    titulo="Imagen"
-                    limiteImagenes={4}
-                    imagenes={(imgRuta) => {  this.setState({imgRuta}) }}
-                />
-                <View style={style.separador}></View>
                 {
+                    nReporte
+                    &&<>
+                        <TomarFoto 
+                            source={imgRuta}
+                            width={180}
+                            titulo="Imagen"
+                            limiteImagenes={4}
+                            imagenes={(e) => {  this.uploadImagen(e, 'ruta', 'image/jpeg') }}
+                        />
+                        <View style={style.separador}></View>
+                    </>
+                }{
                     nReporte
                     &&<View style={style.contenedorSetp2}>
                         <Text style={style.row1Step2}>Gestión reporte</Text>
@@ -163,7 +185,7 @@ class nuevoReporteEmergencia extends Component{
                         />
                     </View>
                 }
-                 {/* DOSSIER */}
+                
                  {nReporte &&<View style={style.separador}></View>}
                 {
                     nReporte
@@ -172,7 +194,7 @@ class nuevoReporteEmergencia extends Component{
                         width={180}
                         titulo="Documento adjunto"
                         limiteImagenes={4}
-                        imagenes={(imgDocumento) => {  this.setState({imgDocumento}) }}
+                        imagenes={(e) => {  this.uploadImagen(e, 'documento', 'application/pdf') }}
                     />
                 }
                 {nReporte &&<View style={style.separador}></View>}
@@ -185,6 +207,7 @@ class nuevoReporteEmergencia extends Component{
             </View>
         )
     }
+    
 	render(){
         const {navigation} = this.props
         return (
@@ -194,81 +217,89 @@ class nuevoReporteEmergencia extends Component{
                     {this.rendercontenido()}
                 </ScrollView>
                 <Footer navigation={navigation} />
+                <Toast />
             </View>
         )
     }
     cerrar(){
-        let {nReporte, cerradoText, imgRutaCerrar, tanque, imgDocumento, red, puntos, fuga, pqr} = this.state
-        console.log({imgDocumento, red, puntos, fuga})
-        const {navigation} = this.props
-      
-        let data = new FormData();
-        imgRutaCerrar.forEach(e=>{
-            data.append('imgRutaCerrar', e);
-        })
-        let documento = imgDocumento.filter(e=>{
-            return !e.uri
-        })
-        imgDocumento = imgDocumento.filter(e=>{
-            return e.uri
-        })
-        imgDocumento.forEach(e=>{
-            data.append('imgDocumento', e);
-        })
-        data.append('tanque', tanque);
-        data.append('red',    red);
-        data.append('puntos', puntos);
-        data.append('fuga',  fuga);
-        data.append('pqr',  pqr);
-      
-        data.append('cerradoText',  cerradoText);
-        data.append('documento',  JSON.stringify(documento));
+        const {nReporte: idRevision, cerradoText, tanque, red, puntos, fuga, pqr, usuarioCrea: usuarioCierra} = this.state
+        const data = {
+            idRevision, cerradoText, tanque, red, puntos, fuga, pqr, usuarioCierra
+        };
+    
         axios({
-            method: 'PUT',   
-            url: `rep/reporteEmergenciaRutas/cerrar/${nReporte}`,
-            data: data,
+            method: 'put',  
+            url: `rep/reporte-emergencia/cerrar`,
+            data:  JSON.stringify(data),
+            headers: { 
+                'Content-Type': 'application/json'
+            },
         })
-        .then(e=>{
-            alert("Reporte Enviado")
-            navigation.navigate("Home")
+        .then((res)=>{
+            Toast.show({type: 'success', text1: 'Reporte Cerrado'})
+        })
+        .catch(err=>{
+            console.log({err})
+            Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
+            this.setState({cargando:false})
         })
     }
+
+
     handleSubmit(){
-        const {tanque, red, puntos, fuga, otrosText, imgRuta} = this.state
-        let usuarioId = this.props.navigation.state.params ?this.props.navigation.state.params.usuarioId :null
-        let puntoId = this.props.navigation.state.params ?this.props.navigation.state.params.puntoId :null
-        let codt = this.props.navigation.state.params ?this.props.navigation.state.params.codt :null
-        let razon_social = this.props.navigation.state.params ?this.props.navigation.state.params.razon_social :null
         this.setState({cargando:true})
-        let data = new FormData();
-        imgRuta.forEach(e=>{
-            data.append('imgRuta', e);
-        })
-        data.append('tanque', tanque);
-        data.append('red',    red);
-        data.append('puntos', puntos);
-        data.append('fuga',  fuga);
-        data.append('otrosText',  otrosText);
-        data.append('usuarioId',  usuarioId);
-        data.append('puntoId',  puntoId);
-        data.append('razon_social',  razon_social);
-        data.append('codt',  codt);
-       
+        const {tanque, red, puntos, fuga, otrosText, pqr, usuarioId, puntoId, usuarioCrea} = this.state
+        const data = {
+            tanque, red, puntos, fuga,  pqr, otrosText, usuarioId, puntoId, usuarioCrea
+        };
+    
         axios({
-            method: 'POST',   
-            url: `rep/reporteEmergenciaRutas`,
-            data: data,
+            method: 'post',  
+            url: `rep/reporte-emergencia`,
+            data:  JSON.stringify(data),
+            headers: { 
+                'Content-Type': 'application/json'
+            },
         })
         .then((res)=>{
             console.log(res.data)
-            alert("Reporte Creado")
-            const {navigation} = this.props
-            navigation.navigate("Home")
+            this.setState({nReporte: res.data.reporte})
+            Toast.show({type: 'success', text1: 'Reporte Creado'})
         })
         .catch(err=>{
             console.log({err})
             this.setState({cargando:false})
         })
+    }
+    uploadImagen(imagen, type, mime){
+        this.setState({loading:true})
+        let {nReporte: idReporte} = this.state
+        
+        const data = {
+            mime,
+            imagen: imagen.imagen,
+            idReporte,
+            type,
+            name: imagen.name
+        }
+        axios({
+            method: 'PUT',  
+            url: `/rep/reporte-emergencia/add-images-reporte-emergencia`,
+            data:  JSON.stringify(data),
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+          })
+          .then((res)=>{
+            if(res.data.status){
+                
+                Toast.show({type: 'success', text1: 'Imagen Subida'})
+                this.setState({loading:false})
+            }else{
+                Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
+                this.setState({loading:false})
+            }
+          })
     }
 }
 const mapState = state => {

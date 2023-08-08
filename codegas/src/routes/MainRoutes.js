@@ -41,7 +41,7 @@ import pdfComponent 				from '../pages/pdf/pdf';
  
  
 const AppNavigator = createStackNavigator({
-	Home  		 	 	: {screen: reporteEmergenciaComponent},
+	Home  		 	 	: {screen: homeComponent},
 	pedido       		: {screen: pedidoComponent},
 	IniciarSesion       : {screen: IniciarSesion},
 	nuevo_pedido 		: {screen: nuevoPedidoComponent},

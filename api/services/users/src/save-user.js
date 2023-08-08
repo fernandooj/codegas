@@ -61,18 +61,18 @@ module.exports.main = async (event) => {
   
   try {
     const client = await poolConection.connect();
-    await client.query('BEGIN');
+    //await client.query('BEGIN');
     const {rows} = await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
     await ses.sendEmail(params).promise();
  
-    await client.query('COMMIT');
+    //await client.query('COMMIT');
     return { 
       status: !!rows[0].save_users,
       code: rows[0].save_users || "email exist"
     };
   } catch (error) {
     console.error(error);
-    await client.query('ROLLBACK');
+    //await client.query('ROLLBACK');
     throw new DatabaseError(error);
   }
 }

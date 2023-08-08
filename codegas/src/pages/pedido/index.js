@@ -159,11 +159,11 @@ class Pedido extends Component{
                                 openModal:true, elevation:0, 
                                 placaPedido:e.placa, 
                                 conductorPedido:e.conductor,
-                                valor_unitarioUsuario:e.valorUnitarioUsuario ?e.valorUnitarioUsuario :e.valorUnitario, 
-                                imagenPedido:e.imagen, fechaEntrega:e.fechaentrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", usuarioId:e.usuarioId, nombre:e.nombre, razon_social:e.razon_social, codt:e.codt, email:e.email, tokenPhone:e.tokenPhone, cedula:e.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar, factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_total:e.valor_total, nPedido:e.nPedido, estadoInicial:e.estado, capacidad:e.capacidad,
-                                cantidadKl:e.cantidadKl,
-                                cantidadPrecio:e.cantidadPrecio,
-                                observacion:e.observacion,  puntoId:e.puntoId, usuarioCrea:e.nombre, creado:e.creado })
+                                valor_unitarioUsuario:e.valorunitariousuario ?e.valorunitariousuario :e.valorunitario, 
+                                imagenPedido:e.imagen, fechaEntrega:e.fechaentrega, id:e._id, estado:e.estado, estadoEntrega:e.estado=="activo" &&"asignado", usuarioId:e.usuarioid, nombre:e.nombre, razon_social:e.razon_social, codt:e.codt, email:e.email, tokenPhone:e.tokenPhone, cedula:e.cedula, forma:e.forma, cantidad:e.cantidad, entregado:e.entregado, imagenCerrar:e.imagenCerrar, factura:e.factura, kilos:e.kilos, remision:e.remision, forma_pago:e.forma_pago, valor_total:e.valor_total, nPedido:e._id, estadoInicial:e.estado, capacidad:e.capacidad,
+                                cantidadKl: e.cantidadkl,
+                                cantidadPrecio: e.cantidadprecio,
+                                observacion:e.observacion,  puntoId:e.puntoid, usuarioCrea:e.nombre, creado:e.creado })
                         }                        
                     }
                 >

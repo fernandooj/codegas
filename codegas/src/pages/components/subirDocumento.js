@@ -27,10 +27,9 @@ export default class subirDocumento extends Component{
     constructor(props) {
         super(props);
         this.state={
-            imagenes:  props.source.length > 1 ? props.source.map(item => JSON.parse(item)) : []
+            imagenes:  props.source.length >= 1 ? props.source.map(item => JSON.parse(item)) : []
         }
-      
-   
+        
     }
   
    
@@ -65,6 +64,7 @@ export default class subirDocumento extends Component{
    
 	renderDocumentos(){
         let {imagenes} = this.state
+       
         return imagenes.map((e, key)=>{
             return(
                 <View key={key} style={style.contenedorPdf}>   
@@ -94,7 +94,7 @@ export default class subirDocumento extends Component{
         );
 
         const eliminar =()=>{
-            console.log({imagenes:this.state.imagenes, keyImagen})
+             
             let imagenes = this.state.imagenes.filter((e, key)=>{
               return key!=keyImagen 
             })  
