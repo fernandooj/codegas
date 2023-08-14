@@ -1,7 +1,7 @@
 -- CREATE TABLE alertaTanques
 create table if not exists alertaTanques(
     _id SERIAL PRIMARY KEY,
-    creado timestamp DEFAULT NOW(),
+    creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'),
     alertaImagen character varying[],
     alertaText character varying,
     cerradoText character varying,

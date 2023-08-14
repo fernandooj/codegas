@@ -56,16 +56,16 @@ const getUsuarios = (limit, start, acceso, search) => {
   };
 };
 
-const getUsuariosAcceso = acceso => {
+const getUsuariosAcceso = (limit, start, acceso) => {
   console.log(acceso)
   return dispatch => {
     return axios
-      .get(`/users/acceso/${acceso}`)
+      .get(`/users/acceso/${limit}/${start}/${acceso}/undefined`)
       .then(res => {
         console.log(res.data)
         dispatch({
           type: GET_USUARIOS_ACCESO,
-          usuariosAcceso: res.data.usuarios
+          usuariosAcceso: res.data.user
         });
       })
       .catch(err => {

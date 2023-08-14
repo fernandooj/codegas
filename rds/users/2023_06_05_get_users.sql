@@ -1,4 +1,4 @@
-CREATE FUNCTION get_users(
+CREATE OR REPLACE FUNCTION get_users(
     _limit INT,
     _start INT,
     _acceso character varying,
@@ -62,13 +62,13 @@ BEGIN
         AND u.acceso = 'cliente'
         LIMIT _limit OFFSET _start;
 
-    ELSE
+    ELSIF _acceso = 'conductor' THEN
         RETURN QUERY
         SELECT u._id, u.uid, u.created, u.razon_social, u.cedula, u.direccion_factura, u.email, u.nombre, u.celular, u.tipo, u.descuento, u.acceso, u.tokenPhone, u.token, u.codMagister, u.avatar, u.codt, u.codigoRegistro, u.valorUnitario, u.editado, u.activo, u.eliminado, u.idPadre, u2.nombre, u2.cedula
         FROM users u
         LEFT JOIN users u2 ON u.idPadre = u2._id
         WHERE (CONCAT(u._id, u.uid, u.created, u.razon_social, u.cedula, u.direccion_factura, u.email, u.nombre, u.celular, u.tipo, u.descuento, u.acceso, u.tokenPhone, u.token, u.codMagister, u.avatar, u.codt, u.codigoRegistro, u.valorUnitario, u.editado, u.activo, u.eliminado, u.idPadre) ILIKE '%' || _search || '%')
-        AND u.acceso != 'cliente'
+        AND u.acceso = 'conductor'
         LIMIT _limit OFFSET _start;
 
     END IF;

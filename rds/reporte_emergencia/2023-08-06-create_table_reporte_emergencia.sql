@@ -1,7 +1,7 @@
 -- CREATE TABLE REPORTE EMERGENCIA
 create table if not exists reporte_emergencia(
     _id SERIAL PRIMARY KEY,
-    creado         timestamp DEFAULT NOW(),
+    creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'),
     tanque     BOOLEAN DEFAULT FALSE,
     red     BOOLEAN DEFAULT FALSE,
     puntos     BOOLEAN DEFAULT FALSE,

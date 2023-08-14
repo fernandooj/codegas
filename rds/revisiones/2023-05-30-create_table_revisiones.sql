@@ -1,7 +1,7 @@
 -- CREATE TABLE TANQUES
 create table if not exists revisiones(
     _id SERIAL PRIMARY KEY,
-    creado timestamp DEFAULT NOW(),
+    creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'),
 	sector            character varying, --
 	barrio            character varying, --
 	propiedad         character varying, --

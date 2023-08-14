@@ -6,7 +6,7 @@ create table if not exists puntos(
     observacion character varying,
     punto character varying,
     activo BOOLEAN DEFAULT TRUE,
-    creado timestamp DEFAULT NOW(),
+    creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'),
     idZona INT,
     idCliente INT,
     idPadre INT

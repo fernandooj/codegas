@@ -56,9 +56,11 @@ BEGIN
     FROM
         carros
         LEFT JOIN users ON carros.usuarioCrea = users._id
-        JOIN users AS users_conductor ON carros.conductor = users_conductor._id
+        LEFT JOIN users AS users_conductor ON carros.conductor = users_conductor._id
     WHERE carros.eliminado = FALSE
-    AND carros.conductor = COALESCE(idUser, carros.conductor);
+    AND (carros.conductor = idUser OR idUser IS NULL)
+    ORDER BY
+        carros._id DESC;
 END;
 $$ LANGUAGE plpgsql;
 

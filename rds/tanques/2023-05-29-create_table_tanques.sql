@@ -25,8 +25,7 @@ create table if not exists tanques(
 	visual	   		   character varying[],
     activo BOOLEAN DEFAULT TRUE,
     eliminado BOOLEAN DEFAULT FALSE,
-    creado timestamp DEFAULT NOW()
-
+    creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours')
 );
 
 COMMENT ON TABLE tanques IS 'Info data of TANQUES';

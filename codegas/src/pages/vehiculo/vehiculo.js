@@ -27,9 +27,9 @@ class Pedido extends Component{
 	  }
 	}
 
-    componentWillMount = async () =>{
+    componentDidMount = async () =>{
         this.props.getVehiculos()
-        this.props.getUsuariosAcceso("conductor")
+        this.props.getUsuariosAcceso(100, 0, "conductor")
         try {
             const value = this.context;
             const {acceso, userId: idUsuario} = value
@@ -48,18 +48,20 @@ class Pedido extends Component{
       };
 
     componentWillReceiveProps(props){
+ 
         let vehiculos = props.vehiculos.map(e=>{
             return{
                 placa:e.placa,
                 idVehiculo:e._id,
                 centro:e.centro,
                 bodega:e.bodega,
-                conductor:e.conductor ?e.conductor.nombre :"Sin conductor",
-                idConductor:e.conductor ?e.conductor._id :"000"
+                conductor:e.conductor.nombre  || "Sin conductor",
+                idConductor:e.conductor._id
             }
         })
-        console.log(vehiculos)
+       
         let conductores = this.resultFilter(props.conductores, vehiculos)
+      
         this.setState({conductores})
     }
 
@@ -70,10 +72,11 @@ class Pedido extends Component{
             return (
                 <View style={style.vehiculo} key={key}>
                     <View style={style.vehiculoTexto}>
+                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Id: {e._id}</Text>
                         <Text style={{fontFamily: "Comfortaa-Regular"}}>Placa: {e.placa}</Text>
                         <Text style={{fontFamily: "Comfortaa-Regular"}}>Centro: {e.centro}</Text>
                         <Text style={{fontFamily: "Comfortaa-Regular"}}>Bodega: {e.bodega}</Text>
-                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Conductor: {e.conductor ?e.conductor.nombre :"Sin conductor"}</Text>
+                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Conductor: {e.conductor.nombre  || "Sin conductor"}</Text>
                     </View>
                     {
                         e.conductor
@@ -234,6 +237,7 @@ class Pedido extends Component{
                     
                 </ScrollView>
                 <Footer navigation={navigation} />
+                <Toast />
             </View>
         )
     }
@@ -256,8 +260,9 @@ class Pedido extends Component{
         const confirmar =()=>{
             axios.get(`veh/vehiculo/asignarConductor/${idVehiculo}/${idConductor}`)
             .then((res)=>{
+                console.log(res)
                 if(res.data.status){
-                    // this.setState({modalConductor:false})
+                    this.setState({modalConductor:false})
                     this.props.getVehiculos()
                     Toast.show({type: 'success', text1: 'Conductor Agregado con exito'})
                 }else{
@@ -282,12 +287,9 @@ class Pedido extends Component{
             .then((res)=>{
                 console.log(res.data)
                 if(res.data.status){
-                    this.setState({modalConductor:false})
-                    setTimeout(() => {
-                        alert("Conductor desvinculado ")
-                    }, 500);
-
+                    this.setState({modalConductor:false, conductores: []})
                     this.props.getVehiculos()
+                    Toast.show({type: 'success', text1: 'Conductor desvinculado'})
                 }else{
                     Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
                 }
@@ -298,9 +300,18 @@ class Pedido extends Component{
     ////////////////////////            CREAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     crearVehiculo(){
-        const {placa, centro, bodega} = this.state
+        const {placa, centro, bodega, idUsuario: usuarioCrea} = this.state
         if(placa.length>5){
-            axios.post(`veh/vehiculo/`, {placa, centro, bodega})
+            // axios.post(`veh/vehiculo/`, {placa, centro, bodega})
+            const data = {placa, centro, bodega, usuarioCrea}
+            axios({
+                method: 'post',  
+                url: `veh/vehiculo`,
+                data:  JSON.stringify(data),
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+            })
             .then(res=>{
                 console.log(res.data)
                 if(res.data.status){
@@ -379,8 +390,8 @@ const mapDispatch = dispatch => {
         getVehiculos: () => {
             dispatch(getVehiculos());
         },
-        getUsuariosAcceso: (acceso) => {
-            dispatch(getUsuariosAcceso(acceso));
+        getUsuariosAcceso: (limit, start, acceso) => {
+            dispatch(getUsuariosAcceso(limit, start, acceso));
         },
     };
 };
