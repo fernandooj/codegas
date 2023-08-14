@@ -6,6 +6,8 @@
 	<string>es</string>
   <key>NSCameraUsageDescription</key>
   <string>necesitamos acceder a tu camara para subir las facturas.</string>
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+  <string>We need access to your location to provide you with location-based services.</string>
 	<key>CFBundleDisplayName</key>
 	<string>codegas</string>
 	<key>CFBundleExecutable</key>

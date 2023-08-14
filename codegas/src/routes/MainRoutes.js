@@ -27,7 +27,7 @@ import puntosComponent	 		from '../pages/puntos/puntos';
 // import calificacionComponent 	from '../pages/calificacion/calificacion';
 // import verCalificacionComponent from '../pages/calificacion/verCalificacion';
 // import privacidadComponent 		from '../pages/privacidad/privacidad';
-// import frecuenciaComponent 		from '../pages/frecuencia/frecuencia';
+import frecuenciaComponent 		from '../pages/frecuencia/frecuencia';
 // import tanquesComponent 		from '../pages/tanques/tanques';
 // import nuevoTanqueComponent 	from '../pages/tanques/nuevoTanques';
 import revisionComponent 		from '../pages/revision/revision';
@@ -59,7 +59,7 @@ const AppNavigator = createStackNavigator({
 	puntos 	 	 		: {screen: puntosComponent},
 	// calificacion 		: {screen: calificacionComponent},
 	// verCalificacion 	: {screen: verCalificacionComponent},
-	// frecuencia 			: {screen: frecuenciaComponent},
+	frecuencia 			: {screen: frecuenciaComponent},
 	// tanques 			: {screen: tanquesComponent},
 	// nuevoTanque 		: {screen: nuevoTanqueComponent},
 	revision 			: {screen: revisionComponent},

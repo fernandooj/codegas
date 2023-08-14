@@ -41,3 +41,23 @@ getFrecuencias:
     include:
       - services/frecuencias/src/get-frecuencias.js
       - lib/errors/database-error.js
+
+getTodasFrecuencias:
+  name: ${self:custom.base}-get-todas-frecuencias
+  handler: services/frecuencias/src/get-todas-frecuencias.main
+  events:
+    - httpApi: 'GET /fre/frecuencia/todas'
+  package:
+    include:
+      - services/frecuencias/src/get-todas-frecuencias.js
+      - lib/errors/database-error.js
+
+eliminarFrecuencias:
+  name: ${self:custom.base}-eliminar-frecuencias
+  handler: services/frecuencias/src/eliminar-frecuencias.main
+  events:
+    - httpApi: 'DELETE /fre/frecuencia/{id}'
+  package:
+    include:
+      - services/frecuencias/src/eliminar-frecuencias.js
+      - lib/errors/database-error.js

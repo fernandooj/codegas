@@ -6,7 +6,7 @@ export const style = MediaQueryStyleSheet.create({
     container:{
 		flex:1,
 		backgroundColor:'#ffffff',
-		paddingTop:Platform.OS==='android' ?10 :35,
+		paddingTop:Platform.OS==='android' ?10 :45,
 		alignItems:"center",
 		justifyContent: 'center'
 	},	 
@@ -20,8 +20,8 @@ export const style = MediaQueryStyleSheet.create({
 	//////////////////////////////////////////////////////////////////
 	contenedorCabezera:{
 		width:"90%",
-        flexDirection:"row"
-
+        flexDirection:"row",
+		marginTop: 10
 	},
 	subContenedorCabezera:{
 	},

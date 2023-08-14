@@ -98,11 +98,11 @@ const getZonasPedidos = (fechaEntrega) => {
 const getFrecuencia = () => {
   return dispatch => {
     return axios
-      .get(`ped/pedido/ver_frecuencia/todos`)
+      .get(`fre/frecuencia/todas`)
       .then(res => {
         dispatch({
           type: GET_PEDIDOS_FRECUENCIA,
-          pedidosFrecuencia: res.data.pedidos
+          pedidosFrecuencia: res.data.frecuencias
         });
       })
       .catch(err => {

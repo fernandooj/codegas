@@ -103,7 +103,7 @@ const Perfil = ({
             />
           </TouchableOpacity>
         )}
-        {/* {(acceso === 'admin' || acceso === 'solucion') && (
+        {(acceso === 'admin' || acceso === 'solucion') && (
           <TouchableOpacity
             style={style.btnLista}
             onPress={() => navigation.navigate('frecuencia')}>
@@ -113,7 +113,7 @@ const Perfil = ({
               style={style.icon}
             />
           </TouchableOpacity>
-        )} */}
+        )}
         {acceso === 'solucion' && (
           <TouchableOpacity
             style={style.btnLista}

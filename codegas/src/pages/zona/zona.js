@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import {View, Text, TouchableOpacity, Alert, TextInput, ScrollView} from 'react-native'
 import Toast from 'react-native-toast-message';
-import update 			  from 'react-addons-update';
 import axios               from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Footer              from '../components/footer' 
@@ -11,20 +10,22 @@ class Zona extends Component{
 	constructor(props) {
 	  super(props);
 	  this.state={
-        placa:"",
+        zona:"",
         zonas:[]
 	  }
 	}
 	 
-    componentWillMount = async () =>{
-       axios.get("zon/zona/activos")
-       .then(res=>{
-           console.log(res.data)
-           res.data.status &&this.setState({zonas:res.data.zona})
-       })
+    componentDidMount = async () =>{
+        this.getZonas()
     }
  
-    
+    getZonas(){
+        axios.get("zon/zona")
+        .then(res=>{
+            console.log(res.data)
+            res.data.status &&this.setState({zonas:res.data.zona})
+        })
+    }
     renderZonas(){
         return this.state.zonas.map((e, key)=>{
             
@@ -53,7 +54,7 @@ class Zona extends Component{
                     value={zona}
                     style={style.inputCabezera}
                 />
-                <TouchableOpacity  style={style.btnIconNuevo} onPress={()=>this.crearVehiculo()}>
+                <TouchableOpacity  style={style.btnIconNuevo} onPress={()=>this.crearZona()}>
                     <Icon name={'plus'} style={style.iconNuevo} />
                 </TouchableOpacity>
             </View>
@@ -77,7 +78,7 @@ class Zona extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            CREAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    crearVehiculo(){
+    crearZona(){
         const {zona} = this.state
         if(zona.length>3){
             axios.post(`zon/zona/`, {nombre:zona})
@@ -86,10 +87,8 @@ class Zona extends Component{
                 if(res.data.status){
                     Toast.show({type: 'success', text1: 'Zona Guardada'})
                     this.setState({zona:""})
-                    let nuevaZona= {activo:true, nombre:zona, _id:res.data.zonas._id}
-                    this.setState({
-                        zonas: update(this.state.zonas, {$unshift: [nuevaZona]})
-                     })
+                    // let nuevaZona= {activo:true, nombre:zona, _id:res.data.zonas._id}
+                    this.getZonas()
                 }else{
                     Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
                 }
@@ -113,18 +112,23 @@ class Zona extends Component{
             {cancelable: false},
         );
         const confirmar1 =()=>{
-            axios.put(`zon/zona/`, {_id})
+            // axios.put(`zon/zona/`, {_id})
+            const data = {_id}
+            axios({
+                method: 'put',  
+                url: `zon/zona`,
+                data:  JSON.stringify(data),
+                headers: { 
+                    'Content-Type': 'application/json'
+                },
+            })
             .then((res)=>{
                 console.log(res.data)
                 if(res.data.status){
                     let text1 = `zona ${zona} eliminada`;
                     text1 = text1.toString();
                     Toast.show({type: 'error', text1})
-                    axios.get("zon/zona/activos")
-                    .then(res=>{
-                        console.log(res.data)
-                        res.data.status &&this.setState({zonas:res.data.zona})
-                    })
+                    this.getZonas()
                 }else{
                     Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
                 }

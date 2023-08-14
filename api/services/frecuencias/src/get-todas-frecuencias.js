@@ -1,10 +1,11 @@
+const AWS = require('aws-sdk');
+const ses = new AWS.SES();
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
 
-/** deactivate zona */
-
+const GET_FRECUENCIAS = 'SELECT * FROM get_todas_frecuencias()';
 /**
- * Deactivates a zona in the database.
+ * add drivers car in the database.
  *
  * @param {object} zona - Object containing the data of the zona to deactivate.
  * @param {number} zona.id_zona - Identifier of the zona in the database.
@@ -12,21 +13,19 @@ const DatabaseError = require('../../../lib/errors/database-error');
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
 
-module.exports.main = async (event) => {
-  const body = JSON.parse(event.body);
+ 
+module.exports.main = async (event) => {  
+    
   
-  const {
-    _id: id_zona,
-  } = body;
-  
-  const DEACTIVATE_ZONA = 'UPDATE zonas SET activo = $1 WHERE _id = $2';
-  const client = await poolConection.connect();
-
   try {
-    await client.query(DEACTIVATE_ZONA, [false, id_zona])
+    const client = await poolConection.connect();
+    
+    const {rows: frecuencias} = await client.query(GET_FRECUENCIAS, [])
+
     return {
-      status: true
-      }
+      status: true,
+      frecuencias
+    }
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
