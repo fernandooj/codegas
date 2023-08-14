@@ -18,12 +18,6 @@ import {style}                  from './style'
 
 import {frecuencias, dias, diasN} from '../../utils/pedido_info'
  
-const horaActual = new Date().getHours();
-if (horaActual < 16 ) {
-    hora=1
-} else {
-    hora=2
-}
 class Nuevo_pedido extends Component{
     static contextType = DataContext;
     
@@ -42,13 +36,11 @@ class Nuevo_pedido extends Component{
         email: '',
         nombre: '',
         acceso: '',
-        // guardando:true,
-        // fechaSolicitud: moment().tz("America/Bogota").add(hora, 'days').format('YYYY-MM-DD')
       }
      
 	}
 	 
-	async componentWillMount(){
+	async componentDidMount(){
         axios
         .get(`users/by/adminsolucion`)
         .then(res => {
@@ -63,7 +55,16 @@ class Nuevo_pedido extends Component{
  
         !nombre &&idUsuario ?this.props.navigation.navigate("verPerfil", {tipoAcceso:null}) :null //// si no ha editado el nombre lo mando para editar perfil
         
-        axios.get(`pun/punto/byCliente/${idUsuario}`)
+
+        this.setState({idUsuario, acceso, email, nombre})
+       
+        if(acceso=='cliente'){
+            this.getPuntos(idUsuario)
+        }
+    }
+ 
+    getPuntos(id){
+        axios.get(`pun/punto/byCliente/${id}`)
         .then(e=>{
             if(e.data.status){
                 e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos,  puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
@@ -75,12 +76,8 @@ class Nuevo_pedido extends Component{
                 });
             }
         })
-
-        this.setState({idUsuario, acceso, email, nombre})
-       
     }
- 
-    
+
     getClientes(){
         const {terminoBuscador} = this.state
         axios.get(`users/acceso/10/0/clientes/${terminoBuscador}`)
@@ -137,7 +134,7 @@ class Nuevo_pedido extends Component{
 					<View style={style.contenedorModalCliente}>
 						<View style={style.subContenedorModalCliente}>
                             <TouchableOpacity activeOpacity={1} 
-                                onPress={()=>this.setState({showClientes:false})} style={style.btnModalClose}
+                                onPress={()=>this.setState({showClientes:false, terminoBuscador:'', clientes:[]})} style={style.btnModalClose}
                             >
 								<Icon name={'times-circle'} style={style.iconCerrar} />
 							</TouchableOpacity>
@@ -361,21 +358,21 @@ class Nuevo_pedido extends Component{
                 <TouchableOpacity style={!forma ?style.btnGuardarDisable :style.btnGuardar} 
                     onPress={()=>
                     (acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial" || acceso=="despacho") && !idCliente
-                    ?Toast.show({type: 'info', text1: 'Selecciona un cliente'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Selecciona un cliente'})
                     :(acceso=="admin" || acceso=="solucion" || acceso=="veo" || acceso=="comercial" || acceso=="despacho") && !puntoId
-                    ?Toast.show({type: 'info', text1: 'Selecciona una dirección'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Selecciona una dirección'})
                     :!forma
-                    ?Toast.show({type: 'info', text1: 'Selecciona una forma'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Selecciona una forma'})
                     :(forma=="monto"&&cantidad<10)
-                    ?Toast.show({type: 'info', text1: 'Inserta una cantidad'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Inserta una cantidad'})
                     :(forma=="cantidad"&&cantidad<10)
-                    ?Toast.show({type: 'info', text1: 'Inserta una cantidad'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Inserta una cantidad'})
                     :(frecuencia=="semanal" || frecuencia=="mensual") &&!dia1
-                    ?Toast.show({type: 'info', text1: 'Inserta un dia de frecuencia'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Inserta un dia de frecuencia', })
                     :frecuencia=="quincenal"  &&(!dia1 ||!dia2)
-                    ?Toast.show({type: 'info', text1: 'Inserta los dias de frecuencia'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Inserta los dias de frecuencia'})
                     :!fechaSolicitud
-                    ?Toast.show({type: 'info', text1: 'Inserta una fecha de Entrega'})
+                    ?Toast.show({position: 'bottom', type: 'info', text1: 'Inserta una fecha de Entrega'})
                     :!guardando &&this.verificaPedido()
                 }
                 >
@@ -396,15 +393,8 @@ class Nuevo_pedido extends Component{
             emailCliente:email, 
             showClientes:false
         })
-        axios.get(`pun/punto/byCliente/${_id}`)
-        .then(e=>{
-    
-            if(e.data.status){
-                e.data.puntos.length==1 ?this.setState({puntos:e.data.puntos, puntoId:e.data.puntos[0]._id}) :this.setState({puntos:e.data.puntos})
-            }else{
-                // Toast.show("Tuvimos un problema, intentele mas tarde")
-            }
-        })
+        this.getPuntos(_id)
+       
     }
     modalFechaEntrega(){
         let {modalFechaEntrega, fechaSolicitud} = this.state
@@ -446,8 +436,6 @@ class Nuevo_pedido extends Component{
             </Modal>
         )
     }
-    	
-    
      
 	render(){
         const {navigation} = this.props
@@ -475,9 +463,11 @@ class Nuevo_pedido extends Component{
         this.setState({guardando:true})
         let {idCliente, idUsuario, acceso, puntoId} = this.state
         let id = acceso=="cliente" ?idUsuario :idCliente
+        console.log(id, puntoId)
         axios.get(`ped/pedido/today/${id}/${puntoId}`)
         .then(res=>{
             const {status, pedido} = res.data
+            console.log(status, pedido)
             if (status){
                 if(pedido>0){
                     Alert.alert(
@@ -520,7 +510,7 @@ class Nuevo_pedido extends Component{
             observacion
           };
         console.log(data)
-        
+       
         axios({
 			method: 'post',  
 			url: 'ped/pedido',
@@ -534,9 +524,7 @@ class Nuevo_pedido extends Component{
                 type: 'success',
                 text1: 'Pedido creado con exito',
             });
-            setTimeout(() => {
-                this.props.navigation.navigate("Home")
-              }, 1000);            
+            this.setState({guardando:false, idCliente: null, forma: null, solicitud: false, puntos: []})    
         })
         .catch(err=>{
             console.log(err)

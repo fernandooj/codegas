@@ -278,14 +278,14 @@ export const style = MediaQueryStyleSheet.create({
 		minWidth:size.width/1.5,
 	},
 	containerTituloModal:{
-		minWidth:size.width/1.5
+		minWidth:size.width/1.5,
 	},
 	subContenedorModal2:{
 		backgroundColor:"#ffffff",
 		height:220,
 		borderRadius:7,
 		padding:10,
-		alignItems:"center"
+		
 	},
 	listadoPerfil:{
 		padding:10,

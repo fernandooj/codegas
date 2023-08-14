@@ -2,13 +2,23 @@ const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
 const AWS = require('aws-sdk');
 const ses = new AWS.SES();
- 
-
-
 
 /** create user */
 const SAVE_USER = 'SELECT * FROM save_users($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)';
 const SOURCE = 'app@codegascolombia.com';
+
+function cleanAndNormalizeString(input) {
+  // Remover caracteres especiales y saltos de línea
+  const cleanedString = input.replace(/[^\w\s]/gi, '');
+
+  // Remover espacios repetidos
+  const normalizedString = cleanedString.replace(/\s+/g, ' ');
+
+  // Convertir a minúsculas
+  const lowercaseString = normalizedString.toLowerCase();
+
+  return lowercaseString;
+}
 
 /** update user info
  *  save user in the table
@@ -39,6 +49,9 @@ module.exports.main = async (event) => {
     pass
   } = body;
   
+  const cleanRazonSocial = cleanAndNormalizeString(razon_social);
+  const cleanNombre = cleanAndNormalizeString(nombre);
+
   const params = {
     Destination: {
       ToAddresses: [email],
@@ -62,7 +75,7 @@ module.exports.main = async (event) => {
   try {
     const client = await poolConection.connect();
     //await client.query('BEGIN');
-    const {rows} = await client.query(SAVE_USER, [razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
+    const {rows} = await client.query(SAVE_USER, [cleanRazonSocial, uid, cedula, direccion_factura, email, cleanNombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
     await ses.sendEmail(params).promise();
  
     //await client.query('COMMIT');

@@ -83,7 +83,7 @@ export default function FooterComponent({ navigation }) {
       {user.acceso !== 'conductor' && (
         <TouchableOpacity
           style={style.subContenedorFooter2}
-          onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'perfil')}
+          onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'IniciarSesion')}
         >
           <Image source={require('../../assets/img/footer/img2.png')} style={style.icon} resizeMode={'contain'} />
           <Text style={style.textFooter}>Nuevo Pedido</Text>
@@ -93,7 +93,7 @@ export default function FooterComponent({ navigation }) {
     
         <TouchableOpacity
           style={style.subContenedorFooter3}
-          onPress={() => { navigation.navigate('pedido') }}          
+          onPress={() => { navigation.navigate(userId ? 'pedido' : 'IniciarSesion') }}          
         >
           <Image source={require('../../assets/img/footer/img3.png')} style={style.icon} resizeMode={'contain'} />
           <Text style={style.textFooter}>Pedidos</Text>

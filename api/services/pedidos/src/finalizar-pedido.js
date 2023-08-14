@@ -30,7 +30,8 @@ module.exports.main = async (event) => {
   try {
     const client = await poolConection.connect();
     const image_url = await uploadImage(body);
- 
+    console.log(image_url)
+    console.log(body)
     await client.query(FINALIZAR_PEDIDO, [
       _id, kilos, factura, valor_total, forma_pago, remision, fechaEntrega, image_url, idConductor
     ])

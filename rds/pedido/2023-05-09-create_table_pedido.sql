@@ -1,13 +1,13 @@
 -- CREATE TABLE PEDIDO
 create table if not exists pedidos(
     _id SERIAL PRIMARY KEY,
+    creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'),
 	forma          character varying,
 	cantidadKl    INT,
 	cantidadPrecio INT,
 	frecuencia     character varying,
 	dia1           INT,
     dia2           INT,
-    creado         timestamp DEFAULT NOW(),
     estado         character varying DEFAULT 'espera',
     entregado     BOOLEAN DEFAULT FALSE,
     eliminado     BOOLEAN DEFAULT FALSE,
