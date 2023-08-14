@@ -87,3 +87,23 @@ changeValorUnitarioAll:
     include:
       - services/users/src/change-valor-unitario-todos.js
       - lib/errors/database-error.js
+
+sendPassword:
+  name: ${self:custom.base}-send-pass
+  handler: services/users/src/send-pass.main
+  events:
+    - httpApi: 'POST /users/sendPassword'
+  package:
+    include:
+      - services/users/src/send-pass.js
+      - lib/errors/database-error.js
+
+updateUid:
+  name: ${self:custom.base}-update-uid
+  handler: services/users/src/update-uid.main
+  events:
+    - httpApi: 'POST /users/updateUid'
+  package:
+    include:
+      - services/users/src/update-uid.js
+      - lib/errors/database-error.js

@@ -14,7 +14,10 @@ module.exports.main = async (event) => {
   try {
     const client  = await poolConection.connect();
     const {rows} = await client.query(GET_USER_BY_EMAIL, [email])
-    return rows[0]
+    return {
+      status: !!rows[0],
+      user : rows[0]
+    }
   } catch (error) { 
     throw new DatabaseError(error);
   }
