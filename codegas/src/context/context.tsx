@@ -1,7 +1,15 @@
 import React, {createContext, useEffect, useState} from 'react';
 import auth from '@react-native-firebase/auth';
-import {getUserByUid} from '../redux/actions/usuarioActions';
+import {
+  getUserByUid,
+  getUserByEmail,
+  sendNewPassword,
+  updateUid,
+} from '../redux/actions/usuarioActions';
+import {generate} from '@wcj/generate-password';
 export const DataContext = createContext({});
+
+const GENERATE_PASS = generate();
 
 const DataProvider = ({children}: any) => {
   const [userInfo, setUser] = useState();
@@ -44,15 +52,57 @@ const DataProvider = ({children}: any) => {
       try {
         const {user} = await auth().signInWithEmailAndPassword(email, password);
         getUserInfo(user.uid);
-        return true;
+        return {
+          response: true,
+          status: 1,
+        };
       } catch (error) {
-        console.error(error);
+        if (error.code === 'auth/user-not-found') {
+          // La cuenta no existe
+          const {status} = await getUserByEmail(email);
+          if (!status) {
+            return {response: false};
+          } else {
+            const createUserResult = await userFlow.createUserFirebase(
+              email,
+              GENERATE_PASS,
+            );
+            if (createUserResult instanceof Error) {
+              console.error('Error al crear la cuenta:', createUserResult);
+              return {response: false};
+            } else {
+              console.log('Cuenta creada:', createUserResult);
+              await sendNewPassword(email, GENERATE_PASS);
+              await updateUid(email, createUserResult.uid)
+              return {
+                response: true,
+                status: 2,
+              };
+            }
+          }
+        } else {
+          // Otro tipo de error
+          console.log('Error al iniciar sesión:', error?.message);
+        }
         return false;
       }
     },
-    register: async (email: string, password: string) => {
+    createUserFirebase: async (email: string, pass: string) => {
       try {
-        auth().signInWithEmailAndPassword(email, password);
+        const {user} = await auth().createUserWithEmailAndPassword(email, pass);
+        return user;
+      } catch (error) {
+        if (error instanceof Error) {
+          return (error as {code?: string}).code || 'unknown error';
+        } else {
+          return 'unknown error';
+        }
+      }
+    },
+    recoverPass: async (email: string) => {
+      try {
+        // const emailAddress = typeof email === 'string' ? email : email.email;
+        await auth().sendPasswordResetEmail(email);
       } catch (error) {
         console.error(error);
       }

@@ -1,8 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ImageBackground, ActivityIndicator, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { useToast } from "react-native-toast-notifications";
+import Toast from 'react-native-toast-message';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { connect }         from "react-redux";
 import { DataContext } from '../../context/context';
@@ -10,25 +8,58 @@ import {style} from './style'
 import Footer              from '../components/footer'
 
 const IniciarSesion = ({ navigation }) => {
-  const toast = useToast();
+ 
   const {login} = useContext(DataContext)  
 
   const [cargando, setCargando] = useState(false);
   const [data, setData] = useState({})
+  const [email, setEmail] = useState('')
   
   const updateData= (type, e) => {
     setData({...data, [type]:e })
   }
 
   const signIn = async() => {
-    const response = await login(data)
+    const {response, status} = await login(data)
     if(response){
-      navigation.navigate("Home")
+      if(status===1){
+        navigation.navigate("Home")
+      } else if (status===2) {
+        Toast.show({type: 'info', text1: 'Cambiamos tu contraseña, revisa tu email'})
+      }
     }else{
-      toast.show("Datos Incorrectos", {
-        type: "danger"
-      });
+      Toast.show({type: 'error', text1: 'Datos Incorrectos'})
     }
+  }
+
+  const renderEmail = () => {
+    return(
+      <ScrollView style={style.containerRegistro2}>
+        <View style={style.subContainerRegistro}>
+          <Text style={style.titulo}>Crear Nueva Cuenta</Text>
+          <TextInput
+            style={
+              email.length < 2 ? [style.input, style.inputInvalid] : style.input
+            }
+            placeholder="Email / Codigo registro"
+            onChangeText={(email) => setEmail(email)}
+            value={email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            placeholderTextColor="#aaa"
+          />
+          <TouchableOpacity
+            style={style.btnGuardar}
+            onPress={() =>
+              email.length < 2
+                ? Toast.show({type: 'info', text1: 'Inserte su email o codigo de registro'})
+                : this.handleSubmit()
+            }>
+            <Text style={style.textGuardar}>Registrarme</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    )
   }
 
   const renderIniciarSesion = () => {
@@ -122,15 +153,16 @@ const IniciarSesion = ({ navigation }) => {
     <View style={style.container}>
       <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />
       <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
-        <KeyboardAwareScrollView style={style.container}>
-          {
-            renderIniciarSesion()
-          }
+        <KeyboardAwareScrollView style={style.containerRegistro}>
+          {renderEmail()}
+          <View style={style.separador} />
+          {renderIniciarSesion()}
         </KeyboardAwareScrollView>
         <View style={style.footer}>
           <Footer navigation={navigation} />
         </View>
       </ImageBackground>
+      <Toast />
     </View>
   );
 };

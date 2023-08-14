@@ -3,7 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>es</string>
+  <key>NSCameraUsageDescription</key>
+  <string>necesitamos acceder a tu camara para subir las facturas.</string>
 	<key>CFBundleDisplayName</key>
 	<string>codegas</string>
 	<key>CFBundleExecutable</key>

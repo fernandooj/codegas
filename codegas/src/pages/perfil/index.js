@@ -75,7 +75,7 @@ const Perfil = ({
           />
         </TouchableOpacity>
 
-        {(acceso === 'admin' || acceso === 'despacho') && (
+        {/* {(acceso === 'admin' || acceso === 'despacho') && (
           <TouchableOpacity
             style={style.btnLista}
             onPress={() =>
@@ -87,7 +87,7 @@ const Perfil = ({
               style={style.icon}
             />
           </TouchableOpacity>
-        )}
+        )} */}
         {(acceso === 'admin' ||
           acceso === 'solucion' ||
           acceso === 'comercial' ||

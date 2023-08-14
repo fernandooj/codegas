@@ -79,11 +79,72 @@ const getUsuariosAcceso = acceso => {
 };
   
 
-export const getUserByUid = async (uid) => {
+const getUserByUid = async (uid) => {
   try {
-      const response = await axios.get(`/users/uid/${uid}`, {
-          next: { revalidate: 10 } 
-      });
+      const response = await axios.get(`/users/uid/${uid}`);
+
+      if(response.status!==200 ){
+          throw new Error(`Ruquest failed with status ${response.status}`)
+      }
+      
+      return response.data;
+  } catch (error) {
+      console.error(error);
+      return []
+  }
+};
+
+
+const getUserByEmail = async (email) => {
+  try {
+      const response = await axios.get(`/users/email/${email}`);
+
+      if(response.status!==200 ){
+          throw new Error(`Ruquest failed with status ${response.status}`)
+      }
+      
+      return response.data;
+  } catch (error) {
+      console.error(error);
+      return []
+  }
+};
+
+const sendNewPassword = async (email, pass) => {
+  const data = {email, pass}
+  try {
+      // const response = await axios.get(`/users/newPassword/${email, pass}`);
+      const response = await axios({
+        method: 'post',  
+        url: `users/sendPassword`,
+        data:  JSON.stringify(data),
+        headers: { 
+            'Content-Type': 'application/json'
+        },
+      })
+
+      if(response.status!==200 ){
+          throw new Error(`Ruquest failed with status ${response.status}`)
+      }
+      
+      return response.data;
+  } catch (error) {
+      console.error(error);
+      return []
+  }
+};
+
+const updateUid = async (email, uid) => {
+  const data = {email, uid}
+  try {
+      const response = await axios({
+        method: 'post',  
+        url: `users/updateUid`,
+        data:  JSON.stringify(data),
+        headers: { 
+            'Content-Type': 'application/json'
+        },
+      })
 
       if(response.status!==200 ){
           throw new Error(`Ruquest failed with status ${response.status}`)
@@ -101,4 +162,8 @@ export {
   getUsuarios,
   getUsuario,
   getUsuariosAcceso,
+  getUserByUid,
+  getUserByEmail,
+  sendNewPassword,
+  updateUid
 };

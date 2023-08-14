@@ -9,7 +9,8 @@ import homeComponent   	   	 	from '../pages/home';
 import pedidoComponent	 	 	from '../pages/pedido';
 import IniciarSesion   	 	from '../pages/iniciar_sesion';
 import nuevoPedidoComponent	 	from '../pages/nuevo_pedido';
-import verPerfilComponent	 	from '../pages/perfil';
+import PerfilComponent	 	from '../pages/perfil';
+import verPerfilComponent	 	from '../pages/ver_perfil/verPerfil';
 import usuariosComponent	 	from '../pages/usuarios';
 import vehiculoComponent	 	from '../pages/vehiculo/vehiculo';
 import zonaComponent	 	 	from '../pages/zona/zona';
@@ -20,7 +21,7 @@ import editarPerfilComponent	 	from '../pages/editar_perfil/editarPerfil';
 // import registroComponent	 	from '../pages/registro/registro';
 // import conversacionComponent 	from '../pages/conversacion/conversacion';
 // import mensajeComponent	 	 	from '../pages/mensaje/mensaje';
-// import recuperarComponent	 	from '../pages/recuperar_pass/recuperar_pass';
+import recuperarComponent	 	from '../pages/recuperar_pass/recuperar_pass';
 // import cambiarComponent	 		from '../pages/recuperar_pass/cambiar_pass';
 import puntosComponent	 		from '../pages/puntos/puntos';
 // import calificacionComponent 	from '../pages/calificacion/calificacion';
@@ -45,20 +46,16 @@ const AppNavigator = createStackNavigator({
 	pedido       		: {screen: pedidoComponent},
 	IniciarSesion       : {screen: IniciarSesion},
 	nuevo_pedido 		: {screen: nuevoPedidoComponent},
-	Perfil    		: {screen: verPerfilComponent},
+	Perfil    		: {screen: PerfilComponent},
 	usuarios 	 	 	: {screen: usuariosComponent},
 	vehiculo     		: {screen: vehiculoComponent},
 	zona		 		: {screen: zonaComponent},
 	capacidad			: {screen: capacidadComponent},
 	editarPerfil	 	: {screen: editarPerfilComponent},
-	// inicio 		 	 	: {screen: homeComponent},
-	// confirmar    		: {screen: confirmarComponent},
+	verPerfil    		: {screen: verPerfilComponent},
 	// registro     		: {screen: registroComponent},
 	// privacidad   		: {screen: privacidadComponent},
-	// mensaje      		: {screen: mensajeComponent, navigationOptions: { gesturesEnabled: false }},
-	// editarPedido 		: {screen: editarPedidoComponent},
-	// conversacion 		: {screen: conversacionComponent},
-	// recuperar 	 		: {screen: recuperarComponent},
+	recuperar 	 		: {screen: recuperarComponent},
 	puntos 	 	 		: {screen: puntosComponent},
 	// calificacion 		: {screen: calificacionComponent},
 	// verCalificacion 	: {screen: verCalificacionComponent},

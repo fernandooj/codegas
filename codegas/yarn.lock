@@ -2111,6 +2111,11 @@
     "@typescript-eslint/types" "5.62.0"
     eslint-visitor-keys "^3.3.0"
 
+"@wcj/generate-password@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@wcj/generate-password/-/generate-password-1.0.3.tgz#3010d51adfc4b8d3da30cc9fc0debb710968db18"
+  integrity sha512-KhpF9qfDm6nBCeG5o5YfViD+KZRo9ev0jTqu3TCutchf0iNrKF5Gawyx0C9KOkyHp3y8R7SQ9IBoInQVstCBdA==
+
 "@xmldom/xmldom@^0.8.8":
   version "0.8.10"
   resolved "https://registry.yarnpkg.com/@xmldom/xmldom/-/xmldom-0.8.10.tgz#a1337ca426aa61cef9fe15b5b28e340a72f6fa99"
