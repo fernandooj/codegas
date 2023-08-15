@@ -4,7 +4,8 @@ import {
   GET_VEHICULOS_PEDIDOS,
   GET_ZONA_PEDIDOS,
   GET_PEDIDOS_FRECUENCIA,
-  GET_PEDIDOS_USER
+  GET_PEDIDOS_USER,
+  GET_PEDIDOS_CHART
 } from "../actions/constants/actionsTypes";
  
  
@@ -61,6 +62,15 @@ const getPedidosUser = (state = [], action) => {
   }
 };
 
+const getPedidosChart = (state = [], action) => {
+  switch (action.type) {
+    case GET_PEDIDOS_CHART:
+      return action.pedidosChart;
+    default:
+      return state;
+  }
+};
+
 
 export default function authServiceReducer(state = {}, action) {
   return {   
@@ -70,5 +80,6 @@ export default function authServiceReducer(state = {}, action) {
     vehiculosPedidos: getVehiculosConPedidos(state.vehiculosPedidos, action),
     zonaPedidos:      getZonasPedidos(state.zonaPedidos, action),
     pedidosFrecuencia:getFrecuencia(state.pedidosFrecuencia, action),
+    pedidosChart:getPedidosChart(state.pedidosChart, action),
   };
 }

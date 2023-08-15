@@ -5,6 +5,7 @@ import {
     GET_ZONA_PEDIDOS,
     GET_PEDIDOS_FRECUENCIA,
     GET_PEDIDOS_USER,
+    GET_PEDIDOS_CHART
 } from "./constants/actionsTypes";
 import axios from "axios";
 
@@ -111,6 +112,28 @@ const getFrecuencia = () => {
   };
 };
 
+const getPedidosChart = (idUser) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.get(`/ped/pedido/chart/${idUser}`);
+      if(response.status!==200){
+        throw new Error(`Ruquest failed with status ${response.status}`)
+      }
+      console.log("response.data")
+      console.log(response.data)
+      dispatch({
+        type: GET_PEDIDOS_CHART,
+        pedidosChart: response.data.pedido,
+      });
+    } catch (err) {
+      dispatch({
+        type: GET_PEDIDOS_CHART,
+        pedidos: [] ,
+      });
+    }
+  };
+};
+
 
 export {
     getPedido,
@@ -118,5 +141,6 @@ export {
     getVehiculosConPedidos,
     getZonasPedidos,
     getFrecuencia,
-    getPedidoByUser
+    getPedidoByUser,
+    getPedidosChart
 };

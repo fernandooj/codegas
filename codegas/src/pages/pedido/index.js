@@ -91,12 +91,12 @@ class Pedido extends Component{
         this.keyboardDidHideListener.remove();
     }
     
-    callObservaciones(id){
-      axios.get(`nov/novedad/byPedido/${id}`)
-      .then(e=>{
-          this.setState({novedades:e.data.novedad})
-      })
-    }
+    // callObservaciones(id){
+    //   axios.get(`nov/novedad/byPedido/${id}`)
+    //   .then(e=>{
+    //       this.setState({novedades:e.data.novedad})
+    //   })
+    // }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LAS NOVEDADES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ class Pedido extends Component{
         )
     }
     renderPedidos(){
-        const {acceso, terminoBuscador, pedidos, inicio, final, limit} = this.state
+        const {acceso, terminoBuscador, pedidos} = this.state
  
   
         return pedidos.map((e, key)=>{
@@ -155,7 +155,7 @@ class Pedido extends Component{
                     ////// solo activa el modal si es de despachos o administrador o conductor 
                     onPress={
                         ()=>{
-                            this.callObservaciones(e._id);
+                            // this.callObservaciones(e._id);
                             this.setState({
                                 openModal:true, elevation:0, 
                                 placaPedido:e.placa, 
@@ -199,7 +199,7 @@ class Pedido extends Component{
                         acceso!=="conductor"
                         &&<View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha entrega </Text>
-                            <Text style={style.textPedido}>{ e.fechaentrega ?e.fechaentrega :"sin fecha"}</Text>
+                            <Text style={style.textPedido}>{ e.fechaentrega ?moment(e.fechaentrega).format('YYYY-MM-DD') :"sin fecha"}</Text>
                         </View>
                     }
                      
@@ -221,11 +221,16 @@ class Pedido extends Component{
                     
                     {
                         (e.conductor && acceso!=="conductor")
-                        &&<View style={style.containerPedidos}>
-                            <Text style={style.textPedido}>Vehiculo Asignado</Text>
-                            <Text style={style.text}>{e.conductor}</Text>
-    
-                        </View>
+                        &&<>
+                            <View style={style.containerPedidos}>
+                                <Text style={style.textPedido}>conductor Asignado</Text>
+                                <Text style={style.text}>{e.conductor}</Text>
+                            </View>
+                            <View style={style.containerPedidos}>
+                                <Text style={style.textPedido}>Vehiculo Asignado</Text>
+                                <Text style={style.text}>{e.placa}</Text>
+                            </View>
+                        </>
                     }
                     {
                         e.factura
@@ -341,7 +346,7 @@ class Pedido extends Component{
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Cedula/NIT: {cedula}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>N Pedido: {id}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Forma: {forma}</Text>
-                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Fecha de creación: {creado}</Text>
+                                <Text style={{fontFamily: "Comfortaa-Regular"}}>Fecha de creación: {moment(creado).format("YYYY-MM-DD")}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Usuario crea: {usuarioCrea}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Almacenamiento: {capacidad}</Text>
                                 <Text style={{fontFamily: "Comfortaa-Regular"}}>Observación punto: {observacion}</Text>
@@ -1057,9 +1062,10 @@ class Pedido extends Component{
     const {final, limit} =  this.state
     const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
     const reachedEnd = contentOffset.y + layoutMeasurement.height >= contentSize.height;
-    
+ 
     if (reachedEnd && !final) {
       const value = this.context;
+    
       this.setState({ final: true, limit: limit+10 });
       this.loadPedidos()
     } else if (!reachedEnd && final) {
@@ -1305,7 +1311,6 @@ class Pedido extends Component{
     const data = {
         seleccionados: [{"_id": id, "estado": estado}]
     }
-    console.log(data)
     axios({
         method: 'post',  
         url: `ped/pedido/cambiarEstado`,
@@ -1340,6 +1345,7 @@ class Pedido extends Component{
   loadPedidos(type){
     let {idUsuario, acceso, limit, terminoBuscador} = this.state
     limit = type==='load' ?20 :limit
+    // limit = acceso==='conductor' ? 50 :limit
     terminoBuscador = type==='load' ?undefined :terminoBuscador
    
     this.props.getPedidos(idUsuario, 0, limit, acceso, terminoBuscador)
@@ -1347,7 +1353,7 @@ class Pedido extends Component{
 }
 
 const mapState = state => {
-    console.log(state.vehiculo.vehiculos)
+    console.log(state.pedido.pedidos)
 	return {
         pedidos: state.pedido.pedidos,
         vehiculos: state.vehiculo.vehiculos

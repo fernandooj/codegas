@@ -95,33 +95,37 @@ class verPerfil extends Component {
       null
     } 
     !params.tipoAcceso
-      ? axios.get(`users/id/${userId}`).then((e) => {
-          const {user} = e.data;
-          this.setState({
-            razon_social: user.razon_social ? user.razon_social : '',
-            cedula: user.cedula ? user.cedula : '',
-            email: user.email ? user.email : '',
-            nombre: user.nombre ? user.nombre : '',
-            password: user.password ? user.password : '',
-            celular: user.celular ? user.celular : '',
-            tipo: user.tipo ? user.tipo : '',
-            acceso: user.acceso ? user.acceso : '',
-            imagen: user.avatar ? user.avatar : [],
-            codt: user.codt ? user.codt : '',
-            valorUnitario: user.valorUnitario ? user.valorUnitario : '',
-            idUsuario: user._id ? user._id : '',
-            codMagister: user.codMagister ? user.codMagister : '',
-            editado: user.editado ? user.editado : false,
-            ubicaciones: user.ubicaciones ? user.ubicaciones : [],
-            accesoPerfil: 'cliente',
-            direccion_factura:user.direccion_factura ?user.direccion_factura :"",
+      ? axios.get(`users/id/${userId}`).then((e) => {           
+            const {user} = e.data;
+            axios.get(`pun/punto/byCliente/${params.idUsuario}`).then(ubi=>{
+            let ubicaciones =  ubi.data.status  ?ubi.data.puntos  :[]
+            this.setState({
+                razon_social: user.razon_social ? user.razon_social : '',
+                cedula: user.cedula ? user.cedula : '',
+                email: user.email ? user.email : '',
+                nombre: user.nombre ? user.nombre : '',
+                password: user.password ? user.password : '',
+                celular: user.celular ? user.celular : '',
+                tipo: user.tipo ? user.tipo : '',
+                acceso: user.acceso ? user.acceso : '',
+                imagen: user.avatar ? user.avatar : [],
+                codt: user.codt ? user.codt : '',
+                valorUnitario: user.valorunitario ? user.valorunitario : '',
+                idUsuario: user._id ? user._id : '',
+                codMagister: user.codMagister ? user.codMagister : '',
+                editado: user.editado ? user.editado : false,
+                ubicaciones: ubicaciones,
+                accesoPerfil: 'cliente',
+                direccion_factura:user.direccion_factura ?user.direccion_factura :"",
+            })
         })
-    })
+        })
       :params.tipoAcceso=="editar"
       ?axios.get(`/users/id/${params.idUsuario}`).then(e=>{
-          console.log(e.data)
+ 
           const {user} = e.data
-          let ubicaciones =  user.ubicaciones  ?user.ubicaciones  :[]
+          axios.get(`pun/punto/byCliente/${params.idUsuario}`).then(ubi=>{
+        let ubicaciones =  ubi.data.status  ?ubi.data.puntos  :[]
           ubicaciones= ubicaciones.map(data=>{
               let data1 = params.idUsuario
               let data2 = data.idCliente
@@ -154,7 +158,7 @@ class verPerfil extends Component {
               }
           })  
           
-          console.log(user)
+ 
           this.setState({
               razon_social:     user.razon_social ?user.razon_social :"",
               cedula:           user.cedula       ?user.cedula       :"",
@@ -171,10 +175,11 @@ class verPerfil extends Component {
               idUsuario:        user._id          ?user._id          :"",
               veo:              user.veos         ?user.veos.nombre  :"",
               codMagister:      user.codMagister   ?user.codMagister  :"",
-              valorUnitario:    user.valorUnitario,
+              valorUnitario:    user.valorunitario,
               direccion_factura:user.direccion_factura ?user.direccion_factura :"",
           })
       })
+    })
       :null
   }
   renderPerfil(){
@@ -185,7 +190,7 @@ class verPerfil extends Component {
     direccion_factura = direccion_factura ?direccion_factura.toUpperCase() :direccion_factura;
     nombre = nombre ?nombre.toUpperCase() :nombre;
         
-    console.log({imagen, acceso, editado})
+    console.log({valorUnitario})
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
             {tipoAcceso=="admin" ?<Text style={style.titulo}>Nuevo {acceso}</Text> :<Text style={style.titulo}>Editar perfil</Text> }

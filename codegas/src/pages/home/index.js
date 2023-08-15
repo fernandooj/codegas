@@ -11,11 +11,11 @@ import { style } from './style';
 
 const Home = ({ navigation }) => {
   const {login, acceso, userId} = useContext(DataContext)  
- 
+  limit = acceso==='conductor' ? 50 :10
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getVehiculos(30));
-    dispatch(getPedidos(userId, 0, 10, acceso, undefined));
+    dispatch(getPedidos(userId, 0, limit, acceso, undefined));
   }, [userId, acceso]);
 
   const renderBotones = () => {

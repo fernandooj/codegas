@@ -21,6 +21,7 @@ export const GET_PEDIDO             = "GET_PEDIDO";
 export const GET_PEDIDOS            = "GET_PEDIDOS";
 export const GET_PEDIDOS_USER       = "GET_PEDIDOS_USER";
 export const GET_PEDIDOS_FRECUENCIA = "GET_PEDIDOS_FRECUENCIA";
+export const GET_PEDIDOS_CHART = "GET_PEDIDOS_CHART";
 
 
 ///////////////////////////////////////////////////////////////////////////

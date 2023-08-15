@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {style} from './style';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
 import { DataContext } from '../../context/context';
 import Footer                   from '../components/footer'
 
@@ -18,9 +19,9 @@ const Perfil = ({
 }) => {
  
   const {nombre, avatar, email, userInfo, acceso, cerrarSesion} = useContext(DataContext)  
-
+  const [idUsuarioSearch, setIdUsuarioSearch] = useState('')
   const searchUser = () => {
-    axios.get(`users/by/asefsfxf323-dxc/${idUsuario}`)
+    axios.get(`users/by/asefsfxf323-dxc/${idUsuarioSearch}`)
       .then(res => {
         console.log(res.data)
         if (res.data) {
@@ -215,7 +216,7 @@ const Perfil = ({
           <View style={style.btnLista}>
             <TextInput
               style={style.txtLista}
-              // onChangeText={idUsuario => this.setState({idUsuario})}
+              onChangeText={idUsuarioSearch => setIdUsuarioSearch(idUsuarioSearch)}
               placeholder="id"
             />
             <TouchableOpacity

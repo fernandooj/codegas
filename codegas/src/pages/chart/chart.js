@@ -5,7 +5,7 @@ import { connect }  from "react-redux";
 import Footer       from '../components/footer'
 import { BarChart}  from "react-native-chart-kit";
 import {DataContext} from "../../context/context"
-import {getPedidos} from '../../redux/actions/pedidoActions' 
+import {getPedidosChart} from '../../redux/actions/pedidoActions' 
 import {style}      from './style'
  
 function groupBy(array, groupFn) {
@@ -60,7 +60,7 @@ class Chart extends Component{
             let userId = acceso=="cliente" ?idUsuario :this.props.navigation.state.params.idUsuario
             // let userId = "5e3d805e4ceec44739a42f40"
             console.log({userId})
-            this.props.getPedidos(userId, 0, 100, 'cliente', undefined)
+            this.props.getPedidosChart(userId)
         } catch (error) {
             console.log(error)
         }
@@ -81,8 +81,7 @@ class Chart extends Component{
             e.kilos=e.kilos.replace(',', '.')
             return e
         })
-        console.log("props.pedidos")
-        console.log(pedidos)
+        
         pedidos.map(e=>{
             data.push({date:e.fechaentrega, count:parseInt(e.kilos)})
         })
@@ -160,16 +159,17 @@ class Chart extends Component{
 }
 
 const mapState = state => {
-    console.log(state.pedido.pedidosUser)
+    console.log("state.pedido")
+    console.log(state.pedido)
 	return {
-        pedidos: state.pedido.pedidos,
+        pedidos: state.pedido.pedidosChart,
 	};
 };
 
 const mapDispatch = dispatch => {
     return {
-        getPedidos: (idUser, start, limit, acceso, search) => {
-            dispatch(getPedidos(idUser, start, limit, acceso, search));
+        getPedidosChart: (idUser) => {
+            dispatch(getPedidosChart(idUser));
         },
     };
 };
