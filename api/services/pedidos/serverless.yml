@@ -29,6 +29,17 @@ getPedidosToday:
       - services/pedidos/src/get-pedidos-today.js
       - lib/errors/database-error.js
 
+
+getPedidosChart:
+  name: ${self:custom.base}-get-pedidos-chart
+  handler: services/pedidos/src/get-pedidos-chart.main
+  events:
+    - httpApi: 'GET /ped/pedido/chart/{usuarioId}'
+  package:
+    include:
+      - services/pedidos/src/get-pedidos-chart.js
+      - lib/errors/database-error.js
+
 getPedidoById:
   name: ${self:custom.base}-get-pedido-by-id
   handler: services/pedidos/src/get-pedido-by-id.main

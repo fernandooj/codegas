@@ -9,7 +9,7 @@ RETURNS TABLE (
     _id INT,
     creado TIMESTAMP,
     fechaSolicitud VARCHAR(255),
-    fechaEntrega VARCHAR(255),
+    fechaEntrega TIMESTAMP,
     forma VARCHAR(255),
     cantidadKl INT,
     kilos VARCHAR(30),
@@ -37,6 +37,10 @@ RETURNS TABLE (
     puntoId INT,
     motivo_no_cierre VARCHAR(255),
     perfil_novedad VARCHAR(255),
+    factura VARCHAR(255),
+    valor_total    character varying,
+    remision       character varying,
+    forma_pago character varying,
     observacion_pedido VARCHAR(255),
     total INT
 )
@@ -58,7 +62,7 @@ BEGIN
         AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.motivo_no_cierre, p.perfil_novedad, p.observacion) ILIKE '%' || _busqueda || '%');
 
         RETURN QUERY 
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.observacion AS observacion_pedido, _total
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -85,7 +89,7 @@ BEGIN
         AND p.conductorId = _usuarioId;
 
         RETURN QUERY 
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.observacion AS observacion_pedido, _total
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -101,7 +105,7 @@ BEGIN
 
     ELSE
         RETURN QUERY
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario AS valorUnitarioUsuario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre AS zona, u2.nombre AS usuarioCrea, u3.nombre AS conductor, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.observacion AS observacion_pedido, _total
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario AS valorUnitarioUsuario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre AS zona, u2.nombre AS usuarioCrea, u3.nombre AS conductor, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id

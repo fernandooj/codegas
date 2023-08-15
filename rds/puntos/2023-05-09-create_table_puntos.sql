@@ -9,9 +9,9 @@ create table if not exists puntos(
     creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'),
     idZona INT,
     idCliente INT,
-    idPadre INT
-    coordenadas POINT
-    place_name character varying,
+    idPadre INT,
+    coordenadas POINT,
+    place_name character varying
 );
 
 COMMENT ON TABLE puntos IS 'Info data of PUNTOS';
