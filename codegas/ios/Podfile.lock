@@ -395,9 +395,9 @@ PODS:
     - React-jsi (= 0.71.10)
     - React-logger (= 0.71.10)
     - React-perflogger (= 0.71.10)
-  - RNCAsyncStorage (1.19.1):
+  - RNCAsyncStorage (1.19.2):
     - React-Core
-  - RNCPicker (2.4.10):
+  - RNCPicker (2.5.0):
     - React-Core
   - RNFBApp (18.3.0):
     - Firebase/CoreOnly (= 10.12.0)
@@ -417,7 +417,7 @@ PODS:
     - React-Core
     - React-RCTImage
     - TOCropViewController
-  - RNSVG (13.10.0):
+  - RNSVG (13.11.0):
     - React-Core
   - RNVectorIcons (9.2.0):
     - React-Core
@@ -634,13 +634,13 @@ SPEC CHECKSUMS:
   React-RCTVibration: d13cc2d63286c633393d3a7f6f607cc2a09ec011
   React-runtimeexecutor: a9a1cd79996c9a0846e3232ecb25c64e1cc0172e
   ReactCommon: e7a0cdbb67f8da60677db83d693dea816780a6e9
-  RNCAsyncStorage: f47fe18526970a69c34b548883e1aeceb115e3e1
-  RNCPicker: 0bc2f0a29abcca7b7ed44a2d036aac9ab6d25700
+  RNCAsyncStorage: f57e929cd7757f2cb3dd8186d123c09e8281a1ad
+  RNCPicker: 32ca102146bc7d34a8b93a998d9938d9f9ec7898
   RNFBApp: f0b5cf917b0b91a0ae890fbbaec0fb5d3285ea46
   RNFBAuth: e3f51b2e4acc39e4664b24117f9106af493b2dd3
   RNGestureHandler: c0d04458598fcb26052494ae23dda8f8f5162b13
   RNImageCropPicker: 486e2f7e2b0461ce24321f751410dce1b3b49e6d
-  RNSVG: 80584470ff1ffc7994923ea135a3e5ad825546b9
+  RNSVG: 03e4d258ca355d7836a0a5dd4d4dc63c1eb49cbb
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   Yoga: e7ea9e590e27460d28911403b894722354d73479

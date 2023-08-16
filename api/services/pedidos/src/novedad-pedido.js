@@ -11,7 +11,7 @@ const NOVEDAD_PEDIDO = 'SELECT * FROM novedad_pedidos($1, $2, $3, $4, $5)';
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
- const SOURCE = 'soluciones@codegascolombia.com';
+ const SOURCE = 'app@codegascolombia.com';
  const email1 = 'atencionalcliente3@codegascolombia.com'
  const email2 = 'coord.logistica@codegascolombia.com'
  const email3 = 'atencionalcliente4@codegascolombia.com'

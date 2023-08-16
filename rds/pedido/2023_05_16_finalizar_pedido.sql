@@ -16,11 +16,13 @@ DECLARE
     new_id integer;
     _entregado BOOLEAN;
     newOrden integer;
-    _fechaEntregado timestamp;
+    _fechaEntregado TIMESTAMP DEFAULT NOW() - INTERVAL '5 hours';
+    fechaEntregaTimestamp TIMESTAMP;
 BEGIN
     _entregado := true;
-    _fechaEntregado := now();
-    SELECT orden_cerrado INTO newOrden FROM pedidos WHERE fechaEntrega = _fechaEntrega AND conductorId = _conductorId AND entregado = true;
+    _fechaEntregado := now() - INTERVAL '5 hours';
+    fechaEntregaTimestamp := TO_TIMESTAMP(_fechaEntrega, 'YYYY-MM-DD HH24:MI:SS');
+    SELECT orden_cerrado INTO newOrden FROM pedidos WHERE fechaEntrega = fechaEntregaTimestamp AND conductorId = _conductorId AND entregado = true;
     IF newOrden IS NULL THEN newOrden := 0+1; ELSE newOrden := newOrden + 1; END IF;
     
     UPDATE pedidos 

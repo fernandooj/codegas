@@ -639,10 +639,10 @@ class Pedido extends Component{
                                         
                                         <View style={style.contenedorConductor}>
                                             <TouchableOpacity 
-                                                style={remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<2 || !imagen
+                                                style={remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<2  
                                                 ?style.btnDisable3 :style.btnGuardar3} 
                                                 onPress={
-                                                    remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || !imagen
+                                                    remisionTexto.length<1 || kilosTexto.length<1 || facturaTexto.length<1 || forma_pagoTexto.length<1 || valor_totalTexto.length<2  
                                                     ?()=>alert("llene todos los campos")
                                                     :valor_totalTexto<100
                                                     ?()=>alert("Valor total debe ser mayor a 100")
