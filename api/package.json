@@ -20,7 +20,7 @@
     "busboy": "^1.6.0",
     "jimp": "^0.22.7",
     "moment": "^2.29.4",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.2",
     "nodemailer": "^6.9.3",
     "parse-multipart": "^1.0.4",
     "pg": "^8.10.0",
