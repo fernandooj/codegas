@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>421814098476-up6v9afcqlo25gei4ed7ff4tlkf8rlhb.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.421814098476-up6v9afcqlo25gei4ed7ff4tlkf8rlhb</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>421814098476-9r5nbieipgpf10nutmmpt6j73sd3302m.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBnzpp4yDj1WHnbfwKpZ4czzHyprc9mi_A</string>
+	<key>GCM_SENDER_ID</key>
+	<string>421814098476</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.codegas.codegas</string>
+	<key>PROJECT_ID</key>
+	<string>codegas-1d43a</string>
+	<key>STORAGE_BUCKET</key>
+	<string>codegas-1d43a.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:421814098476:ios:91970e34d0204151</string>
+	<key>DATABASE_URL</key>
+	<string>https://codegas-1d43a.firebaseio.com</string>
+</dict>
+</plist>
