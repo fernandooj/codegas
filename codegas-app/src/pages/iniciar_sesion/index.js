@@ -2,38 +2,59 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ImageBackground, ActivityIndicator, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { connect }         from "react-redux";
+import { connect } from "react-redux";
 import { DataContext } from '../../context/context';
-import {style} from './style'
-import Footer              from '../components/footer'
+import { style } from './style'
+import Footer from '../components/footer'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const IniciarSesion = ({ navigation }) => {
- 
-  const {login} = useContext(DataContext)  
+
+  const { login } = useContext(DataContext)
 
   const [cargando, setCargando] = useState(false);
   const [data, setData] = useState({})
   const [email, setEmail] = useState('')
-  
-  const updateData= (type, e) => {
-    setData({...data, [type]:e })
+
+  const updateData = (type, e) => {
+    setData({ ...data, [type]: e })
   }
 
-  const signIn = async() => {
-    const {response, status} = await login(data)
-    if(response){
-      if(status===1){
+  const signIn = async () => {
+    const { response, status } = await login(data)
+    if (response) {
+      if (status === 1) {
         navigation.navigate("Home")
-      } else if (status===2) {
-        Toast.show({type: 'info', text1: 'Cambiamos tu contraseña, revisa tu email'})
+      } else if (status === 2) {
+        Toast.show({ type: 'info', text1: 'Cambiamos tu contraseña, revisa tu email' })
       }
-    }else{
-      Toast.show({type: 'error', text1: 'Datos Incorrectos'})
+    } else {
+      Toast.show({ type: 'error', text1: 'Datos Incorrectos' })
     }
   }
 
+  const handleSubmit = () => {
+    let tipoEmail = email.includes("@")
+    tipoEmail ? enviarEmailRegistro() : enviaCodigoRegistro()
+  }
+
+  const enviaCodigoRegistro = () => {
+    let acceso = "cliente";
+    // Aquí deberías hacer la llamada a la API para enviar código de registro
+    console.log('Enviando código de registro para:', email);
+    Toast.show({ type: 'info', text1: 'Funcionalidad de código de registro no implementada' });
+  }
+
+  const enviarEmailRegistro = () => {
+    let emailLower = email.toLowerCase();
+    let acceso = "cliente";
+    // Aquí deberías hacer la llamada a la API para enviar email de registro
+    console.log('Enviando email de registro para:', emailLower);
+    Toast.show({ type: 'info', text1: 'Funcionalidad de email de registro no implementada' });
+  }
+
   const renderEmail = () => {
-    return(
+    return (
       <ScrollView style={style.containerRegistro2}>
         <View style={style.subContainerRegistro}>
           <Text style={style.titulo}>Crear Nueva Cuenta</Text>
@@ -52,8 +73,8 @@ const IniciarSesion = ({ navigation }) => {
             style={style.btnGuardar}
             onPress={() =>
               email.length < 2
-                ? Toast.show({type: 'info', text1: 'Inserte su email o codigo de registro'})
-                : this.handleSubmit()
+                ? Toast.show({ type: 'info', text1: 'Inserte su email o codigo de registro' })
+                : handleSubmit()
             }>
             <Text style={style.textGuardar}>Registrarme</Text>
           </TouchableOpacity>
@@ -70,19 +91,19 @@ const IniciarSesion = ({ navigation }) => {
           <TextInput
             style={style.input}
             placeholder="Email"
-            onChangeText={(e)=>updateData('email', e)}
+            onChangeText={(e) => updateData('email', e)}
             value={data?.email}
             keyboardType="email-address"
             autoCapitalize="none"
-            placeholderTextColor="#aaa" 
+            placeholderTextColor="#aaa"
           />
           <TextInput
             style={style.input}
             placeholder="Contraseña"
-            onChangeText={(e)=>updateData('password', e)}
+            onChangeText={(e) => updateData('password', e)}
             secureTextEntry
             value={data?.password}
-            placeholderTextColor="#aaa" 
+            placeholderTextColor="#aaa"
           />
           <TouchableOpacity style={style.btnGuardar} onPress={signIn}>
             {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
@@ -140,15 +161,15 @@ const IniciarSesion = ({ navigation }) => {
   //     });
   // };
 
-  
-   
+
+
   const registroExitoso = (email, code, id) => {
     AsyncStorage.setItem('idPerfilregistro', id);
     navigation.navigate("confirmar", { code, email });
   };
 
 
- 
+
   return (
     <View style={style.container}>
       <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />

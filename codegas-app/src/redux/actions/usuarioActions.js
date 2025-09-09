@@ -6,7 +6,7 @@ import {
 } from "./constants/actionsTypes";
 import axios from "axios";
 
- 
+
 
 const getPerfil = data => {
   return dispatch => {
@@ -77,83 +77,83 @@ const getUsuariosAcceso = (limit, start, acceso) => {
       });
   };
 };
-  
+
 
 const getUserByUid = async (uid) => {
   try {
-      const response = await axios.get(`/users/uid/${uid}`);
+    const response = await axios.get(`/users/uid/${uid}`);
 
-      if(response.status!==200 ){
-          throw new Error(`Ruquest failed with status ${response.status}`)
-      }
-      
-      return response.data;
+    if (response.status !== 200) {
+      throw new Error(`Ruquest failed with status ${response.status}`)
+    }
+
+    return response.data;
   } catch (error) {
-      console.error(error);
-      return []
+    console.error(error);
+    return null
   }
 };
 
 
 const getUserByEmail = async (email) => {
   try {
-      const response = await axios.get(`/users/email/${email}`);
+    const response = await axios.get(`/users/email/${email}`);
 
-      if(response.status!==200 ){
-          throw new Error(`Ruquest failed with status ${response.status}`)
-      }
-      
-      return response.data;
+    if (response.status !== 200) {
+      throw new Error(`Ruquest failed with status ${response.status}`)
+    }
+
+    return response.data;
   } catch (error) {
-      console.error(error);
-      return []
+    console.error(error);
+    return null
   }
 };
 
 const sendNewPassword = async (email, pass) => {
-  const data = {email, pass}
+  const data = { email, pass }
   try {
-      // const response = await axios.get(`/users/newPassword/${email, pass}`);
-      const response = await axios({
-        method: 'post',  
-        url: `users/sendPassword`,
-        data:  JSON.stringify(data),
-        headers: { 
-            'Content-Type': 'application/json'
-        },
-      })
+    // const response = await axios.get(`/users/newPassword/${email, pass}`);
+    const response = await axios({
+      method: 'post',
+      url: `users/sendPassword`,
+      data: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
 
-      if(response.status!==200 ){
-          throw new Error(`Ruquest failed with status ${response.status}`)
-      }
-      
-      return response.data;
+    if (response.status !== 200) {
+      throw new Error(`Ruquest failed with status ${response.status}`)
+    }
+
+    return response.data;
   } catch (error) {
-      console.error(error);
-      return []
+    console.error(error);
+    return null;
   }
 };
 
 const updateUid = async (email, uid) => {
-  const data = {email, uid}
+  const data = { email, uid }
   try {
-      const response = await axios({
-        method: 'post',  
-        url: `users/updateUid`,
-        data:  JSON.stringify(data),
-        headers: { 
-            'Content-Type': 'application/json'
-        },
-      })
+    const response = await axios({
+      method: 'post',
+      url: `users/updateUid`,
+      data: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
 
-      if(response.status!==200 ){
-          throw new Error(`Ruquest failed with status ${response.status}`)
-      }
-      
-      return response.data;
+    if (response.status !== 200) {
+      throw new Error(`Ruquest failed with status ${response.status}`)
+    }
+
+    return response.data;
   } catch (error) {
-      console.error(error);
-      return []
+    console.error(error);
+    return null
   }
 };
 

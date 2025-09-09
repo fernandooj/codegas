@@ -1,140 +1,140 @@
-import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, Dimensions, Animated} from 'react-native'
+import React, { Component } from 'react'
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, Dimensions, Animated } from 'react-native'
 import Toast from 'react-native-toast-message';
-import axios               from 'axios';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { connect }         from "react-redux";
-import Footer              from '../components/footer'
- 
-import {style}             from './style'
+import axios from 'axios';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+import { connect } from "react-redux";
+import Footer from '../components/footer'
+
+import { style } from './style'
 
 
-let size  = Dimensions.get('window');
-class Capacidad extends Component{
-	constructor(props) {
+let size = Dimensions.get('window');
+class Capacidad extends Component {
+    constructor(props) {
         super(props);
-        this.state={
-            capacidad:"",
-            
-            capacidades:[],
-            top:new Animated.Value(size.height),
+        this.state = {
+            capacidad: "",
+
+            capacidades: [],
+            top: new Animated.Value(size.height),
         }
         this.getCapacidades()
-	}
-
-    
-    getCapacidades(){
-        axios.get("cap/capacidad")
-        .then(res=>{
-            if(res.data.status){
-                this.setState({capacidades:res.data.capacidad})
-            }else{
-             this.setState({capacidades:[]})
-            }
-        })
     }
-    renderCabezera(){
-        const {capacidad} = this.state
-        return(
+
+
+    getCapacidades() {
+        axios.get("cap/capacidad")
+            .then(res => {
+                if (res.data.status) {
+                    this.setState({ capacidades: res.data.capacidad })
+                } else {
+                    this.setState({ capacidades: [] })
+                }
+            })
+    }
+    renderCabezera() {
+        const { capacidad } = this.state
+        return (
             <View style={style.contenedorCabezera}>
                 <TextInput
                     placeholder="Capacidad"
-                    autoCapitalize = 'none'
-                    onChangeText={(capacidad)=> this.setState({ capacidad })}
+                    autoCapitalize='none'
+                    onChangeText={(capacidad) => this.setState({ capacidad })}
                     value={capacidad}
                     style={style.inputCabezera}
-                    placeholderTextColor="#aaa" 
+                    placeholderTextColor="#aaa"
                 />
-                <TouchableOpacity  style={style.btnIconNuevo} onPress={capacidad.length<2 ?()=>alert("ingrese una capacidad") :()=>this.crearCapacidad()}>
-                    <Icon name={'plus'} style={style.iconNuevo} />
+                <TouchableOpacity style={style.btnIconNuevo} onPress={capacidad.length < 2 ? () => alert("ingrese una capacidad") : () => this.crearCapacidad()}>
+                    <FontAwesome name={'plus'} style={style.iconNuevo} />
                 </TouchableOpacity>
             </View>
         )
     }
 
 
-    renderCapacidad(){
-        return this.state.capacidades.map((e, key)=>{
+    renderCapacidad() {
+        return this.state.capacidades.map((e, key) => {
             return (
                 <View style={style.vehiculo} key={key}>
                     <View style={style.vehiculoTexto}>
-                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Capacidad: {e.capacidad}</Text>
+                        <Text style={{ fontFamily: "Comfortaa-Regular" }}>Capacidad: {e.capacidad}</Text>
                     </View>
-                    <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.eliminarCapacidad(e.capacidad, e._id )}>
-                        <Icon name={'trash'} style={style.iconVehiculo} />
+                    <TouchableOpacity style={style.btnVehiculo} onPress={() => this.eliminarCapacidad(e.capacidad, e._id)}>
+                        <FontAwesome name={'trash'} style={style.iconVehiculo} />
                     </TouchableOpacity>
                 </View>
             )
         })
     }
 
-    
-    
-	render(){
-        const {navigation} = this.props
+
+
+    render() {
+        const { navigation } = this.props
         return (
             <View style={style.container}>
                 {this.renderCabezera()}
                 <ScrollView style={style.subContenedor}>
                     {
-                        this.state.capacidades.length==0
-                        ?<ActivityIndicator />
-                        :this.renderCapacidad()
+                        this.state.capacidades.length == 0
+                            ? <ActivityIndicator />
+                            : this.renderCapacidad()
                     }
-                    
+
                 </ScrollView>
                 <Footer navigation={navigation} />
             </View>
         )
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            CREAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    crearCapacidad(){
-        const {capacidad} = this.state
-         
-        axios.post(`cap/capacidad/`, {capacidad})
-        .then(res=>{
-            console.log(res.data)
-            if(res.data.status){
-                Toast.show({type: 'success', text1: 'capacidad Guardada'})
-                this.setState({capacidad:""})
-                this.getCapacidades()
-            }else{
-                Toast.show({type: 'error', text1: 'Esta placa ya existe'})
-            }
-        })
-         
+    crearCapacidad() {
+        const { capacidad } = this.state
+
+        axios.post(`cap/capacidad/`, { capacidad })
+            .then(res => {
+                console.log(res.data)
+                if (res.data.status) {
+                    Toast.show({ type: 'success', text1: 'capacidad Guardada' })
+                    this.setState({ capacidad: "" })
+                    this.getCapacidades()
+                } else {
+                    Toast.show({ type: 'error', text1: 'Esta placa ya existe' })
+                }
+            })
+
     }
-   
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            ELIMINAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    eliminarCapacidad(capacidad, id){
+    eliminarCapacidad(capacidad, id) {
         Alert.alert(
             `Seguro deseas eliminar ${capacidad}`,
             ``,
             [
-              {text: 'Confirmar', onPress: () => confirmar()},
+                { text: 'Confirmar', onPress: () => confirmar() },
 
-              {text: 'Cancelar', onPress: () => console.log()},
+                { text: 'Cancelar', onPress: () => console.log() },
             ],
-            {cancelable: false},
+            { cancelable: false },
         );
-        const confirmar =()=>{
+        const confirmar = () => {
             axios.put(`cap/capacidad/eliminar/${id}`)
-            .then((res)=>{
-                console.log(res.data)
-                if(res.data.status){
-                    let text1 = `Capacidad ${capacidad} eliminada`;
-                    text1 = text1.toString();
-                    Toast.show({type: 'success', text1})
-                    this.getCapacidades()
-                }else{
-                    Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
-                }
-            })
+                .then((res) => {
+                    console.log(res.data)
+                    if (res.data.status) {
+                        let text1 = `Capacidad ${capacidad} eliminada`;
+                        text1 = text1.toString();
+                        Toast.show({ type: 'success', text1 })
+                        this.getCapacidades()
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    }
+                })
         }
     }
 
@@ -142,10 +142,10 @@ class Capacidad extends Component{
 }
 
 const mapState = state => {
-	return {
-        conductores:state.usuario.usuariosAcceso,
-        vehiculos:state.vehiculo.vehiculos
-	};
+    return {
+        conductores: state.usuario.usuariosAcceso,
+        vehiculos: state.vehiculo.vehiculos
+    };
 };
 
 const mapDispatch = dispatch => {
@@ -160,15 +160,15 @@ const mapDispatch = dispatch => {
 };
 
 Capacidad.defaultProps = {
-    vehiculos:[],
-    conductores:[]
+    vehiculos: [],
+    conductores: []
 };
 
 Capacidad.propTypes = {
 
 };
 
-  export default connect(
-	mapState,
-	mapDispatch
-  )(Capacidad);
+export default connect(
+    mapState,
+    mapDispatch
+)(Capacidad);

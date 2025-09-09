@@ -10,8 +10,8 @@ import { DataContext } from '../../context/context';
 import { style } from './style';
 
 const Home = ({ navigation }) => {
-  const {login, acceso, userId} = useContext(DataContext)  
-  limit = acceso==='conductor' ? 50 :10
+  const { login, acceso, userId } = useContext(DataContext)
+  limit = acceso === 'conductor' ? 50 : 10
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getVehiculos(30));
@@ -21,7 +21,7 @@ const Home = ({ navigation }) => {
   const renderBotones = () => {
     return (
       <View>
-        <TouchableOpacity style={[style.btn, { marginTop: 10 }]} onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'perfil')}>
+        <TouchableOpacity style={[style.btn, { marginTop: 10 }]} onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'Perfil')}>
           <Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon} />
           <Text style={style.text}>NUEVO PEDIDO</Text>
         </TouchableOpacity>
@@ -38,8 +38,8 @@ const Home = ({ navigation }) => {
               acceso == 'admin' || acceso == 'solucion'
                 ? navigation.navigate('conversacion', { tokenPhone, acceso })
                 : formularioChat
-                ? navigation.navigate('conversacion', { tokenPhone, acceso })
-                : this.setState({ modal: true })
+                  ? navigation.navigate('conversacion', { tokenPhone, acceso })
+                  : this.setState({ modal: true })
             }>
             <Image source={require('../../assets/img/pg2/bot03.png')} style={style.icon} />
             <Text style={style.text}>CHAT</Text>
