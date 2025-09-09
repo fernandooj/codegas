@@ -4,7 +4,7 @@ import moment from 'moment'
 import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
 import Toast from 'react-native-toast-message';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { connect } from "react-redux";
 import ImageProgress from 'react-native-image-progress';
@@ -110,7 +110,7 @@ class Pedido extends Component {
                         onPress={() => { this.setState({ showNovedades: false }) }}
                         style={style.btnModalConductorClose}
                     >
-                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <Text style={style.tituloNovedades}>Novedades pedido: {nPedido}</Text>
                     <ScrollView>
@@ -284,7 +284,7 @@ class Pedido extends Component {
             <View style={style.contenedorModal2}>
                 <View style={[style.subContenedorModal, { height: size.height - 180 }]}>
                     <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalFechaEntrega: false })} style={style.btnModalClose}>
-                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <Text style={style.tituloModal}>Fecha entrega</Text>
                     <Calendar
@@ -340,7 +340,7 @@ class Pedido extends Component {
                 <View style={!keyboard ? style.subContenedorModal : [style.subContenedorModal, { marginTop: acceso == "admin" ? -610 : -370 }]}>
                     <ScrollView onContentSizeChange={(height) => { this.setState({ height }) }} keyboardDismissMode="on-drag">
                         <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ openModal: false, elevation: 7 })} style={size.height < height ? style.btnModalClose : style.btnModalClose2}>
-                            <Icon name={'times-circle'} style={style.iconCerrar} />
+                            <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                         </TouchableOpacity>
                         <View style={style.containerTituloModal}>
                             <Text style={{ fontFamily: "Comfortaa-Regular" }}>Razón Social: {razon_social}</Text>
@@ -375,17 +375,17 @@ class Pedido extends Component {
                                     <Text style={style.tituloModal}>Estado</Text>
                                     <TouchableOpacity style={estado == "activo" ? [style.subContenedorEditar, style.activo] : style.subContenedorEditar} onPress={() => this.setState({ estado: "activo" })}>
                                         <Text style={style.textoEspera}>Activo</Text>
-                                        {estado == "activo" && <Icon name="check" style={style.iconEditar} />}
+                                        {estado == "activo" && <FontAwesome name="check" style={style.iconEditar} />}
                                     </TouchableOpacity>
                                     <TouchableOpacity style={estado == "innactivo" ? [style.subContenedorEditar, style.activo] : style.subContenedorEditar}
                                         onPress={() => (entregado == true && estado == "activo" && (acceso !== "admin")) ? null : this.setState({ estado: "innactivo" })}>
                                         <Text style={style.textoEspera}>In activo</Text>
-                                        {estado == "innactivo" && <Icon name="check" style={style.iconEditar} />}
+                                        {estado == "innactivo" && <FontAwesome name="check" style={style.iconEditar} />}
                                     </TouchableOpacity>
                                     <TouchableOpacity style={estado == "espera" ? [style.subContenedorEditar, style.activo] : style.subContenedorEditar}
                                         onPress={() => (entregado == true && estado == "activo" && (acceso !== "admin")) ? null : this.setState({ estado: "espera" })}>
                                         <Text style={style.textoEspera}>Espera</Text>
-                                        {estado == "espera" && <Icon name="check" style={style.iconEditar} />}
+                                        {estado == "espera" && <FontAwesome name="check" style={style.iconEditar} />}
                                     </TouchableOpacity>
                                     {
                                         entregado == true && estado == "activo"
@@ -412,7 +412,7 @@ class Pedido extends Component {
                                             ? null
                                             : <TouchableOpacity style={[style.btnGuardar2, { flexDirection: "row", left: 45 }]} onPress={() => this.setState({ modalConductor: true })}>
                                                 <Text style={style.textGuardar}>Asignar</Text>
-                                                <Icon name="user" style={style.iconBtnGuardar} />
+                                                <FontAwesome name="user" style={style.iconBtnGuardar} />
                                             </TouchableOpacity>
                                     }
                                 </View>
@@ -683,7 +683,7 @@ class Pedido extends Component {
                     <View style={style.modalZona}>
                         <View style={style.subModalZona}>
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalZona: false })} style={style.btnModalClose}>
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                                <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
                             <Text style={style.tituloModal}>Total pedidos Zona</Text>
                             <ScrollView>
@@ -719,14 +719,14 @@ class Pedido extends Component {
             <Animated.View style={[style.modal, { top: this.state.top }]}>
                 <View style={style.cabezera}>
                     <TouchableOpacity style={style.btnRegresar} onPress={() => this.hideModal()}>
-                        <Icon name={'arrow-left'} style={style.iconFiltro} />
+                        <FontAwesome name={'arrow-left'} style={style.iconFiltro} />
                     </TouchableOpacity>
                     <Text style={style.btnRegresar}>
                         Filtros de búsqueda
                     </Text>
                     <TouchableOpacity style={style.btnLimpiar} onPress={() => this.limpiar()}>
                         <Text style={style.textoLimpiar}>Limpiar</Text>
-                        {textEstado == "todos" && <Icon name={'check'} style={style.iconFiltro} />}
+                        {textEstado == "todos" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                     </TouchableOpacity>
                 </View>
                 <ScrollView>
@@ -734,42 +734,42 @@ class Pedido extends Component {
                         <Text style={style.titulo1}>Estado</Text>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla("innactivo")}>
                             <Text style={style.textoFiltro}>Innactivo</Text>
-                            {textEstado == "innactivo" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "innactivo" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla("espera")}>
                             <Text style={style.textoFiltro}>Espera</Text>
-                            {textEstado == "espera" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "espera" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla2("activo", false, "activo")}>
                             <Text style={style.textoFiltro}>Activo</Text>
-                            {textEstado == "activo" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "activo" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla2("activo", true, "asignado")}>
                             <Text style={style.textoFiltro}>Asignado</Text>
-                            {textEstado == "asignado" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "asignado" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla3("activo", "entregado")}>
                             <Text style={style.textoFiltro}>Entregado</Text>
-                            {textEstado == "entregado" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "entregado" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla("noentregado")}>
                             <Text style={style.textoFiltro}>No Entregado</Text>
-                            {textEstado == "noentregado" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "noentregado" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                     </View>
                     <View style={style.subContenedorFiltro}>
                         <Text style={style.titulo1}>Forma</Text>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarForma("lleno")}>
                             <Text style={style.textoFiltro}>LLeno</Text>
-                            {textEstado == "lleno" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "lleno" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarForma("monto")}>
                             <Text style={style.textoFiltro}>Monto</Text>
-                            {textEstado == "monto" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "monto" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarForma("cantidad")}>
                             <Text style={style.textoFiltro}>Cantidad</Text>
-                            {textEstado == "cantidad" && <Icon name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "cantidad" && <FontAwesome name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                     </View>
                     <View style={style.subContenedorFiltro}>
@@ -875,7 +875,7 @@ class Pedido extends Component {
                         onPress={() => { this.setState({ modalConductor: false, placa: null, idVehiculo: null }) }}
                         style={style.btnModalConductorClose}
                     >
-                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <View style={style.contenedorConductor}>
                         <Button title="Asignar Vehiculo" disabled={!showCalendar ? true : false} onPress={() => this.setState({ showCalendar: false })} />
@@ -935,7 +935,7 @@ class Pedido extends Component {
                         onPress={() => { this.setState({ modalCarrosFiltro: false, placa: null, idVehiculo: null }) }}
                         style={style.btnModalConductorClose}
                     >
-                        <Icon name={'times-circle'} style={style.iconCerrar} />
+                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <ScrollView>
                         {
@@ -967,7 +967,7 @@ class Pedido extends Component {
                     }
                     <View style={{ flexDirection: 'row' }}>
                         <TouchableOpacity style={style.btnReload} onPress={() => this.reload()}>
-                            <Icon name='refresh' style={style.iconReload} />
+                            <FontAwesome name='refresh' style={style.iconReload} />
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnReload} onPress={() => this.showModal()}>
                             <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />
@@ -989,10 +989,10 @@ class Pedido extends Component {
                             {
                                 !showSearch
                                     ? <TouchableOpacity style={style.buscarCliente} onPress={() => terminoBuscador.length > 1 ? (this.loadPedidos(), this.setState({ showSearch: true })) : alert("Inserte un valor")}>
-                                        <Icon name='search' style={style.iconSearch} />
+                                        <FontAwesome name='search' style={style.iconSearch} />
                                     </TouchableOpacity>
                                     : <TouchableOpacity style={style.buscarCliente} onPress={() => (this.setState({ showSearch: false, terminoBuscador: '' }), this.reload())}>
-                                        <Icon name='close' style={style.iconSearch} />
+                                        <FontAwesome name='close' style={style.iconSearch} />
                                     </TouchableOpacity>
                             }
                         </View>
@@ -1011,7 +1011,7 @@ class Pedido extends Component {
                     onPress={() => { this.setState({ modalNovedad: false, placa: null, idVehiculo: null }) }}
                     style={style.btnModalConductorClose}
                 >
-                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                 </TouchableOpacity>
                 <Text>Novedad Innactividad</Text>
                 <TextInput
@@ -1042,7 +1042,7 @@ class Pedido extends Component {
                     onPress={() => { this.setState({ modalPerfiles: false, placa: null, idVehiculo: null }) }}
                     style={style.btnModalConductorClose}
                 >
-                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                 </TouchableOpacity>
                 <Text>Asignar novedad</Text>
 

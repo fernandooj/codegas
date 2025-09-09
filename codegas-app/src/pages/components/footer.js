@@ -6,8 +6,8 @@ import axios from 'axios';
 import { DataContext } from '../../context/context';
 
 export default function FooterComponent({ navigation }) {
-  const {userId} = useContext(DataContext)  
-
+  const { userId } = useContext(DataContext)
+  console.log('footer', userId);
   const [user, setUser] = useState({});
   const [badgeMessage, setBadgeMessage] = useState(true);
   const [badgeCuenta, setBadgeCuenta] = useState(true);
@@ -15,7 +15,7 @@ export default function FooterComponent({ navigation }) {
   const [badgeSocketCuenta, setBadgeSocketCuenta] = useState(0);
   const [badgeSocketPedido, setBadgeSocketPedido] = useState(0);
   const [badgeSocketConversacion, setBadgeSocketConversacion] = useState(0);
- 
+
   const reciveMensanje = (messages) => {
     setBadgeSocketMessage(badgeSocketMessage + 1);
     setBadgeMessage(true);
@@ -62,7 +62,7 @@ export default function FooterComponent({ navigation }) {
     navigation.navigate('conversacion');
   };
 
- 
+
   return (
     <View style={style.contenedorFooter}>
       <TouchableOpacity style={style.subContenedorFooter} onPress={() => navigation.navigate('Home')}>
@@ -90,27 +90,27 @@ export default function FooterComponent({ navigation }) {
         </TouchableOpacity>
       )}
 
-    
-        <TouchableOpacity
-          style={style.subContenedorFooter3}
-          onPress={() => { navigation.navigate(userId ? 'pedido' : 'IniciarSesion') }}          
-        >
-          <Image source={require('../../assets/img/footer/img3.png')} style={style.icon} resizeMode={'contain'} />
-          <Text style={style.textFooter}>Pedidos</Text>
-          {badgeSocketPedido > 0 && (
-            <View style={style.badge}>
-              <Text style={style.textBadge}>{badgeSocketPedido}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-     
 
-      <TouchableOpacity 
-        style={style.subContenedorFooter} 
-        onPress={() => 
+      <TouchableOpacity
+        style={style.subContenedorFooter3}
+        onPress={() => { navigation.navigate(userId ? 'pedido' : 'IniciarSesion') }}
+      >
+        <Image source={require('../../assets/img/footer/img3.png')} style={style.icon} resizeMode={'contain'} />
+        <Text style={style.textFooter}>Pedidos</Text>
+        {badgeSocketPedido > 0 && (
+          <View style={style.badge}>
+            <Text style={style.textBadge}>{badgeSocketPedido}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+
+
+      <TouchableOpacity
+        style={style.subContenedorFooter}
+        onPress={() =>
           userId
-          ?navigation.navigate('Perfil')
-          :navigation.navigate('IniciarSesion')
+            ? navigation.navigate('Perfil')
+            : navigation.navigate('IniciarSesion')
         }
       >
         <Image source={require('../../assets/img/footer/img4.png')} style={style.icon} resizeMode={'contain'} />

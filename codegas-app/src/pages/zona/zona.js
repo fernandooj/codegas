@@ -1,67 +1,67 @@
-import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Alert, TextInput, ScrollView} from 'react-native'
+import React, { Component } from 'react'
+import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView } from 'react-native'
 import Toast from 'react-native-toast-message';
-import axios               from 'axios';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import Footer              from '../components/footer' 
-import {style}             from './style'
+import axios from 'axios';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+import Footer from '../components/footer'
+import { style } from './style'
 
-class Zona extends Component{
-	constructor(props) {
-	  super(props);
-	  this.state={
-        zona:"",
-        zonas:[]
-	  }
-	}
-	 
-    componentDidMount = async () =>{
+class Zona extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            zona: "",
+            zonas: []
+        }
+    }
+
+    componentDidMount = async () => {
         this.getZonas()
     }
- 
-    getZonas(){
+
+    getZonas() {
         axios.get("zon/zona")
-        .then(res=>{
-            console.log(res.data)
-            res.data.status &&this.setState({zonas:res.data.zona})
-        })
+            .then(res => {
+                console.log(res.data)
+                res.data.status && this.setState({ zonas: res.data.zona })
+            })
     }
-    renderZonas(){
-        return this.state.zonas.map((e, key)=>{
-            
+    renderZonas() {
+        return this.state.zonas.map((e, key) => {
+
             return (
                 <View style={style.vehiculo} key={key}>
                     <View style={style.vehiculoTexto}>
-                        <Text style={{fontFamily: "Comfortaa-Regular",}}>{e.nombre}</Text>
+                        <Text style={{ fontFamily: "Comfortaa-Regular", }}>{e.nombre}</Text>
                     </View>
-                    <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.eliminarZona(e.nombre, e._id)}>
-                        <Icon name={'trash'} style={style.iconCerrar} />
+                    <TouchableOpacity style={style.btnVehiculo} onPress={() => this.eliminarZona(e.nombre, e._id)}>
+                        <FontAwesome name={'trash'} style={style.iconCerrar} />
                     </TouchableOpacity>
                 </View>
             )
         })
     }
- 
-   
-    renderCabezera(){
-        const {zona} = this.state
-        return(
+
+
+    renderCabezera() {
+        const { zona } = this.state
+        return (
             <View style={style.contenedorCabezera}>
                 <TextInput
                     placeholder="Zona"
-                    autoCapitalize = 'none'
-                    onChangeText={(zona)=> this.setState({ zona })}
+                    autoCapitalize='none'
+                    onChangeText={(zona) => this.setState({ zona })}
                     value={zona}
                     style={style.inputCabezera}
                 />
-                <TouchableOpacity  style={style.btnIconNuevo} onPress={()=>this.crearZona()}>
-                    <Icon name={'plus'} style={style.iconNuevo} />
+                <TouchableOpacity style={style.btnIconNuevo} onPress={() => this.crearZona()}>
+                    <FontAwesome name={'plus'} style={style.iconNuevo} />
                 </TouchableOpacity>
             </View>
         )
     }
-	render(){
-        const {navigation} = this.props
+    render() {
+        const { navigation } = this.props
         console.log(this.state.zonas)
         return (
             <View style={style.container}>
@@ -72,74 +72,73 @@ class Zona extends Component{
                 <Footer navigation={navigation} />
                 <Toast />
             </View>
-        )    
+        )
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            CREAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    crearZona(){
-        const {zona} = this.state
-        if(zona.length>3){
-            axios.post(`zon/zona/`, {nombre:zona})
-            .then(res=>{
-                console.log(res.data)
-                if(res.data.status){
-                    Toast.show({type: 'success', text1: 'Zona Guardada'})
-                    this.setState({zona:""})
-                    // let nuevaZona= {activo:true, nombre:zona, _id:res.data.zonas._id}
-                    this.getZonas()
-                }else{
-                    Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
-                }
-            })
-        }else{
-            Toast.show({type: 'error', text1: 'Zona invalida'})
+    crearZona() {
+        const { zona } = this.state
+        if (zona.length > 3) {
+            axios.post(`zon/zona/`, { nombre: zona })
+                .then(res => {
+                    console.log(res.data)
+                    if (res.data.status) {
+                        Toast.show({ type: 'success', text1: 'Zona Guardada' })
+                        this.setState({ zona: "" })
+                        // let nuevaZona= {activo:true, nombre:zona, _id:res.data.zonas._id}
+                        this.getZonas()
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    }
+                })
+        } else {
+            Toast.show({ type: 'error', text1: 'Zona invalida' })
         }
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            ELIMINAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    eliminarZona(zona, _id){
+    eliminarZona(zona, _id) {
         Alert.alert(
             `Seguro deseas eliminar a: ${zona}`,
             ``,
             [
-              {text: 'Confirmar', onPress: () => confirmar1()},
-               
-              {text: 'Cancelar', onPress: () => console.log()},
+                { text: 'Confirmar', onPress: () => confirmar1() },
+
+                { text: 'Cancelar', onPress: () => console.log() },
             ],
-            {cancelable: false},
+            { cancelable: false },
         );
-        const confirmar1 =()=>{
+        const confirmar1 = () => {
             // axios.put(`zon/zona/`, {_id})
-            const data = {_id}
+            const data = { _id }
             axios({
-                method: 'put',  
+                method: 'put',
                 url: `zon/zona`,
-                data:  JSON.stringify(data),
-                headers: { 
+                data: JSON.stringify(data),
+                headers: {
                     'Content-Type': 'application/json'
                 },
             })
-            .then((res)=>{
-                console.log(res.data)
-                if(res.data.status){
-                    let text1 = `zona ${zona} eliminada`;
-                    text1 = text1.toString();
-                    Toast.show({type: 'error', text1})
-                    this.getZonas()
-                }else{
-                    Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
-                }
-            })
+                .then((res) => {
+                    console.log(res.data)
+                    if (res.data.status) {
+                        let text1 = `zona ${zona} eliminada`;
+                        text1 = text1.toString();
+                        Toast.show({ type: 'error', text1 })
+                        this.getZonas()
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    }
+                })
         }
     }
-    
-     
+
+
 }
- 
- 
-  
+
+
+
 export default Zona
-  

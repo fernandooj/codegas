@@ -13,7 +13,7 @@ import {
 import { style } from './style';
 import { connect } from 'react-redux';
 import axios from 'axios';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import ModalFilterPicker from 'react-native-modal-filter-picker';
 import { Picker } from '@react-native-picker/picker';
 import Footer from '../components/footer';
@@ -615,7 +615,7 @@ class verPerfil extends Component {
                     <View style={style.modalZona}>
                         <View style={style.subModalZona}>
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalZona: false })} style={style.btnModalClose}>
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                                <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
                             <TextInput
                                 type='outlined'
@@ -631,7 +631,7 @@ class verPerfil extends Component {
                                         return (
                                             <TouchableOpacity style={style.btnZona} key={key} onPress={() => this.actualizaZona(e._id, e.nombre)}>
                                                 <Text style={style.textZona}>{e.nombre}</Text>
-                                                {idZona == e._id && <Icon name={'check'} style={style.iconZona} />}
+                                                {idZona == e._id && <FontAwesome name={'check'} style={style.iconZona} />}
                                             </TouchableOpacity>
                                         )
                                     })
@@ -660,7 +660,7 @@ class verPerfil extends Component {
                         <View style={[style.modal, { top: activeScroll ? -150 : 0 }]}>
                             <View style={style.subContenedorModal}>
                                 <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalUbicacion: false })} style={style.btnModalClose}>
-                                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                                 </TouchableOpacity>
                                 <ScrollView keyboardDismissMode="on-drag" >
                                     <Text style={style.tituloModal}>Si el pedido lo realizara el encargado del punto por favor inserta su informacion, de lo contrario solo inserta la dirección y zona</Text>
@@ -745,7 +745,7 @@ class verPerfil extends Component {
                                                         {
                                                             key > 0
                                                             && <TouchableOpacity style={style.btnEliminar} onPress={() => this.eliminarUbicacion(key)}>
-                                                                <Icon name={'trash'} style={style.iconEliminar} />
+                                                                <FontAwesome name={'trash'} style={style.iconEliminar} />
                                                             </TouchableOpacity>
                                                         }
 
@@ -757,7 +757,7 @@ class verPerfil extends Component {
                                     </View>
                                     <View style={style.contenedorAdd}>
                                         <TouchableOpacity onPress={() => this.actualizaUbicacion()} style={style.btnAdd}>
-                                            <Icon name={'plus'} style={style.iconAdd} />
+                                            <FontAwesome name={'plus'} style={style.iconAdd} />
                                         </TouchableOpacity>
                                     </View>
                                     <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.guardarUbicacion()}>
@@ -867,7 +867,7 @@ class verPerfil extends Component {
                 if (res.data.status) {
                     if (this.state.tipoAcceso) {
                         alert("Usuario guardado con exito")
-                        this.props.navigation.navigate("perfil")
+                        this.props.navigation.navigate("Perfil")
                     } else {
                         this.loginExitoso(res.data.user)
                     }

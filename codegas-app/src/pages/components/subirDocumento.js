@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { View, Text, Image, TouchableOpacity, Modal, Alert } from 'react-native'
 import DocumentPicker from '@react-native-documents/picker';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 
 import { style } from './style'
 
@@ -71,7 +71,7 @@ export default class subirDocumento extends Component {
                     <TouchableOpacity onPress={() => this.props.navigate("pdf", { uri: e.uri })}>
                         <Text style={style.textPdf}>{e.name}</Text>
                     </TouchableOpacity>
-                    <Icon name={'close'} style={style.iconTrashPdf} onPress={() => this.eliminarPdf(key)} />
+                    <FontAwesome name={'close'} style={style.iconTrashPdf} onPress={() => this.eliminarPdf(key)} />
                 </View>
             )
         })
@@ -146,7 +146,7 @@ export default class subirDocumento extends Component {
                         ? this.renderModal()
                         : imagenes.length < limiteImagenes
                         && <TouchableOpacity style={[style.contenedorUploadPortada, { width }]} onPress={() => this.setState({ showModal: true, isAndroidShareOpen: true })}>
-                            <Icon name={'camera'} style={style.iconPortada} />
+                            <FontAwesome name={'camera'} style={style.iconPortada} />
                             {/* <Text style={style.textPortada}> {!avatar ?"Imagen" :"Avatar"}</Text> */}
                             {!avatar && <Text style={style.textPortada2}>{titulo}</Text>}
                         </TouchableOpacity>

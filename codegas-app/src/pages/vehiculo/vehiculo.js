@@ -1,100 +1,100 @@
-import React, {Component} from 'react'
-import {View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated} from 'react-native'
+import React, { Component } from 'react'
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated } from 'react-native'
 import Toast from 'react-native-toast-message';
-import axios               from 'axios';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { connect }         from "react-redux";
-import Footer              from '../components/footer'
-import {getUsuariosAcceso} from '../../redux/actions/usuarioActions'
-import {getVehiculos}      from '../../redux/actions/vehiculoActions'
-import {DataContext} from "../../context/context"
-import {style}             from './style'
+import axios from 'axios';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+import { connect } from "react-redux";
+import Footer from '../components/footer'
+import { getUsuariosAcceso } from '../../redux/actions/usuarioActions'
+import { getVehiculos } from '../../redux/actions/vehiculoActions'
+import { DataContext } from "../../context/context"
+import { style } from './style'
 
 
-let size  = Dimensions.get('window');
-class Pedido extends Component{
+let size = Dimensions.get('window');
+class Pedido extends Component {
     static contextType = DataContext;
-	constructor(props) {
-	  super(props);
-	  this.state={
-        placa:"",
-        centroEditar:"",
-        bodegaEditar:"",
-        modalConductor:false,
-        modalEditar:false,
-        conductores:[],
-        top:new Animated.Value(size.height),
-	  }
-	}
+    constructor(props) {
+        super(props);
+        this.state = {
+            placa: "",
+            centroEditar: "",
+            bodegaEditar: "",
+            modalConductor: false,
+            modalEditar: false,
+            conductores: [],
+            top: new Animated.Value(size.height),
+        }
+    }
 
-    componentDidMount = async () =>{
+    componentDidMount = async () => {
         this.props.getVehiculos()
         this.props.getUsuariosAcceso(100, 0, "conductor")
         try {
             const value = this.context;
-            const {acceso, userId: idUsuario} = value
+            const { acceso, userId: idUsuario } = value
 
-            this.setState({idUsuario, acceso})
+            this.setState({ idUsuario, acceso })
         } catch (error) {
             console.log(error)
         }
     }
     resultFilter = (firstArray, secondArray) => {
         return firstArray.filter(firstArrayItem =>
-          !secondArray.some(
-            secondArrayItem => firstArrayItem._id === secondArrayItem.idConductor
-          )
+            !secondArray.some(
+                secondArrayItem => firstArrayItem._id === secondArrayItem.idConductor
+            )
         );
-      };
+    };
 
-    componentWillReceiveProps(props){
- 
-        let vehiculos = props.vehiculos.map(e=>{
-            return{
-                placa:e.placa,
-                idVehiculo:e._id,
-                centro:e.centro,
-                bodega:e.bodega,
-                conductor:e.conductor.nombre  || "Sin conductor",
-                idConductor:e.conductor._id
+    componentWillReceiveProps(props) {
+
+        let vehiculos = props.vehiculos.map(e => {
+            return {
+                placa: e.placa,
+                idVehiculo: e._id,
+                centro: e.centro,
+                bodega: e.bodega,
+                conductor: e.conductor.nombre || "Sin conductor",
+                idConductor: e.conductor._id
             }
         })
-       
+
         let conductores = this.resultFilter(props.conductores, vehiculos)
-      
-        this.setState({conductores})
+
+        this.setState({ conductores })
     }
 
 
-    renderVehiculos(){
-        const {acceso} = this.state
-        return this.props.vehiculos.map((e, key)=>{
+    renderVehiculos() {
+        const { acceso } = this.state
+        return this.props.vehiculos.map((e, key) => {
             return (
                 <View style={style.vehiculo} key={key}>
                     <View style={style.vehiculoTexto}>
-                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Id: {e._id}</Text>
-                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Placa: {e.placa}</Text>
-                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Centro: {e.centro}</Text>
-                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Bodega: {e.bodega}</Text>
-                        <Text style={{fontFamily: "Comfortaa-Regular"}}>Conductor: {e.conductor.nombre  || "Sin conductor"}</Text>
+                        <Text style={{ fontFamily: "Comfortaa-Regular" }}>Id: {e._id}</Text>
+                        <Text style={{ fontFamily: "Comfortaa-Regular" }}>Placa: {e.placa}</Text>
+                        <Text style={{ fontFamily: "Comfortaa-Regular" }}>Centro: {e.centro}</Text>
+                        <Text style={{ fontFamily: "Comfortaa-Regular" }}>Bodega: {e.bodega}</Text>
+                        <Text style={{ fontFamily: "Comfortaa-Regular" }}>Conductor: {e.conductor.nombre || "Sin conductor"}</Text>
                     </View>
                     {
                         e.conductor
-                        &&<TouchableOpacity style={style.btnVehiculo} onPress={()=>this.desvincularConductor(e.conductor.nombre, e._id, e.placa )}>
-                            <Icon name={'chain-broken'} style={style.iconVehiculo} />
+                        && <TouchableOpacity style={style.btnVehiculo} onPress={() => this.desvincularConductor(e.conductor.nombre, e._id, e.placa)}>
+                            <FontAwesome name={'chain-broken'} style={style.iconVehiculo} />
                         </TouchableOpacity>
                     }
-                   
-                    <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.setState({modalConductor:true, placaVehiculo:e.placa, conductor:e.conductor ?e.conductor._id :"", idVehiculo:e._id})}>
-                        <Icon name={'user'} style={style.iconVehiculo} />
+
+                    <TouchableOpacity style={style.btnVehiculo} onPress={() => this.setState({ modalConductor: true, placaVehiculo: e.placa, conductor: e.conductor ? e.conductor._id : "", idVehiculo: e._id })}>
+                        <FontAwesome name={'user'} style={style.iconVehiculo} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={style.btnVehiculo} onPress={()=>this.setState({modalEditar:true, idVehiculo:e._id, placaEditar:e.placa, centroEditar:e.centro, bodegaEditar:e.bodega })}>
-                        <Icon name={'pencil'} style={style.iconVehiculo} />
+                    <TouchableOpacity style={style.btnVehiculo} onPress={() => this.setState({ modalEditar: true, idVehiculo: e._id, placaEditar: e.placa, centroEditar: e.centro, bodegaEditar: e.bodega })}>
+                        <FontAwesome name={'pencil'} style={style.iconVehiculo} />
                     </TouchableOpacity>
                     {
-                        acceso=="admin"
-                        &&<TouchableOpacity style={style.btnVehiculo} onPress={()=>this.eliminarVehiculo(e.placa, e._id )}>
-                            <Icon name={'trash'} style={style.iconVehiculo} />
+                        acceso == "admin"
+                        && <TouchableOpacity style={style.btnVehiculo} onPress={() => this.eliminarVehiculo(e.placa, e._id)}>
+                            <FontAwesome name={'trash'} style={style.iconVehiculo} />
                         </TouchableOpacity>
                     }
                 </View>
@@ -102,51 +102,51 @@ class Pedido extends Component{
         })
     }
 
-    renderModalEditar(){
-        let {placaEditar, modalEditar, centroEditar, bodegaEditar} = this.state
-        bodegaEditar = bodegaEditar ?bodegaEditar.toString() :""
-        centroEditar = centroEditar ?centroEditar.toString() :""
+    renderModalEditar() {
+        let { placaEditar, modalEditar, centroEditar, bodegaEditar } = this.state
+        bodegaEditar = bodegaEditar ? bodegaEditar.toString() : ""
+        centroEditar = centroEditar ? centroEditar.toString() : ""
         console.log(placaEditar, centroEditar, bodegaEditar)
-        return(
+        return (
             <Modal transparent visible={modalEditar} animationType="fade" >
-                <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({modalEditar:false, nombreConductor:null, idConductor:null})}} >
+                <TouchableOpacity activeOpacity={1} onPress={() => { this.setState({ modalEditar: false, nombreConductor: null, idConductor: null }) }} >
                     <View style={style.contenedorModal}>
                         <View style={style.subContenedorModalEditar}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => {this.setState({modalEditar:false})}} style={style.btnModalClose} >
-                                <Icon name={'times-circle'} style={style.iconCerrar} />
+                            <TouchableOpacity activeOpacity={1} onPress={() => { this.setState({ modalEditar: false }) }} style={style.btnModalClose} >
+                                <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
                             <Text style={style.text}>Placa</Text>
                             <TextInput
                                 placeholder="Placa"
-                                autoCapitalize = 'none'
-                                onChangeText={(placaEditar)=> this.setState({ placaEditar })}
+                                autoCapitalize='none'
+                                onChangeText={(placaEditar) => this.setState({ placaEditar })}
                                 value={placaEditar}
                                 style={style.input}
-                                placeholderTextColor="#aaa" 
+                                placeholderTextColor="#aaa"
                             />
                             <Text style={style.text}>Centro de costos </Text>
                             <TextInput
                                 placeholder="Centro Costos"
-                                autoCapitalize = 'none'
-                                onChangeText={(centroEditar)=> this.setState({ centroEditar })}
+                                autoCapitalize='none'
+                                onChangeText={(centroEditar) => this.setState({ centroEditar })}
                                 value={centroEditar}
                                 style={style.input}
-                                placeholderTextColor="#aaa" 
+                                placeholderTextColor="#aaa"
                                 keyboardType="numeric"
                             />
                             <Text style={style.text}>Bodega</Text>
                             <TextInput
                                 placeholder="Bodega"
-                                autoCapitalize = 'none'
-                                onChangeText={(bodegaEditar)=> this.setState({ bodegaEditar })}
+                                autoCapitalize='none'
+                                onChangeText={(bodegaEditar) => this.setState({ bodegaEditar })}
                                 value={bodegaEditar}
                                 style={style.input}
-                                placeholderTextColor="#aaa" 
+                                placeholderTextColor="#aaa"
                                 keyboardType="numeric"
                             />
-                            <TouchableOpacity style={style.btnGuardar} onPress={()=>this.editar()}>
+                            <TouchableOpacity style={style.btnGuardar} onPress={() => this.editar()}>
                                 <Text style={style.textGuardar}>{"Guardar"}</Text>
-                            </TouchableOpacity> 
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </TouchableOpacity>
@@ -154,27 +154,27 @@ class Pedido extends Component{
         )
     }
 
-    renderModalConductores(){
-        const {conductor, modalConductor, conductores} = this.state
-        return(
+    renderModalConductores() {
+        const { conductor, modalConductor, conductores } = this.state
+        return (
             <Modal transparent visible={modalConductor} animationType="fade" >
-                <TouchableOpacity activeOpacity={1} onPress={()=>{this.setState({modalConductor:false, nombreConductor:null, idConductor:null})}} >
+                <TouchableOpacity activeOpacity={1} onPress={() => { this.setState({ modalConductor: false, nombreConductor: null, idConductor: null }) }} >
                     <View style={style.contenedorModal}>
                         <View style={style.subContenedorModal}>
                             <ScrollView>
-                                <TouchableOpacity activeOpacity={1} onPress={() => {this.setState({modalConductor:false})}} style={style.btnModalClose} >
-                                    <Icon name={'times-circle'} style={style.iconCerrar} />
+                                <TouchableOpacity activeOpacity={1} onPress={() => { this.setState({ modalConductor: false }) }} style={style.btnModalClose} >
+                                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                                 </TouchableOpacity>
-                                <Text style={style.titulo}>{conductores.length==0 ?"No hay conductores libres" :"Selecciona un conductor"}</Text>
+                                <Text style={style.titulo}>{conductores.length == 0 ? "No hay conductores libres" : "Selecciona un conductor"}</Text>
                                 {
-                                    conductores.map(e=>{
+                                    conductores.map(e => {
                                         return <TouchableOpacity
-                                                key={e._id}
-                                                style={conductor == e._id ?[style.contenedorConductor, {backgroundColor:"#5cb85c"}] :style.contenedorConductor}
-                                                onPress={conductor == e._id ?()=>this.desvincularConductor(e.nombre, e._id) :()=>this.asignarConductor(e.nombre, e._id)}
-                                            >
+                                            key={e._id}
+                                            style={conductor == e._id ? [style.contenedorConductor, { backgroundColor: "#5cb85c" }] : style.contenedorConductor}
+                                            onPress={conductor == e._id ? () => this.desvincularConductor(e.nombre, e._id) : () => this.asignarConductor(e.nombre, e._id)}
+                                        >
                                             <Text style={style.conductor}>{e.nombre}</Text>
-                                            <Image source={{uri:e.avatar}} style={style.avatar} />
+                                            <Image source={{ uri: e.avatar }} style={style.avatar} />
                                         </TouchableOpacity>
                                     })
                                 }
@@ -185,56 +185,56 @@ class Pedido extends Component{
             </Modal>
         )
     }
-    renderCabezera(){
-        const {placa, centro, bodega} = this.state
-        return(
+    renderCabezera() {
+        const { placa, centro, bodega } = this.state
+        return (
             <View style={style.contenedorCabezera}>
                 <TextInput
                     placeholder="Placa"
-                    autoCapitalize = 'none'
-                    onChangeText={(placa)=> this.setState({ placa })}
+                    autoCapitalize='none'
+                    onChangeText={(placa) => this.setState({ placa })}
                     value={placa}
                     style={style.inputCabezera}
-                    placeholderTextColor="#aaa" 
+                    placeholderTextColor="#aaa"
                 />
-                 <TextInput
+                <TextInput
                     placeholder="Centro Costos"
-                    autoCapitalize = 'none'
-                    onChangeText={(centro)=> this.setState({ centro })}
+                    autoCapitalize='none'
+                    onChangeText={(centro) => this.setState({ centro })}
                     value={centro}
                     style={style.inputCabezera}
-                    placeholderTextColor="#aaa" 
+                    placeholderTextColor="#aaa"
                     keyboardType="numeric"
                 />
-                 <TextInput
+                <TextInput
                     placeholder="Bodega"
-                    autoCapitalize = 'none'
-                    onChangeText={(bodega)=> this.setState({ bodega })}
+                    autoCapitalize='none'
+                    onChangeText={(bodega) => this.setState({ bodega })}
                     value={bodega}
                     style={style.inputCabezera}
-                    placeholderTextColor="#aaa" 
+                    placeholderTextColor="#aaa"
                     keyboardType="numeric"
                 />
-                <TouchableOpacity  style={style.btnIconNuevo} onPress={()=>this.crearVehiculo()}>
-                    <Icon name={'plus'} style={style.iconNuevo} />
+                <TouchableOpacity style={style.btnIconNuevo} onPress={() => this.crearVehiculo()}>
+                    <FontAwesome name={'plus'} style={style.iconNuevo} />
                 </TouchableOpacity>
             </View>
         )
     }
-	render(){
-        const {navigation} = this.props
+    render() {
+        const { navigation } = this.props
         return (
             <View style={style.container}>
-                 {this.renderCabezera()}
+                {this.renderCabezera()}
                 {this.renderModalConductores()}
                 {this.renderModalEditar()}
                 <ScrollView style={style.subContenedor}>
                     {
-                        this.props.vehiculos.length==0
-                        ?<ActivityIndicator />
-                        :this.renderVehiculos()
+                        this.props.vehiculos.length == 0
+                            ? <ActivityIndicator />
+                            : this.renderVehiculos()
                     }
-                    
+
                 </ScrollView>
                 <Footer navigation={navigation} />
                 <Toast />
@@ -244,134 +244,134 @@ class Pedido extends Component{
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    asignarConductor(nombreConductor, idConductor){
-        const {placaVehiculo, idVehiculo} = this.state
+    asignarConductor(nombreConductor, idConductor) {
+        const { placaVehiculo, idVehiculo } = this.state
         Alert.alert(
             `Seguro deseas agregar a ${nombreConductor}`,
             `a la placa: ${placaVehiculo}`,
             [
-              {text: 'Confirmar', onPress: () => confirmar()},
+                { text: 'Confirmar', onPress: () => confirmar() },
 
-              {text: 'Cancelar', onPress: () => this.setState({modalConductor:false, placaVehiculo:null, idConductor:null})},
+                { text: 'Cancelar', onPress: () => this.setState({ modalConductor: false, placaVehiculo: null, idConductor: null }) },
             ],
-            {cancelable: false},
+            { cancelable: false },
         )
 
-        const confirmar =()=>{
+        const confirmar = () => {
             axios.get(`veh/vehiculo/asignarConductor/${idVehiculo}/${idConductor}`)
-            .then((res)=>{
-                console.log(res)
-                if(res.data.status){
-                    this.setState({modalConductor:false})
-                    this.props.getVehiculos()
-                    Toast.show({type: 'success', text1: 'Conductor Agregado con exito'})
-                }else{
-                    Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
-                }
-            })
+                .then((res) => {
+                    console.log(res)
+                    if (res.data.status) {
+                        this.setState({ modalConductor: false })
+                        this.props.getVehiculos()
+                        Toast.show({ type: 'success', text1: 'Conductor Agregado con exito' })
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    }
+                })
         }
     }
-    desvincularConductor(nombreConductor, idVehiculo, placaVehiculo){
+    desvincularConductor(nombreConductor, idVehiculo, placaVehiculo) {
         Alert.alert(
             `Seguro deseas desvincular a ${nombreConductor}`,
             `a la placa: ${placaVehiculo}`,
             [
-              {text: 'Confirmar', onPress: () => confirmar1()},
+                { text: 'Confirmar', onPress: () => confirmar1() },
 
-              {text: 'Cancelar', onPress: () => this.setState({modalConductor:false, placaVehiculo:null, idConductor:null})},
+                { text: 'Cancelar', onPress: () => this.setState({ modalConductor: false, placaVehiculo: null, idConductor: null }) },
             ],
-            {cancelable: false},
+            { cancelable: false },
         );
-        const confirmar1 =()=>{
+        const confirmar1 = () => {
             axios.get(`veh/vehiculo/desvincularConductor/${idVehiculo}`)
-            .then((res)=>{
-                console.log(res.data)
-                if(res.data.status){
-                    this.setState({modalConductor:false, conductores: []})
-                    this.props.getVehiculos()
-                    Toast.show({type: 'success', text1: 'Conductor desvinculado'})
-                }else{
-                    Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
-                }
-            })
+                .then((res) => {
+                    console.log(res.data)
+                    if (res.data.status) {
+                        this.setState({ modalConductor: false, conductores: [] })
+                        this.props.getVehiculos()
+                        Toast.show({ type: 'success', text1: 'Conductor desvinculado' })
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    }
+                })
         }
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            CREAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    crearVehiculo(){
-        const {placa, centro, bodega, idUsuario: usuarioCrea} = this.state
-        if(placa.length>5){
+    crearVehiculo() {
+        const { placa, centro, bodega, idUsuario: usuarioCrea } = this.state
+        if (placa.length > 5) {
             // axios.post(`veh/vehiculo/`, {placa, centro, bodega})
-            const data = {placa, centro, bodega, usuarioCrea}
+            const data = { placa, centro, bodega, usuarioCrea }
             axios({
-                method: 'post',  
+                method: 'post',
                 url: `veh/vehiculo`,
-                data:  JSON.stringify(data),
-                headers: { 
+                data: JSON.stringify(data),
+                headers: {
                     'Content-Type': 'application/json'
                 },
             })
-            .then(res=>{
-                console.log(res.data)
-                if(res.data.status){
-                    Toast.show({type: 'success', text1: 'Vehiculo Guardado'})
-                    this.setState({placa:"", centro:"", bodega:""})
-                    this.props.getVehiculos()
-                }else{
-                    Toast.show({type: 'error', text1: 'Esta placa ya existe'})
-                }
-            })
-        }else{
-            Toast.show({type: 'error', text1: 'Placa invalida'})
+                .then(res => {
+                    console.log(res.data)
+                    if (res.data.status) {
+                        Toast.show({ type: 'success', text1: 'Vehiculo Guardado' })
+                        this.setState({ placa: "", centro: "", bodega: "" })
+                        this.props.getVehiculos()
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Esta placa ya existe' })
+                    }
+                })
+        } else {
+            Toast.show({ type: 'error', text1: 'Placa invalida' })
         }
     }
-    editar(){
-        const {idVehiculo, placaEditar, centroEditar, bodegaEditar} = this.state
-        if(placaEditar.length>5){
-            axios.put(`veh/vehiculo/editar/${idVehiculo}`, {placa: placaEditar, centro: centroEditar, bodega: bodegaEditar})
-            .then(res=>{
-                console.log(res.data)
-                if(res.data.status){
-                    Toast.show("Vehiculo Editado", Toast.LONG)
-                    this.setState({modalEditar:false, placaEditar:"", centroEditar:"", bodegaEditar:""})
-                    this.props.getVehiculos()
-                }else{
-                    Toast.show("Esta placa ya existe", Toast.LONG)
-                }
-            })
-        }else{
+    editar() {
+        const { idVehiculo, placaEditar, centroEditar, bodegaEditar } = this.state
+        if (placaEditar.length > 5) {
+            axios.put(`veh/vehiculo/editar/${idVehiculo}`, { placa: placaEditar, centro: centroEditar, bodega: bodegaEditar })
+                .then(res => {
+                    console.log(res.data)
+                    if (res.data.status) {
+                        Toast.show("Vehiculo Editado", Toast.LONG)
+                        this.setState({ modalEditar: false, placaEditar: "", centroEditar: "", bodegaEditar: "" })
+                        this.props.getVehiculos()
+                    } else {
+                        Toast.show("Esta placa ya existe", Toast.LONG)
+                    }
+                })
+        } else {
             Toast.show("Placa invalida")
         }
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            ELIMINAR VEHICULO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    eliminarVehiculo(placaVehiculo, idVehiculo){
+    eliminarVehiculo(placaVehiculo, idVehiculo) {
         Alert.alert(
             `Seguro deseas eliminar ${idVehiculo}`,
             `a la placa: ${placaVehiculo}`,
             [
-              {text: 'Confirmar', onPress: () => confirmar1()},
+                { text: 'Confirmar', onPress: () => confirmar1() },
 
-              {text: 'Cancelar', onPress: () => console.log()},
+                { text: 'Cancelar', onPress: () => console.log() },
             ],
-            {cancelable: false},
+            { cancelable: false },
         );
-        const confirmar1 =()=>{
+        const confirmar1 = () => {
             axios.get(`veh/vehiculo/eliminar/${idVehiculo}/true`)
-            .then((res)=>{
-                console.log(res.data)
-                if(res.data.status){
-                    let text1 = `Vehiculo ${placaVehiculo} eliminado`;
-                    text1 = text1.toString();
-                    Toast.show({type: 'success', text1})
+                .then((res) => {
+                    console.log(res.data)
+                    if (res.data.status) {
+                        let text1 = `Vehiculo ${placaVehiculo} eliminado`;
+                        text1 = text1.toString();
+                        Toast.show({ type: 'success', text1 })
 
-                    this.props.getVehiculos()
-                }else{
-                    Toast.show({type: 'error', text1: 'Tenemos un problema, intentelo mas tarde'})
-                }
-            })
+                        this.props.getVehiculos()
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    }
+                })
         }
     }
 
@@ -379,10 +379,10 @@ class Pedido extends Component{
 }
 
 const mapState = state => {
-	return {
-        conductores:state.usuario.usuariosAcceso,
-        vehiculos:state.vehiculo.vehiculos
-	};
+    return {
+        conductores: state.usuario.usuariosAcceso,
+        vehiculos: state.vehiculo.vehiculos
+    };
 };
 
 const mapDispatch = dispatch => {
@@ -397,15 +397,15 @@ const mapDispatch = dispatch => {
 };
 
 Pedido.defaultProps = {
-    vehiculos:[],
-    conductores:[]
+    vehiculos: [],
+    conductores: []
 };
 
 Pedido.propTypes = {
 
 };
 
-  export default connect(
-	mapState,
-	mapDispatch
-  )(Pedido);
+export default connect(
+    mapState,
+    mapDispatch
+)(Pedido);

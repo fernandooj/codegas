@@ -1,11 +1,11 @@
 import {
-    GET_PEDIDO,
-    GET_PEDIDOS,
-    GET_VEHICULOS_PEDIDOS,
-    GET_ZONA_PEDIDOS,
-    GET_PEDIDOS_FRECUENCIA,
-    GET_PEDIDOS_USER,
-    GET_PEDIDOS_CHART
+  GET_PEDIDO,
+  GET_PEDIDOS,
+  GET_VEHICULOS_PEDIDOS,
+  GET_ZONA_PEDIDOS,
+  GET_PEDIDOS_FRECUENCIA,
+  GET_PEDIDOS_USER,
+  GET_PEDIDOS_CHART
 } from "./constants/actionsTypes";
 import axios from "axios";
 
@@ -46,8 +46,17 @@ const getPedidoByUser = userId => {
 const getPedidos = (idUser, start, limit, acceso, search) => {
   return async (dispatch) => {
     try {
-      const response = await axios.get(`/ped/pedido/todos/app/${idUser}/${limit}/${start}/${acceso}/${search}`);
-      if(response.status!==200){
+      // Validar parámetros antes de hacer la petición
+      const validIdUser = idUser && idUser !== 'undefined' ? idUser : '0';
+      const validStart = start && start !== 'undefined' ? start : '0';
+      const validLimit = limit && limit !== 'undefined' ? limit : '10';
+      const validAcceso = acceso && acceso !== 'undefined' ? acceso : 'all';
+      const validSearch = search && search !== 'undefined' ? search : '';
+
+      console.log('Parámetros validados:', { validIdUser, validStart, validLimit, validAcceso, validSearch });
+
+      const response = await axios.get(`/ped/pedido/todos/app/${validIdUser}/${validLimit}/${validStart}/${validAcceso}/${validSearch}`);
+      if (response.status !== 200) {
         throw new Error(`Ruquest failed with status ${response.status}`)
       }
       dispatch({
@@ -55,9 +64,10 @@ const getPedidos = (idUser, start, limit, acceso, search) => {
         pedidos: response.data.pedido,
       });
     } catch (err) {
+      console.error('Error en getPedidos:', err);
       dispatch({
         type: GET_PEDIDOS,
-        pedidos: [] ,
+        pedidos: [],
       });
     }
   };
@@ -116,7 +126,7 @@ const getPedidosChart = (idUser) => {
   return async (dispatch) => {
     try {
       const response = await axios.get(`/ped/pedido/chart/${idUser}`);
-      if(response.status!==200){
+      if (response.status !== 200) {
         throw new Error(`Ruquest failed with status ${response.status}`)
       }
       console.log("response.data")
@@ -128,7 +138,7 @@ const getPedidosChart = (idUser) => {
     } catch (err) {
       dispatch({
         type: GET_PEDIDOS_CHART,
-        pedidos: [] ,
+        pedidos: [],
       });
     }
   };
@@ -136,11 +146,11 @@ const getPedidosChart = (idUser) => {
 
 
 export {
-    getPedido,
-    getPedidos,
-    getVehiculosConPedidos,
-    getZonasPedidos,
-    getFrecuencia,
-    getPedidoByUser,
-    getPedidosChart
+  getPedido,
+  getPedidos,
+  getVehiculosConPedidos,
+  getZonasPedidos,
+  getFrecuencia,
+  getPedidoByUser,
+  getPedidosChart
 };
