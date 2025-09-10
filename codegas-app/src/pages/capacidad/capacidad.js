@@ -154,7 +154,7 @@ const mapDispatch = dispatch => {
             dispatch(getVehiculos());
         },
         getUsuariosAcceso: (acceso) => {
-            dispatch(getUsuariosAcceso(acceso));
+            dispatch(getUsuariosAcceso(100, 0, acceso));
         },
     };
 };

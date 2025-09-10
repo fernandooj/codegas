@@ -42,13 +42,21 @@ const DataProvider = ({ children }: any) => {
       // Guardar en AsyncStorage para persistencia solo si los valores no son undefined
       try {
         const itemsToStore = [];
-        if (_id) itemsToStore.push(['userId', _id]);
-        if (acceso) itemsToStore.push(['acceso', acceso]);
-        if (nombre) itemsToStore.push(['nombre', nombre]);
-        if (newEmail) itemsToStore.push(['email', newEmail]);
+        if (_id) itemsToStore.push(['userId', String(_id)]);
+        if (acceso) itemsToStore.push(['acceso', String(acceso)]);
+        if (nombre) itemsToStore.push(['nombre', String(nombre)]);
+        if (newEmail) itemsToStore.push(['email', String(newEmail)]);
 
-        if (itemsToStore.length > 0) {
-          await AsyncStorage.multiSet(itemsToStore);
+        // Validar que todos los elementos sean arrays válidos
+        const validItems = itemsToStore.filter(item =>
+          Array.isArray(item) &&
+          item.length === 2 &&
+          typeof item[0] === 'string' &&
+          typeof item[1] === 'string'
+        );
+
+        if (validItems.length > 0) {
+          await AsyncStorage.multiSet(validItems);
           console.log('Datos guardados en AsyncStorage:', { _id, acceso, nombre, email: newEmail });
         }
       } catch (error) {
