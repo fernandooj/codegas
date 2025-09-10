@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
     View,
     Text,
@@ -21,108 +21,199 @@ import TomarFoto from '../components/tomarFoto';
 import Toast from 'react-native-toast-message';
 import { accesos } from '../../utils/users_info'
 import { DataContext } from "../../context/context"
+import { useRoute } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+    getUsuariosAcceso,
+    getUsuariosJerarquicos,
+    getPerfil,
+    cambiarContrasena,
+    signUpUser,
+    updateUser,
+    checkEmail,
+    changePassword,
+    createMultipleUsers,
+    updateMultipleUsers,
+    createMultiplePoints,
+    assignCommercial,
+    uploadAvatar,
+    deleteUser,
+    changeUserStatus,
+    changeValorUnitario
+} from '../../redux/actions/usuarioActions';
 
-class verPerfil extends Component {
-    static contextType = DataContext;
-    constructor(props) {
-        super(props);
-        this.state = {
-            razon_social: '',
-            cedula: '',
-            direccion_factura: '',
-            email: '',
-            nombre: '',
-            password: '',
-            celular: '',
-            tipo: '',
-            acceso: 'usuario',
-            codt: '',
-            codMagister: '',
-            terminoBuscador: '',
-            valorUnitario: '',
-            modalUbicacion: false,
-            modalZona: false,
-            modalCliente: false,
-            zonas: [],
-            puntos: [],
-            imagen: [],
-            veos: [],
-            ubicacionesEliminadas: [], //envio los id de las ubicaciones eliminados
-            ubicaciones: [
-                {
-                    direccion: undefined,
-                    nombre: undefined,
-                    email: undefined,
-                    celular: undefined,
-                    idZona: undefined,
-                    nombreZona: undefined,
-                    capacidad: undefined,
-                    nuevo: true,
-                    acceso: 'cliente',
-                },
-            ],
-        };
-    }
-    async componentDidMount() {
-        // const accesoPerfil = await AsyncStorage.getItem('acceso');
-        const value = this.context;
-        const { acceso: accesoPerfil, userId } = value
+const verPerfil = (props) => {
+    const context = useContext(DataContext);
+    const { navigation } = props;
+    const route = useRoute();
+    const insets = useSafeAreaInsets();
 
-        let acceso = accesoPerfil == 'despacho' ? 'cliente' : 'usuario';
-        this.setState({ accesoPerfil, acceso });
-        /** 
-         DEVUELVE LOS USUARIOS TIPO VEOS
-        */
-        axios.get('users/acceso/100/0/administradores/undefined').then((res) => {
-            let veos = res.data.user.map((e) => {
-                return { key: e._id, label: e.nombre };
-            });
-            this.setState({ veos });
-        });
+    const [state, setState] = useState({
+        razon_social: '',
+        cedula: '',
+        direccion_factura: '',
+        email: '',
+        nombre: '',
+        password: '',
+        celular: '',
+        tipo: '',
+        acceso: 'usuario',
+        codt: '',
+        codMagister: '',
+        terminoBuscador: '',
+        valorUnitario: '',
+        modalUbicacion: false,
+        modalZona: false,
+        modalCliente: false,
+        modalAcceso: false,
+        zonas: [],
+        puntos: [],
+        imagen: [],
+        veos: [],
+        estructuraJerarquica: { resultados: [] },
+        ubicacionesEliminadas: [], //envio los id de las ubicaciones eliminados
+        ubicaciones: [
+            {
+                direccion: undefined,
+                nombre: undefined,
+                email: undefined,
+                celular: undefined,
+                idZona: undefined,
+                nombreZona: undefined,
+                capacidad: undefined,
+                nuevo: true,
+                acceso: 'cliente',
+            },
+        ],
+    });
 
-        /**
-        * DEVUELVE EL LISTADO DE LAS ZONAS
-        */
-        axios.get('zon/zona').then((res) => {
-            res.data.status && this.setState({ zonas: res.data.zona });
-        });
+    // Helper function to update state
+    const updateState = (newState) => {
+        setState(prevState => ({ ...prevState, ...newState }));
+    };
 
-        const { params } = this.props.navigation.state
-        if (params.tipoAcceso) {
-            this.setState({ tipoAcceso: params.tipoAcceso })
-            params.tipoAcceso == "solucion" && this.setState({ acceso: "cliente" })
-        } else {
-            null
+    // Function to load veos (administradores) con estructura jerárquica
+    const loadVeos = async () => {
+        try {
+            console.log('cargando veos jerárquicos');
+            await props.getUsuariosAcceso(100, 0, 'administradores');
+            // Los veos se cargarán automáticamente en el estado de Redux
+            // y se pueden acceder desde props.usuariosAcceso
+        } catch (error) {
+            console.error('Error cargando veos:', error);
         }
-        !params.tipoAcceso
-            ? axios.get(`users/id/${userId}`).then((e) => {
-                const { user } = e.data;
-                axios.get(`pun/punto/byCliente/${params.idUsuario}`).then(ubi => {
-                    let ubicaciones = ubi.data.status ? ubi.data.puntos : []
-                    this.setState({
-                        razon_social: user.razon_social ? user.razon_social : '',
-                        cedula: user.cedula ? user.cedula : '',
-                        email: user.email ? user.email : '',
-                        nombre: user.nombre ? user.nombre : '',
-                        password: user.password ? user.password : '',
-                        celular: user.celular ? user.celular : '',
-                        tipo: user.tipo ? user.tipo : '',
-                        acceso: user.acceso ? user.acceso : '',
-                        imagen: user.avatar ? user.avatar : [],
-                        codt: user.codt ? user.codt : '',
-                        valorUnitario: user.valorunitario ? user.valorunitario : '',
-                        idUsuario: user._id ? user._id : '',
-                        codMagister: user.codMagister ? user.codMagister : '',
-                        editado: user.editado ? user.editado : false,
-                        ubicaciones: ubicaciones,
-                        accesoPerfil: 'cliente',
-                        direccion_factura: user.direccion_factura ? user.direccion_factura : "",
-                    })
-                })
-            })
-            : params.tipoAcceso == "editar"
-                ? axios.get(`/users/id/${params.idUsuario}`).then(e => {
+    };
 
+    // Effect para actualizar veos cuando cambien los usuariosAcceso de Redux
+    useEffect(() => {
+        if (props.usuariosAcceso && props.usuariosAcceso.length > 0) {
+            // Crear estructura jerárquica de usuarios
+            console.log('props.usuariosAcceso ')
+            console.log(props.usuariosAcceso)
+            const estructuraJerarquica = crearEstructuraJerarquica(props.usuariosAcceso);
+            console.log({ estructuraJerarquica });
+            updateState({ estructuraJerarquica });
+
+            // Mantener la estructura plana para compatibilidad - incluir TODOS los usuarios
+            const crearArrayPlano = (usuarios) => {
+                let resultado = [];
+                usuarios.forEach(usuario => {
+                    // Agregar el usuario actual
+                    resultado.push({ key: usuario._id, label: usuario.nombre });
+                    // Si tiene hijos, agregarlos recursivamente
+                    if (usuario.children && usuario.children.length > 0) {
+                        resultado = resultado.concat(crearArrayPlano(usuario.children));
+                    }
+                });
+                return resultado;
+            };
+
+            let veos = crearArrayPlano(props.usuariosAcceso);
+            console.log({ veos });
+            updateState({ veos });
+        }
+    }, [props.usuariosAcceso]);
+
+    // Función para crear estructura jerárquica de usuarios usando los datos de la DB
+    const crearEstructuraJerarquica = (usuarios) => {
+        // Los usuarios ya vienen con la estructura jerárquica desde la DB
+        // Solo necesitamos procesar la estructura children que ya viene
+        const procesarUsuario = (usuario) => {
+            return {
+                nombre: usuario.nombre,
+                _id: usuario._id,
+                email: usuario.email,
+                nivel: usuario.nivel || 0,
+                es_padre: usuario.es_padre || false,
+                ruta_jerarquica: usuario.ruta_jerarquica || usuario.nombre,
+                hijos: usuario.children ? usuario.children.map(procesarUsuario) : []
+            };
+        };
+
+        // Procesar todos los usuarios de nivel 0 (padres)
+        const resultados = usuarios
+            .filter(usuario => !usuario.idPadre) // Solo usuarios sin padre
+            .map(procesarUsuario);
+
+        return { resultados };
+    };
+
+    useEffect(() => {
+        const loadData = async () => {
+            // const accesoPerfil = await AsyncStorage.getItem('acceso');
+            const { acceso: accesoPerfil, userId } = context;
+
+            let acceso = accesoPerfil == 'despacho' ? 'cliente' : 'usuario';
+            updateState({ accesoPerfil, acceso });
+
+            // Si el acceso ya es comercial, cargar veos inmediatamente
+            if (accesoPerfil === 'comercial') {
+                await loadVeos();
+            }
+
+
+            /**
+            * DEVUELVE EL LISTADO DE LAS ZONAS
+            */
+            axios.get('zon/zona').then((res) => {
+                res.data.status && updateState({ zonas: res.data.zona });
+            });
+
+            const { params } = route;
+            console.log({ params })
+            if (params.tipoAcceso) {
+                updateState({ tipoAcceso: params.tipoAcceso });
+                params.tipoAcceso == "solucion" && updateState({ acceso: "cliente" });
+            }
+
+            if (!params.tipoAcceso) {
+                axios.get(`users/id/${userId}`).then((e) => {
+                    const { user } = e.data;
+                    axios.get(`pun/punto/byCliente/${params.idUsuario}`).then(ubi => {
+                        let ubicaciones = ubi.data.status ? ubi.data.puntos : []
+                        updateState({
+                            razon_social: user.razon_social ? user.razon_social : '',
+                            cedula: user.cedula ? user.cedula : '',
+                            email: user.email ? user.email : '',
+                            nombre: user.nombre ? user.nombre : '',
+                            password: user.password ? user.password : '',
+                            celular: user.celular ? user.celular : '',
+                            tipo: user.tipo ? user.tipo : '',
+                            acceso: user.acceso ? user.acceso : '',
+                            imagen: user.avatar ? user.avatar : [],
+                            codt: user.codt ? user.codt : '',
+                            valorUnitario: user.valorunitario ? user.valorunitario : '',
+                            idUsuario: user._id ? user._id : '',
+                            codMagister: user.codMagister ? user.codMagister : '',
+                            editado: user.editado ? user.editado : false,
+                            ubicaciones: ubicaciones,
+                            accesoPerfil: 'cliente',
+                            direccion_factura: user.direccion_factura ? user.direccion_factura : "",
+                        });
+                    });
+                });
+            } else if (params.tipoAcceso == "editar") {
+                axios.get(`/users/id/${params.idUsuario}`).then(e => {
                     const { user } = e.data
                     axios.get(`pun/punto/byCliente/${params.idUsuario}`).then(ubi => {
                         let ubicaciones = ubi.data.status ? ubi.data.puntos : []
@@ -156,10 +247,9 @@ class verPerfil extends Component {
                                     _id: data._id
                                 }
                             }
-                        })
+                        });
 
-
-                        this.setState({
+                        updateState({
                             razon_social: user.razon_social ? user.razon_social : "",
                             cedula: user.cedula ? user.cedula : "",
                             email: user.email ? user.email : "",
@@ -177,45 +267,40 @@ class verPerfil extends Component {
                             codMagister: user.codMagister ? user.codMagister : "",
                             valorUnitario: user.valorunitario,
                             direccion_factura: user.direccion_factura ? user.direccion_factura : "",
-                        })
-                    })
-                })
-                : null
-    }
-    renderPerfil() {
-        let { razon_social, cedula, direccion_factura, email, nombre, celular, codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, editado, codMagister } = this.state
+                        });
+                    });
+                });
+            }
+        };
+
+        loadData();
+    }, [context, navigation]);
+
+    const renderPerfil = () => {
+        let { razon_social, cedula, direccion_factura, email, nombre, celular, codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, editado, codMagister } = state
         valorUnitario = valorUnitario ? valorUnitario.toString() : '';
         razon_social = razon_social ? razon_social.toUpperCase() : razon_social;
         email = email ? email.toUpperCase() : email;
         direccion_factura = direccion_factura ? direccion_factura.toUpperCase() : direccion_factura;
         nombre = nombre ? nombre.toUpperCase() : nombre;
 
-        console.log({ valorUnitario })
+        console.log({ tipoAcceso })
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
                 {tipoAcceso == "admin" ? <Text style={style.titulo}>Nuevo {acceso}</Text> : <Text style={style.titulo}>Editar perfil</Text>}
                 {/* ACCESO */}
                 {
                     ((tipoAcceso == "admin" && accesoPerfil !== "despacho") || tipoAcceso == "editar")
-                    && <View style={style.tipo}>
-                        <Picker
-                            placeholder={{
-                                label: 'Acceso',
-                                value: null,
-                                color: '#00218b',
-                            }}
-                            items={accesos}
-                            onValueChange={acceso => { this.setState({ acceso }) }}
-                            mode="dropdown"
-                            style={{
-                                ...style,
-                                placeholder: {
-                                    color: 'rgba(0,0,0,1)',
-                                    fontSize: 15,
-                                },
-                            }}
-                            value={acceso}
-                        />
+                    && <View>
+                        <Text style={style.textInfo}>Acceso</Text>
+                        <TouchableOpacity
+                            style={style.tipo}
+                            onPress={() => setState(prev => ({ ...prev, modalAcceso: true }))}
+                        >
+                            <Text style={style.pickerText}>
+                                {acceso ? accesos.find(item => item.value === acceso)?.label || 'Seleccionar acceso' : 'Seleccionar acceso'}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 }
                 {/* EMAIL */}
@@ -227,8 +312,8 @@ class verPerfil extends Component {
                     keyboardType='email-address'
                     placeholderTextColor="#aaa"
                     value={email}
-                    onChangeText={email => this.setState({ email })}
-                    onBlur={email => this.verificaEmail()}
+                    onChangeText={email => updateState({ email })}
+                    onBlur={email => verificaEmail(email)}
                     style={email.length < 3 ? [style.input, style.inputRequired] : style.input}
                     autoCapitalize="characters"
                 />
@@ -244,7 +329,7 @@ class verPerfil extends Component {
                             placeholder="Razón Social"
                             autoCapitalize="characters"
                             value={razon_social}
-                            onChangeText={razon_social => this.setState({ razon_social })}
+                            onChangeText={razon_social => updateState({ razon_social })}
                             style={razon_social.length < 3 ? [style.input, style.inputRequired] : style.input}
 
                         />
@@ -259,7 +344,7 @@ class verPerfil extends Component {
                     placeholderTextColor="#aaa"
                     keyboardType='numeric'
                     value={cedula}
-                    onChangeText={cedula => this.setState({ cedula })}
+                    onChangeText={cedula => updateState({ cedula })}
                     style={cedula.length < 5 ? [style.input, style.inputRequired] : style.input}
                 />
                 {/* DIRECCION */}
@@ -273,7 +358,7 @@ class verPerfil extends Component {
                             placeholderTextColor="#aaa"
                             autoCapitalize="characters"
                             value={direccion_factura}
-                            onChangeText={direccion_factura => this.setState({ direccion_factura })}
+                            onChangeText={direccion_factura => updateState({ direccion_factura })}
                             style={direccion_factura.length < 3 ? [style.input, style.inputRequired] : style.input}
                         />
                     </View>
@@ -283,7 +368,7 @@ class verPerfil extends Component {
                     acceso == "cliente"
                     && <View>
                         <Text style={style.textInfo}>Ubicación entrega</Text>
-                        <TouchableOpacity style={ubicaciones.length < 1 ? [style.btnUbicacion, style.inputRequired] : style.btnUbicacion} onPress={() => this.setState({ modalUbicacion: true })}>
+                        <TouchableOpacity style={ubicaciones.length < 1 ? [style.btnUbicacion, style.inputRequired] : style.btnUbicacion} onPress={() => updateState({ modalUbicacion: true })}>
                             {
                                 ubicaciones[0]
                                     ? ubicaciones[0].direccion
@@ -306,7 +391,7 @@ class verPerfil extends Component {
                             autoCapitalize='none'
                             placeholderTextColor="#aaa"
                             value={codt}
-                            onChangeText={codt => this.setState({ codt })}
+                            onChangeText={codt => updateState({ codt })}
                             style={style.input}
                             editable={accesoPerfil == "cliente" ? false : true}
                         />
@@ -322,7 +407,7 @@ class verPerfil extends Component {
                     autoCapitalize='none'
                     placeholderTextColor="#aaa"
                     value={nombre}
-                    onChangeText={nombre => this.setState({ nombre })}
+                    onChangeText={nombre => updateState({ nombre })}
                     style={nombre.length < 3 ? [style.input, style.inputRequired] : style.input}
                 />
                 {/* CELULAR */}
@@ -333,7 +418,7 @@ class verPerfil extends Component {
                     autoCapitalize='none'
                     placeholderTextColor="#aaa"
                     value={celular}
-                    onChangeText={celular => this.setState({ celular })}
+                    onChangeText={celular => updateState({ celular })}
                     style={celular.length < 7 ? [style.input, style.inputRequired] : style.input}
                 />
 
@@ -347,7 +432,7 @@ class verPerfil extends Component {
                             autoCapitalize='none'
                             placeholderTextColor="#aaa"
                             value={codMagister}
-                            onChangeText={codMagister => this.setState({ codMagister })}
+                            onChangeText={codMagister => updateState({ codMagister })}
                             style={codMagister.length < 3 ? [style.input, style.inputRequired] : style.input}
                         />
                     </>
@@ -363,10 +448,10 @@ class verPerfil extends Component {
                             autoCapitalize='none'
                             placeholderTextColor="#aaa"
                             value={valorUnitario}
-                            onChangeText={valorUnitario => this.setState({ valorUnitario })}
+                            onChangeText={valorUnitario => updateState({ valorUnitario })}
                             style={valorUnitario.length < 3 ? [style.input, style.inputRequired] : style.input}
                             editable={accesoPerfil == "cliente" ? false : true}
-                            onBlur={() => this.cambiarValorUnitario()}
+                            onBlur={() => cambiarValorUnitario()}
                         />
                     </>
                 }
@@ -389,7 +474,7 @@ class verPerfil extends Component {
                                     { label: 'Comercial', value: 'Comercial', key: 'Comercial' },
                                     { label: 'Industrial', value: 'Industrial', key: 'Industrial' }
                                 ]}
-                                onValueChange={tipo => { this.setState({ tipo }); }}
+                                onValueChange={tipo => { updateState({ tipo }); }}
 
                                 mode="dropdown"
                                 style={{
@@ -404,20 +489,37 @@ class verPerfil extends Component {
                     </View>
                 }
 
-                <ModalFilterPicker
-                    placeholderText="Filtrar ..."
-                    visible={modalCliente}
-                    onSelect={(e) => this.asignarVeo(e.key)}
-                    onCancel={() => this.setState({ modalCliente: false })}
-                    options={veos}
-                    cancelButtonText="CANCELAR"
-                />
+                {modalCliente && (
+                    <View style={style.modalAcceso}>
+                        <View style={style.subModalAcceso}>
+                            <TouchableOpacity
+                                style={style.btnModalClose}
+                                onPress={() => updateState({ modalCliente: false })}
+                            >
+                                <Text style={style.iconCerrar}>×</Text>
+                            </TouchableOpacity>
+                            <Text style={style.tituloModal}>Seleccionar Veo</Text>
+                            <ScrollView style={{ maxHeight: 400 }}>
+                                {state.estructuraJerarquica.resultados.map(usuario =>
+                                    renderUsuarioJerarquico(usuario)
+                                )}
+                            </ScrollView>
+                        </View>
+                    </View>
+                )}
 
                 {
-                    (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "comercial") || acceso == "cliente")
+                    accesoPerfil == "comercial" || acceso == "cliente" || tipoAcceso == "admin"
                     && <View>
                         <Text style={style.textInfo}>Comercial Veo</Text>
-                        <TouchableOpacity onPress={() => accesoPerfil == "cliente" ? null : this.setState({ modalCliente: true })} style={style.inputVeo}>
+                        <TouchableOpacity
+                            onPress={async () => {
+                                if (accesoPerfil !== "cliente") {
+                                    await loadVeos();
+                                    updateState({ modalCliente: true });
+                                }
+                            }}
+                            style={style.inputVeo}>
                             <Text style={style.textVeo}>{veo ? veo : "Veos"}</Text>
                         </TouchableOpacity>
                     </View>
@@ -432,14 +534,14 @@ class verPerfil extends Component {
                             source={imagen}
                             titulo="Foto de perfil"
                             limiteImagenes={1}
-                            imagenes={(imagen) => { this.setState({ imagen, editaAvatar: true, showLoading: false }) }}
+                            imagenes={(imagen) => { updateState({ imagen, editaAvatar: true, showLoading: false }) }}
                         />
                     </View>
                 }
                 {/* BOTON CAMBIAR ESTADO */}
                 {
                     (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
-                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: activo ? "green" : "orange", marginBottom: 0 }]} onPress={() => this.cambiarEstadoUsuario()}>
+                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: activo ? "green" : "orange", marginBottom: 0 }]} onPress={() => cambiarEstadoUsuario()}>
                         <Text style={style.textGuardar}>{activo ? "Desactivar" : "Activar"}</Text>
                     </TouchableOpacity>
                 }
@@ -447,7 +549,7 @@ class verPerfil extends Component {
                 {/* BOTON ELIMINAR */}
                 {
                     (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
-                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: "red", marginBottom: 0 }]} onPress={() => this.eliminarUsuario()}>
+                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: "red", marginBottom: 0 }]} onPress={() => eliminarUsuario()}>
                         <Text style={style.textGuardar}>{"Eliminar"}</Text>
                     </TouchableOpacity>
                 }
@@ -455,24 +557,24 @@ class verPerfil extends Component {
                 {/* BOTON GUARDAR */}
                 {
                     !tipoAcceso
-                        ? <TouchableOpacity style={style.btnGuardar} onPress={() => this.handleSubmit("editar")}>
+                        ? <TouchableOpacity style={style.btnGuardar} onPress={() => handleSubmit("editar")}>
                             {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
                             <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar"}</Text>
                         </TouchableOpacity>
                         : (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
-                            ? <TouchableOpacity style={style.btnGuardar} onPress={() => this.editarUsuario("editar")}>
+                            ? <TouchableOpacity style={style.btnGuardar} onPress={() => editarUsuario("editar")}>
                                 {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
                                 <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar Usuario"}</Text>
                             </TouchableOpacity>
                             : (accesoPerfil == "admin" || accesoPerfil == "despacho")
-                            && <TouchableOpacity style={style.btnGuardar} onPress={() => this.handleSubmit()}>
+                            && <TouchableOpacity style={style.btnGuardar} onPress={() => handleSubmit()}>
                                 {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
                                 <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar"}</Text>
                             </TouchableOpacity>
                 }
                 {
                     (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "veo"))
-                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: "#feac00", marginBottom: 70 }]} onPress={() => this.props.navigation.navigate("chart", { idUsuario })}>
+                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: "#feac00", marginBottom: 70 }]} onPress={() => navigation.navigate("chart", { idUsuario })}>
                         <Text style={style.textGuardar}>{"Graficos"}</Text>
                     </TouchableOpacity>
                 }
@@ -481,49 +583,69 @@ class verPerfil extends Component {
 
         )
     }
-    cambiarValorUnitario() {
-        let { valorUnitario, idUsuario } = this.state
-        axios.get(`users/cambiarValor/${valorUnitario}/${idUsuario}`)
-            .then(res => {
-                console.log(res.data)
-                if (res.data.status) {
-                    Toast.show("Valor unitario editado", Toast.LONG)
-                }
-            })
-    }
-    verificaEmail() {
-        let { email } = this.state
-        axios.post("user/checkEmail", { email })
-            .then(res => {
-                console.log(res.data)
-                if (res.data.status === "SUCCESS") {
-                    Toast.show("Este email ya existe!", Toast.LONG)
-                    // this.setState({email:""})
-                }
-            })
 
+    const cambiarValorUnitario = async () => {
+        let { valorUnitario, idUsuario } = state
+        try {
+            const res = await changeValorUnitario(valorUnitario, idUsuario);
+            console.log(res)
+            if (res.status) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Valor unitario editado',
+                    visibilityTime: 3000,
+                })
+            }
+        } catch (error) {
+            console.error('Error al cambiar valor unitario:', error);
+        }
     }
-    asignarVeo(idVeo) {
-        const { idUsuario, veos, tipoAcceso } = this.state
+
+    const verificaEmail = async () => {
+        const { email } = state;
+        console.log('Email del estado:', email);
+        try {
+            const res = await checkEmail(email);
+            console.log(res.data.status)
+            if (res.data.status) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Este email ya existe!',
+                    visibilityTime: 3000,
+                })
+                // updateState({email:""})
+            }
+        } catch (error) {
+            console.error('Error al verificar email:', error);
+        }
+    }
+
+    const asignarVeo = (idVeo) => {
+        const { veos } = state
         let veo = veos.filter(e => {
             return e.key == idVeo
         })
-        // this.setState({veo:veo[0].label, modalCliente:false, idVeo, modalCliente:tipoAcceso=="editar" ?true :false})   
-        this.setState({ veo: veo[0].label, modalCliente: false, idVeo })
-        axios.get(`/users/asignarComercial/${idUsuario}/${idVeo}`)
-            .then(res => {
-                if (res.data.status) {
-                    setTimeout(() => {
-                        Toast.show("Usuario asignado", Toast.LONG)
-                    }, 100);
-                }
+
+        // Validar que el veo existe antes de acceder a sus propiedades
+        if (veo.length > 0 && veo[0]) {
+            updateState({ veo: veo[0].label, modalCliente: false, idVeo })
+            Toast.show({
+                type: 'success',
+                text1: 'Veo seleccionado',
+                visibilityTime: 3000,
             })
-            .catch(err => {
-                console.log(err)
+        } else {
+            console.error('Veo no encontrado:', { idVeo, veos })
+            Toast.show({
+                type: 'error',
+                text1: 'Error: Usuario no encontrado',
+                visibilityTime: 3000,
             })
+        }
     }
-    eliminarUsuario() {
-        const { nombre, idUsuario } = this.state
+
+    const eliminarUsuario = () => {
+        const { nombre, idUsuario } = state
         Alert.alert(
             'Seguro desea eliminar',
             `al usuario ${nombre}`,
@@ -534,18 +656,25 @@ class verPerfil extends Component {
             ],
             { cancelable: false }
         )
-        const confirmar = () => {
-            axios.get(`/users/eliminar/${idUsuario}`)
-                .then(res => {
-                    if (res.data.status) {
-                        this.props.navigation.navigate("Home")
-                        Toast.show("Usuario eliminado con exito")
-                    }
-                })
+        const confirmar = async () => {
+            try {
+                const res = await deleteUser(idUsuario);
+                if (res.status) {
+                    navigation.navigate("Home")
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Usuario eliminado con exito',
+                        visibilityTime: 3000,
+                    })
+                }
+            } catch (error) {
+                console.error('Error al eliminar usuario:', error);
+            }
         }
     }
-    cambiarEstadoUsuario() {
-        const { nombre, idUsuario, activo } = this.state
+
+    const cambiarEstadoUsuario = () => {
+        const { nombre, idUsuario, activo } = state
 
         Alert.alert(
             `Seguro desea ${activo ? "Desactivar" : "Activar"}`,
@@ -557,18 +686,24 @@ class verPerfil extends Component {
             ],
             { cancelable: false }
         )
-        const confirmar = () => {
-            axios.get(`/users/cambiarEstado/${idUsuario}/${!activo}`)
-                .then(res => {
-                    if (res.data.status) {
-                        this.props.navigation.navigate("Home")
-                        Toast.show("Usuario guardado con exito")
-                    }
-                })
-
+        const confirmar = async () => {
+            try {
+                const res = await changeUserStatus(idUsuario, !activo);
+                if (res.status) {
+                    navigation.navigate("Home")
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Usuario guardado con exito',
+                        visibilityTime: 3000,
+                    })
+                }
+            } catch (error) {
+                console.error('Error al cambiar estado del usuario:', error);
+            }
         }
     }
-    actualizaUbicacion() {
+
+    const actualizaUbicacion = () => {
         let {
             observacion,
             ubicaciones,
@@ -577,7 +712,7 @@ class verPerfil extends Component {
             celularUbicacion,
             nombreUbicacion,
             nombreZona,
-        } = this.state;
+        } = state;
         let data = {
             direccion,
             email: emailUbicacion,
@@ -589,10 +724,11 @@ class verPerfil extends Component {
             acceso: 'cliente',
         };
         ubicaciones.push(data)
-        this.setState({ ubicaciones })
+        updateState({ ubicaciones })
     }
-    actualizaArrayUbicacion(type, value, key) {
-        let { ubicaciones } = this.state;
+
+    const actualizaArrayUbicacion = (type, value, key) => {
+        let { ubicaciones } = state;
         type == 'direccion'
             ? (ubicaciones[key].direccion = value)
             : type == 'observacion'
@@ -604,17 +740,18 @@ class verPerfil extends Component {
                         : type == 'capacidad'
                             ? (ubicaciones[key].capacidad = value)
                             : (ubicaciones[key].nombre = value);
-        this.setState({ ubicaciones });
+        updateState({ ubicaciones });
     }
-    modalZonas() {
-        const { zonas, idZona, terminoBuscador } = this.state
+
+    const modalZonas = () => {
+        const { zonas, idZona, terminoBuscador } = state
 
         return (
             <View animationType="fade" >
                 <TouchableOpacity activeOpacity={1}  >
                     <View style={style.modalZona}>
                         <View style={style.subModalZona}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalZona: false })} style={style.btnModalClose}>
+                            <TouchableOpacity activeOpacity={1} onPress={() => updateState({ modalZona: false })} style={style.btnModalClose}>
                                 <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
                             <TextInput
@@ -622,14 +759,14 @@ class verPerfil extends Component {
                                 label='Buscar Zona'
                                 placeholder="Buscar Zona"
 
-                                onChangeText={terminoBuscador => this.setState({ terminoBuscador })}
+                                onChangeText={terminoBuscador => updateState({ terminoBuscador })}
                                 style={style.inputZona}
                             />
                             <ScrollView>
                                 {
                                     zonas.map((e, key) => {
                                         return (
-                                            <TouchableOpacity style={style.btnZona} key={key} onPress={() => this.actualizaZona(e._id, e.nombre)}>
+                                            <TouchableOpacity style={style.btnZona} key={key} onPress={() => actualizaZona(e._id, e.nombre)}>
                                                 <Text style={style.textZona}>{e.nombre}</Text>
                                                 {idZona == e._id && <FontAwesome name={'check'} style={style.iconZona} />}
                                             </TouchableOpacity>
@@ -643,23 +780,24 @@ class verPerfil extends Component {
             </View>
         )
     }
-    actualizaZona(id, nombre) {
-        const { key, ubicaciones } = this.state
+
+    const actualizaZona = (id, nombre) => {
+        const { key, ubicaciones } = state
         ubicaciones[key].idZona = id
         ubicaciones[key].nombreZona = nombre
-        this.setState({ ubicaciones, modalZona: false })
+        updateState({ ubicaciones, modalZona: false })
     }
 
-    modalUbicacion() {
-        let { modalZona, ubicaciones, activeScroll } = this.state
+    const renderModalUbicacion = () => {
+        let { modalZona, ubicaciones, activeScroll } = state
         return (
             <View>
-                {modalZona ? this.modalZonas() : null}
+                {modalZona ? modalZonas() : null}
                 <View>
                     <TouchableOpacity activeOpacity={1}  >
                         <View style={[style.modal, { top: activeScroll ? -150 : 0 }]}>
                             <View style={style.subContenedorModal}>
-                                <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalUbicacion: false })} style={style.btnModalClose}>
+                                <TouchableOpacity activeOpacity={1} onPress={() => updateState({ modalUbicacion: false })} style={style.btnModalClose}>
                                     <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                                 </TouchableOpacity>
                                 <ScrollView keyboardDismissMode="on-drag" >
@@ -676,13 +814,13 @@ class verPerfil extends Component {
                                                                 label='Dirección'
                                                                 placeholder="Dirección"
                                                                 value={e.direccion ? e.direccion.toUpperCase() : e.direccion}
-                                                                onChangeText={direccion => this.actualizaArrayUbicacion("direccion", direccion, key)}
+                                                                onChangeText={direccion => actualizaArrayUbicacion("direccion", direccion, key)}
                                                                 style={style.input}
                                                             />
                                                             <Text style={style.asterisco}>*</Text>
                                                         </View>
                                                         <View>
-                                                            <TouchableOpacity style={style.btnUbicacion} onPress={() => this.setState({ modalZona: true, key })}>
+                                                            <TouchableOpacity style={style.btnUbicacion} onPress={() => updateState({ modalZona: true, key })}>
                                                                 <Text style={style.textZona}>{e.nombreZona ? e.nombreZona : "Zona"}</Text>
                                                             </TouchableOpacity>
                                                             <Text style={style.asterisco}>*</Text>
@@ -692,7 +830,7 @@ class verPerfil extends Component {
                                                             label='capacidad'
                                                             placeholder="Capacidad almacenamiento"
                                                             value={e.capacidad}
-                                                            onChangeText={capacidad => this.actualizaArrayUbicacion("capacidad", capacidad, key)}
+                                                            onChangeText={capacidad => actualizaArrayUbicacion("capacidad", capacidad, key)}
                                                             style={style.input}
                                                         />
                                                         <TextInput
@@ -700,7 +838,7 @@ class verPerfil extends Component {
                                                             label='observacion al momento de ingresar el vehiculo'
                                                             placeholder="observaciones ingreso del vehiculo"
                                                             // value={e.observacion.toUpperCase()}
-                                                            onChangeText={observacion => this.actualizaArrayUbicacion("observacion", observacion, key)}
+                                                            onChangeText={observacion => actualizaArrayUbicacion("observacion", observacion, key)}
                                                             style={[style.input, { marginBottom: (e.nuevo || !e.idCliente) && key > 0 ? 40 : 10 }]}
                                                         />
                                                         {
@@ -710,9 +848,9 @@ class verPerfil extends Component {
                                                                 label='Email'
                                                                 placeholder="Email"
                                                                 value={e.email}
-                                                                onFocus={() => this.setState({ activeScroll: true })}
-                                                                onBlur={() => this.setState({ activeScroll: false })}
-                                                                onChangeText={emailUbicacion => this.actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
+                                                                onFocus={() => updateState({ activeScroll: true })}
+                                                                onBlur={() => updateState({ activeScroll: false })}
+                                                                onChangeText={emailUbicacion => actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
                                                                 style={style.input}
                                                             />
                                                         }
@@ -723,9 +861,9 @@ class verPerfil extends Component {
                                                                 label='Celular'
                                                                 placeholder="Celular"
                                                                 value={e.celular}
-                                                                onFocus={() => this.setState({ activeScroll: true })}
-                                                                onBlur={() => this.setState({ activeScroll: false })}
-                                                                onChangeText={celularUbicacion => this.actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
+                                                                onFocus={() => updateState({ activeScroll: true })}
+                                                                onBlur={() => updateState({ activeScroll: false })}
+                                                                onChangeText={celularUbicacion => actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
                                                                 style={style.input}
                                                             />
                                                         }
@@ -736,15 +874,15 @@ class verPerfil extends Component {
                                                                 label='Nombre'
                                                                 placeholder="Nombre"
                                                                 value={e.nombre}
-                                                                onFocus={() => this.setState({ activeScroll: true })}
-                                                                onBlur={() => this.setState({ activeScroll: false })}
-                                                                onChangeText={nombreUbicacion => this.actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
+                                                                onFocus={() => updateState({ activeScroll: true })}
+                                                                onBlur={() => updateState({ activeScroll: false })}
+                                                                onChangeText={nombreUbicacion => actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
                                                                 style={[style.input, { marginBottom: key > 0 ? 40 : 10 }]}
                                                             />
                                                         }
                                                         {
                                                             key > 0
-                                                            && <TouchableOpacity style={style.btnEliminar} onPress={() => this.eliminarUbicacion(key)}>
+                                                            && <TouchableOpacity style={style.btnEliminar} onPress={() => eliminarUbicacion(key)}>
                                                                 <FontAwesome name={'trash'} style={style.iconEliminar} />
                                                             </TouchableOpacity>
                                                         }
@@ -756,11 +894,11 @@ class verPerfil extends Component {
                                         }
                                     </View>
                                     <View style={style.contenedorAdd}>
-                                        <TouchableOpacity onPress={() => this.actualizaUbicacion()} style={style.btnAdd}>
+                                        <TouchableOpacity onPress={() => actualizaUbicacion()} style={style.btnAdd}>
                                             <FontAwesome name={'plus'} style={style.iconAdd} />
                                         </TouchableOpacity>
                                     </View>
-                                    <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => this.guardarUbicacion()}>
+                                    <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => guardarUbicacion()}>
                                         <Text style={style.textGuardar}>Guardar</Text>
                                     </TouchableOpacity>
                                 </ScrollView>
@@ -771,8 +909,9 @@ class verPerfil extends Component {
             </View>
         )
     }
-    renderFormPass() {
-        const { password, confirmar, showLoading, cargando } = this.state
+
+    const renderFormPass = () => {
+        const { password, confirmar, showLoading, cargando } = state
         return <View style={style.contenedorPerfil}>
             <Text style={style.tituloContrasena}>Inserta tu contraseña</Text>
             <TextInput
@@ -780,7 +919,7 @@ class verPerfil extends Component {
                 label='Contraseña'
                 placeholder="Contraseña"
                 value={password}
-                onChangeText={password => this.setState({ password })}
+                onChangeText={password => updateState({ password })}
                 style={style.input}
                 secureTextEntry
             />
@@ -789,16 +928,11 @@ class verPerfil extends Component {
                 label='Confirmar'
                 placeholder="Confirmar"
                 value={confirmar}
-                onChangeText={confirmar => this.setState({ confirmar })}
+                onChangeText={confirmar => updateState({ confirmar })}
                 style={style.input}
                 secureTextEntry={true}
             />
-            {/* <Button color="#0071bb" loading={showLoading} 
-                        title="Guardar"
-                        disabled={ password!==confirmar ?true :false} 
-                        onPress={() => this.savePassword()}
-                    /> */}
-            <TouchableOpacity style={style.btnGuardar} onPress={() => this.cambiarPass()}>
+            <TouchableOpacity style={style.btnGuardar} onPress={() => cambiarPass()}>
                 {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
                 <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar"}</Text>
             </TouchableOpacity>
@@ -811,24 +945,9 @@ class verPerfil extends Component {
             }
         </View>
     }
-    render() {
-        const { navigation } = this.props
-        const { modalUbicacion, showPass } = this.state
 
-        return (
-            <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
-                {modalUbicacion ? this.modalUbicacion() : null}
-                {
-                    showPass
-                        ? this.renderFormPass()
-                        : this.renderPerfil()
-                }
-                <Footer navigation={navigation} />
-            </ImageBackground>
-        )
-    }
-    guardarUbicacion() {
-        let { ubicaciones } = this.state
+    const guardarUbicacion = () => {
+        let { ubicaciones } = state
         ubicaciones = ubicaciones.filter((e, index) => {
             return e.direccion != undefined
         })
@@ -843,47 +962,37 @@ class verPerfil extends Component {
             }
         })
 
-        !isEmpty ? alert("Zonas son obligatorios") : this.setState({ ubicaciones, modalUbicacion: false })
+        !isEmpty ? alert("Zonas son obligatorios") : updateState({ ubicaciones, modalUbicacion: false })
     }
-    ///////////////////////////////////////////////////////////////
-    //////////////          ACTUALIZA EL AVATAR
-    ///////////////////////////////////////////////////////////////
-    avatar(imagen, idUser) {
 
-        this.setState({ showLoading: true })
+    const avatar = async (imagen, idUser) => {
+        updateState({ showLoading: true })
         let data = new FormData();
         imagen = imagen[0]
-        this.state.tipoAcceso ? data.append('crear', true) : null
+        state.tipoAcceso ? data.append('crear', true) : null
         data.append('imagen', imagen);
         data.append('imagenOtroUsuario', true);
         data.append('idUser', idUser);
-        axios({
-            method: 'post',
-            url: 'user/avatar',
-            data: data,
-        })
-            .then((res) => {
-                console.log(res.data)
-                if (res.data.status) {
-                    if (this.state.tipoAcceso) {
-                        alert("Usuario guardado con exito")
-                        this.props.navigation.navigate("Perfil")
-                    } else {
-                        this.loginExitoso(res.data.user)
-                    }
+
+        try {
+            const res = await uploadAvatar(data);
+            console.log(res)
+            if (res.status) {
+                if (state.tipoAcceso) {
+                    alert("Usuario guardado con exito")
+                    navigation.navigate("Perfil")
+                } else {
+                    loginExitoso(res.user)
                 }
-            })
-            .catch(err => {
-                this.setState({ cargando: false })
-            })
+            }
+        } catch (err) {
+            updateState({ cargando: false })
+            console.error('Error al subir avatar:', err);
+        }
     }
 
-
-    /////////////////////////////////////////////////////////////////////////
-    //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
-    ///////////////////////////////////////////////////////////////////////
-    handleSubmit(esEditar) {
-        const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = this.state
+    const handleSubmit = (esEditar) => {
+        const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = state
         console.log({ razon_social, cedula, direccion_factura, nombre, email, tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario })
         if (acceso == "cliente") {
             if (razon_social == "" || direccion_factura == "" || nombre == "" || email == "" || tipo == "" || acceso == "usuario" || ubicaciones.length < 1) {
@@ -896,12 +1005,20 @@ class verPerfil extends Component {
                     { cancelable: false }
                 )
             } else if (celular.length < 7) {
-                Toast.show("Telefono incorrecto")
+                Toast.show({
+                    type: 'error',
+                    text1: 'Telefono incorrecto',
+                    visibilityTime: 3000,
+                })
 
             } else if (cedula.length < 5) {
-                Toast.show("Cedula incorrecta")
+                Toast.show({
+                    type: 'error',
+                    text1: 'Cedula incorrecta',
+                    visibilityTime: 3000,
+                })
             } else {
-                esEditar == "editar" ? this.editarUsuario() : this.guardarUsuario()
+                esEditar == "editar" ? editarUsuario() : guardarUsuario()
             }
         } else {
             if (cedula == "" || email == "" || nombre == "" || acceso == "usuario" || celular == "" || !imagen) {
@@ -914,16 +1031,13 @@ class verPerfil extends Component {
                     { cancelable: false }
                 )
             } else {
-                esEditar == "editar" ? this.editarUsuario() : this.guardarUsuario()
+                esEditar == "editar" ? editarUsuario() : guardarUsuario()
             }
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////
-    //////////////         ELIMINO LA UBICACION SELECCIONADA
-    ///////////////////////////////////////////////////////////////////////
-    eliminarUbicacion(key) {
-        let { ubicaciones, ubicacionesEliminadas } = this.state
+    const eliminarUbicacion = (key) => {
+        let { ubicaciones, ubicacionesEliminadas } = state
         ubicaciones.filter((e, index) => {
             if (index == key) {
                 ubicacionesEliminadas.push(e._id)
@@ -933,11 +1047,35 @@ class verPerfil extends Component {
             return index != key
         })
 
-        this.setState({ ubicaciones, ubicacionesEliminadas })
+        updateState({ ubicaciones, ubicacionesEliminadas })
     }
-    guardarUsuario(e) {
-        this.setState({ cargando: true })
-        const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicaciones, imagen, codMagister, valorUnitario, idVeo } = this.state
+
+    const guardarUsuario = async (e) => {
+        updateState({ cargando: true })
+        const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicaciones, imagen, codMagister, valorUnitario, idVeo } = state
+
+        // Verificar si el email ya existe antes de guardar
+        try {
+            const emailCheck = await checkEmail(email);
+            if (emailCheck.exists) {
+                updateState({ cargando: false });
+                Toast.show({
+                    type: 'error',
+                    text1: 'Este email ya existe. Por favor, use otro email.',
+                    visibilityTime: 3000,
+                });
+                return;
+            }
+        } catch (error) {
+            console.error('Error al verificar email:', error);
+            updateState({ cargando: false });
+            Toast.show({
+                type: 'error',
+                text1: 'Error al verificar email. Intente nuevamente.',
+                visibilityTime: 3000,
+            });
+            return;
+        }
         let clientes = ubicaciones.filter(e => {
             return e.email
         })
@@ -948,56 +1086,120 @@ class verPerfil extends Component {
             return { direccion: e.direccion, idZona: e.idZona, observacion: e.observacion, capacidad: e.capacidad }
         })
 
-        axios.post("user/sign_up", { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos, codMagister, valorUnitario })
-            .then(e => {
+        // Preparar datos para enviar, incluyendo idPadre si se seleccionó un veo
+        const datosUsuario = {
+            razon_social,
+            cedula,
+            direccion_factura,
+            nombre,
+            email,
+            celular,
+            tipo,
+            acceso,
+            codt,
+            puntos,
+            codMagister,
+            valorUnitario: valorUnitario && valorUnitario !== "" ? parseInt(valorUnitario) : 0
+        };
 
-                console.log(e.data)
-                if (e.data.status) {
-                    axios.get(`/users/asignarComercial/${e.data.user._id}/${idVeo}`)
-                    if (acceso == "cliente") {
-                        if (clientes.length > 0) {
-                            axios.post("user/crea_varios", { clientes, idPadre: e.data.user._id, nombrePadre: e.data.user.nombre })
-                                .then(res => {
-                                    this.props.navigation.navigate("Home")
-                                    Toast.show("Usuario guardado con exito")
-                                })
-                                .catch(err2 => {
-                                    console.log(err2)
-                                    this.setState({ cargando: false })
-                                })
-                        } else {
-                            axios.post("pun/punto/varios", { puntos, idPadre: e.data.user._id })
-                                .then(res => {
-                                    console.log(res.data)
-                                    this.props.navigation.navigate("Home")
-                                    Toast.show("Usuario guardado con exito")
-                                })
-                                .catch(err2 => {
-                                    console.log(err2)
-                                    this.setState({ cargando: false })
-                                })
+        // Agregar idPadre si se seleccionó un veo
+        if (idVeo) {
+            datosUsuario.idPadre = idVeo;
+        }
+
+        try {
+            const e = await signUpUser(datosUsuario);
+            console.log(e)
+            if (e.status) {
+                // El backend devuelve el ID del usuario en e.code cuando es exitoso
+                const userId = parseInt(e.code);
+                const userName = nombre; // Usar el nombre del estado
+
+                if (idVeo) {
+                    // await assignCommercial(userId, idVeo);
+                }
+
+                if (acceso == "cliente") {
+                    if (clientes.length > 0) {
+                        try {
+                            await createMultipleUsers(clientes, userId, userName);
+                            navigation.navigate("Home")
+                            Toast.show({
+                                type: 'success',
+                                text1: 'Usuario guardado con exito',
+                                visibilityTime: 3000,
+                            })
+                        } catch (err2) {
+                            console.log(err2)
+                            updateState({ cargando: false })
                         }
                     } else {
-                        if (imagen.length === 0) {
-                            this.props.navigation.navigate("Home")
-                            Toast.show("Usuario eliminado con exito")
-                        } else {
-                            this.avatar(imagen, e.data.user._id)
+                        try {
+                            const res = await createMultiplePoints(puntos, userId);
+                            console.log(res)
+                            navigation.navigate("Home")
+                            Toast.show({
+                                type: 'success',
+                                text1: 'Usuario guardado con exito',
+                                visibilityTime: 3000,
+                            })
+                        } catch (err2) {
+                            console.log(err2)
+                            updateState({ cargando: false })
                         }
                     }
                 } else {
-                    this.setState({ cargando: false })
-                    Toast.show("Este email ya existe")
+                    if (imagen.length === 0) {
+                        navigation.navigate("Home")
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Usuario eliminado con exito',
+                            visibilityTime: 3000,
+                        })
+                    } else {
+                        avatar(imagen, userId)
+                    }
                 }
-            })
-            .catch(err => {
-                console.log(err)
-                this.setState({ cargando: false })
-            })
+            } else {
+                updateState({ cargando: false })
+                Toast.show({
+                    type: 'error',
+                    text1: 'Este email ya existe',
+                    visibilityTime: 3000,
+                })
+            }
+        } catch (err) {
+            console.log(err)
+            updateState({ cargando: false })
+        }
     }
-    editarUsuario(e) {
-        this.setState({ cargando: true })
-        const { razon_social, cedula, ubicaciones, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas, editado, codMagister, valorUnitario } = this.state
+
+    const editarUsuario = async (e) => {
+        updateState({ cargando: true })
+        const { razon_social, cedula, ubicaciones, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas, editado, codMagister, valorUnitario, idVeo } = state
+
+        // Verificar si el email ya existe en otro usuario antes de editar
+        try {
+            const emailCheck = await checkEmail(email);
+            if (emailCheck.exists && emailCheck.user._id !== idUsuario) {
+                updateState({ cargando: false });
+                Toast.show({
+                    type: 'error',
+                    text1: 'Este email ya existe en otro usuario. Por favor, use otro email.',
+                    visibilityTime: 3000,
+                });
+                return;
+            }
+        } catch (error) {
+            console.error('Error al verificar email:', error);
+            updateState({ cargando: false });
+            Toast.show({
+                type: 'error',
+                text1: 'Error al verificar email. Intente nuevamente.',
+                visibilityTime: 3000,
+            });
+            return;
+        }
         let clientes = ubicaciones.filter(e => {
             return e.email && e.idCliente
         })
@@ -1020,142 +1222,253 @@ class verPerfil extends Component {
             return e._id
         })
         console.log({ editado, puntos, puntosNuevos })
-        axios.put(`user/update/${idUsuario}`, { editado, puntos, puntosNuevos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister, valorUnitario })
-            .then(e => {
-                console.log(e.data)
-                if (acceso == "cliente") {
-                    ////////////////////////////////////////////        EDITO LOS CLIENTES
-                    if (clientes.length > 0) {
 
-                        axios.put("user/update_varios", { clientes, idPadre: idUsuario, nombrePadre: e.data.user.nombre })
-                            .then(res => {
-                                // AsyncStorage.setItem('nombre', e.data.user.nombre)
-                                this.props.navigation.navigate("Home")
-                                Toast.show("Usuario guardado con exito")
-                            })
-                            .catch(err2 => {
-                                console.log(err2)
-                                this.setState({ cargando: false })
-                            })
-                    }
-                    ////////////////////////////////////////////        INSERTO LOS CLIENTES
-                    if (clientesNuevos.length > 0) {
-                        console.log("perrito")
-                        axios.post("user/crea_varios", { clientes: clientesNuevos, idPadre: idUsuario, nombrePadre: e.data.user.nombre })
-                            .then(res => {
-                                // AsyncStorage.setItem('nombre', e.data.user.nombre)
-                                this.props.navigation.navigate("Home")
-                                Toast.show("Usuario guardado con exito")
-                            })
-                            .catch(err2 => {
-                                console.log(err2)
-                                this.setState({ cargando: false })
-                            })
-                    }
-                    ////////////////////////////////////////////       EDITO LOS PUNTOS
-                    // if(puntos.length>0){
-                    //     axios.put("pun/punto/varios",{puntos, idPadre:idUsuario})
-                    //     .then(res=>{
-                    //         AsyncStorage.setItem('nombre', e.data.user.nombre)
-                    //         //this.props.navigation.navigate("Home")
-                    //         Toast.show("Usuario guardado con exito")
-                    //     })
-                    //     .catch(err2=>{
-                    //         console.log(err2)
-                    //         this.setState({cargando:false})
-                    //     })
-                    // }
-                    ////////////////////////////////////////////       INSERTO LOS PUNTOS
-                    // if(puntosNuevos.length>0){
-                    //     axios.post("pun/punto/varios", {puntos:puntosNuevos, idPadre:idUsuario, idCliente:idUsuario})
-                    //     .then(res=>{
-                    //         AsyncStorage.setItem('nombre', e.data.user.nombre)
-                    //         this.props.navigation.navigate("Home")
-                    //         Toast.show("Usuario guardado con exito")
-                    //     })
-                    //     .catch(err2=>{
-                    //         console.log(err2)
-                    //         this.setState({cargando:false})
-                    //     })
-                    // }
-                    if (editado == false) {
+        // Preparar datos para enviar, incluyendo idPadre si se seleccionó un veo
+        const datosUsuario = {
+            editado,
+            puntos,
+            puntosNuevos,
+            razon_social,
+            cedula,
+            direccion_factura,
+            nombre,
+            email,
+            celular,
+            tipo,
+            acceso,
+            codt,
+            ubicacionesEliminadas,
+            codMagister,
+            valorUnitario: valorUnitario && valorUnitario !== "" ? parseInt(valorUnitario) : 0
+        };
 
-                        this.setState({ showPass: true, cargando: false })
-                    } else {
-                        // AsyncStorage.setItem('nombre', e.data.user.nombre)
-                        this.props.navigation.navigate("Home")
-                        Toast.show("Usuario editado con exito")
-                        this.setState({ cargando: false })
+        // Agregar idPadre si se seleccionó un veo
+        if (idVeo) {
+            datosUsuario.idPadre = idVeo;
+        }
 
-                    }
-
-                } else {
-                    if (editaAvatar) {
-                        if (imagen.length === 0) {
-                            this.props.navigation.navigate("Home")
-                            Toast.show("Usuario eliminado con exito")
-                        } else {
-                            this.avatar(imagen, e.data.user._id)
-                        }
-                    } else {
-                        this.edicionExitosa(nombre)
+        try {
+            const e = await updateUser(idUsuario, datosUsuario);
+            console.log(e)
+            if (acceso == "cliente") {
+                ////////////////////////////////////////////        EDITO LOS CLIENTES
+                if (clientes.length > 0) {
+                    try {
+                        await updateMultipleUsers(clientes, idUsuario, e.user.nombre);
+                        // AsyncStorage.setItem('nombre', e.user.nombre)
+                        navigation.navigate("Home")
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Usuario guardado con exito',
+                            visibilityTime: 3000,
+                        })
+                    } catch (err2) {
+                        console.log(err2)
+                        updateState({ cargando: false })
                     }
                 }
-            })
-            .catch(err => {
-                console.log(err)
-                this.setState({ cargando: false })
-            })
+                ////////////////////////////////////////////        INSERTO LOS CLIENTES
+                if (clientesNuevos.length > 0) {
+                    try {
+                        await createMultipleUsers(clientesNuevos, idUsuario, e.user.nombre);
+                        // AsyncStorage.setItem('nombre', e.user.nombre)
+                        // navigation.navigate("Home")
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Usuario guardado con exito',
+                            visibilityTime: 3000,
+                        })
+                    } catch (err2) {
+                        console.log(err2)
+                        updateState({ cargando: false })
+                    }
+                }
+
+                if (editado == false) {
+                    updateState({ showPass: true, cargando: false })
+                } else {
+                    // AsyncStorage.setItem('nombre', e.user.nombre)
+                    navigation.navigate("Home")
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Usuario editado con exito',
+                        visibilityTime: 3000,
+                    })
+                    updateState({ cargando: false })
+                }
+
+            } else {
+                if (editaAvatar) {
+                    if (imagen.length === 0) {
+                        navigation.navigate("Home")
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Usuario eliminado con exito',
+                            visibilityTime: 3000,
+                        })
+                    } else {
+                        avatar(imagen, e.user._id)
+                    }
+                } else {
+                    edicionExitosa(nombre)
+                }
+            }
+        } catch (err) {
+            console.log(err)
+            updateState({ cargando: false })
+        }
     }
-    cambiarPass() {
-        const { email, password, confirmar } = this.state
+
+    const cambiarPass = async () => {
+        const { email, password, confirmar } = state
         if (password.length < 3 || confirmar.length < 3) {
             alert("Inserte ambos campos")
         }
         else if (password != confirmar) {
             alert("Las contraseñas no coinciden")
         } else {
-            axios.post("user/CambiarPassword", { email, password })
-                .then(e => {
-                    console.log(e.data)
-                    if (e.data.status) {
-                        Toast.show("Informacion editada")
-                        this.props.navigation.navigate("Home")
-                    } else {
-                        Toast.show("Tenemos un problema, intentelo mas tarde")
-                    }
-                })
-                .catch(err => {
-                    console.log(err)
-                })
+            try {
+                const e = await changePassword(email, password);
+                console.log(e)
+                if (e.status) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Informacion editada',
+                        visibilityTime: 3000,
+                    })
+                    navigation.navigate("Home")
+                } else {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Tenemos un problema, intentelo mas tarde',
+                        visibilityTime: 3000,
+                    })
+                }
+            } catch (err) {
+                console.log(err)
+            }
         }
-
     }
 
-    async edicionExitosa(nombre) {
-
-        this.setState({ cargando: false })
-        Toast.show("Usuario editado")
-        this.props.navigation.navigate("Home")
+    const edicionExitosa = async (nombre) => {
+        updateState({ cargando: false })
+        Toast.show({
+            type: 'success',
+            text1: 'Usuario editado',
+            visibilityTime: 3000,
+        })
+        navigation.navigate("Home")
     }
-    async loginExitoso(user) {
+
+    const loginExitoso = async (user) => {
         console.log(user)
         // AsyncStorage.setItem('nombre', user.nombre)
         // AsyncStorage.setItem('avatar', user.avatar)
-        this.setState({ cargando: false })
-        Toast.show("Usuario guardado con exito")
-        this.props.navigation.navigate("Home")
-        // this.setState({userId:user._id, cargando:false, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
+        updateState({ cargando: false })
+        Toast.show({
+            type: 'success',
+            text1: 'Usuario guardado con exito',
+            visibilityTime: 3000,
+        })
+        navigation.navigate("Home")
+        // updateState({userId:user._id, cargando:false, nombre:user.nombre, email:user.email, acceso:user.acceso, avatar:user.avatar ?user.avatar :"null"})
     }
+
+    // Componente para renderizar usuarios jerárquicamente
+    const renderUsuarioJerarquico = (usuario, nivel = 0) => {
+        const paddingLeft = nivel * 20;
+        const esPadre = usuario.es_padre || nivel === 0;
+        const tieneHijos = usuario.hijos && usuario.hijos.length > 0;
+
+        return (
+            <View key={usuario._id}>
+                <TouchableOpacity
+                    style={[
+                        style.btnAcceso,
+                        {
+                            paddingLeft: paddingLeft + 15,
+                            backgroundColor: esPadre ? '#f0f8ff' : '#ffffff',
+                            borderLeftWidth: esPadre ? 3 : 0,
+                            borderLeftColor: esPadre ? '#00218b' : 'transparent'
+                        }
+                    ]}
+                    onPress={() => {
+                        asignarVeo(usuario._id);
+                    }}
+                >
+                    <Text style={esPadre ? style.textAccesoPadre : style.textAccesoHijo}>
+                        {nivel > 0 ? '└─ ' : ''}{usuario.nombre}
+                        {usuario.email && <Text style={{ fontSize: 12, color: '#999' }}> ({usuario.email})</Text>}
+                    </Text>
+                    {usuario.ruta_jerarquica && usuario.ruta_jerarquica !== usuario.nombre && (
+                        <Text style={{ fontSize: 10, color: '#666', fontStyle: 'italic' }}>
+                            {usuario.ruta_jerarquica}
+                        </Text>
+                    )}
+                </TouchableOpacity>
+                {/* Renderizar hijos recursivamente */}
+                {tieneHijos && usuario.hijos.map(hijo => renderUsuarioJerarquico(hijo, nivel + 1))}
+            </View>
+        );
+    };
+
+    const renderModalAcceso = () => {
+        return (
+            <View style={style.modalAcceso}>
+                <View style={style.subModalAcceso}>
+                    <TouchableOpacity
+                        style={style.btnModalClose}
+                        onPress={() => updateState({ modalAcceso: false })}
+                    >
+                        <Text style={style.iconCerrar}>×</Text>
+                    </TouchableOpacity>
+                    <Text style={style.tituloModal}>Seleccionar Acceso</Text>
+                    <ScrollView style={{ maxHeight: 300 }}>
+                        {accesos.map((item) => (
+                            <TouchableOpacity
+                                key={item.key}
+                                style={style.btnAcceso}
+                                onPress={async () => {
+                                    updateState({ acceso: item.value, modalAcceso: false });
+                                    // Cargar veos solo cuando se selecciona comercial
+                                    if (item.value === 'comercial') {
+                                        await loadVeos();
+                                    }
+                                }}
+                            >
+                                <Text style={style.textAcceso}>{item.label}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            </View>
+        );
+    };
+
+    const { modalUbicacion, showPass, modalAcceso } = state
+
+    return (
+        <View style={[style.container, { paddingTop: insets.top }]}>
+            <ImageBackground style={[style.container]} source={require('../../assets/img/pg1/fondo2.jpg')} >
+                {modalUbicacion ? renderModalUbicacion() : null}
+                {modalAcceso ? renderModalAcceso() : null}
+                {
+                    showPass
+                        ? renderFormPass()
+                        : renderPerfil()
+                }
+                <Footer navigation={navigation} />
+            </ImageBackground>
+        </View>
+    )
 }
+
 const mapState = state => {
     return {
         perfil: state.usuario.perfil.user,
-
+        usuariosAcceso: state.usuario.usuariosAcceso || [],
     };
 };
-
-
 
 const mapDispatch = dispatch => {
     return {
@@ -1164,12 +1477,18 @@ const mapDispatch = dispatch => {
         },
         cambiarContrasena: (password, email) => {
             dispatch(cambiarContrasena(password, email));
+        },
+        getUsuariosAcceso: (limit, start, acceso) => {
+            dispatch(getUsuariosAcceso(limit, start, acceso));
+        },
+        getUsuariosJerarquicos: (limit, start, acceso) => {
+            dispatch(getUsuariosJerarquicos(limit, start, acceso));
         }
     };
 };
+
 verPerfil.defaultProps = {
     perfil: { categoria: [] }
 }
 
-
-export default connect(mapState, mapDispatch)(verPerfil) 
+export default connect(mapState, mapDispatch)(verPerfil)

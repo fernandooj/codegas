@@ -127,11 +127,11 @@ const Perfil = ({
               />
             </TouchableOpacity>
           )}
-          {acceso === 'solucion' && (
+          {acceso === 'solucion' || acceso === 'admin' && (
             <TouchableOpacity
               style={style.btnLista}
               onPress={() =>
-                navigation.navigate('verPerfil', { tipoAcceso: 'solucion' })
+                navigation.navigate('verPerfil', { tipoAcceso: acceso })
               }>
               <Text style={style.txtLista}>Crear Cliente</Text>
               <Image
