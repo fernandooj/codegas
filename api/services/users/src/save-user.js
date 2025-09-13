@@ -48,7 +48,7 @@ module.exports.main = async (event) => {
     razon_social, uid, cedula, direccion_factura, email, nombre, celular, tipo, descuento, acceso, tokenPhone, codMagister, codt, codigoRegistro, valorUnitario, idPadre,
     pass
   } = body;
-  
+
   const cleanRazonSocial = cleanAndNormalizeString(razon_social);
   const cleanNombre = cleanAndNormalizeString(nombre);
 
@@ -68,18 +68,18 @@ module.exports.main = async (event) => {
     },
     Source: SOURCE,
   };
-  
-  
-  
-  
+
+
+
+
   try {
     const client = await poolConection.connect();
     //await client.query('BEGIN');
-    const {rows} = await client.query(SAVE_USER, [cleanRazonSocial, uid, cedula, direccion_factura, email, cleanNombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
-    await ses.sendEmail(params).promise();
- 
+    const { rows } = await client.query(SAVE_USER, [cleanRazonSocial, uid, cedula, direccion_factura, email, cleanNombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
+    // await ses.sendEmail(params).promise(); // Comentado temporalmente por verificación de AWS SES
+
     //await client.query('COMMIT');
-    return { 
+    return {
       status: !!rows[0].save_users,
       code: rows[0].save_users || "email exist"
     };

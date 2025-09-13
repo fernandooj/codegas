@@ -7,7 +7,6 @@ import { DataContext } from '../../context/context';
 
 export default function FooterComponent({ navigation }) {
   const { userId } = useContext(DataContext)
-  console.log('footer', userId);
   const [user, setUser] = useState({});
   const [badgeMessage, setBadgeMessage] = useState(true);
   const [badgeCuenta, setBadgeCuenta] = useState(true);

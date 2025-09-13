@@ -108,8 +108,8 @@ const Perfil = ({
             acceso === 'despacho') && (
               <TouchableOpacity
                 style={style.btnLista}
-                onPress={() => navigation.navigate('usuarios')}>
-                <Text style={style.txtLista}>Usuarios</Text>
+                onPress={() => navigation.navigate('clientes')}>
+                <Text style={style.txtLista}>Clientes</Text>
                 <Image
                   source={require('../../assets/img/pg1/icon3.png')}
                   style={style.icon}
@@ -127,13 +127,11 @@ const Perfil = ({
               />
             </TouchableOpacity>
           )}
-          {acceso === 'solucion' || acceso === 'admin' && (
+          {acceso === 'solucion' || acceso === 'admin' || acceso === 'veo' && (
             <TouchableOpacity
               style={style.btnLista}
-              onPress={() =>
-                navigation.navigate('verPerfil', { tipoAcceso: acceso })
-              }>
-              <Text style={style.txtLista}>Crear Cliente</Text>
+              onPress={() => navigation.navigate('usuarios')}>
+              <Text style={style.txtLista}>Usuarios</Text>
               <Image
                 source={require('../../assets/img/pg1/icon1.png')}
                 style={style.icon}

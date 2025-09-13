@@ -13,6 +13,7 @@ getPedidos:
   handler: services/pedidos/src/get-pedidos.main
   events:
     - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}/{search}'
+    - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}'
   package:
     include:
       - services/pedidos/src/get-pedidos.js

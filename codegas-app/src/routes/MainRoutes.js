@@ -12,6 +12,7 @@ import nuevoPedidoComponent from '../pages/nuevo_pedido';
 import PerfilComponent from '../pages/perfil';
 import verPerfilComponent from '../pages/ver_perfil/verPerfil';
 import usuariosComponent from '../pages/usuarios';
+import clientesComponent from '../pages/clientes';
 import vehiculoComponent from '../pages/vehiculo/vehiculo';
 import zonaComponent from '../pages/zona/zona';
 import capacidadComponent from '../pages/capacidad/capacidad';
@@ -57,6 +58,7 @@ function AppNavigator() {
 				<Stack.Screen name="nuevo_pedido" component={nuevoPedidoComponent} />
 				<Stack.Screen name="Perfil" component={PerfilComponent} />
 				<Stack.Screen name="usuarios" component={usuariosComponent} />
+				<Stack.Screen name="clientes" component={clientesComponent} />
 				<Stack.Screen name="vehiculo" component={vehiculoComponent} />
 				<Stack.Screen name="zona" component={zonaComponent} />
 				<Stack.Screen name="capacidad" component={capacidadComponent} />
