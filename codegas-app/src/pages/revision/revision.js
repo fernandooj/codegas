@@ -9,7 +9,7 @@ import { getRevisiones, getRevisionByPunto } from '../../redux/actions/revisionA
 import Footer from '../components/footer';
 
 const Revision = (props) => {
-  const { navigation, getRevisiones, getRevisionByPunto } = props
+  const { navigation, route, getRevisiones, getRevisionByPunto } = props
   const { acceso } = useContext(DataContext)
   const [terminoBuscador, setTerminoBuscador] = useState(undefined);
   const [data, setData] = useState([]);
@@ -21,22 +21,46 @@ const Revision = (props) => {
   // const [revision_by_punto,, setRevision_by_punto]= useState([])
 
   useEffect(() => {
+    console.log("Revision component mounted");
+    console.log("Navigation object:", navigation);
+    console.log("Route object:", route);
+    console.log("Route params:", route?.params);
     loadRevisiones();
   }, []);
 
 
   const loadRevisiones = (last) => {
-    if (navigation.state.params) {
-      // getRevisionByPunto(navigation.state.params.puntoId)
-      axios.get(`rev/revision/byPunto/${navigation.state.params.puntoId}`)
+    const params = route?.params;
+    console.log("loadRevisiones - params:", params);
+    console.log("loadRevisiones - route:", route);
+    if (params) {
+      // getRevisionByPunto(params.puntoId)
+      const url = `rev/revision/byPunto/${params.puntoId}`;
+      console.log("URL enviada (por punto):", url);
+      console.log("Parámetros:", { puntoId: params.puntoId });
+      axios.get(url)
         .then(res => {
           console.log(res)
-          setData(res.data.revision)
+          setData(res.data.revision || [])
+        })
+        .catch(error => {
+          console.error("Error cargando revisiones por punto:", error.message);
+          setData([]);
         })
     } else {
-      axios.get(`/rev/revision/${last}/${0}/${terminoBuscador}`)
+      const limitParam = last || 10;
+      const startParam = 0;
+      const searchParam = terminoBuscador || 'undefined';
+      const url = `rev/revision/${limitParam}/${startParam}/${searchParam}`;
+      console.log("URL enviada:", url);
+      console.log("Parámetros:", { limitParam, startParam, searchParam });
+      axios.get(url)
         .then(res => {
-          setData(res.data.revision)
+          setData(res.data.revision || [])
+        })
+        .catch(error => {
+          console.error("Error cargando revisiones:", error.message);
+          setData([]);
         })
       // getRevisiones(0, last, terminoBuscador)
     }
@@ -50,8 +74,9 @@ const Revision = (props) => {
 
 
       setFinal(true);
-      setLimit(limit + 10);
-      loadRevisiones(limit)
+      const newLimit = limit + 10;
+      setLimit(newLimit);
+      loadRevisiones(newLimit)
     } else if (!reachedEnd && final) {
       setFinal(false);
     }
@@ -59,13 +84,18 @@ const Revision = (props) => {
 
 
   const renderRevisiones = () => {
+    const params = route?.params;
+
+    if (!data || !Array.isArray(data)) {
+      return <Text>No hay revisiones disponibles</Text>;
+    }
 
     return data.map((e, key) => {
       return (
         <View style={[style.contenedorRevisiones, { backgroundColor: !e.activo ? "#F96D6C" : (e.estado == 2 || e.avisos || e.distancias || e.electricas || e.extintores || e.accesorios) ? "#e8a43d" : "white" }]} key={key}>
           {
-            navigation.state.params
-              ? <><TouchableOpacity style={{ flexDirection: "row" }} onPress={() => navigation.navigate(acceso == "depTecnico" ? "cerrarRevision" : acceso == "insSeguridad" ? "cerrarSeguridad" : "nuevaRevision", { puntoId: navigation.state.params.puntoId, clienteId: navigation.state.params.clienteId, revisionId: e._id })}>
+            params
+              ? <><TouchableOpacity style={{ flexDirection: "row" }} onPress={() => navigation.navigate(acceso == "depTecnico" ? "cerrarRevision" : acceso == "insSeguridad" ? "cerrarSeguridad" : "nuevaRevision", { puntoId: params.puntoId, clienteId: params.clienteId, revisionId: e._id })}>
                 <View style={{ width: "90%" }}>
                   <Text style={style.textUsers}>N Control: {e._id}</Text>
                   <Text style={style.textUsers}>Fecha:     {e.creado}</Text>
@@ -148,21 +178,6 @@ const Revision = (props) => {
           value={terminoBuscador}
           style={[style.inputCabezera]}
         />
-        {navigation.state.params && (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('nuevaRevision', {
-                puntoId: navigation.state.params.puntoId,
-                clienteId: navigation.state.params.clienteId,
-                direccion: navigation.state.params.direccion,
-                capacidad: navigation.state.params.capacidad,
-                observacion: navigation.state.params.observacion,
-              })
-            }
-          >
-            <FontAwesome name="plus" style={style.iconAdd} />
-          </TouchableOpacity>
-        )}
       </View>
 
       <ScrollView style={{ marginBottom: 85 }} onScroll={(e) => onScroll(e)} keyboardDismissMode="on-drag">
@@ -170,6 +185,48 @@ const Revision = (props) => {
           renderRevisiones()
         }
       </ScrollView>
+
+
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          bottom: 100,
+          right: 20,
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: '#00218b',
+          justifyContent: 'center',
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.3,
+          shadowRadius: 4.65,
+          elevation: 8,
+        }}
+        onPress={() => {
+          const params = route?.params;
+          console.log("Parámetros disponibles:", params);
+          if (params) {
+            navigation.navigate('nuevaRevision', {
+              puntoId: params.puntoId,
+              clienteId: params.clienteId,
+              direccion: params.direccion,
+              capacidad: params.capacidad,
+              observacion: params.observacion,
+            })
+          } else {
+            console.error("No hay parámetros disponibles para crear nueva revisión");
+          }
+        }}
+      >
+        <FontAwesome name="plus" style={{ color: 'white', fontSize: 24 }} />
+      </TouchableOpacity>
+
+
       <Footer navigation={navigation} />
     </View>
   );

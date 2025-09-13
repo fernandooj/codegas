@@ -12,7 +12,8 @@ getUsers:
   name: ${self:custom.base}-get-users
   handler: services/users/src/get-users.main
   events:
-    - httpApi: 'GET /users/acceso/{limit}/{start}/{acceso}/{search}'
+    - httpApi: 'GET /users/acceso/{limit}/{start}/{acceso}/{search}/{id}'
+    - httpApi: 'GET /users/acceso/{limit}/{start}/{acceso}'
   package:
     include:
       - services/users/src/get-users.js
@@ -106,4 +107,24 @@ updateUid:
   package:
     include:
       - services/users/src/update-uid.js
+      - lib/errors/database-error.js
+
+updateUser:
+  name: ${self:custom.base}-update-user
+  handler: services/users/src/update.main
+  events:
+    - httpApi: 'PUT /user/update/{userId}'
+  package:
+    include:
+      - services/users/src/update.js
+      - lib/errors/database-error.js
+
+deleteUser:
+  name: ${self:custom.base}-delete-user
+  handler: services/users/src/delete.main
+  events:
+    - httpApi: 'DELETE /users/eliminar/{userId}'
+  package:
+    include:
+      - services/users/src/delete.js
       - lib/errors/database-error.js

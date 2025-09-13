@@ -1,7 +1,7 @@
-const {poolConection} = require('../../../lib/connection-pg.js')
-const DatabaseError  = require('../../../lib/errors/database-error')
- 
-const GET_USERS = 'SELECT * FROM get_users($1, $2, $3, $4)';
+const { poolConection } = require('../../../lib/connection-pg.js')
+const DatabaseError = require('../../../lib/errors/database-error')
+
+const GET_USERS = 'SELECT * FROM get_users($1, $2, $3, $4, $5)';
 
 /** get user
  *  save user active in the table
@@ -11,21 +11,27 @@ const GET_USERS = 'SELECT * FROM get_users($1, $2, $3, $4)';
 
 module.exports.main = async (event) => {
   const {
-    limit, 
+    limit,
     start,
     acceso,
-    search
+    search,
+    id
   } = event.pathParameters;
-  const newSearch = search == 'undefined' ||  search == undefined ? '' :search
+
+  // Manejar el caso donde search puede no estar presente
+  const newSearch = search == 'undefined' || search == undefined || !search ? '' : search;
+
   try {
-    const client  = await poolConection.connect();
-    const {rows: user} = await client.query(GET_USERS, [limit, start, acceso, newSearch])
-  
+    const client = await poolConection.connect();
+    const { rows: user } = await client.query(GET_USERS, [limit, start, acceso, newSearch, id])
+
+    client.release(); // Liberar la conexión
+
     return {
       status: true,
-      user
+      user: user[0].get_users.users
     }
-  } catch (error) { 
+  } catch (error) {
     throw new DatabaseError(error);
   }
 }; 

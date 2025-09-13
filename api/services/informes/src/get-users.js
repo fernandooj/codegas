@@ -1,7 +1,7 @@
 const moment = require('moment');
-const {Parser}  = require('@json2csv/plainjs');
-const {poolConection} = require('../../../lib/connection-pg.js')
-const DatabaseError  = require('../../../lib/errors/database-error')
+const { Parser } = require('@json2csv/plainjs');
+const { poolConection } = require('../../../lib/connection-pg.js')
+const DatabaseError = require('../../../lib/errors/database-error')
 const GET_USERS = 'SELECT * FROM informe_get_users($1, $2, $3)';
 
 /** get user
@@ -54,38 +54,38 @@ const HandleFields = (type) => {
     }
   ];
 
-  if(type==="clientes"){
+  if (type === "clientes") {
     fields.push(
       {
         label: 'Razon Social',
         value: 'razon_social'
-    },{
-        label: 'Direccion Factura',
-        value: 'direccion_factura'
-    },{
-        label: 'CODT',
-        value: 'codt'
-    },{
-        label: 'Zona',
-        value: 'nombrezona'
-    },{
-        label: 'Valor Unitario',
-        value: 'valorunitario'
-    },{
-        label: 'Direccion',
-        value: 'direccion'
-    },{
-        label: 'Observacion',
-        value: 'observacion'
-    },{
-        label: 'Veo/Padre',
-        value: 'nombrepadre'
-    },{
-        label: 'Ced. Veo/Padre',
-        value: 'cedulapadre'
-    },{
-        label: 'Codigo Registro',
-        value: 'codigoregistro'
+      }, {
+      label: 'Direccion Factura',
+      value: 'direccion_factura'
+    }, {
+      label: 'CODT',
+      value: 'codt'
+    }, {
+      label: 'Zona',
+      value: 'nombrezona'
+    }, {
+      label: 'Valor Unitario',
+      value: 'valorunitario'
+    }, {
+      label: 'Direccion',
+      value: 'direccion'
+    }, {
+      label: 'Observacion',
+      value: 'observacion'
+    }, {
+      label: 'Veo/Padre',
+      value: 'nombrepadre'
+    }, {
+      label: 'Ced. Veo/Padre',
+      value: 'cedulapadre'
+    }, {
+      label: 'Codigo Registro',
+      value: 'codigoregistro'
     }
     )
   }
@@ -101,7 +101,7 @@ module.exports.main = async (event) => {
     nombre
   } = event.pathParameters;
 
-  
+
   const fields = HandleFields(acceso)
   try {
     const client = await poolConection.connect();
@@ -111,7 +111,7 @@ module.exports.main = async (event) => {
     const parser = new Parser(opts);
     const csv = parser.parse(users);
 
- 
+
     const response = {
       statusCode: 200,
       headers: {

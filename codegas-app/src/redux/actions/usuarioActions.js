@@ -55,32 +55,32 @@ const getUsuario = userId => {
   };
 };
 
-const getUsuarios = (limit, start, acceso, search) => {
-  return dispatch => {
-    return axios
-      .get(`/users/acceso/${limit}/${start}/${acceso}/${search}`)
-      .then(res => {
-        dispatch({
-          type: GET_USUARIOS,
-          usuarios: res.data.user
-        });
-      })
-      .catch(err => {
-        console.error('Error en getUsuarios:', {
-          function: 'getUsuarios',
-          parameters: { limit, start, acceso, search },
-          error: err,
-          message: err.message,
-          response: err.response?.data,
-          status: err.response?.status,
-          url: err.config?.url
-        });
+const getUsuarios = (limit, start, acceso, search, id) => {
+  return async dispatch => {
+    try {
+      // Construir la URL correctamente basada en si search está vacío o no
+      const searchParam = search && search.trim() !== '' ? search : 'undefined';
+      const res = await axios.get(`/users/acceso/${limit}/${start}/${acceso}/${searchParam}/${id}`);
+      console.log(res)
+      dispatch({
+        type: GET_USUARIOS,
+        usuarios: res.data.user
       });
+    } catch (err) {
+      console.error('Error en getUsuarios:', {
+        function: 'getUsuarios',
+        parameters: { limit, start, acceso, search, id },
+        error: err,
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: err.config?.url
+      });
+    }
   };
 };
 
 const getUsuariosAcceso = (limit, start, acceso) => {
-  console.log(acceso)
   return dispatch => {
     return axios
       .get(`/users/acceso/${limit}/${start}/${acceso}/undefined`)
@@ -366,7 +366,7 @@ const createMultiplePoints = async (puntos, idPadre) => {
 
 const assignCommercial = async (userId, veoId) => {
   try {
-    const response = await axios.get(`/users/asignarComercial/${userId}/${veoId}`);
+    const response = await axios.put(`/users/asignarComercial/${userId}/${veoId}`);
     return response.data;
   } catch (error) {
     console.error('Error en assignCommercial:', {
@@ -406,7 +406,7 @@ const uploadAvatar = async (formData) => {
 
 const deleteUser = async (userId) => {
   try {
-    const response = await axios.get(`/users/eliminar/${userId}`);
+    const response = await axios.delete(`/users/eliminar/${userId}`);
     return response.data;
   } catch (error) {
     console.error('Error en deleteUser:', {
@@ -424,7 +424,7 @@ const deleteUser = async (userId) => {
 
 const changeUserStatus = async (userId, isActive) => {
   try {
-    const response = await axios.get(`/users/cambiarEstado/${userId}/${isActive}`);
+    const response = await axios.put(`/users/cambiarEstado/${userId}/${isActive}`);
     return response.data;
   } catch (error) {
     console.error('Error en changeUserStatus:', {
@@ -443,13 +443,120 @@ const changeUserStatus = async (userId, isActive) => {
 
 const changeValorUnitario = async (valorUnitario, userId) => {
   try {
-    const response = await axios.get(`users/cambiarValor/${valorUnitario}/${userId}`);
+    const response = await axios.put(`users/cambiarValor/${valorUnitario}/${userId}`);
     return response.data;
   } catch (error) {
     console.error('Error en changeValorUnitario:', {
       function: 'changeValorUnitario',
       valorUnitario: valorUnitario,
       userId: userId,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+const getUserById = async (userId) => {
+  try {
+    const response = await axios.get(`users/id/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error en getUserById:', {
+      function: 'getUserById',
+      userId: userId,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+const getPointsByClient = async (clientId) => {
+  try {
+    const response = await axios.get(`pun/punto/byCliente/${clientId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error en getPointsByClient:', {
+      function: 'getPointsByClient',
+      clientId: clientId,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+const signUp = async (userData) => {
+  try {
+    const response = await axios.post("user/sign_up", userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error en signUp:', {
+      function: 'signUp',
+      userData: userData,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+const updateUserProfile = async (userId, userData) => {
+  try {
+    const response = await axios.put(`user/update/${userId}`, userData);
+    return response.data;
+  } catch (error) {
+    console.error('Error en updateUserProfile:', {
+      function: 'updateUserProfile',
+      userId: userId,
+      userData: userData,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+const getVeos = async () => {
+  try {
+    const response = await axios.get('users/acceso/veo');
+    return response.data;
+  } catch (error) {
+    console.error('Error en getVeos:', {
+      function: 'getVeos',
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+const getActiveZones = async () => {
+  try {
+    const response = await axios.get('zon/zona/activos');
+    return response.data;
+  } catch (error) {
+    console.error('Error en getActiveZones:', {
+      function: 'getActiveZones',
       error: error,
       message: error.message,
       response: error.response?.data,
@@ -480,5 +587,11 @@ export {
   uploadAvatar,
   deleteUser,
   changeUserStatus,
-  changeValorUnitario
+  changeValorUnitario,
+  getUserById,
+  getPointsByClient,
+  signUp,
+  updateUserProfile,
+  getVeos,
+  getActiveZones
 };
