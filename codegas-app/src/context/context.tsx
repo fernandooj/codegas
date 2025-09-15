@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
 import auth from '@react-native-firebase/auth';
+import { getApps, getApp } from '@react-native-firebase/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   getUserByUid,
@@ -7,10 +8,9 @@ import {
   sendNewPassword,
   updateUid,
 } from '../redux/actions/usuarioActions';
+import pushNotificationService from '../services/pushNotificationService';
 import { generate } from '@wcj/generate-password';
 export const DataContext = createContext({});
-
-const GENERATE_PASS = generate();
 
 const DataProvider = ({ children }: any) => {
   const [userInfo, setUser] = useState();
@@ -19,6 +19,7 @@ const DataProvider = ({ children }: any) => {
   const [_acceso, setAcceso] = useState();
   const [_email, setEmail] = useState();
   const [initializing, setInitializing] = useState(true);
+  const [fcmToken, setFcmToken] = useState();
 
   const getUserInfo = async (uid: any) => {
     try {
@@ -100,9 +101,80 @@ const DataProvider = ({ children }: any) => {
     // Cargar datos desde AsyncStorage primero
     loadFromAsyncStorage();
 
-    // Luego configurar el listener de Firebase Auth
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
+    // Configurar el listener de Firebase Auth con verificación robusta
+    const setupAuth = async () => {
+      try {
+        // Esperar más tiempo para que Firebase esté completamente listo
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        while (attempts < maxAttempts) {
+          try {
+            // Verificar que Firebase esté completamente inicializado
+            if (getApps().length === 0) {
+              console.log(`⚠️ Firebase not ready in context, attempt ${attempts + 1}/${maxAttempts}`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+              attempts++;
+              continue;
+            }
+
+            // Verificar que el módulo de auth esté disponible y funcional
+            const authModule = auth();
+            if (authModule && typeof authModule.onAuthStateChanged === 'function') {
+              console.log('✅ Firebase Auth ready in context');
+              const subscriber = authModule.onAuthStateChanged(onAuthStateChanged);
+              return subscriber;
+            } else {
+              console.log(`⚠️ Auth module not ready, attempt ${attempts + 1}/${maxAttempts}`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+              attempts++;
+            }
+          } catch (authError) {
+            console.log(`⚠️ Auth error, attempt ${attempts + 1}/${maxAttempts}:`, authError.message);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+          }
+        }
+
+        console.error('❌ Failed to initialize Firebase Auth after maximum attempts');
+        return null;
+      } catch (error) {
+        console.error('Error setting up Firebase Auth in context:', error);
+        return null;
+      }
+    };
+
+    let subscriber = null;
+    setupAuth().then(result => {
+      subscriber = result;
+    });
+
+    return () => {
+      if (subscriber && typeof subscriber === 'function') {
+        subscriber();
+      }
+    };
+  }, []);
+
+  // Obtener FCM token después de que el servicio esté inicializado
+  useEffect(() => {
+    const getFCMToken = async () => {
+      try {
+        // Wait a bit to ensure push notification service is initialized
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const token = pushNotificationService.getCurrentToken();
+        if (token) {
+          setFcmToken(token);
+          await AsyncStorage.setItem('fcmToken', token);
+          console.log('FCM Token obtained from context:', token);
+        }
+      } catch (error) {
+        console.error('Error getting FCM token in context:', error);
+      }
+    };
+
+    getFCMToken();
   }, []);
 
   const userFlow = {
@@ -111,6 +183,7 @@ const DataProvider = ({ children }: any) => {
     acceso: _acceso,
     nombre: _nombre,
     email: _email,
+    fcmToken,
     login: async ({ email, password }: any) => {
       try {
         const { user } = await auth().signInWithEmailAndPassword(email, password);
@@ -126,16 +199,17 @@ const DataProvider = ({ children }: any) => {
           if (!status) {
             return { response: false };
           } else {
+            const generatedPassword = generate();
             const createUserResult = await userFlow.createUserFirebase(
               email,
-              GENERATE_PASS,
+              generatedPassword,
             );
             if (createUserResult instanceof Error) {
               console.error('Error al crear la cuenta:', createUserResult);
               return { response: false };
             } else {
               console.log('Cuenta creada:', createUserResult);
-              await sendNewPassword(email, GENERATE_PASS);
+              await sendNewPassword(email, generatedPassword);
               await updateUid(email, createUserResult.uid)
               return {
                 response: true,
@@ -175,7 +249,7 @@ const DataProvider = ({ children }: any) => {
         // Limpiar AsyncStorage usando multiRemove
         const keysToRemove = [
           'userId', 'acceso', 'nombre', 'email', 'avatar',
-          'tokenPhone', 'formularioChat', 'usuariosEntrando'
+          'tokenPhone', 'formularioChat', 'usuariosEntrando', 'fcmToken'
         ];
         await AsyncStorage.multiRemove(keysToRemove);
 
@@ -184,12 +258,22 @@ const DataProvider = ({ children }: any) => {
         setAcceso(null);
         setNombre(null);
         setEmail(null);
+        setFcmToken(null);
 
         // Cerrar sesión en Firebase
         await auth().signOut();
         console.log('Sesión cerrada y datos limpiados');
       } catch (error) {
         console.error('Error al cerrar sesión:', error);
+      }
+    },
+    sendFCMTokenToBackend: async (userId: any) => {
+      try {
+        if (fcmToken && userId) {
+          await pushNotificationService.sendTokenToBackend(userId);
+        }
+      } catch (error) {
+        console.error('Error sending FCM token to backend:', error);
       }
     },
   };

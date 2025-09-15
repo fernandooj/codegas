@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const IniciarSesion = ({ navigation }) => {
 
-  const { login } = useContext(DataContext)
+  const { login, sendFCMTokenToBackend, userId } = useContext(DataContext)
 
   const [cargando, setCargando] = useState(false);
   const [data, setData] = useState({})
@@ -24,6 +24,10 @@ const IniciarSesion = ({ navigation }) => {
     const { response, status } = await login(data)
     if (response) {
       if (status === 1) {
+        // Enviar token FCM al backend después del login exitoso
+        setTimeout(() => {
+          sendFCMTokenToBackend(userId);
+        }, 1000);
         navigation.navigate("Home")
       } else if (status === 2) {
         Toast.show({ type: 'info', text1: 'Cambiamos tu contraseña, revisa tu email' })

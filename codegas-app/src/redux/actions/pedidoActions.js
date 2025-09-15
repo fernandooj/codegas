@@ -144,6 +144,52 @@ const getPedidosChart = (idUser) => {
   };
 };
 
+// Nueva acción para verificar pedidos del día
+const verificarPedidoHoy = async (userId, puntoId) => {
+  try {
+    const response = await axios.get(`ped/pedido/today/${userId}/${puntoId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error en verificarPedidoHoy:', {
+      function: 'verificarPedidoHoy',
+      userId: userId,
+      puntoId: puntoId,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Nueva acción para crear pedido
+const crearPedido = async (pedidoData) => {
+  try {
+    const response = await axios({
+      method: 'post',
+      url: 'ped/pedido',
+      data: JSON.stringify(pedidoData),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error en crearPedido:', {
+      function: 'crearPedido',
+      pedidoData: pedidoData,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
 
 export {
   getPedido,
@@ -152,5 +198,7 @@ export {
   getZonasPedidos,
   getFrecuencia,
   getPedidoByUser,
-  getPedidosChart
+  getPedidosChart,
+  verificarPedidoHoy,
+  crearPedido
 };

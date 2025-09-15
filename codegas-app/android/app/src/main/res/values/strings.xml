@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">codegas</string>
+    <string name="default_notification_channel_id">codegas_notifications</string>
+    <string name="default_notification_channel_name">Codegas Notifications</string>
+    <string name="default_notification_channel_description">Notificaciones de la aplicación Codegas</string>
 </resources>
