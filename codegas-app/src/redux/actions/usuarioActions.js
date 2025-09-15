@@ -64,7 +64,7 @@ const getUsuarios = (limit, start, acceso, search, id) => {
       console.log(res)
       dispatch({
         type: GET_USUARIOS,
-        usuarios: res.data.user
+        usuarios: res.data.user || []
       });
     } catch (err) {
       console.error('Error en getUsuarios:', {
@@ -88,7 +88,7 @@ const getUsuariosAcceso = (limit, start, acceso) => {
         console.log(res.data)
         dispatch({
           type: GET_USUARIOS_ACCESO,
-          usuariosAcceso: res.data.user
+          usuariosAcceso: res.data.user || []
         });
       })
       .catch(err => {
@@ -593,5 +593,29 @@ export {
   signUp,
   updateUserProfile,
   getVeos,
-  getActiveZones
+  getActiveZones,
+  sendFCMToken
+};
+
+// Enviar token FCM al backend
+const sendFCMToken = (userId, fcmToken) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.post('user/fcm-token', {
+        userId,
+        fcmToken
+      });
+
+      if (response.data.code === 1) {
+        console.log('FCM token sent successfully');
+        return { success: true, data: response.data };
+      } else {
+        console.log('Error sending FCM token:', response.data.message);
+        return { success: false, error: response.data.message };
+      }
+    } catch (error) {
+      console.error('Error sending FCM token:', error);
+      return { success: false, error: error.message };
+    }
+  };
 };

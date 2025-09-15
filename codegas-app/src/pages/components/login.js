@@ -279,7 +279,17 @@ class Login extends Component {
 		const { email, password, tokenPhone } = this.state;
 		axios.post("user/login", { username: email, password, tokenPhone })
 			.then(e => {
-				e.data.code == 1 ? this.props.login() : e.data.code == 0 ? this.setState({ alertErrorLogin: true }) : this.setState({ usuarioNoExiste: true })
+				if (e.data.code == 1) {
+					this.props.login();
+					// Enviar token FCM al backend después del login exitoso
+					setTimeout(() => {
+						this.props.sendFCMTokenToBackend && this.props.sendFCMTokenToBackend(this.props.userId);
+					}, 1000);
+				} else if (e.data.code == 0) {
+					this.setState({ alertErrorLogin: true });
+				} else {
+					this.setState({ usuarioNoExiste: true });
+				}
 			})
 	}
 	olvidoContrasena() {
@@ -310,12 +320,17 @@ const mapStatetoPros = (state) => {
 		carrito: state.carrito,
 		loginFailure: state.usuario.loginFailure,
 		loginSuccess: state.usuario.loginSuccess,
+		userId: state.usuario.userId,
 	}
 }
 const mapDispatch = dispatch => {
 	return {
 		loginRequest: (email, password) => {
 			dispatch(loginRequest(email, password));
+		},
+		sendFCMTokenToBackend: (userId) => {
+			// Esta función se implementará cuando se conecte con el contexto
+			console.log('Sending FCM token to backend for user:', userId);
 		}
 	};
 };

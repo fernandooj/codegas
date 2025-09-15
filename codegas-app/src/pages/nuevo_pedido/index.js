@@ -10,9 +10,10 @@ import ModalSelector from 'react-native-modal-selector'
 import { Calendar } from 'react-native-calendars';
 import { TextInputMask } from 'react-native-masked-text'
 
-import { connect } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { DataContext } from "../../context/context"
-import { getUsuariosAcceso } from '../../redux/actions/usuarioActions'
+import { getUsuariosAcceso, getUsuarios, getPointsByClient } from '../../redux/actions/usuarioActions'
+import { verificarPedidoHoy, crearPedido } from '../../redux/actions/pedidoActions'
 import Footer from '../components/footer'
 import { style } from './style'
 
@@ -20,7 +21,18 @@ import { frecuencias, dias, diasN, dia1, dia2 } from '../../utils/pedido_info'
 
 const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
     const context = useContext(DataContext);
+    const { acceso, userId: idUsuario, email, nombre } = context;
+    const dispatch = useDispatch();
     const campoMonto = useRef(null);
+
+    // Selector de Redux para obtener los clientes (solo si no es cliente)
+    const clientes = useSelector(state => {
+        // Si el acceso es cliente, no necesitamos cargar clientes
+        if (acceso === 'cliente') {
+            return [];
+        }
+        return state.usuario.usuariosAcceso || [];
+    });
 
     const [state, setState] = useState({
         imagen: [],
@@ -59,16 +71,15 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
 
     useEffect(() => {
         const initializeComponent = async () => {
-            try {
-                const res = await axios.get(`users/by/adminsolucion`);
-                if (res.data.status) {
-                    setState(prev => ({ ...prev, usuarios: res.data.usuarios }));
+            // Solo cargar usuarios si no es cliente
+            if (acceso !== 'cliente') {
+                try {
+                    // Usar la acción de Redux en lugar de axios directo
+                    await dispatch(getUsuariosAcceso(100, 0, 'adminsolucion'));
+                } catch (error) {
+                    console.error('Error fetching usuarios:', error);
                 }
-            } catch (error) {
-                console.error('Error fetching usuarios:', error);
             }
-
-            const { acceso, userId: idUsuario, email, nombre } = context;
 
             if (!nombre && idUsuario) {
                 navigation.navigate("verPerfil", { tipoAcceso: null });
@@ -84,56 +95,63 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
         initializeComponent();
     }, [context, navigation]);
 
-    const getPuntos = (id) => {
-        axios.get(`pun/punto/byCliente/${id}`)
-            .then(e => {
-                if (e.data.status) {
-                    if (e.data.puntos.length === 1) {
-                        setState(prev => ({
-                            ...prev,
-                            puntos: e.data.puntos,
-                            puntoId: e.data.puntos[0]._id
-                        }));
-                    } else {
-                        setState(prev => ({ ...prev, puntos: e.data.puntos }));
-                    }
+    const getPuntos = async (id) => {
+        try {
+            const response = await getPointsByClient(id);
+            console.log(response);
+            if (response.status) {
+                if (response.puntos.length === 1) {
+                    setState(prev => ({
+                        ...prev,
+                        puntos: response.puntos,
+                        puntoId: response.puntos[0]._id
+                    }));
                 } else {
-                    Toast.show({
-                        type: 'error',
-                        text1: 'Tuvimos un problema',
-                        text2: 'intentele mas tarde'
-                    });
+                    setState(prev => ({ ...prev, puntos: response.puntos }));
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching puntos:', error);
+            } else {
                 Toast.show({
                     type: 'error',
-                    text1: 'Error al cargar puntos',
-                    text2: 'Intente más tarde'
+                    text1: 'Tuvimos un problema',
+                    text2: 'intentele mas tarde'
                 });
+            }
+        } catch (error) {
+            console.error('Error fetching puntos:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Error al cargar puntos',
+                text2: 'Intente más tarde'
             });
+        }
     };
 
-    const getClientes = () => {
-        const { terminoBuscador } = state;
-        axios.get(`users/acceso/10/0/clientes/${terminoBuscador}`)
-            .then(res => {
-                if (res.data.status) {
-                    setState(prev => ({ ...prev, clientes: res.data.user }));
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching clientes:', error);
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error al cargar clientes',
-                    text2: 'Intente más tarde'
-                });
+    const getClientes = async () => {
+        const { terminoBuscador, idUsuario, acceso } = state;
+
+        // Si el acceso es cliente, no debe llamar a ningún endpoint de usuarios
+        if (acceso === 'cliente') {
+            Toast.show({
+                type: 'info',
+                text1: 'Los clientes no pueden buscar otros usuarios',
+                text2: 'Solo pueden crear pedidos para sí mismos'
             });
+            return;
+        }
+
+        try {
+            await dispatch(getUsuarios(10, 0, 'cliente', terminoBuscador, idUsuario));
+            // Los clientes se obtendrán del estado de Redux y se actualizarán automáticamente
+        } catch (error) {
+            console.error('Error fetching clientes:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Error al cargar clientes',
+                text2: 'Intente más tarde'
+            });
+        }
     };
     const renderUsuarios = () => {
-        const { clientes } = state;
         return clientes.map((e, key) => {
             return (
                 <View style={[style.contenedorUsers, { backgroundColor: e.activo ? "white" : "red" }]} key={key}>
@@ -160,7 +178,13 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
         })
     };
     const renderCliente = () => {
-        const { idCliente, cliente } = state;
+        const { idCliente, cliente, acceso } = state;
+
+        // Si el acceso es cliente, no debe mostrar opciones de asignar cliente
+        if (acceso === 'cliente') {
+            return null;
+        }
+
         return (
             <View>
                 {idCliente ? (
@@ -511,6 +535,7 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
                 <TouchableOpacity
                     style={!forma ? style.btnGuardarDisable : style.btnGuardar}
                     onPress={() => {
+                        // Solo validar cliente para usuarios que no son clientes
                         if ((acceso === "admin" || acceso === "solucion" || acceso === "veo" || acceso === "comercial" || acceso === "despacho") && !idCliente) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Selecciona un cliente' });
                         } else if ((acceso === "admin" || acceso === "solucion" || acceso === "veo" || acceso === "comercial" || acceso === "despacho") && !puntoId) {
@@ -552,8 +577,10 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
     };
     const modalFechaEntrega = () => {
         const { modalFechaEntrega, fechaSolicitud } = state;
-        const fechaFormateada = moment(fechaSolicitud).format("YYYY-MM-DD");
-        const diaActual = moment().add(0, 'days').format('YYYY-MM-DD');
+
+        // Validar que fechaSolicitud no esté vacía antes de formatear
+        const fechaFormateada = fechaSolicitud ? moment(fechaSolicitud).format("YYYY-MM-DD") : moment().format("YYYY-MM-DD");
+        const diaActual = moment().format('YYYY-MM-DD');
 
         return (
             <Modal transparent visible={modalFechaEntrega} animationType="fade" >
@@ -567,7 +594,7 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
                             <Calendar
                                 style={style.calendar}
                                 current={fechaFormateada}
-                                //minDate={diaActual}
+                                minDate={diaActual}
                                 firstDay={1}
                                 onDayPress={(day) => {
                                     setState(prev => ({
@@ -582,7 +609,7 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
                                         text2: 'si nuestros vehiculos estan en la zona'
                                     });
                                 }}
-                                markedDates={{ [fechaFormateada]: { selected: true, marked: true } }}
+                                markedDates={fechaSolicitud ? { [fechaFormateada]: { selected: true, marked: true } } : {}}
                             />
                         </View>
 
@@ -593,43 +620,42 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
     };
 
     //// verifica si se creo un pedido ese dia
-    const verificaPedido = () => {
+    const verificaPedido = async () => {
         setState(prev => ({ ...prev, guardando: true }));
         const { idCliente, idUsuario, acceso, puntoId } = state;
         const id = acceso === "cliente" ? idUsuario : idCliente;
         console.log(id, puntoId);
 
-        axios.get(`ped/pedido/today/${id}/${puntoId}`)
-            .then(res => {
-                const { status, pedido } = res.data;
-                console.log(status, pedido);
-                if (status) {
-                    if (pedido > 0) {
-                        Alert.alert(
-                            `hay ${pedido} pedidos creados hoy para este cliente`,
-                            `desea crearlo`,
-                            [
-                                { text: 'Confirmar', onPress: () => handleSubmit() },
-                                { text: 'Cancelar', onPress: () => setState(prev => ({ ...prev, guardando: false })) },
-                            ],
-                            { cancelable: false },
-                        );
-                    } else {
-                        handleSubmit();
-                    }
+        try {
+            const response = await verificarPedidoHoy(id, puntoId);
+            const { status, pedido } = response;
+            console.log(status, pedido);
+            if (status) {
+                if (pedido > 0) {
+                    Alert.alert(
+                        `hay ${pedido} pedidos creados hoy para este cliente`,
+                        `desea crearlo`,
+                        [
+                            { text: 'Confirmar', onPress: () => handleSubmit() },
+                            { text: 'Cancelar', onPress: () => setState(prev => ({ ...prev, guardando: false })) },
+                        ],
+                        { cancelable: false },
+                    );
                 } else {
-                    res.data.message.path === "puntoId"
-                        ? alert("Inserte un punto de entrega")
-                        : alert("tenemos un problema intentalo nuevamente");
-                    setState(prev => ({ ...prev, guardando: false }));
+                    handleSubmit();
                 }
-            })
-            .catch(error => {
-                console.error('Error verificando pedido:', error);
+            } else {
+                response.message.path === "puntoId"
+                    ? alert("Inserte un punto de entrega")
+                    : alert("tenemos un problema intentalo nuevamente");
                 setState(prev => ({ ...prev, guardando: false }));
-            });
+            }
+        } catch (error) {
+            console.error('Error verificando pedido:', error);
+            setState(prev => ({ ...prev, guardando: false }));
+        }
     };
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const { forma, cantidad, idCliente, diaSeleccionado1, diaSeleccionado2, frecuencia, novedad: observacion, puntoId, fechaSolicitud, idUsuario } = state;
 
         const cantidadKl = forma === "cantidad" ? cantidad : 0;
@@ -649,33 +675,25 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
             observacion
         };
 
-        axios({
-            method: 'post',
-            url: 'ped/pedido',
-            data: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
-            .then(e => {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Pedido creado con exito',
-                });
-                setState(prev => ({
-                    ...prev,
-                    guardando: false,
-                    idCliente: null,
-                    forma: null,
-                    solicitud: false,
-                    puntos: []
-                }));
-            })
-            .catch(err => {
-                console.error('Error creando pedido:', err);
-                setState(prev => ({ ...prev, guardando: false }));
-                alert("No pudimos procesar el pedido, intentelo mas tarde", JSON.stringify(err));
+        try {
+            const response = await crearPedido(data);
+            Toast.show({
+                type: 'success',
+                text1: 'Pedido creado con exito',
             });
+            setState(prev => ({
+                ...prev,
+                guardando: false,
+                idCliente: null,
+                forma: null,
+                solicitud: false,
+                puntos: []
+            }));
+        } catch (err) {
+            console.error('Error creando pedido:', err);
+            setState(prev => ({ ...prev, guardando: false }));
+            alert("No pudimos procesar el pedido, intentelo mas tarde", JSON.stringify(err));
+        }
     };
 
     const { showFechaEntrega } = state;

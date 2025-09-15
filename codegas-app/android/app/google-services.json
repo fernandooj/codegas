@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "421814098476",
+    "firebase_url": "https://codegas-1d43a.firebaseio.com",
+    "project_id": "codegas-1d43a",
+    "storage_bucket": "codegas-1d43a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421814098476:android:c9179d3f50198546",
+        "android_client_info": {
+          "package_name": "com.codegas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8Srrjiewx_WnPrI9PmJJh5ZabAhLVw_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421814098476:android:b4dc88c4afd0d93a6b8f89",
+        "android_client_info": {
+          "package_name": "com.codegasco"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8Srrjiewx_WnPrI9PmJJh5ZabAhLVw_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
