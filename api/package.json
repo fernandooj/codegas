@@ -27,7 +27,7 @@
     "pg": "^8.10.0",
     "serverless": "^3.38.0",
     "serverless-dotenv-plugin": "^6.0.0",
-    "serverless-offline": "^8.8.1",
+    "serverless-offline": "^14.4.0",
     "sharp": "^0.32.0",
     "uuid": "^9.0.0"
   }
