@@ -61,3 +61,14 @@ eliminarFrecuencias:
     include:
       - services/frecuencias/src/eliminar-frecuencias.js
       - lib/errors/database-error.js
+
+notificarPedidos3Dias:
+  name: ${self:custom.base}-notificar-pedidos-3-dias
+  handler: services/frecuencias/src/notificar-pedidos-3-dias.main
+  events:
+    - schedule: cron(0 8 * * ? *)
+    - httpApi: 'GET /fre/notificar-pedidos-3-dias'
+  package:
+    include:
+      - services/frecuencias/src/notificar-pedidos-3-dias.js
+      - lib/errors/database-error.js

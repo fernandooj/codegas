@@ -128,3 +128,13 @@ deleteUser:
     include:
       - services/users/src/delete.js
       - lib/errors/database-error.js
+
+updateFcmToken:
+  name: ${self:custom.base}-update-fcm-token
+  handler: services/users/src/update-fcm-token.main
+  events:
+    - httpApi: 'POST /users/fcm-token'
+  package:
+    include:
+      - services/users/src/update-fcm-token.js
+      - lib/errors/database-error.js
