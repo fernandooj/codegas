@@ -167,7 +167,17 @@ const DataProvider = ({ children }: any) => {
         if (token) {
           setFcmToken(token);
           await AsyncStorage.setItem('fcmToken', token);
-          console.log('FCM Token obtained from context:', token);
+          console.log('🎫 ===== FCM TOKEN EN CONTEXTO =====');
+          console.log('📱 Token FCM obtenido desde contexto:', token);
+          console.log('📏 Longitud del token:', token.length);
+          console.log('🔍 Primeros 20 caracteres:', token.substring(0, 20) + '...');
+          console.log('🔍 Últimos 20 caracteres:', '...' + token.substring(token.length - 20));
+          console.log('💾 Token guardado en AsyncStorage desde contexto');
+          console.log('🎫 ================================');
+        } else {
+          console.log('❌ No se pudo obtener FCM token desde contexto');
+          console.log('💡 Esto es NORMAL si estás usando un emulador/simulador');
+          console.log('💡 Los tokens FCM solo funcionan en dispositivos físicos');
         }
       } catch (error) {
         console.error('Error getting FCM token in context:', error);

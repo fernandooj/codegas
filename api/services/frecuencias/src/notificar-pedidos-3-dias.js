@@ -122,13 +122,15 @@ const enviarNotificacionPush = async (tokenPhone, titulo, mensaje) => {
     } catch (error) {
         console.error('❌ Error enviando notificación FCM v1:', error);
 
-        // Fallback a simulación si no tenemos credenciales configuradas
+        // Fallback a simulación si no tenemos credenciales configuradas o hay error de JWT
         if (error.message.includes('TU_PRIVATE_KEY') ||
             error.message.includes('private_key') ||
             error.message.includes('DECODER routines') ||
             error.message.includes('unsupported') ||
+            error.message.includes('Invalid JWT Signature') ||
+            error.message.includes('invalid_grant') ||
             serviceAccount.private_key.includes('TU_PRIVATE_KEY')) {
-            console.log('⚠️ Credenciales no configuradas, usando simulación...');
+            console.log('⚠️ Credenciales no válidas o no configuradas, usando simulación...');
             return await enviarNotificacionSimulacion(tokenPhone, titulo, mensaje);
         }
 

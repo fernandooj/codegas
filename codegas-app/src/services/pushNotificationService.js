@@ -10,18 +10,54 @@ class PushNotificationService {
         this.initialized = false;
     }
 
-    // Verificar si estamos en simulador
-    isSimulator() {
-        if (Platform.OS === 'ios') {
-            try {
-                // En versiones más recientes, este método puede no estar disponible
-                return !messaging().isDeviceRegisteredForRemoteMessages;
-            } catch (error) {
-                // Si el método no existe, asumir que no es simulador
-                return false;
+    // Verificar si estamos en simulador/emulador
+    async isSimulator() {
+        try {
+            console.log(`🔍 Verificando si es simulador/emulador en ${Platform.OS}...`);
+
+            // Para iOS: verificar si el dispositivo está registrado para mensajes remotos
+            if (Platform.OS === 'ios') {
+                try {
+                    const isRegistered = await messaging().isDeviceRegisteredForRemoteMessages();
+                    const isIOSSimulator = !isRegistered;
+                    if (isIOSSimulator) {
+                        console.log('🔍 Detectado simulador iOS (no registrado para mensajes remotos)');
+                        return true;
+                    } else {
+                        console.log('✅ Dispositivo iOS físico detectado');
+                        return false;
+                    }
+                } catch (error) {
+                    console.log('⚠️ Error verificando registro de mensajes remotos en iOS:', error);
+                    // Asumir que es simulador si hay error
+                    return true;
+                }
             }
+
+            // Para Android: intentar obtener token FCM como prueba
+            if (Platform.OS === 'android') {
+                try {
+                    // Intentar obtener token FCM - si falla, probablemente es emulador
+                    const testToken = await messaging().getToken();
+                    if (testToken && testToken.length > 0) {
+                        console.log('✅ Dispositivo Android físico detectado (token FCM obtenido)');
+                        return false;
+                    } else {
+                        console.log('🔍 Posible emulador Android (no se pudo obtener token FCM)');
+                        return true;
+                    }
+                } catch (error) {
+                    console.log('🔍 Emulador Android detectado (error obteniendo token FCM):', error.message);
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (error) {
+            console.log('⚠️ Error detectando simulador/emulador:', error);
+            // En caso de error, asumir que es emulador para evitar problemas
+            return true;
         }
-        return false;
     }
 
     // Inicializar el servicio de notificaciones push
@@ -40,9 +76,9 @@ class PushNotificationService {
             // Configurar notificaciones locales para pruebas (siempre)
             this.configureLocalNotifications();
 
-            // Verificar si estamos en simulador
-            if (this.isSimulator()) {
-                console.log('⚠️ Running on iOS Simulator - Using local notifications for testing');
+            // Verificar si estamos en simulador/emulador
+            if (await this.isSimulator()) {
+                console.log('⚠️ Ejecutando en simulador/emulador - Usando notificaciones locales para pruebas');
                 this.initialized = true;
                 return;
             }
@@ -78,9 +114,9 @@ class PushNotificationService {
     // Obtener token FCM
     async getFCMToken() {
         try {
-            // Verificar si estamos en simulador
-            if (this.isSimulator()) {
-                console.log('⚠️ Cannot get FCM token on iOS Simulator');
+            // Verificar si estamos en simulador/emulador
+            if (await this.isSimulator()) {
+                console.log('⚠️ No se puede obtener token FCM en simulador/emulador');
                 return null;
             }
 
@@ -94,10 +130,16 @@ class PushNotificationService {
             const token = await messaging().getToken();
             if (token) {
                 this.token = token;
-                console.log('FCM Token:', token);
+                console.log('🎫 ===== FCM TOKEN OBTENIDO =====');
+                console.log('📱 Token FCM:', token);
+                console.log('📏 Longitud del token:', token.length);
+                console.log('🔍 Primeros 20 caracteres:', token.substring(0, 20) + '...');
+                console.log('🔍 Últimos 20 caracteres:', '...' + token.substring(token.length - 20));
+                console.log('🎫 ================================');
 
                 // Guardar token en AsyncStorage
                 await AsyncStorage.setItem('fcmToken', token);
+                console.log('💾 Token guardado en AsyncStorage');
 
                 return token;
             }
@@ -111,8 +153,14 @@ class PushNotificationService {
                 const token = await messaging().getToken();
                 if (token) {
                     this.token = token;
-                    console.log('FCM Token after registration:', token);
+                    console.log('🎫 ===== FCM TOKEN OBTENIDO (REINTENTO) =====');
+                    console.log('📱 Token FCM:', token);
+                    console.log('📏 Longitud del token:', token.length);
+                    console.log('🔍 Primeros 20 caracteres:', token.substring(0, 20) + '...');
+                    console.log('🔍 Últimos 20 caracteres:', '...' + token.substring(token.length - 20));
+                    console.log('🎫 ===========================================');
                     await AsyncStorage.setItem('fcmToken', token);
+                    console.log('💾 Token guardado en AsyncStorage (reintento)');
                     return token;
                 }
             } catch (retryError) {
@@ -154,9 +202,15 @@ class PushNotificationService {
 
         // Manejar actualizaciones del token
         messaging().onTokenRefresh(token => {
-            console.log('FCM Token refreshed:', token);
+            console.log('🔄 ===== FCM TOKEN ACTUALIZADO =====');
+            console.log('📱 Nuevo Token FCM:', token);
+            console.log('📏 Longitud del token:', token.length);
+            console.log('🔍 Primeros 20 caracteres:', token.substring(0, 20) + '...');
+            console.log('🔍 Últimos 20 caracteres:', '...' + token.substring(token.length - 20));
+            console.log('🔄 ================================');
             this.token = token;
             AsyncStorage.setItem('fcmToken', token);
+            console.log('💾 Token actualizado guardado en AsyncStorage');
         });
     }
 
@@ -168,10 +222,10 @@ class PushNotificationService {
                 return;
             }
 
-            // Verificar si estamos en simulador
-            if (this.isSimulator()) {
-                console.log('⚠️ Running on iOS Simulator - FCM token will not be sent to backend');
-                return { success: false, error: 'Simulator detected' };
+            // Verificar si estamos en simulador/emulador
+            if (await this.isSimulator()) {
+                console.log('⚠️ Ejecutando en simulador/emulador - Token FCM no se enviará al backend');
+                return { success: false, error: 'Simulador/emulador detectado' };
             }
 
             // Llamada a la API para guardar el token
@@ -195,6 +249,18 @@ class PushNotificationService {
 
     // Obtener token actual
     getCurrentToken() {
+        console.log('🔍 ===== CONSULTANDO TOKEN FCM ACTUAL =====');
+        if (this.token) {
+            console.log('📱 Token FCM actual:', this.token);
+            console.log('📏 Longitud del token:', this.token.length);
+            console.log('🔍 Primeros 20 caracteres:', this.token.substring(0, 20) + '...');
+            console.log('🔍 Últimos 20 caracteres:', '...' + this.token.substring(this.token.length - 20));
+        } else {
+            console.log('❌ No hay token FCM disponible');
+            console.log('💡 Esto es NORMAL si estás usando un emulador/simulador');
+            console.log('💡 Los tokens FCM solo funcionan en dispositivos físicos');
+        }
+        console.log('🔍 ========================================');
         return this.token;
     }
 
@@ -310,6 +376,38 @@ class PushNotificationService {
         } catch (error) {
             console.error('❌ Error cancelando notificaciones:', error);
             return { success: false, error: error.message };
+        }
+    }
+
+    // ===== MÉTODOS PARA DEBUGGING =====
+
+    // Mostrar información completa del token FCM
+    showFCMTokenInfo() {
+        console.log('🔍 ===== INFORMACIÓN COMPLETA DEL TOKEN FCM =====');
+        console.log('📱 Token FCM:', this.token);
+        console.log('📏 Longitud del token:', this.token ? this.token.length : 'N/A');
+        console.log('🔍 Primeros 30 caracteres:', this.token ? this.token.substring(0, 30) + '...' : 'N/A');
+        console.log('🔍 Últimos 30 caracteres:', this.token ? '...' + this.token.substring(this.token.length - 30) : 'N/A');
+        console.log('💾 Guardado en AsyncStorage:', this.token ? 'Sí' : 'No');
+        console.log('🔍 ==============================================');
+        return this.token;
+    }
+
+    // Forzar obtención de nuevo token FCM
+    async forceGetNewToken() {
+        try {
+            console.log('🔄 Forzando obtención de nuevo token FCM...');
+            const token = await this.getFCMToken();
+            if (token) {
+                console.log('✅ Nuevo token FCM obtenido exitosamente');
+                return token;
+            } else {
+                console.log('❌ No se pudo obtener nuevo token FCM');
+                return null;
+            }
+        } catch (error) {
+            console.error('❌ Error forzando obtención de token:', error);
+            return null;
         }
     }
 }
