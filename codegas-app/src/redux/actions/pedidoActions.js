@@ -190,6 +190,178 @@ const crearPedido = async (pedidoData) => {
   }
 };
 
+// Acción para obtener novedades por pedido
+const getNovedadesByPedido = async (pedidoId) => {
+  try {
+    const response = await axios.get(`nov/novedad/byPedido/${pedidoId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error en getNovedadesByPedido:', {
+      function: 'getNovedadesByPedido',
+      pedidoId: pedidoId,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Acción para guardar novedad inactivo
+const guardarNovedadInactivo = async (pedidoId, novedad) => {
+  try {
+    const response = await axios.post(`nov/novedad/`, { pedidoId, novedad });
+    return response.data;
+  } catch (error) {
+    console.error('Error en guardarNovedadInactivo:', {
+      function: 'guardarNovedadInactivo',
+      pedidoId: pedidoId,
+      novedad: novedad,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Acción para asignar conductor
+const asignarConductor = async (id, idVehiculo, fechaEntrega, usuarioAsigna) => {
+  try {
+    console.log('🚛 asignarConductor API call:', { id, idVehiculo, fechaEntrega, usuarioAsigna });
+    const response = await axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${usuarioAsigna}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error en asignarConductor:', {
+      function: 'asignarConductor',
+      id: id,
+      idVehiculo: idVehiculo,
+      fechaEntrega: fechaEntrega,
+      usuarioAsigna: usuarioAsigna,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Acción para asignar fecha de entrega
+const asignarFechaEntrega = async (seleccionados) => {
+  try {
+    const data = { seleccionados };
+    const response = await axios({
+      method: 'post',
+      url: `ped/pedido/asignarFechaEntrega`,
+      data: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error en asignarFechaEntrega:', {
+      function: 'asignarFechaEntrega',
+      seleccionados: seleccionados,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Acción para guardar novedad al cerrar pedido
+const guardarNovedadCerrarPedido = async (id, fechaEntrega, novedad, perfil_novedad, conductorId = null) => {
+  try {
+    const response = await axios.post('ped/pedido/novedad', {
+      _id: id,
+      fechaEntrega,
+      novedad,
+      perfil_novedad,
+      conductorId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error en guardarNovedadCerrarPedido:', {
+      function: 'guardarNovedadCerrarPedido',
+      id: id,
+      fechaEntrega: fechaEntrega,
+      novedad: novedad,
+      perfil_novedad: perfil_novedad,
+      conductorId: conductorId,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Acción para finalizar pedido
+const finalizarPedido = async (id, pedidoData) => {
+  try {
+    const response = await axios({
+      method: 'post',
+      url: `ped/pedido/finalizar/${id}`,
+      data: JSON.stringify(pedidoData),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error en finalizarPedido:', {
+      function: 'finalizarPedido',
+      id: id,
+      pedidoData: pedidoData,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Acción para cambiar estado del pedido
+const cambiarEstadoPedido = async (seleccionados) => {
+  try {
+    const data = { seleccionados };
+    const response = await axios({
+      method: 'post',
+      url: `ped/pedido/cambiarEstado`,
+      data: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error en cambiarEstadoPedido:', {
+      function: 'cambiarEstadoPedido',
+      seleccionados: seleccionados,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
 
 export {
   getPedido,
@@ -200,5 +372,12 @@ export {
   getPedidoByUser,
   getPedidosChart,
   verificarPedidoHoy,
-  crearPedido
+  crearPedido,
+  getNovedadesByPedido,
+  guardarNovedadInactivo,
+  asignarConductor,
+  asignarFechaEntrega,
+  guardarNovedadCerrarPedido,
+  finalizarPedido,
+  cambiarEstadoPedido
 };

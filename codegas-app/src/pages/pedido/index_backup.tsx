@@ -1,21 +1,24 @@
 import React, { Component } from 'react'
 import { View, Text, TouchableOpacity, Button, Alert, ActivityIndicator, TextInput, Modal, ScrollView, Image, Dimensions, Animated, Keyboard } from 'react-native'
-import moment from 'moment'
+import Toast from 'react-native-simple-toast';
+import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment-timezone'
 import axios from 'axios';
-import { Picker } from '@react-native-picker/picker';
-import Toast from 'react-native-toast-message';
-import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+
+import Icon from 'react-native-fa-icons';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { createFilter } from 'react-native-search-filter';
 import { connect } from "react-redux";
 import ImageProgress from 'react-native-image-progress';
 import Footer from '../components/footer'
-import { getPedidos } from '../../redux/actions/pedidoActions'
-
+import { getPedidos, getZonasPedidos } from '../../redux/actions/pedidoActions'
+import { getVehiculos } from '../../redux/actions/vehiculoActions'
+// import {sendRemoteNotification} from '../push/envioNotificacion';
 import TomarFoto from "../components/tomarFoto";
-import { DataContext } from "../../context/context"
+import RNPickerSelect from 'react-native-picker-select';
+// import SocketIOClient      from 'socket.io-client';
 import { style } from './style'
-import { motivoNoCierre } from '../../utils/pedido_info'
-
+import { URL } from "../../../App"
 LocaleConfig.locales['es'] = {
     monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
     monthNamesShort: ['Ener.', 'Febr.', 'Marzo.', 'Abril.', 'Mayo.', 'Jun.', 'Jul.', 'Agos', 'Sept.', 'Oct.', 'Nov.', 'Dic.'],
@@ -25,6 +28,7 @@ LocaleConfig.locales['es'] = {
 };
 LocaleConfig.defaultLocale = 'es';
 
+const KEYS_TO_FILTERS = ["conductorId.nombre", "conductorId.cedula", 'forma', 'cantidadKl', 'cantidadPrecio', "nPedido", "usuarioId.nombre", "usuarioId.cedula", "usuarioId.razon_social", "usuarioId.email", "frecuencia", "estado", "puntoId.direccion"]
 let size = Dimensions.get('window');
 function parseNumber(strg) {
     var strg = strg || "";
@@ -39,7 +43,6 @@ function parseNumber(strg) {
 }
 
 class Pedido extends Component {
-    static contextType = DataContext;
     constructor(props) {
         super(props);
         this.state = {
@@ -47,7 +50,7 @@ class Pedido extends Component {
             modalConductor: false,
             modalFechaEntrega: false,
             modalZona: false,
-            terminoBuscador: undefined,
+            terminoBuscador: "",
             kilosTexto: "",
             remisionTexto: "",
             facturaTexto: "",
@@ -56,8 +59,7 @@ class Pedido extends Component {
             novedad: "",
             fechasFiltro: ["0", "1"],
             inicio: 0,
-            final: false,
-            limit: 20,
+            final: 4,
             zonaPedidos: [],
             avatar: [],
             novedades: [],           //////  guardo la cantidad de novedades de cada pedido
@@ -66,37 +68,42 @@ class Pedido extends Component {
             fechaEntregaFiltro: moment().format("YYYY-MM-DD")
         }
     }
-    static getDerivedStateFromProps(nextProps, prevState) {
-        if (nextProps.pedidos !== prevState.pedidos) {
-            return { pedidos: nextProps.pedidos, pedidosFiltro: nextProps.pedidos };
-        }
-        return null;
-    }
 
-    componentDidMount = async () => {
-        const value = this.context;
-        const { acceso, userId: idUsuario } = value
-        this.setState({ idUsuario, acceso })
+    componentWillMount = async () => {
+        // this.props.getPedidos()
+        this.props.getZonasPedidos(this.state.fechaEntregaFiltro)
+        this.props.getVehiculos()
+        try {
+            let idUsuario = await AsyncStorage.getItem('userId')
+            const acceso = await AsyncStorage.getItem('acceso')
+            idUsuario = idUsuario ? idUsuario : "FAIL"
+            this.setState({ idUsuario, acceso })
+        } catch (error) {
+            console.log(error)
+        }
         // this.socket = SocketIOClient(URL);
         // this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
     }
 
-    // componentWillReceiveProps(props){
-    //     this.setState({pedidos:props.pedidos, pedidosFiltro:props.pedidos})   
-    // }    
+    componentWillReceiveProps(props) {
+        console.log(props)
+        this.setState({ pedidos: props.pedidos, pedidosFiltro: props.pedidos, zonaPedidos: props.zonaPedidos })
+    }
     componentWillUnmount() {
         this.keyboardDidShowListener.remove();
         this.keyboardDidHideListener.remove();
     }
-
-    // callObservaciones(id){
-    //   axios.get(`nov/novedad/byPedido/${id}`)
-    //   .then(e=>{
-    //       this.setState({novedades:e.data.novedad})
-    //   })
-    // }
+    reciveMensanje(messages) {
+        //this.props.getPedidos()
+    }
+    callObservaciones(id) {
+        axios.get(`nov/novedad/byPedido/${id}`)
+            .then(e => {
+                this.setState({ novedades: e.data.novedad })
+            })
+    }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            MODAL QUE MUESTRA AL LISTADO DE LAS NOVEDADES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +117,7 @@ class Pedido extends Component {
                         onPress={() => { this.setState({ showNovedades: false }) }}
                         style={style.btnModalConductorClose}
                     >
-                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <Text style={style.tituloNovedades}>Novedades pedido: {nPedido}</Text>
                     <ScrollView>
@@ -119,7 +126,7 @@ class Pedido extends Component {
                                 return (
                                     <View key={e._id} style={style.contenedorNovedad}>
                                         <Text style={style.textNovedad}>{e.novedad}</Text>
-                                        <Text style={style.textNovedad2}>{e.nombre}</Text>
+                                        <Text style={style.textNovedad2}>{e.usuarioId ? e.usuarioId.nombre : ""}</Text>
                                         <Text style={style.textNovedad2}>{e.creado}</Text>
                                     </View>
                                 )
@@ -133,10 +140,12 @@ class Pedido extends Component {
         )
     }
     renderPedidos() {
-        const { acceso, terminoBuscador, pedidos } = this.state
-
-
-        return pedidos.map((e, key) => {
+        const { acceso, terminoBuscador, pedidos, inicio, final } = this.state
+        let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
+        let newPedidos = pedidosFiltro.slice(inicio, final)
+        console.log("newPedidos")
+        console.log(newPedidos)
+        return newPedidos.map((e, key) => {
             return (
                 <TouchableOpacity
                     key={key}
@@ -155,83 +164,81 @@ class Pedido extends Component {
                     ////// solo activa el modal si es de despachos o administrador o conductor 
                     onPress={
                         () => {
-                            // this.callObservaciones(e._id);
+                            this.callObservaciones(e._id);
                             this.setState({
                                 openModal: true, elevation: 0,
-                                placaPedido: e.placa,
-                                conductorPedido: e.conductor,
-                                valor_unitarioUsuario: e.valorunitariousuario ? e.valorunitariousuario : e.valorunitario,
-                                imagenPedido: e.imagen, fechaEntrega: e.fechaentrega, id: e._id, estado: e.estado, estadoEntrega: e.estado == "activo" && "asignado", usuarioId: e.usuarioid, nombre: e.nombre, razon_social: e.razon_social, codt: e.codt, email: e.email, tokenPhone: e.tokenPhone, cedula: e.cedula, forma: e.forma, cantidad: e.cantidad, entregado: e.entregado, imagenCerrar: e.imagencerrar, factura: e.factura, kilos: e.kilos, remision: e.remision, forma_pago: e.forma_pago, valor_total: e.valor_total, nPedido: e._id, estadoInicial: e.estado, capacidad: e.capacidad,
-                                cantidadKl: e.cantidadkl,
-                                cantidadPrecio: e.cantidadprecio, observacion_pedido: e.observacion_pedido,
-                                observacion: e.observacion, puntoId: e.puntoid, usuarioCrea: e.usuariocrea, creado: e.creado, motivo_no_cierre: e.motivo_no_cierre, perfil_novedad: e.perfil_novedad
+                                placaPedido: e.carroId ? e.carroId.placa : null,
+                                conductorPedido: e.conductorId ? e.conductorId.nombre : null,
+                                valor_unitarioUsuario: e.valorUnitario ? e.valorUnitario : e.usuarioId.valorUnitario,
+                                imagenPedido: e.imagen, fechaEntrega: e.fechaEntrega, id: e._id, estado: e.estado, estadoEntrega: e.estado == "activo" && "asignado", usuarioId: e.usuarioId._id, nombre: e.usuarioId.nombre, razon_social: e.usuarioId.razon_social, codt: e.usuarioId.codt, email: e.usuarioId.email, tokenPhone: e.usuarioId.tokenPhone, cedula: e.usuarioId.cedula, forma: e.forma, cantidad: e.cantidad, entregado: e.entregado, imagenCerrar: e.imagenCerrar[0], factura: e.factura, kilos: e.kilos, remision: e.remision, forma_pago: e.forma_pago, valor_total: e.valor_total, nPedido: e.nPedido, estadoInicial: e.estado, capacidad: e.puntoId.capacidad,
+                                cantidadKl: e.cantidadKl,
+                                cantidadPrecio: e.cantidadPrecio,
+                                observacion: e.puntoId.observacion, puntoId: e.puntoId._id, usuarioCrea: e.usuarioCrea.nombre, creado: e.creado
                             })
                         }
                     }
                 >
                     <View style={style.containerPedidos}>
-                        <Text style={style.textPedido}>{e.razon_social}</Text>
-                        <Text style={style.textPedido}>{e.cedula}</Text>
+                        <Text style={style.textPedido}>{e.usuarioId.razon_social}</Text>
+                        <Text style={style.textPedido}>{e.usuarioId.cedula}</Text>
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>N pedido</Text>
-                        <Text style={style.textPedido}>{e._id}</Text>
+                        <Text style={style.textPedido}>{e.nPedido}</Text>
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>Dirección</Text>
-                        <Text style={style.textPedido}>{e.direccion ? e.direccion : "Sin dirección"}</Text>
+                        <Text style={style.textPedido}>{e.puntoId ? e.puntoId.direccion : "Sin dirección"}</Text>
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>Zona</Text>
-                        <Text style={style.textPedido}>{e.zona}</Text>
+                        <Text style={style.textPedido}>{e.zonaId ? e.zonaId.nombre : "Sin zona"}</Text>
                     </View>
                     <View style={style.containerPedidos}>
                         <Text style={style.textPedido}>CODT</Text>
-                        <Text style={style.textPedido}>{e.codt}</Text>
+                        {e.usuarioId.codt && e.usuarioId.codt.length
+                            ? <Text style={style.textPedido}>{e.usuarioId.codt}</Text>
+                            : null
+                        }
                     </View>
                     {
                         acceso !== "conductor"
                         && <View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha solicitud </Text>
-                            <Text style={style.textPedido}>{e.fechasolicitud ? e.fechasolicitud : "sin fecha de solicitud"}</Text>
+                            <Text style={style.textPedido}>{e.fechaSolicitud ? e.fechaSolicitud : "sin fecha de solicitud"}</Text>
                         </View>
                     }
                     {
                         acceso !== "conductor"
                         && <View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Fecha entrega </Text>
-                            <Text style={style.textPedido}>{e.fechaentrega ? moment(e.fechaentrega).format('YYYY-MM-DD') : "sin fecha"}</Text>
+                            <Text style={style.textPedido}>{e.fechaEntrega ? e.fechaEntrega : "sin fecha"}</Text>
                         </View>
                     }
 
                     {
-                        e.capacidad
+                        e.puntoId.capacidad
                         && <View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Almacenamiento galones </Text>
-                            <Text style={style.textPedido}>{e.capacidad ? e.capacidad : "0"}</Text>
+                            <Text style={style.textPedido}>{e.puntoId.capacidad ? e.puntoId.capacidad : "0"}</Text>
                         </View>
                     }
 
                     {
-                        e.valorunitario
+                        e.usuarioId.valorUnitario
                         && <View style={style.containerPedidos}>
                             <Text style={style.textPedido}>Valor Unitario </Text>
-                            <Text style={style.textPedido}>{'$ ' + Number(e.valorunitario ? e.valorunitario : 0).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}</Text>
+                            <Text style={style.textPedido}>{'$ ' + Number(e.valorUnitario ? e.valorUnitario : e.usuarioId.valorUnitario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")}</Text>
                         </View>
                     }
 
                     {
-                        (e.conductor && acceso !== "conductor")
-                        && <>
-                            <View style={style.containerPedidos}>
-                                <Text style={style.textPedido}>conductor Asignado</Text>
-                                <Text style={style.text}>{e.conductor}</Text>
-                            </View>
-                            <View style={style.containerPedidos}>
-                                <Text style={style.textPedido}>Vehiculo Asignado</Text>
-                                <Text style={style.text}>{e.placa}</Text>
-                            </View>
-                        </>
+                        (e.carroId && acceso !== "conductor")
+                        && <View style={style.containerPedidos}>
+                            <Text style={style.textPedido}>Vehiculo Asignado</Text>
+                            <Text style={style.text}>{e.carroId.placa}</Text>
+                            {/* <Text style={style.text}>{e.carroId.cedula}</Text> */}
+                        </View>
                     }
                     {
                         e.factura
@@ -277,20 +284,20 @@ class Pedido extends Component {
     }
     modalFechaEntrega() {
         let { modalFechaEntrega, fechaEntrega } = this.state
-        // fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
-        let diaActual = moment().format('YYYY-MM-DD')
+        fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
+        let diaActual = moment().tz("America/Bogota").format('YYYY-MM-DD')
         return (
 
             <View style={style.contenedorModal2}>
                 <View style={[style.subContenedorModal, { height: size.height - 180 }]}>
                     <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalFechaEntrega: false })} style={style.btnModalClose}>
-                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <Text style={style.tituloModal}>Fecha entrega</Text>
                     <Calendar
                         style={style.calendar}
                         current={fechaEntrega ? fechaEntrega : diaActual}
-                        minDate={diaActual}
+                        //minDate={diaActual}
                         firstDay={1}
                         onDayPress={(day) => { console.log('selected day', day); this.setState({ fechaEntrega: day.dateString }) }}
                         markedDates={{ [fechaEntrega]: { selected: true, marked: true } }}
@@ -318,7 +325,7 @@ class Pedido extends Component {
     ////////////////////////           MODAL QUE MUESTRA LA OPCION DE EDITAR UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     editarPedido() {
-        let { estado, razon_social, cedula, forma, id, acceso, novedad, remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, codt, usuarioCrea, observacion, observacion_pedido, usuarioId, puntoId, cantidadKl, cantidadPrecio, motivo_no_cierre, perfil_novedad } = this.state
+        let { estado, razon_social, cedula, forma, cantidad, acceso, novedad, remision, remisionTexto, kilosTexto, facturaTexto, valor_totalTexto, valor_total, height, forma_pago, forma_pagoTexto, keyboard, entregado, fechaEntrega, avatar, imagenPedido, kilos, factura, novedades, placaPedido, imagen, estadoEntrega, conductorPedido, imagenCerrar, nPedido, showNovedades, capacidad, creado, codt, usuarioCrea, observacion, usuarioId, puntoId, cantidadKl, cantidadPrecio } = this.state
         kilosTexto = kilosTexto.replace(/[A-Za-z$-]/g, "");
         kilosTexto = kilosTexto.replace(",", "");
         kilosTexto = kilosTexto === "NaN" ? "" : kilosTexto
@@ -331,27 +338,28 @@ class Pedido extends Component {
 
         let imagenPedido1 = imagenPedido ? imagenPedido.split("-") : ""
         let imagenPedido2 = `${imagenPedido1[0]}Miniatura${imagenPedido1[2]}`
-
+        let imagenCerrar1 = imagenCerrar ? imagenCerrar.split("-") : ""
+        imagenCerrar = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
         let valor_unitario = Number(valor_total) / parseNumber(kilos)
 
+        console.log({ forma })
         return (
             <View style={style.contenedorModal}>
                 {showNovedades ? this.modalNovedades() : null}
                 <View style={!keyboard ? style.subContenedorModal : [style.subContenedorModal, { marginTop: acceso == "admin" ? -610 : -370 }]}>
                     <ScrollView onContentSizeChange={(height) => { this.setState({ height }) }} keyboardDismissMode="on-drag">
                         <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ openModal: false, elevation: 7 })} style={size.height < height ? style.btnModalClose : style.btnModalClose2}>
-                            <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                            <Icon name={'times-circle'} style={style.iconCerrar} />
                         </TouchableOpacity>
                         <View style={style.containerTituloModal}>
                             <Text style={{ fontFamily: "Comfortaa-Regular" }}>Razón Social: {razon_social}</Text>
                             <Text style={{ fontFamily: "Comfortaa-Regular" }}>Cedula/NIT: {cedula}</Text>
-                            <Text style={{ fontFamily: "Comfortaa-Regular" }}>N Pedido: {id}</Text>
+                            <Text style={{ fontFamily: "Comfortaa-Regular" }}>N Pedido: {nPedido}</Text>
                             <Text style={{ fontFamily: "Comfortaa-Regular" }}>Forma: {forma}</Text>
-                            <Text style={{ fontFamily: "Comfortaa-Regular" }}>Fecha de creación: {moment(creado).format("YYYY-MM-DD")}</Text>
+                            <Text style={{ fontFamily: "Comfortaa-Regular" }}>Fecha de creación: {creado}</Text>
                             <Text style={{ fontFamily: "Comfortaa-Regular" }}>Usuario crea: {usuarioCrea}</Text>
                             <Text style={{ fontFamily: "Comfortaa-Regular" }}>Almacenamiento: {capacidad}</Text>
-                            <Text style={{ fontFamily: "Comfortaa-Regular" }}>Observación punto: {observacion}</Text>
-                            <Text style={{ fontFamily: "Comfortaa-Regular" }}>Observación pedido: {observacion_pedido}</Text>
+                            <Text style={{ fontFamily: "Comfortaa-Regular" }}>Observacion: {observacion}</Text>
                             <Text style={{ fontFamily: "Comfortaa-Regular" }}>
                                 {forma == "cantidad"
                                     ? `cantidad: ${cantidadKl}`
@@ -375,17 +383,17 @@ class Pedido extends Component {
                                     <Text style={style.tituloModal}>Estado</Text>
                                     <TouchableOpacity style={estado == "activo" ? [style.subContenedorEditar, style.activo] : style.subContenedorEditar} onPress={() => this.setState({ estado: "activo" })}>
                                         <Text style={style.textoEspera}>Activo</Text>
-                                        {estado == "activo" && <FontAwesome name="check" style={style.iconEditar} />}
+                                        {estado == "activo" && <Icon name="check" style={style.iconEditar} />}
                                     </TouchableOpacity>
                                     <TouchableOpacity style={estado == "innactivo" ? [style.subContenedorEditar, style.activo] : style.subContenedorEditar}
                                         onPress={() => (entregado == true && estado == "activo" && (acceso !== "admin")) ? null : this.setState({ estado: "innactivo" })}>
                                         <Text style={style.textoEspera}>In activo</Text>
-                                        {estado == "innactivo" && <FontAwesome name="check" style={style.iconEditar} />}
+                                        {estado == "innactivo" && <Icon name="check" style={style.iconEditar} />}
                                     </TouchableOpacity>
                                     <TouchableOpacity style={estado == "espera" ? [style.subContenedorEditar, style.activo] : style.subContenedorEditar}
                                         onPress={() => (entregado == true && estado == "activo" && (acceso !== "admin")) ? null : this.setState({ estado: "espera" })}>
                                         <Text style={style.textoEspera}>Espera</Text>
-                                        {estado == "espera" && <FontAwesome name="check" style={style.iconEditar} />}
+                                        {estado == "espera" && <Icon name="check" style={style.iconEditar} />}
                                     </TouchableOpacity>
                                     {
                                         entregado == true && estado == "activo"
@@ -412,7 +420,7 @@ class Pedido extends Component {
                                             ? null
                                             : <TouchableOpacity style={[style.btnGuardar2, { flexDirection: "row", left: 45 }]} onPress={() => this.setState({ modalConductor: true })}>
                                                 <Text style={style.textGuardar}>Asignar</Text>
-                                                <FontAwesome name="user" style={style.iconBtnGuardar} />
+                                                <Icon name="user" style={style.iconBtnGuardar} />
                                             </TouchableOpacity>
                                     }
                                 </View>
@@ -467,14 +475,6 @@ class Pedido extends Component {
                                     <Text>Forma de pago: </Text>
                                     <Text>{forma_pago}</Text>
                                 </View>
-                                <View style={style.pedido}>
-                                    <Text>Motivo no cierre: </Text>
-                                    <Text>{motivo_no_cierre}</Text>
-                                </View>
-                                <View style={style.pedido}>
-                                    <Text>Perfil novedad: </Text>
-                                    <Text>{perfil_novedad}</Text>
-                                </View>
                             </View>
                         }
                         {
@@ -528,14 +528,6 @@ class Pedido extends Component {
                                                     <Text style={style.txtPedidoFinalizado}>Forma de pago: </Text>
                                                     <Text style={style.txtPedidoFinalizado}>{forma_pago}</Text>
                                                 </View>
-                                                <View style={style.pedido}>
-                                                    <Text style={style.txtPedidoFinalizado}>Motivo no cierre: </Text>
-                                                    <Text style={style.txtPedidoFinalizado}>{motivo_no_cierre}</Text>
-                                                </View>
-                                                <View style={style.pedido}>
-                                                    <Text style={style.txtPedidoFinalizado}>Perfil novedad: </Text>
-                                                    <Text style={style.txtPedidoFinalizado}>{perfil_novedad}</Text>
-                                                </View>
                                             </View>
                                             : <View style={style.contenedorCerrarPedido}>
                                                 <View style={style.separador}></View>
@@ -544,7 +536,7 @@ class Pedido extends Component {
                                                     source={avatar}
                                                     width={180}
                                                     titulo="Foto de factura"
-                                                    limiteImagenes={1}
+                                                    limiteImagenes={3}
                                                     imagenes={(imagen) => { this.setState({ imagen }) }}
                                                 />
                                                 {/* <Text>Valor Unitario: {'$ '+Number(valor_unitarioUsuario).toFixed(2).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")} </Text> */}
@@ -557,7 +549,7 @@ class Pedido extends Component {
                                                     style={[style.inputTerminarPedido, { marginTop: 20 }]}
                                                 />
                                                 <TextInput
-                                                    placeholder="N Consecutivo"
+                                                    placeholder="N Factura"
                                                     autoCapitalize='none'
                                                     placeholderTextColor="#aaa"
                                                     onChangeText={(facturaTexto) => this.setState({ facturaTexto })}
@@ -584,7 +576,7 @@ class Pedido extends Component {
                                                 />
 
                                                 <View style={style.contenedorSelect}>
-                                                    <Picker
+                                                    <RNPickerSelect
                                                         placeholder={{
                                                             label: 'Forma de pago',
                                                             value: null,
@@ -606,24 +598,6 @@ class Pedido extends Component {
                                                         }}
                                                         value={forma_pagoTexto}
                                                     />
-                                                    {/* <ModalSelector
-                                              style={style.btnFrecuencia}
-                                              data={[
-                                                {label: 'Contado', key: 'Contado'},
-                                                {label: 'Credito', key: 'Credito'},
-                                              ]}
-                                              value={'juan'}
-                                              initValue="Forma de pago"
-                                              cancelText="Cancelar"
-                                              onChange={({key})=>{ this.setState({forma_pagoTexto:key}) }} 
-                                              selectStyle={{
-                                                ...style,
-                                                placeholder: {
-                                                color: 'rgba(0,0,0,.4)',
-                                                fontSize: 14,
-                                                },
-                                              }}
-                                            /> */}
                                                 </View>
 
                                                 <TextInput
@@ -637,13 +611,12 @@ class Pedido extends Component {
                                                     placeholderTextColor="#aaa"
                                                     onSubmitEditing={Keyboard.dismiss}
                                                 />
-
                                                 <View style={style.contenedorConductor}>
                                                     <TouchableOpacity
-                                                        style={remisionTexto.length < 1 || kilosTexto.length < 1 || facturaTexto.length < 1 || forma_pagoTexto.length < 1 || valor_totalTexto.length < 2
+                                                        style={remisionTexto.length < 1 || kilosTexto.length < 1 || facturaTexto.length < 1 || forma_pagoTexto.length < 1 || valor_totalTexto.length < 2 || novedad.length < 1 || !imagen
                                                             ? style.btnDisable3 : style.btnGuardar3}
                                                         onPress={
-                                                            remisionTexto.length < 1 || kilosTexto.length < 1 || facturaTexto.length < 1 || forma_pagoTexto.length < 1 || valor_totalTexto.length < 2
+                                                            remisionTexto.length < 1 || kilosTexto.length < 1 || facturaTexto.length < 1 || forma_pagoTexto.length < 1 || novedad.length < 1 || !imagen
                                                                 ? () => alert("llene todos los campos")
                                                                 : valor_totalTexto < 100
                                                                     ? () => alert("Valor total debe ser mayor a 100")
@@ -667,7 +640,7 @@ class Pedido extends Component {
 
                     </ScrollView>
                 </View>
-                <Toast />
+
             </View>
         )
     }
@@ -683,7 +656,7 @@ class Pedido extends Component {
                     <View style={style.modalZona}>
                         <View style={style.subModalZona}>
                             <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalZona: false })} style={style.btnModalClose}>
-                                <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                                <Icon name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
                             <Text style={style.tituloModal}>Total pedidos Zona</Text>
                             <ScrollView>
@@ -719,14 +692,14 @@ class Pedido extends Component {
             <Animated.View style={[style.modal, { top: this.state.top }]}>
                 <View style={style.cabezera}>
                     <TouchableOpacity style={style.btnRegresar} onPress={() => this.hideModal()}>
-                        <FontAwesome name={'arrow-left'} style={style.iconFiltro} />
+                        <Icon name={'arrow-left'} style={style.iconFiltro} />
                     </TouchableOpacity>
                     <Text style={style.btnRegresar}>
                         Filtros de búsqueda
                     </Text>
                     <TouchableOpacity style={style.btnLimpiar} onPress={() => this.limpiar()}>
                         <Text style={style.textoLimpiar}>Limpiar</Text>
-                        {textEstado == "todos" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                        {textEstado == "todos" && <Icon name={'check'} style={style.iconFiltro} />}
                     </TouchableOpacity>
                 </View>
                 <ScrollView>
@@ -734,42 +707,42 @@ class Pedido extends Component {
                         <Text style={style.titulo1}>Estado</Text>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla("innactivo")}>
                             <Text style={style.textoFiltro}>Innactivo</Text>
-                            {textEstado == "innactivo" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "innactivo" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla("espera")}>
                             <Text style={style.textoFiltro}>Espera</Text>
-                            {textEstado == "espera" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "espera" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla2("activo", false, "activo")}>
                             <Text style={style.textoFiltro}>Activo</Text>
-                            {textEstado == "activo" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "activo" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla2("activo", true, "asignado")}>
                             <Text style={style.textoFiltro}>Asignado</Text>
-                            {textEstado == "asignado" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "asignado" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla3("activo", "entregado")}>
                             <Text style={style.textoFiltro}>Entregado</Text>
-                            {textEstado == "entregado" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "entregado" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarTabla("noentregado")}>
                             <Text style={style.textoFiltro}>No Entregado</Text>
-                            {textEstado == "noentregado" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "noentregado" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                     </View>
                     <View style={style.subContenedorFiltro}>
                         <Text style={style.titulo1}>Forma</Text>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarForma("lleno")}>
                             <Text style={style.textoFiltro}>LLeno</Text>
-                            {textEstado == "lleno" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "lleno" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarForma("monto")}>
                             <Text style={style.textoFiltro}>Monto</Text>
-                            {textEstado == "monto" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "monto" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                         <TouchableOpacity style={style.btnFiltro} onPress={() => this.actualizarForma("cantidad")}>
                             <Text style={style.textoFiltro}>Cantidad</Text>
-                            {textEstado == "cantidad" && <FontAwesome name={'check'} style={style.iconFiltro} />}
+                            {textEstado == "cantidad" && <Icon name={'check'} style={style.iconFiltro} />}
                         </TouchableOpacity>
                     </View>
                     <View style={style.subContenedorFiltro}>
@@ -779,7 +752,12 @@ class Pedido extends Component {
                             markedDates={this.state.dates}
                             onDayPress={(day) => { console.log('selected day', day); this.actualizarFechaEntrega(day.dateString) }}
                             markedDates={{ [fechaEntregaFiltro]: { selected: true, marked: true } }}
-
+                        // markingType={'period'}
+                        // onDayPress={(date)=>this.onSelectDay(date.dateString)}
+                        // markedDates={{
+                        //     [fechasFiltro[0]]: {startingDay: true, color: 'green'},
+                        //     [fechasFiltro[1]]: {endingDay: true, color: 'green'} 
+                        // }}
                         />
                     </View>
                     <View style={style.subContenedorFiltro}>
@@ -837,6 +815,8 @@ class Pedido extends Component {
         this.setState({ pedidos, textEstado: filtro })
     }
     actualizarFechaEntrega(filtro) {
+        this.props.getZonasPedidos(filtro)
+        this.props.getPedidos(filtro)
         this.setState({ fechaEntregaFiltro: filtro })
     }
     actualizaVehiculos(placa) {
@@ -854,11 +834,20 @@ class Pedido extends Component {
         this.setState({ pedidos, modalCarrosFiltro: false, placa })
     }
     actualizarFechaSolicitud(filtro) {
-
+        axios.get(`zon/zona/pedidoSolicitud/${filtro}`)
+            .then(res => {
+                this.setState({ fechaSolicitudFiltro: filtro, zonaPedidos: res.data.zona })
+            })
+        let { pedidos, pedidosFiltro, acceso } = this.state
+        pedidos = pedidosFiltro.filter(e => {
+            return e.fechaSolicitud == filtro
+        })
+        this.setState({ pedidos })
     }
     limpiar() {
         this.setState({ pedidos: this.state.pedidosFiltro, textEstado: "todos", modalCarrosFiltro: false, placa: null })
         this.props.getPedidos()
+        this.props.getZonasPedidos(moment().format("YYYY-MM-DD"))
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -866,7 +855,8 @@ class Pedido extends Component {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     modalVehiculos() {
         let { idVehiculo, modalConductor, showCalendar, fechaEntrega, placa } = this.state
-        let diaActual = moment().format('YYYY-MM-DD')
+        fechaEntrega = moment(fechaEntrega).format("YYYY-MM-DD")
+        let diaActual = moment().tz("America/Bogota").format('YYYY-MM-DD')
         return (
             <View style={style.contenedorModal2}>
                 <View style={style.subContenedorModal}>
@@ -875,7 +865,7 @@ class Pedido extends Component {
                         onPress={() => { this.setState({ modalConductor: false, placa: null, idVehiculo: null }) }}
                         style={style.btnModalConductorClose}
                     >
-                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <View style={style.contenedorConductor}>
                         <Button title="Asignar Vehiculo" disabled={!showCalendar ? true : false} onPress={() => this.setState({ showCalendar: false })} />
@@ -887,7 +877,7 @@ class Pedido extends Component {
                                 <Calendar
                                     style={style.calendar}
                                     current={fechaEntrega ? fechaEntrega : diaActual}
-                                    minDate={diaActual}
+                                    //minDate={diaActual}
                                     firstDay={1}
                                     onDayPress={(day) => { console.log('selected day', day); this.setState({ fechaEntrega: day.dateString }) }}
                                     markedDates={{ [fechaEntrega]: { selected: true, marked: true } }}
@@ -935,7 +925,7 @@ class Pedido extends Component {
                         onPress={() => { this.setState({ modalCarrosFiltro: false, placa: null, idVehiculo: null }) }}
                         style={style.btnModalConductorClose}
                     >
-                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                        <Icon name={'times-circle'} style={style.iconCerrar} />
                     </TouchableOpacity>
                     <ScrollView>
                         {
@@ -956,48 +946,45 @@ class Pedido extends Component {
             </View>
         )
     }
-
     renderCabezera() {
-        const { terminoBuscador, elevation, acceso, fechaEntregaFiltro, pedidos, showSearch } = this.state
+        const { terminoBuscador, elevation, acceso, fechaEntregaFiltro, pedidos } = this.state
         return (
             <View style={style.contenedorCabezera}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <View style={{ flexDirection: "row" }}>
                     {
                         pedidos && <Text style={style.titulo}>Pedidos: {pedidos.length} {acceso == "conductor" && ": " + moment(fechaEntregaFiltro).format("YYYY-MM-DD")}</Text>
                     }
-                    <View style={{ flexDirection: 'row' }}>
-                        <TouchableOpacity style={style.btnReload} onPress={() => this.reload()}>
-                            <FontAwesome name='refresh' style={style.iconReload} />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={style.btnReload} onPress={() => this.showModal()}>
-                            <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={style.btnZonas} onPress={() => this.setState({ modalCarrosFiltro: true, elevation: 0 })}>
+                        <Text style={style.textZonas}>Carros</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={style.btnZonas} onPress={() => this.setState({ modalZona: true })}>
+                        <Text style={style.textZonas}>Zonas</Text>
+                    </TouchableOpacity>
                 </View>
                 <View style={style.subContenedorCabezera}>
                     {
                         acceso !== "conductor"
-                        && <View style={{ flexDirection: "row" }}>
-                            <TextInput
-                                placeholder="Buscar por: cliente, fecha, forma"
-                                placeholderTextColor="#aaa"
-                                autoCapitalize='none'
-                                onChangeText={(terminoBuscador) => this.setState({ terminoBuscador: terminoBuscador })}
-                                value={terminoBuscador}
-                                style={[style.inputCabezera, { elevation }]}
-                            />
-                            {
-                                !showSearch
-                                    ? <TouchableOpacity style={style.buscarCliente} onPress={() => terminoBuscador.length > 1 ? (this.loadPedidos(), this.setState({ showSearch: true })) : alert("Inserte un valor")}>
-                                        <FontAwesome name='search' style={style.iconSearch} />
-                                    </TouchableOpacity>
-                                    : <TouchableOpacity style={style.buscarCliente} onPress={() => (this.setState({ showSearch: false, terminoBuscador: '' }), this.reload())}>
-                                        <FontAwesome name='close' style={style.iconSearch} />
-                                    </TouchableOpacity>
-                            }
-                        </View>
+                        && <TextInput
+                            placeholder="Buscar por: cliente, fecha, forma"
+                            placeholderTextColor="#aaa"
+                            autoCapitalize='none'
+                            onChangeText={(terminoBuscador) => this.setState({ terminoBuscador: terminoBuscador })}
+                            value={terminoBuscador}
+                            style={[style.inputCabezera, { elevation }]}
+                        />
                     }
-
+                    {
+                        (acceso == "conductor" || acceso == "cliente")
+                            ? null
+                            : (<View style={{ flexDirection: 'row' }}>
+                                <TouchableOpacity style={style.btnReload} onPress={() => this.reload()}>
+                                    <Icon name='refresh' style={style.iconReload} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={style.btnReload} onPress={() => this.showModal()}>
+                                    <Image source={require("../../assets/img/filtro.png")} style={style.imgFiltro} />
+                                </TouchableOpacity>
+                            </View>)
+                    }
                 </View>
             </View>
         )
@@ -1011,7 +998,7 @@ class Pedido extends Component {
                     onPress={() => { this.setState({ modalNovedad: false, placa: null, idVehiculo: null }) }}
                     style={style.btnModalConductorClose}
                 >
-                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                    <Icon name={'times-circle'} style={style.iconCerrar} />
                 </TouchableOpacity>
                 <Text>Novedad Innactividad</Text>
                 <TextInput
@@ -1036,55 +1023,59 @@ class Pedido extends Component {
     modalPerfiles() {
         const { novedad, perfil } = this.state
         return (<View style={style.contenedorModal2}>
-            <ScrollView style={style.subContenedorModal2}>
+            <View style={style.subContenedorModal2}>
                 <TouchableOpacity
                     activeOpacity={1}
                     onPress={() => { this.setState({ modalPerfiles: false, placa: null, idVehiculo: null }) }}
                     style={style.btnModalConductorClose}
                 >
-                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                    <Icon name={'times-circle'} style={style.iconCerrar} />
                 </TouchableOpacity>
                 <Text>Asignar novedad</Text>
-
-                {
-                    motivoNoCierre.map(e => {
-                        return <TouchableOpacity style={perfil === e ? style.listadoPerfil : style.listadoPerfil2} onPress={() => this.setState({ perfil: e })}>
-                            <Text>{e}</Text>
-                        </TouchableOpacity>
-                    })
-                }
+                <TouchableOpacity style={perfil == "logistica" ? style.listadoPerfil : style.listadoPerfil2} onPress={() => this.setState({ perfil: "logistica" })}>
+                    <Text>Logistica</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={perfil == "comercial" ? style.listadoPerfil : style.listadoPerfil2} onPress={() => this.setState({ perfil: "comercial" })}>
+                    <Text>Comercial</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={perfil == "cliente" ? style.listadoPerfil : style.listadoPerfil2} onPress={() => this.setState({ perfil: "cliente" })}>
+                    <Text>Cliente</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={style.btnGuardar} onPress={() => novedad.length < 5 ? alert("Seleccione algun perfil") : this.guardarNovedad()}>
                     <Text style={style.textGuardar}>Cerrar Pedido</Text>
                 </TouchableOpacity>
-            </ScrollView>
+            </View>
         </View>)
     }
     onScroll(event) {
-        const { final, limit } = this.state
-        const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
-        const reachedEnd = contentOffset.y + layoutMeasurement.height >= contentSize.height;
+        const { final } = this.state
+        let paddingToBottom = 10;
+        paddingToBottom += event.nativeEvent.layoutMeasurement.height;
 
-        if (reachedEnd && !final) {
-            const value = this.context;
-
-            this.setState({ final: true, limit: limit + 10 });
-            this.loadPedidos()
-        } else if (!reachedEnd && final) {
-            this.setState({ final: false });
+        if (event.nativeEvent.contentOffset.y >= event.nativeEvent.contentSize.height - paddingToBottom) {
+            this.setState({ final: final + 5, showSpin: true })
+            this.myInterval = setInterval(() => this.setState({ showSpin: false }), 2000)
+            // clearInterval(this.myInterval);
         }
+        // if(event.nativeEvent.contentOffset.y==0){
+        //     this.setState({showSpin1:true})
+        //     this.myInterval = setInterval(()=>this.setState({showSpin1:false}), 2200)
+        //     this.props.getPedidos()
+        //     this.props.getZonasPedidos(this.state.fechaEntregaFiltro)
+        //     this.props.getVehiculos()
+        // }
     }
     reload = () => {
-        this.loadPedidos('load')
+        this.props.getPedidos(undefined, 100)
         this.setState({ showSpin1: true })
-        setTimeout(() => this.setState({ showSpin1: false }), 1000)
-        if (this.scrollViewRef) {
-            this.scrollViewRef.scrollTo({ x: 0, y: 0, animated: true });
-        }
+        setTimeout(() => this.setState({ showSpin1: false }), 2200)
+        this.refs._scrollView.scrollTo(0);
 
     }
     render() {
         const { navigation } = this.props
         const { pedidos, openModal, modalFechaEntrega, modalConductor, modalNovedad, showSpin, showSpin1, modalPerfiles, modalCarrosFiltro, bounces } = this.state
+
         return (
             <View style={style.container}>
                 {modalPerfiles && this.modalPerfiles()}
@@ -1096,13 +1087,13 @@ class Pedido extends Component {
                 {this.renderModalFiltro()}
                 {this.modalZonas()}
                 {openModal && this.editarPedido()}
-                <ScrollView style={style.subContenedor} onScroll={(e) => this.onScroll(e)} bounces={this.state.bounces} scrollEventThrottle={16} ref={(ref) => (this.scrollViewRef = ref)}>
+                <ScrollView style={style.subContenedor} onScroll={(e) => this.onScroll(e)} bounces={this.state.bounces} ref='_scrollView'>
                     {showSpin1 && <ActivityIndicator color="#0071bb" style={style.preload1} />}
                     {/* {
-                    pedidos.length==0
-                    ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
-                    :this.renderPedidos()
-                } */}
+                        pedidos.length==0
+                        ?<Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
+                        :this.renderPedidos()
+                    } */}
                     {
                         !pedidos
                             ? <ActivityIndicator color="#00218b" />
@@ -1113,7 +1104,6 @@ class Pedido extends Component {
                 </ScrollView>
                 {showSpin && <ActivityIndicator color="#0071bb" style={style.preload} />}
                 <Footer navigation={navigation} />
-                <Toast />
             </View>
         )
     }
@@ -1126,16 +1116,17 @@ class Pedido extends Component {
             .then((res2) => {
                 this.setState({ modalNovedad: false, estadoEntrega: "noentregado", novedad: "" })
                 setTimeout(() => {
-                    Toast.show({ type: 'success', text1: 'Pedido actualizado' })
+                    alert("Pedido actualizado")
                 }, 1000);
-                this.loadPedidos()
+                // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+                this.props.getPedidos()
             })
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////            ASIGNO UN CONDUCTOR A UN PEDIDO
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     asignarConductor() {
-        const { placa, idVehiculo, id, fechaEntrega, idUsuario } = this.state
+        const { placa, idVehiculo, id, fechaEntrega, nPedido } = this.state
         Alert.alert(
             `Seguro desea agregar a ${placa}`,
             'a este pedido',
@@ -1146,16 +1137,14 @@ class Pedido extends Component {
             ],
             { cancelable: false },
         );
-
         const confirmar = () => {
-            axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${idUsuario}`)
+            axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${nPedido}`)
                 .then((res) => {
                     if (res.data.status) {
+                        this.props.getPedidos()
                         alert("Vehiculo Agregado con exito")
-                        this.loadPedidos()
-                        // Toast.show({type: 'success', text1: 'Vehiculo Agregado con exito'})
                     } else {
-                        Toast.show({ type: 'info', text1: 'Tenemos un problema, intentelo mas tarde' })
+                        Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                     }
                 })
         }
@@ -1179,27 +1168,17 @@ class Pedido extends Component {
             )
             : alert("Seleccione una fecha de asignación")
         const confirmar = () => {
-            // axios.get(`ped/pedido/asignarFechaEntrega/${id}/${fechaEntrega}`)
-            const data = {
-                seleccionados: [{ "_id": id, "fechaentrega": fechaEntrega }]
-            }
-            axios({
-                method: 'post',
-                url: `ped/pedido/asignarFechaEntrega`,
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            })
+            axios.get(`ped/pedido/asignarFechaEntrega/${id}/${fechaEntrega}`)
                 .then((res) => {
                     if (res.data.status) {
                         this.setState({ modalFechaEntrega: false, novedad: "" })
-                        alert('Fecha agregada con exito')
-                        this.loadPedidos()
+                        setTimeout(() => {
+                            Toast.show("Fecha agregada con exito", Toast.LONG)
+                        }, 1000);
+                        this.props.getPedidos()
                     } else {
                         console.log(res.data)
-                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                        // Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
+                        Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                     }
                 })
                 .catch(err => {
@@ -1224,13 +1203,20 @@ class Pedido extends Component {
         const confirmar = () => {
             axios.post('ped/pedido/novedad', { _id: id, fechaEntrega, novedad, perfil_novedad: perfil })
                 .then((res) => {
+                    console.log(res.data)
                     if (res.data.status) {
-                        this.loadPedidos('load')
-                        this.setState({ modalNovedad: false, modalPerfiles: false, estadoEntrega: "noentregado", novedad: "", openModal: false, novedad: "", kilosTexto: "", facturaTexto: "", valor_totalTexto: "", id: "", fechaEntrega: "", remisionTexto: "", imagen: null })
-                        Toast.show({ type: 'success', text1: 'Pedido Cerrado' })
-
+                        axios.post(`nov/novedad/`, { pedidoId: id, novedad })
+                            .then((res2) => {
+                                this.setState({ openModal: false, novedad: "", modalPerfiles: false })
+                                // sendRemoteNotification(2, tokenPhone, "pedido no entregado", `${novedad}`, null, null, null )
+                                setTimeout(() => {
+                                    alert("Pedido cerrado")
+                                }, 1000);
+                                // this.props.getPedidos(moment(fechaEntregaFiltro).valueOf())
+                                this.props.getPedidos()
+                            })
                     } else {
-                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                        Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                     }
                 })
         }
@@ -1270,38 +1256,42 @@ class Pedido extends Component {
                 confirmar1()
             }
         }
-        const confirmar1 = async () => {
-            const data = {
-                mime: "image/jpeg",
-                imagen: imagen.imagen,
-                _id: id,
-                kilos: kilosTexto,
-                factura: facturaTexto,
-                valor_total: valor_totalTexto,
-                forma_pago: forma_pagoTexto,
-                remision: remisionTexto,
-                novedadCierre: novedad
-            };
-            console.log(data)
+        const confirmar1 = () => {
+            let data = new FormData();
+            imagen.forEach(e => {
+                data.append('imagen', e);
+            })
+            // imagen = imagen[0]
+            // data.append('imagen', imagen);
+            data.append('email', email);
+            data.append('_id', id);
+            data.append('kilos', kilosTexto);
+            data.append('factura', facturaTexto);
+            data.append('valor_total', valor_totalTexto);
+            data.append('forma_pago', forma_pagoTexto);
+            data.append('fechaEntrega', fechaEntrega);
+            data.append('remision', remisionTexto);
 
             axios({
                 method: 'post',
-                url: `ped/pedido/finalizar/${id}`,
-                data: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                url: 'ped/pedido/finalizar/true',
+                data: data,
             })
                 .then((res) => {
                     if (res.data.status) {
-                        this.loadPedidos('load')
-                        this.setState({ openModal: false, novedad: "", kilosTexto: "", facturaTexto: "", valor_totalTexto: "", id: "", fechaEntrega: "", remisionTexto: "", imagen: null })
-                        Toast.show({ type: 'success', text1: 'Pedido Cerrado' })
+                        axios.post(`nov/novedad/`, { pedidoId: id, novedad })
+                            .then((res2) => {
+                                this.setState({ openModal: false, novedad: "", kilosTexto: "", facturaTexto: "", valor_totalTexto: "", id: "", fechaEntrega: "", remisionTexto: "" })
+                                // sendRemoteNotification(2, tokenPhone, "pedido entregado", `Su pedido ha sido entregado`, null, null, null )
+                                setTimeout(() => {
+                                    alert("Pedido cerrado")
+                                }, 1000);
+                                this.props.getPedidos()
+                            })
                     } else {
-                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                        Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                     }
                 })
-
         }
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1309,20 +1299,11 @@ class Pedido extends Component {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     handleSubmit() {
         const { id, estado, estadoInicial } = this.state
-        const data = {
-            seleccionados: [{ "_id": id, "estado": estado }]
-        }
-        axios({
-            method: 'post',
-            url: `ped/pedido/cambiarEstado`,
-            data: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        })
+
+        axios.get(`ped/pedido/cambiarEstado/${id}/${estado}`)
             .then(res => {
+
                 if (res.data.status) {
-                    alert('Estado actualizado')
                     if (estado == "activo") {
                         //////// esta condicion es para cuando estaba el pedido innactivo y luego lo activaron
                         if (estadoInicial == "innactivo") {
@@ -1334,39 +1315,39 @@ class Pedido extends Component {
                     } else if (estado == "innactivo") {
                         this.setState({ modalNovedad: true })
                     } else {
-                        // Toast.show({type: 'success', text1: 'Estado actualizado'})
-                        // alert('Pedido actualizado')
-                        // this.loadPedidos()
+                        alert("Pedido actualizado")
+                        this.props.getPedidos()
                     }
                 } else {
-                    Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                 }
             })
-    }
-    loadPedidos(type) {
-        let { idUsuario, acceso, limit, terminoBuscador } = this.state
-        limit = type === 'load' ? 20 : limit
-        // limit = acceso==='conductor' ? 50 :limit
-        terminoBuscador = type === 'load' ? undefined : terminoBuscador
-
-        this.props.getPedidos(idUsuario, 0, limit, acceso, terminoBuscador)
     }
 }
 
 const mapState = state => {
-    console.log(state.pedido.pedidos)
+    let vehiculos = state.vehiculo.vehiculos.filter(e => {
+        return e.conductor != null
+    })
+    console.log("state")
     return {
         pedidos: state.pedido.pedidos,
-        vehiculos: state.vehiculo.vehiculos
+        vehiculos: vehiculos,
+        zonaPedidos: state.pedido.zonaPedidos,
     };
 };
 
 const mapDispatch = dispatch => {
     return {
-        getPedidos: (idUser, start, limit, acceso, search) => {
-            dispatch(getPedidos(idUser, start, limit, acceso, search));
+        getPedidos: (fechaEntrega, limit) => {
+            dispatch(getPedidos(fechaEntrega, limit));
         },
-
+        getZonasPedidos: (fechaEntrega) => {
+            dispatch(getZonasPedidos(fechaEntrega));
+        },
+        getVehiculos: () => {
+            dispatch(getVehiculos());
+        },
     };
 };
 
