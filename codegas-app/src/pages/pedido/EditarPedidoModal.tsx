@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView, Animated, Image, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Modal, ScrollView, Animated, Image, Dimensions, Linking, Alert } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import moment from 'moment';
 import { style } from './style';
@@ -103,6 +103,55 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
         motivo_no_cierre,
         perfil_novedad
     } = pedidoData;
+    // Estado para el modal de navegación
+    const [showNavigationModal, setShowNavigationModal] = useState(false);
+
+    // Funciones para navegación
+    const openNavigationModal = () => {
+        if (pedidoData.coordenadas) {
+            setShowNavigationModal(true);
+        } else {
+            Alert.alert('Sin coordenadas', 'Este punto no tiene coordenadas disponibles para navegación');
+        }
+    };
+
+    const closeNavigationModal = () => {
+        setShowNavigationModal(false);
+    };
+
+    const openInWaze = () => {
+        const { lat, lng } = pedidoData.coordenadas || {};
+        if (lat && lng) {
+            const url = `waze://?ll=${lat},${lng}&navigate=yes`;
+            Linking.canOpenURL(url).then(supported => {
+                if (supported) {
+                    Linking.openURL(url);
+                } else {
+                    // Si Waze no está instalado, abrir en el navegador
+                    Linking.openURL(`https://waze.com/ul?ll=${lat},${lng}&navigate=yes`);
+                }
+            });
+        }
+        closeNavigationModal();
+    };
+
+    const openInGoogleMaps = () => {
+        const { lat, lng } = pedidoData.coordenadas || {};
+        if (lat && lng) {
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+            Linking.openURL(url);
+        }
+        closeNavigationModal();
+    };
+
+    const openInAppleMaps = () => {
+        const { lat, lng } = pedidoData.coordenadas || {};
+        if (lat && lng) {
+            const url = `http://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+            Linking.openURL(url);
+        }
+        closeNavigationModal();
+    };
 
     return (
         <Modal
@@ -275,6 +324,28 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                 <Text style={{ fontWeight: '600' }}>Almacenamiento: </Text>
                                                 {capacidad} galones
                                             </Text>
+                                        )}
+
+                                        {/* Botón de navegación */}
+                                        {pedidoData.coordenadas && (
+                                            <TouchableOpacity
+                                                onPress={openNavigationModal}
+                                                style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    backgroundColor: '#007bff',
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 8,
+                                                    borderRadius: 6,
+                                                    marginTop: 8,
+                                                    alignSelf: 'flex-start'
+                                                }}
+                                            >
+                                                <FontAwesome name="map-marker" style={{ fontSize: 12, color: '#fff', marginRight: 6 }} />
+                                                <Text style={{ fontSize: 13, color: '#fff', fontWeight: '600' }}>
+                                                    Navegar al punto
+                                                </Text>
+                                            </TouchableOpacity>
                                         )}
                                         {observacion && (
                                             <Text style={{ fontSize: 13, color: '#666' }}>
@@ -717,7 +788,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                     paddingVertical: 6
                                                 }}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <FontAwesome name="file-invoice" style={{ fontSize: 14, color: '#666', marginRight: 8 }} />
+                                                        <FontAwesome name="file-text" style={{ fontSize: 14, color: '#666', marginRight: 8 }} />
                                                         <Text style={{ fontSize: 13, color: '#666' }}>Factura:</Text>
                                                     </View>
                                                     <Text style={{ fontSize: 13, color: '#333', fontWeight: '600' }}>{factura}</Text>
@@ -892,6 +963,203 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                     onDateSelect={onDateSelect}
                     onSave={onSaveFecha}
                 />
+
+                {/* Modal de Navegación */}
+                <Modal
+                    transparent={true}
+                    visible={showNavigationModal}
+                    animationType="fade"
+                    onRequestClose={closeNavigationModal}
+                >
+                    <View style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: 20
+                    }}>
+                        <View style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 15,
+                            padding: 20,
+                            width: '90%',
+                            maxWidth: 350,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 8,
+                            elevation: 8
+                        }}>
+                            {/* Header */}
+                            <View style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: 20
+                            }}>
+                                <Text style={{
+                                    fontSize: 18,
+                                    fontWeight: '700',
+                                    color: '#333'
+                                }}>
+                                    Navegar al punto
+                                </Text>
+                                <TouchableOpacity
+                                    onPress={closeNavigationModal}
+                                    style={{
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: 15,
+                                        width: 30,
+                                        height: 30,
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <FontAwesome name="times" size={14} color="#666" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Coordenadas */}
+                            {pedidoData.coordenadas && (
+                                <View style={{
+                                    backgroundColor: '#f8f9fa',
+                                    padding: 12,
+                                    borderRadius: 8,
+                                    marginBottom: 20
+                                }}>
+                                    <Text style={{ fontSize: 13, color: '#666', textAlign: 'center' }}>
+                                        <FontAwesome name="map-pin" style={{ marginRight: 6 }} />
+                                        Lat: {pedidoData.coordenadas.lat}, Lng: {pedidoData.coordenadas.lng}
+                                    </Text>
+                                </View>
+                            )}
+
+                            {/* Opciones de navegación */}
+                            <View style={{ gap: 12 }}>
+                                {/* Waze */}
+                                <TouchableOpacity
+                                    onPress={openInWaze}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        backgroundColor: '#00d4ff',
+                                        padding: 15,
+                                        borderRadius: 12,
+                                        shadowColor: '#00d4ff',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 4,
+                                        elevation: 3
+                                    }}
+                                >
+                                    <View style={{
+                                        backgroundColor: 'rgba(255,255,255,0.2)',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        marginRight: 12
+                                    }}>
+                                        <FontAwesome name="road" size={20} color="#fff" />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                                            Waze
+                                        </Text>
+                                        <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>
+                                            Navegación en tiempo real
+                                        </Text>
+                                    </View>
+                                    <FontAwesome name="chevron-right" size={14} color="rgba(255,255,255,0.7)" />
+                                </TouchableOpacity>
+
+                                {/* Google Maps */}
+                                <TouchableOpacity
+                                    onPress={openInGoogleMaps}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        backgroundColor: '#4285f4',
+                                        padding: 15,
+                                        borderRadius: 12,
+                                        shadowColor: '#4285f4',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 4,
+                                        elevation: 3
+                                    }}
+                                >
+                                    <View style={{
+                                        backgroundColor: 'rgba(255,255,255,0.2)',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        marginRight: 12
+                                    }}>
+                                        <FontAwesome name="globe" size={20} color="#fff" />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                                            Google Maps
+                                        </Text>
+                                        <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>
+                                            Mapas de Google
+                                        </Text>
+                                    </View>
+                                    <FontAwesome name="chevron-right" size={14} color="rgba(255,255,255,0.7)" />
+                                </TouchableOpacity>
+
+                                {/* Apple Maps */}
+                                <TouchableOpacity
+                                    onPress={openInAppleMaps}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        backgroundColor: '#007aff',
+                                        padding: 15,
+                                        borderRadius: 12,
+                                        shadowColor: '#007aff',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 4,
+                                        elevation: 3
+                                    }}
+                                >
+                                    <View style={{
+                                        backgroundColor: 'rgba(255,255,255,0.2)',
+                                        borderRadius: 8,
+                                        padding: 8,
+                                        marginRight: 12
+                                    }}>
+                                        <FontAwesome name="apple" size={20} color="#fff" />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                                            Apple Maps
+                                        </Text>
+                                        <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>
+                                            Mapas de Apple
+                                        </Text>
+                                    </View>
+                                    <FontAwesome name="chevron-right" size={14} color="rgba(255,255,255,0.7)" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Botón cancelar */}
+                            <TouchableOpacity
+                                onPress={closeNavigationModal}
+                                style={{
+                                    backgroundColor: '#6c757d',
+                                    padding: 15,
+                                    borderRadius: 12,
+                                    marginTop: 15,
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                                    Cancelar
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </Modal>
     );

@@ -76,6 +76,10 @@ const getUsuarios = (limit, start, acceso, search, id) => {
         status: err.response?.status,
         url: err.config?.url
       });
+      dispatch({
+        type: GET_USUARIOS,
+        usuarios: []
+      });
     }
   };
 };

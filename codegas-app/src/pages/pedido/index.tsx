@@ -125,7 +125,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             placa,
             estadoInicial,
             textEstado,
-            imagenCerrar
+            imagenCerrar,
+            coordenadas
         }
     } = state;
 
@@ -677,6 +678,15 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             creado: e.creado,
                             motivo_no_cierre: e.motivo_no_cierre,
                             perfil_novedad: e.perfil_novedad,
+                            coordenadas: e.coordenadas ? {
+                                x: e.coordenadas.x,
+                                y: e.coordenadas.y,
+                                lat: e.lat || e.coordenadas.y,
+                                lng: e.lng || e.coordenadas.x
+                            } : (e.lat && e.lng) ? {
+                                lat: e.lat,
+                                lng: e.lng
+                            } : undefined,
                             idVehiculo: e.idVehiculo,
                             placa: e.placa,
                         });
@@ -1051,7 +1061,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     forma_pago,
                     motivo_no_cierre,
                     perfil_novedad,
-                    imagenCerrar
+                    imagenCerrar,
+                    coordenadas
                 }}
                 acceso={acceso}
                 getEstadoColor={getEstadoColor}
