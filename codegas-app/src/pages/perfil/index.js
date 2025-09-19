@@ -239,7 +239,7 @@ const Perfil = ({
             acceso === 'adminTanque') && (
               <TouchableOpacity
                 style={style.btnLista}
-                onPress={() => navigation.navigate('usuarios', { revision: true })}>
+                onPress={() => navigation.navigate('revision', { revision: true })}>
                 <Text style={style.txtLista}>Revision y control tanques</Text>
                 <Image
                   source={require('../../assets/img/pg1/icon6.png')}

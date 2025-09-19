@@ -11,7 +11,8 @@ import {
     Animated,
     Keyboard,
     Platform,
-    StatusBar
+    StatusBar,
+    Modal
 } from 'react-native';
 import moment from 'moment';
 import Toast from 'react-native-toast-message';
@@ -87,6 +88,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         modalNovedad,
         modalPerfiles,
         modalCerrarPedido,
+        modalOrdenamiento,
         terminoBuscador,
         showSearch,
         final,
@@ -97,6 +99,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         bounces,
         showCalendar,
         novedad,
+        estadoFiltro,
+        ordenPor,
+        tipoOrden,
         selectedPedido: {
             id,
             estado,
@@ -191,7 +196,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         if (terminoBuscador && terminoBuscador.length >= 2) {
             const searchTimeout = setTimeout(() => {
                 updateState(actions.setShowSearch(true));
-                dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador));
+                dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
             }, 500); // Debounce de 500ms
 
             return () => clearTimeout(searchTimeout);
@@ -199,9 +204,54 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         // Si no hay término de búsqueda, cargar todos los pedidos
         else if (terminoBuscador === '') {
             updateState(actions.setShowSearch(false));
-            dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined));
+            dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
         }
-    }, [terminoBuscador, idUsuario, acceso, dispatch, updateState, actions]);
+    }, [terminoBuscador, idUsuario, acceso, dispatch, updateState, actions, estadoFiltro, ordenPor, tipoOrden]);
+
+    useEffect(() => {
+        // Recargar pedidos cuando cambie el filtro de estado
+        if (idUsuario && acceso) {
+            // Mostrar indicador de carga
+            updateState(actions.setShowSpin1(true));
+
+            // Limpiar pedidos primero
+            dispatch({
+                type: 'GET_PEDIDOS',
+                pedidos: []
+            });
+
+            // Reiniciar paginación y limpiar estado
+            updateState(actions.setInicio(0));
+            updateState(actions.setFinal(false));
+            updateState(actions.setLimit(20));
+
+            // Pequeño delay para asegurar que el estado se actualice
+            setTimeout(async () => {
+                try {
+                    // Cargar pedidos desde el inicio con el nuevo filtro
+                    await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
+                } catch (error) {
+                    console.error('Error cargando pedidos:', error);
+                    Alert.alert(
+                        'Funcionalidad no disponible',
+                        'Los filtros y ordenamiento requieren actualizar el servidor. Mostrando todos los pedidos.',
+                        [{ text: 'OK' }]
+                    );
+                    // Resetear a valores por defecto
+                    updateState(actions.setEstadoFiltro('todos'));
+                    updateState(actions.setOrdenPor('fecha_creacion'));
+                    updateState(actions.setTipoOrden('DESC'));
+                    // Cargar pedidos con valores por defecto
+                    await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, 'todos', 'fecha_creacion', 'DESC'));
+                } finally {
+                    // Ocultar indicador de carga después de un momento
+                    setTimeout(() => {
+                        updateState(actions.setShowSpin1(false));
+                    }, 1000);
+                }
+            }, 100);
+        }
+    }, [estadoFiltro, idUsuario, acceso, dispatch, terminoBuscador, updateState, actions, ordenPor, tipoOrden]);
 
     useEffect(() => {
         // Cargar vehículos cuando tenemos el idUsuario
@@ -323,9 +373,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
 
         let currentLimit = type === 'load' ? 20 : limit;
+        let currentStart = type === 'load' ? 0 : 0; // Siempre empezar desde 0 para filtros
         let currentTerminoBuscador = type === 'load' ? undefined : terminoBuscador;
 
-        dispatch(getPedidos(idUsuario, 0, currentLimit, acceso, currentTerminoBuscador));
+        dispatch(getPedidos(idUsuario, currentStart, currentLimit, acceso, currentTerminoBuscador, estadoFiltro, ordenPor, tipoOrden));
     };
 
     const handleSubmit = async (): Promise<void> => {
@@ -349,31 +400,38 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 } else if (estado == "innactivo") {
                     updateState(actions.setModalNovedad(true));
                 } else {
-                    Toast.show({ type: 'success', text1: 'Pedido actualizado correctamente' });
+                    Alert.alert('Éxito', 'Pedido actualizado correctamente');
                     loadPedidos();
                 }
             } else {
-                Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' });
+                Alert.alert('Error', 'Tenemos un problema, intentelo mas tarde');
             }
         } catch (error) {
             console.error('Error cambiando estado del pedido:', error);
-            Toast.show({ type: 'error', text1: 'Error al cambiar el estado del pedido' });
+            Alert.alert('Error', 'Error al cambiar el estado del pedido');
         }
     };
 
     const guardarNovedadInnactivo = async (): Promise<void> => {
+        console.log({ id });
         try {
+
+            if (!novedad || novedad.trim() === '') {
+                Alert.alert('Error', 'Ingresa una novedad antes de guardar');
+                return;
+            }
+
             const res2 = await guardarNovedadInactivo(id, novedad);
             updateState(actions.setModalNovedad(false));
             updateState(actions.setPedidoData({ estadoEntrega: "noentregado" }));
             updateState(actions.setNovedad(""));
             setTimeout(() => {
-                Toast.show({ type: 'success', text1: 'Pedido actualizado' })
-            }, 1000);
+                Alert.alert('Éxito', 'Pedido actualizado correctamente');
+            }, 500);
             loadPedidos();
         } catch (error) {
             console.error('Error guardando novedad inactivo:', error);
-            Toast.show({ type: 'error', text1: 'Error al guardar novedad' })
+            Alert.alert('Error', 'Error al guardar novedad');
         }
     };
 
@@ -383,11 +441,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         const ahora = moment().format('DD/MM/YYYY HH:mm:ss');
         const mensajeCancelacion = `El usuario ${nombreFinal} canceló su pedido el ${ahora}`;
 
-        Toast.show({
-            type: 'info',
-            text1: 'Funcionalidad de cancelación',
-            text2: 'Implementar lógica de cancelación'
-        });
+        Alert.alert('Información', 'Funcionalidad de cancelación en desarrollo');
     };
 
     const handleCerrarPedido = async (data: any, pedidoId?: string): Promise<void> => {
@@ -416,16 +470,15 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             const { kilos, factura, valor_total, remision, forma_pago, novedad, imagen } = data;
             const { email, tokenPhone } = context.user || {};
 
-            // Usar el pedidoId pasado como parámetro o el id del estado como fallback
-            const finalPedidoId = pedidoId || id;
+            // Usar el pedidoId pasado como parámetro, el pedidoIdParaCerrar, o el id del estado como fallback
+            const finalPedidoId = pedidoId || pedidoIdParaCerrar || id;
 
             console.log('🔍 DEBUG - ID del pedido en confirmarCierrePedido:', finalPedidoId);
             console.log('🔍 DEBUG - ID del estado:', id);
             console.log('🔍 DEBUG - pedidoId parámetro:', pedidoId);
             console.log('🔍 DEBUG - pedidoIdParaCerrar:', pedidoIdParaCerrar);
-            console.log('🔍 DEBUG - Datos recibidos:', data);
 
-            if (!finalPedidoId) {
+            if (!finalPedidoId || finalPedidoId === 'undefined') {
                 Alert.alert('Error', 'No se pudo obtener el ID del pedido');
                 return;
             }
@@ -433,14 +486,14 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Preparar datos para el backend
             const pedidoData = {
                 email: email || '',
-                idUsuario: idUsuario, // Agregar idUsuario para el endpoint
+                idUsuario: idUsuario,
                 kilos,
                 factura,
                 valor_total,
                 forma_pago,
                 fechaEntrega: fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss'),
                 remision,
-                novedad: novedad || '', // Incluir novedad en los datos
+                novedad: novedad || '',
                 imagen: imagen || null
             };
 
@@ -450,51 +503,74 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             const response = await finalizarPedido(finalPedidoId, pedidoData);
 
             if (response.status) {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Pedido cerrado exitosamente',
-                    text2: `Factura: ${factura}`,
-                    position: 'top',
-                    topOffset: 100,
-                    visibilityTime: 3000
-                });
-
-                // Cerrar modal y recargar pedidos
+                // Cerrar todos los modales primero
                 updateState(actions.setModalCerrarPedido(false));
-                setPedidoIdParaCerrar(undefined); // Limpiar el ID capturado
-                loadPedidos();
+                closePedidoModal();
+                setPedidoIdParaCerrar(undefined);
+
+                // Luego mostrar alert y limpiar campos
+                setTimeout(() => {
+                    Alert.alert(
+                        'Pedido cerrado exitosamente',
+                        `Factura: ${factura}\nEl pedido ha sido finalizado correctamente`,
+                        [{ text: 'OK' }]
+                    );
+
+                    // Limpiar todos los campos del formulario de cierre
+                    updateState(actions.updateMultiple({
+                        kilosTexto: '',
+                        facturaTexto: '',
+                        valor_totalTexto: '',
+                        remisionTexto: '',
+                        forma_pagoTexto: '',
+                        novedad: '',
+                        imagen: null
+                    }));
+
+                    loadPedidos();
+                }, 300);
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error al cerrar pedido',
-                    text2: 'Tenemos un problema, inténtelo más tarde'
-                });
+                Alert.alert('Error', 'Tenemos un problema, inténtelo más tarde');
             }
         } catch (error) {
             console.error('Error cerrando pedido:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error al cerrar pedido',
-                text2: 'Ocurrió un error inesperado'
-            });
+            Alert.alert('Error', 'Ocurrió un error inesperado al cerrar el pedido');
         }
     };
 
-    const handleGuardarNovedadCerrar = async (novedad: string): Promise<void> => {
-        try {
-            // Usar la función existente guardarNovedadInnactivo
-            await guardarNovedadInnactivo();
 
-            Toast.show({
-                type: 'success',
-                text1: 'Novedad guardada correctamente'
-            });
+    const handleGuardarNovedadCerrar = async (novedad: string): Promise<void> => {
+        console.log({ id });
+        try {
+
+            if (!novedad || novedad.trim() === '') {
+                Alert.alert('Error', 'Ingresa una novedad antes de guardar');
+                return;
+            }
+
+            // Usar la función correcta para guardar novedad al cerrar pedido
+            const response = await guardarNovedadCerrarPedido(
+                id,
+                fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss'),
+                novedad,
+                'logistica', // perfil por defecto
+                null // conductorId
+            );
+
+            if (response.status) {
+                // Cerrar modal de cerrar pedido
+                updateState(actions.setModalCerrarPedido(false));
+
+                Alert.alert('Éxito', 'Novedad guardada correctamente');
+
+                // Recargar pedidos
+                loadPedidos();
+            } else {
+                Alert.alert('Error', 'No se pudo guardar la novedad');
+            }
         } catch (error) {
             console.error('Error guardando novedad:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error al guardar novedad'
-            });
+            Alert.alert('Error', 'Error al guardar novedad');
         }
     };
 
@@ -505,11 +581,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             const finalPlaca = vehiculoData?.placa || placa;
 
             if (!finalIdVehiculo || !finalPlaca) {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: 'Selecciona un vehículo'
-                });
+                Alert.alert('Error', 'Selecciona un vehículo');
                 return;
             }
 
@@ -519,53 +591,35 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             const response = await asignarConductor(id, finalIdVehiculo, fechaParaAsignar, idUsuario); // Usar idUsuario como usuarioAsigna
 
             if (response.status) {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Éxito',
-                    text2: `Vehículo ${finalPlaca} asignado correctamente`,
-                    position: 'top',
-                    topOffset: 100,
-                    visibilityTime: 3000,
-                    zIndex: 10000
-                });
+                Alert.alert('Éxito', `Vehículo ${finalPlaca} asignado correctamente`);
 
                 // Cerrar modal y resetear datos
                 updateState(actions.setModalConductor(false));
                 updateState(actions.setPedidoData({ placa: null, idVehiculo: null }));
 
                 // Recargar pedidos
-                dispatch(getPedidos(idUsuario, 0, 10, acceso));
+                dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: 'No se pudo asignar el vehículo'
-                });
+                Alert.alert('Error', 'No se pudo asignar el vehículo');
             }
         } catch (error) {
             console.error('Error asignando conductor:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'Error al asignar el vehículo'
-            });
+            Alert.alert('Error', 'Error al asignar el vehículo');
         }
     };
 
-    const asignarFecha = async (): Promise<void> => {
+    const asignarFecha = async (fechaParam?: string): Promise<void> => {
         try {
-            if (!fechaEntrega) {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: 'Selecciona una fecha',
-                    zIndex: 10000
-                });
+            // Usar la fecha pasada como parámetro o la del estado
+            const fechaAUsar = fechaParam || fechaEntrega;
+
+            if (!fechaAUsar) {
+                Alert.alert('Error', 'Selecciona una fecha');
                 return;
             }
 
             // Formatear la fecha como espera el backend
-            const fechaFormatted = moment(fechaEntrega).format('YYYY-MM-DD HH:mm:ss');
+            const fechaFormatted = moment(fechaAUsar).format('YYYY-MM-DD HH:mm:ss');
             const seleccionados = [{
                 _id: id,
                 fechaentrega: fechaFormatted
@@ -575,38 +629,20 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             const response = await asignarFechaEntrega(seleccionados);
 
             if (response.status) {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Éxito',
-                    text2: `Fecha ${moment(fechaEntrega).format('DD/MM/YYYY')} asignada correctamente`,
-                    position: 'top',
-                    topOffset: 100,
-                    visibilityTime: 3000,
-                    zIndex: 10000
-                });
+                // No mostrar Alert aquí porque ya se muestra en el modal
 
                 // Cerrar modal
                 updateState(actions.setModalFechaEntrega(false));
                 updateState(actions.setShowCalendar(false));
 
                 // Recargar pedidos - CORREGIR EL PARÁMETRO 'load'
-                dispatch(getPedidos(idUsuario, 0, 10, acceso));
+                dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
             } else {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: 'No se pudo asignar la fecha',
-                    zIndex: 10000
-                });
+                Alert.alert('Error', 'No se pudo asignar la fecha');
             }
         } catch (error) {
             console.error('Error asignando fecha:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'Error al asignar la fecha',
-                zIndex: 10000
-            });
+            Alert.alert('Error', 'Error al asignar la fecha');
         }
     };
 
@@ -918,33 +954,60 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 color: '#666',
                                 fontWeight: '500'
                             }}>
-                                {pedidos.length} pedidos encontrados
+                                {pedidos.length} pedidos {estadoFiltro !== 'todos' ? `(${estadoFiltro})` : 'encontrados'}
                             </Text>
                         )}
                     </View>
 
-                    <TouchableOpacity
-                        style={{
-                            backgroundColor: '#007bff', // Ya tiene backgroundColor sólido
-                            borderRadius: 8,
-                            width: 36,
-                            height: 36,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 1 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 2,
-                            elevation: 2,
-                        }}
-                        onPress={() => loadPedidos('load')}
-                        activeOpacity={0.8}
-                    >
-                        <FontAwesome name='refresh' style={{
-                            fontSize: 14,
-                            color: '#fff'
-                        }} />
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                        {/* Botón de ordenamiento */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#28a745',
+                                borderRadius: 8,
+                                width: 36,
+                                height: 36,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 2,
+                                elevation: 2,
+                            }}
+                            onPress={() => updateState(actions.setModalOrdenamiento(true))}
+                            activeOpacity={0.8}
+                        >
+                            <FontAwesome name='sort' style={{
+                                fontSize: 14,
+                                color: '#fff'
+                            }} />
+                        </TouchableOpacity>
+
+                        {/* Botón de actualizar */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#007bff',
+                                borderRadius: 8,
+                                width: 36,
+                                height: 36,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 2,
+                                elevation: 2,
+                            }}
+                            onPress={() => loadPedidos('load')}
+                            activeOpacity={0.8}
+                        >
+                            <FontAwesome name='refresh' style={{
+                                fontSize: 14,
+                                color: '#fff'
+                            }} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 {/* Barra de búsqueda con mejor diseño */}
@@ -1024,6 +1087,206 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         </View>
                     </View>
                 )}
+
+                {/* Botones de filtro por estado */}
+                <View style={{
+                    marginHorizontal: 20,
+                    marginTop: 12,
+                }}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{
+                            paddingHorizontal: 4,
+                            gap: 8
+                        }}
+                    >
+                        {/* Botón Todos */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#007bff',
+                                borderRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingVertical: 8,
+                                borderWidth: estadoFiltro === 'todos' ? 4 : 1,
+                                borderColor: estadoFiltro === 'todos' ? '#fff' : 'rgba(0, 123, 255, 0.3)',
+                                shadowColor: estadoFiltro === 'todos' ? '#007bff' : '#000',
+                                shadowOffset: { width: 0, height: estadoFiltro === 'todos' ? 3 : 1 },
+                                shadowOpacity: estadoFiltro === 'todos' ? 0.4 : 0.1,
+                                shadowRadius: estadoFiltro === 'todos' ? 6 : 2,
+                                elevation: estadoFiltro === 'todos' ? 8 : 2,
+                                transform: estadoFiltro === 'todos' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                            }}
+                            onPress={() => updateState(actions.setEstadoFiltro('todos'))}
+                        >
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: estadoFiltro === 'todos' ? '700' : '600',
+                                color: '#fff'
+                            }}>
+                                Todos
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Botón Espera */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: 'rgba(91, 192, 222, 1)',
+                                borderRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingVertical: 8,
+                                borderWidth: estadoFiltro === 'espera' ? 4 : 1,
+                                borderColor: estadoFiltro === 'espera' ? '#fff' : 'rgba(91, 192, 222, 0.3)',
+                                shadowColor: estadoFiltro === 'espera' ? 'rgba(91, 192, 222, 1)' : '#000',
+                                shadowOffset: { width: 0, height: estadoFiltro === 'espera' ? 3 : 1 },
+                                shadowOpacity: estadoFiltro === 'espera' ? 0.4 : 0.1,
+                                shadowRadius: estadoFiltro === 'espera' ? 6 : 2,
+                                elevation: estadoFiltro === 'espera' ? 8 : 2,
+                                transform: estadoFiltro === 'espera' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                            }}
+                            onPress={() => updateState(actions.setEstadoFiltro('espera'))}
+                        >
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: estadoFiltro === 'espera' ? '700' : '600',
+                                color: '#fff'
+                            }}>
+                                Espera
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Botón Activo */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: 'rgba(255, 235, 0, 1)',
+                                borderRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingVertical: 8,
+                                borderWidth: estadoFiltro === 'activo' ? 4 : 1,
+                                borderColor: estadoFiltro === 'activo' ? '#333' : 'rgba(255, 235, 0, 0.3)',
+                                shadowColor: estadoFiltro === 'activo' ? 'rgba(255, 235, 0, 1)' : '#000',
+                                shadowOffset: { width: 0, height: estadoFiltro === 'activo' ? 3 : 1 },
+                                shadowOpacity: estadoFiltro === 'activo' ? 0.4 : 0.1,
+                                shadowRadius: estadoFiltro === 'activo' ? 6 : 2,
+                                elevation: estadoFiltro === 'activo' ? 8 : 2,
+                                transform: estadoFiltro === 'activo' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                            }}
+                            onPress={() => updateState(actions.setEstadoFiltro('activo'))}
+                        >
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: estadoFiltro === 'activo' ? '700' : '600',
+                                color: '#333'
+                            }}>
+                                Activo
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Botón Asignado */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: 'rgba(240, 173, 78, 1)',
+                                borderRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingVertical: 8,
+                                borderWidth: estadoFiltro === 'asignado' ? 3 : 1,
+                                borderColor: estadoFiltro === 'asignado' ? '#fff' : 'rgba(240, 173, 78, 0.3)',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 2,
+                                elevation: 2,
+                            }}
+                            onPress={() => updateState(actions.setEstadoFiltro('asignado'))}
+                        >
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: estadoFiltro === 'asignado' ? '700' : '600',
+                                color: '#fff'
+                            }}>
+                                Asignado
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Botón Inactivo */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: 'rgba(217, 83, 79, 1)',
+                                borderRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingVertical: 8,
+                                borderWidth: estadoFiltro === 'innactivo' ? 3 : 1,
+                                borderColor: estadoFiltro === 'innactivo' ? '#fff' : 'rgba(217, 83, 79, 0.3)',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 2,
+                                elevation: 2,
+                            }}
+                            onPress={() => updateState(actions.setEstadoFiltro('innactivo'))}
+                        >
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: estadoFiltro === 'innactivo' ? '700' : '600',
+                                color: '#fff'
+                            }}>
+                                Inactivo
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Botón No Entregado */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#6c757d',
+                                borderRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingVertical: 8,
+                                borderWidth: estadoFiltro === 'noentregado' ? 3 : 1,
+                                borderColor: estadoFiltro === 'noentregado' ? '#fff' : 'rgba(108, 117, 125, 0.3)',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 2,
+                                elevation: 2,
+                            }}
+                            onPress={() => updateState(actions.setEstadoFiltro('noentregado'))}
+                        >
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: estadoFiltro === 'noentregado' ? '700' : '600',
+                                color: '#fff'
+                            }}>
+                                No Entregado
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Botón Otro */}
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: 'rgba(92, 184, 92, 1)',
+                                borderRadius: 20,
+                                paddingHorizontal: 16,
+                                paddingVertical: 8,
+                                borderWidth: estadoFiltro === 'otro' ? 3 : 1,
+                                borderColor: estadoFiltro === 'otro' ? '#fff' : 'rgba(92, 184, 92, 0.3)',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 1 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 2,
+                                elevation: 2,
+                            }}
+                            onPress={() => updateState(actions.setEstadoFiltro('otro'))}
+                        >
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: estadoFiltro === 'otro' ? '700' : '600',
+                                color: '#fff'
+                            }}>
+                                Otro
+                            </Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </View>
             </View>
         );
     };
@@ -1157,17 +1420,89 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 scrollEventThrottle={16}
                 ref={scrollViewRef}
             >
-                {showSpin1 && <ActivityIndicator color="#0071bb" style={style.preload1} />}
-                {!pedidos ? (
-                    <ActivityIndicator color="#00218b" />
+                {showSpin1 || !pedidos ? (
+                    <View style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingVertical: showSpin1 ? 20 : 40,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        marginHorizontal: 10,
+                        marginTop: showSpin1 ? 10 : 20,
+                        borderRadius: 12,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: 3
+                    }}>
+                        <ActivityIndicator
+                            size="large"
+                            color="#0071bb"
+                            style={{ marginBottom: showSpin1 ? 10 : 15 }}
+                        />
+                        <Text style={{
+                            fontSize: showSpin1 ? 16 : 18,
+                            color: '#0071bb',
+                            fontWeight: '600',
+                            textAlign: 'center'
+                        }}>
+                            {showSpin1 ? 'Cargando pedidos...' : 'Inicializando...'}
+                        </Text>
+                        <Text style={{
+                            fontSize: showSpin1 ? 12 : 14,
+                            color: '#666',
+                            marginTop: 4,
+                            textAlign: 'center',
+                            paddingHorizontal: 20
+                        }}>
+                            {showSpin1
+                                ? (estadoFiltro === 'todos' ? 'Obteniendo todos los pedidos' : `Filtrando por "${estadoFiltro}"`)
+                                : 'Preparando la lista de pedidos'
+                            }
+                        </Text>
+                    </View>
                 ) : pedidos.length == 0 ? (
-                    <Text style={style.sinPedidos}>No hemos encontrado pedidos</Text>
+                    <Text style={style.sinPedidos}>
+                        No hay pedidos {estadoFiltro === 'todos' ? 'encontrados' : `en estado "${estadoFiltro}"`}
+                    </Text>
                 ) : (
                     renderPedidos()
                 )}
             </ScrollView>
 
-            {showSpin && <ActivityIndicator color="#0071bb" style={style.preload} />}
+            {showSpin && (
+                <View style={{
+                    position: 'absolute',
+                    bottom: 80,
+                    left: 0,
+                    right: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 15,
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    marginHorizontal: 20,
+                    borderRadius: 25,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 8,
+                    elevation: 6
+                }}>
+                    <ActivityIndicator
+                        size="small"
+                        color="#0071bb"
+                        style={{ marginBottom: 8 }}
+                    />
+                    <Text style={{
+                        fontSize: 14,
+                        color: '#0071bb',
+                        fontWeight: '600',
+                        textAlign: 'center'
+                    }}>
+                        Cargando más pedidos...
+                    </Text>
+                </View>
+            )}
             <Footer navigation={navigation} />
             <Toast
                 config={{
@@ -1225,6 +1560,262 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     )
                 }}
             />
+
+            {/* Modal de Ordenamiento */}
+            <Modal
+                transparent={true}
+                visible={modalOrdenamiento}
+                animationType="fade"
+                onRequestClose={() => updateState(actions.setModalOrdenamiento(false))}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <View style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 12,
+                        width: '90%',
+                        maxWidth: 400,
+                        padding: 20,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 8,
+                    }}>
+                        {/* Header */}
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: 20,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#e9ecef',
+                            paddingBottom: 15
+                        }}>
+                            <Text style={{
+                                fontSize: 20,
+                                fontWeight: '700',
+                                color: '#333'
+                            }}>
+                                Ordenar por
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => updateState(actions.setModalOrdenamiento(false))}
+                                style={{
+                                    width: 30,
+                                    height: 30,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderRadius: 15,
+                                    backgroundColor: '#f8f9fa'
+                                }}
+                            >
+                                <FontAwesome name="close" style={{ fontSize: 16, color: '#666' }} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Opciones de ordenamiento */}
+                        <View style={{ marginBottom: 20 }}>
+                            {[
+                                { key: 'fecha_creacion', label: 'Fecha creación', icon: 'calendar' },
+                                { key: 'razon_social', label: 'Razón social', icon: 'building' },
+                                { key: 'nombre_cliente', label: 'Nombre cliente', icon: 'user' },
+                                { key: 'fecha_solicitud', label: 'Fecha solicitud', icon: 'clock-o' },
+                                { key: 'precio', label: 'Precio', icon: 'dollar' },
+                                { key: 'cantidad', label: 'Cantidad', icon: 'cubes' },
+                                { key: 'vehiculo', label: 'Vehículo', icon: 'truck' }
+                            ].map((opcion) => (
+                                <TouchableOpacity
+                                    key={opcion.key}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        paddingVertical: 12,
+                                        paddingHorizontal: 16,
+                                        marginBottom: 8,
+                                        borderRadius: 8,
+                                        backgroundColor: ordenPor === opcion.key ? '#e3f2fd' : '#f8f9fa',
+                                        borderWidth: ordenPor === opcion.key ? 2 : 1,
+                                        borderColor: ordenPor === opcion.key ? '#2196f3' : '#e9ecef'
+                                    }}
+                                    onPress={() => updateState(actions.setOrdenPor(opcion.key))}
+                                >
+                                    <FontAwesome
+                                        name={opcion.icon}
+                                        style={{
+                                            fontSize: 16,
+                                            color: ordenPor === opcion.key ? '#2196f3' : '#666',
+                                            marginRight: 12,
+                                            width: 20
+                                        }}
+                                    />
+                                    <Text style={{
+                                        fontSize: 16,
+                                        color: ordenPor === opcion.key ? '#2196f3' : '#333',
+                                        fontWeight: ordenPor === opcion.key ? '600' : '400',
+                                        flex: 1
+                                    }}>
+                                        {opcion.label}
+                                    </Text>
+                                    {ordenPor === opcion.key && (
+                                        <FontAwesome
+                                            name="check"
+                                            style={{ fontSize: 16, color: '#2196f3' }}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        {/* Selector de tipo de orden */}
+                        <View style={{ marginBottom: 20 }}>
+                            <Text style={{
+                                fontSize: 16,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 10
+                            }}>
+                                Tipo de orden:
+                            </Text>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <TouchableOpacity
+                                    style={{
+                                        flex: 1,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        paddingVertical: 10,
+                                        paddingHorizontal: 16,
+                                        borderRadius: 8,
+                                        backgroundColor: tipoOrden === 'DESC' ? '#e3f2fd' : '#f8f9fa',
+                                        borderWidth: tipoOrden === 'DESC' ? 2 : 1,
+                                        borderColor: tipoOrden === 'DESC' ? '#2196f3' : '#e9ecef'
+                                    }}
+                                    onPress={() => updateState(actions.setTipoOrden('DESC'))}
+                                >
+                                    <FontAwesome
+                                        name="sort-amount-desc"
+                                        style={{
+                                            fontSize: 14,
+                                            color: tipoOrden === 'DESC' ? '#2196f3' : '#666',
+                                            marginRight: 8
+                                        }}
+                                    />
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: tipoOrden === 'DESC' ? '#2196f3' : '#333',
+                                        fontWeight: tipoOrden === 'DESC' ? '600' : '400'
+                                    }}>
+                                        Descendente
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={{
+                                        flex: 1,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        paddingVertical: 10,
+                                        paddingHorizontal: 16,
+                                        borderRadius: 8,
+                                        backgroundColor: tipoOrden === 'ASC' ? '#e3f2fd' : '#f8f9fa',
+                                        borderWidth: tipoOrden === 'ASC' ? 2 : 1,
+                                        borderColor: tipoOrden === 'ASC' ? '#2196f3' : '#e9ecef'
+                                    }}
+                                    onPress={() => updateState(actions.setTipoOrden('ASC'))}
+                                >
+                                    <FontAwesome
+                                        name="sort-amount-asc"
+                                        style={{
+                                            fontSize: 14,
+                                            color: tipoOrden === 'ASC' ? '#2196f3' : '#666',
+                                            marginRight: 8
+                                        }}
+                                    />
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: tipoOrden === 'ASC' ? '#2196f3' : '#333',
+                                        fontWeight: tipoOrden === 'ASC' ? '600' : '400'
+                                    }}>
+                                        Ascendente
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* Botones de acción */}
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    paddingVertical: 12,
+                                    borderRadius: 8,
+                                    backgroundColor: '#6c757d',
+                                    alignItems: 'center'
+                                }}
+                                onPress={() => updateState(actions.setModalOrdenamiento(false))}
+                            >
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                    Cancelar
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    paddingVertical: 12,
+                                    borderRadius: 8,
+                                    backgroundColor: '#28a745',
+                                    alignItems: 'center'
+                                }}
+                                onPress={async () => {
+                                    updateState(actions.setModalOrdenamiento(false));
+                                    // Recargar pedidos con nuevo ordenamiento
+                                    updateState(actions.setShowSpin1(true));
+                                    dispatch({
+                                        type: 'GET_PEDIDOS',
+                                        pedidos: []
+                                    });
+                                    updateState(actions.setInicio(0));
+                                    updateState(actions.setFinal(false));
+                                    updateState(actions.setLimit(20));
+
+                                    try {
+                                        await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
+                                    } catch (error) {
+                                        console.error('Error aplicando ordenamiento:', error);
+                                        Alert.alert(
+                                            'Funcionalidad no disponible',
+                                            'El ordenamiento requiere actualizar el servidor. Mostrando pedidos con orden por defecto.',
+                                            [{ text: 'OK' }]
+                                        );
+                                        // Resetear a valores por defecto
+                                        updateState(actions.setEstadoFiltro('todos'));
+                                        updateState(actions.setOrdenPor('fecha_creacion'));
+                                        updateState(actions.setTipoOrden('DESC'));
+                                        // Cargar pedidos con valores por defecto
+                                        await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, 'todos', 'fecha_creacion', 'DESC'));
+                                    } finally {
+                                        setTimeout(() => {
+                                            updateState(actions.setShowSpin1(false));
+                                        }, 1000);
+                                    }
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                    Aplicar
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };

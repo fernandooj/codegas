@@ -1,6 +1,7 @@
 import React, { useEffect, useContext } from 'react';
-import { View, Text, TouchableOpacity, ImageBackground, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground, Image, ScrollView, SafeAreaView } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 
 import Footer from '../components/footer';
 
@@ -10,7 +11,7 @@ import { DataContext } from '../../context/context';
 import { style } from './style';
 
 const Home = ({ navigation }) => {
-  const { login, acceso, userId } = useContext(DataContext)
+  const { login, acceso, userId, nombre } = useContext(DataContext)
   limit = acceso === 'conductor' ? 50 : 10
   const dispatch = useDispatch();
   useEffect(() => {
@@ -19,32 +20,64 @@ const Home = ({ navigation }) => {
   }, [userId, acceso]);
 
   const renderBotones = () => {
+    const botones = [
+      {
+        title: 'NUEVO PEDIDO',
+        subtitle: 'Crear un pedido nuevo',
+        icon: '➕',
+        color: '#007bff',
+        gradient: ['#007bff', '#0056b3'],
+        onPress: () => navigation.navigate(userId ? 'nuevo_pedido' : 'Perfil'),
+        show: true
+      },
+      {
+        title: 'INFORMES',
+        subtitle: 'Ver reportes y estadísticas',
+        icon: '📊',
+        color: '#28a745',
+        gradient: ['#28a745', '#1e7e34'],
+        onPress: () => navigation.navigate('chart'),
+        show: acceso == 'cliente'
+      },
+      {
+        title: 'CHAT',
+        subtitle: 'Conversaciones y soporte',
+        icon: '💬',
+        color: '#ffc107',
+        gradient: ['#ffc107', '#e0a800'],
+        onPress: () => {
+          if (acceso == 'admin' || acceso == 'solucion') {
+            navigation.navigate('conversacion', { tokenPhone, acceso });
+          } else {
+            // Manejar chat para otros usuarios
+            navigation.navigate('conversacion', { tokenPhone, acceso });
+          }
+        },
+        show: acceso != 'pedidos'
+      }
+    ];
+
     return (
-      <View>
-        <TouchableOpacity style={[style.btn, { marginTop: 10 }]} onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'Perfil')}>
-          <Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon} />
-          <Text style={style.text}>NUEVO PEDIDO</Text>
-        </TouchableOpacity>
-        {acceso == 'cliente' && (
-          <TouchableOpacity style={[style.btn, { marginTop: 10 }]} onPress={() => navigation.navigate('chart')}>
-            <Image source={require('../../assets/img/pg2/bot02.png')} style={style.icon} />
-            <Text style={style.text}>INFORMES</Text>
-          </TouchableOpacity>
-        )}
-        {acceso != 'pedidos' && (
+      <View style={style.botonesContainer}>
+        {botones.filter(boton => boton.show).map((boton, index) => (
           <TouchableOpacity
-            style={style.btn}
-            onPress={() =>
-              acceso == 'admin' || acceso == 'solucion'
-                ? navigation.navigate('conversacion', { tokenPhone, acceso })
-                : formularioChat
-                  ? navigation.navigate('conversacion', { tokenPhone, acceso })
-                  : this.setState({ modal: true })
-            }>
-            <Image source={require('../../assets/img/pg2/bot03.png')} style={style.icon} />
-            <Text style={style.text}>CHAT</Text>
+            key={index}
+            style={[style.btnModerno, { backgroundColor: boton.color }]}
+            onPress={boton.onPress}
+            activeOpacity={0.8}
+          >
+            <View style={style.btnContent}>
+              <View style={style.iconContainer}>
+                <Text style={[style.iconModerno, { color: '#fff' }]}>{boton.icon}</Text>
+              </View>
+              <View style={style.textContainer}>
+                <Text style={style.titleModerno}>{boton.title}</Text>
+                <Text style={style.subtitleModerno}>{boton.subtitle}</Text>
+              </View>
+              <Text style={style.chevron}>▶</Text>
+            </View>
           </TouchableOpacity>
-        )}
+        ))}
       </View>
     );
   };
@@ -59,37 +92,66 @@ const Home = ({ navigation }) => {
     );
   };
 
-  return (
-    <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo.jpg')}>
-      {renderBotones()}
-      <View style={style.contenedorColores}>
-        <View style={style.subContenedorColor}>
-          <View style={[style.color, { backgroundColor: 'rgba(91, 192, 222, 0.79)' }]}></View>
-          <Text style={style.textColor}>Pedido en espera</Text>
+  const renderLeyendaEstados = () => {
+    const estados = [
+      { color: 'rgba(91, 192, 222, 0.79)', texto: 'En espera', icon: '⏰' },
+      { color: 'rgba(255, 235, 0, 0.79)', texto: 'Activo', icon: '▶️' },
+      { color: 'rgba(240, 173, 78, 0.79)', texto: 'Asignado', icon: '🚛' },
+      { color: 'rgba(92, 184, 92, 0.79)', texto: 'Entregado', icon: '✅' },
+      { color: '#ffffff', texto: 'No entregado', icon: '❌', textColor: '#333' },
+      { color: 'rgba(217, 83, 79, 0.79)', texto: 'Inactivo', icon: '⏸️' }
+    ];
+
+    return (
+      <View style={style.leyendaContainer}>
+        <View style={style.leyendaHeader}>
+          <Text style={style.leyendaHeaderIcon}>ℹ️</Text>
+          <Text style={style.leyendaTitle}>Estados de Pedidos</Text>
         </View>
-        <View style={style.subContenedorColor}>
-          <View style={[style.color, { backgroundColor: 'rgba(255, 235, 0, 0.79)' }]}></View>
-          <Text style={style.textColor}>Pedido activo</Text>
-        </View>
-        <View style={style.subContenedorColor}>
-          <View style={[style.color, { backgroundColor: 'rgba(240, 173, 78, 0.79)' }]}></View>
-          <Text style={style.textColor}>Pedido asignado</Text>
-        </View>
-        <View style={style.subContenedorColor}>
-          <View style={[style.color, { backgroundColor: 'rgba(92, 184, 92, 0.79)' }]}></View>
-          <Text style={style.textColor}>Pedido entregado</Text>
-        </View>
-        <View style={style.subContenedorColor}>
-          <View style={[style.color, { backgroundColor: '#ffffff' }]}></View>
-          <Text style={style.textColor}>Pedido no entregado</Text>
-        </View>
-        <View style={style.subContenedorColor}>
-          <View style={[style.color, { backgroundColor: 'rgba(217, 83, 79, 0.79)' }]}></View>
-          <Text style={style.textColor}>Pedido inactivo</Text>
+        <View style={style.estadosGrid}>
+          {estados.map((estado, index) => (
+            <View key={index} style={style.estadoItem}>
+              <View style={[style.estadoIndicator, { backgroundColor: estado.color }]}>
+                <Text style={[style.estadoIcon, { color: estado.textColor || '#fff' }]}>
+                  {estado.icon}
+                </Text>
+              </View>
+              <Text style={style.estadoTexto}>{estado.texto}</Text>
+            </View>
+          ))}
         </View>
       </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={style.safeContainer}>
+      <ScrollView
+        style={style.container}
+        contentContainerStyle={style.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header con logo */}
+        <View style={style.header}>
+          <Image
+            source={require('../../assets/img/pg1/fondo1.jpg')}
+            style={style.logo}
+            resizeMode="contain"
+          />
+          <Text style={style.welcomeText}>
+            Bienvenido{nombre ? ` ${nombre}` : ''}
+          </Text>
+        </View>
+
+        {/* Botones principales */}
+        {renderBotones()}
+
+        {/* Leyenda de estados */}
+        {renderLeyendaEstados()}
+      </ScrollView>
+
       <Footer navigation={navigation} />
-    </ImageBackground>
+    </SafeAreaView>
   );
 };
 
