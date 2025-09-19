@@ -138,3 +138,13 @@ updateFcmToken:
     include:
       - services/users/src/update-fcm-token.js
       - lib/errors/database-error.js
+
+updateUserActive:
+  name: ${self:custom.base}-update-user-active
+  handler: services/users/src/update-user-active.main
+  events:
+    - httpApi: 'PUT /users/cambiarEstado/{userId}/{isActive}'
+  package:
+    include:
+      - services/users/src/update-user-active.js
+      - lib/errors/database-error.js

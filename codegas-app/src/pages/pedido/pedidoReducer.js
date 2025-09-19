@@ -9,6 +9,7 @@ export const PEDIDO_ACTIONS = {
     SET_MODAL_PERFILES: 'SET_MODAL_PERFILES',
     SET_MODAL_CARROS_FILTRO: 'SET_MODAL_CARROS_FILTRO',
     SET_MODAL_ZONAS: 'SET_MODAL_ZONAS',
+    SET_MODAL_CERRAR_PEDIDO: 'SET_MODAL_CERRAR_PEDIDO',
 
     // Search and filter states
     SET_TERMINO_BUSCADOR: 'SET_TERMINO_BUSCADOR',
@@ -66,6 +67,7 @@ export const initialState = {
     modalPerfiles: false,
     modalCarrosFiltro: false,
     modalZonas: false,
+    modalCerrarPedido: false,
 
     // Search and filter states
     terminoBuscador: undefined,
@@ -171,6 +173,8 @@ export const pedidoReducer = (state, action) => {
             return { ...state, modalCarrosFiltro: action.payload };
         case PEDIDO_ACTIONS.SET_MODAL_ZONAS:
             return { ...state, modalZonas: action.payload };
+        case PEDIDO_ACTIONS.SET_MODAL_CERRAR_PEDIDO:
+            return { ...state, modalCerrarPedido: action.payload };
 
         // Search and filter states
         case PEDIDO_ACTIONS.SET_TERMINO_BUSCADOR:
@@ -274,6 +278,7 @@ export const pedidoActions = {
     setModalPerfiles: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_PERFILES, payload: value }),
     setModalCarrosFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_CARROS_FILTRO, payload: value }),
     setModalZonas: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_ZONAS, payload: value }),
+    setModalCerrarPedido: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_CERRAR_PEDIDO, payload: value }),
 
     // Search and filter actions
     setTerminoBuscador: (value) => ({ type: PEDIDO_ACTIONS.SET_TERMINO_BUSCADOR, payload: value }),

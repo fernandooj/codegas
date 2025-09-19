@@ -63,3 +63,14 @@ export const GET_REVISION_BY_PUNTO = "GET_REVISION_BY_PUNTO";
 */
 ///////////////////////////////////////////////////////////////////////////
 export const GET_TANQUES          = "GET_TANQUES";
+
+
+///////////////////////////////////////////////////////////////////////////
+/*
+   Acciones para zonas
+*/
+///////////////////////////////////////////////////////////////////////////
+export const GET_ZONAS            = "GET_ZONAS";
+export const CREATE_ZONA          = "CREATE_ZONA";
+export const UPDATE_ZONA          = "UPDATE_ZONA";
+export const DELETE_ZONA          = "DELETE_ZONA";

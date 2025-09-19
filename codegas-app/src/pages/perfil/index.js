@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback } from 'react';
+import React, { useContext, useState, useCallback, useEffect } from 'react';
 import {
   ScrollView,
   View,
@@ -9,6 +9,7 @@ import {
   ImageBackground
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import axios from 'axios';
@@ -19,8 +20,24 @@ const Perfil = ({
   navigation,
 }) => {
 
-  const { nombre, avatar, email, userInfo, acceso, cerrarSesion } = useContext(DataContext)
+  const { nombre, avatar, email, userInfo, acceso, cerrarSesion, updateUserData } = useContext(DataContext)
   const [idUsuarioSearch, setIdUsuarioSearch] = useState('')
+
+  // Estados locales para mostrar los datos más recientes
+  const [currentNombre, setCurrentNombre] = useState(nombre)
+  const [currentEmail, setCurrentEmail] = useState(email)
+
+  // Efecto para sincronizar estados locales con el contexto
+  useEffect(() => {
+    if (nombre && nombre !== currentNombre) {
+      console.log('🔄 Sincronizando nombre del contexto:', nombre);
+      setCurrentNombre(nombre);
+    }
+    if (email && email !== currentEmail) {
+      console.log('🔄 Sincronizando email del contexto:', email);
+      setCurrentEmail(email);
+    }
+  }, [nombre, email, currentNombre, currentEmail]);
 
   // Efecto que se ejecuta cada vez que la pantalla recibe el foco
   useFocusEffect(
@@ -28,9 +45,46 @@ const Perfil = ({
       console.log('Perfil screen focused - ejecutándose cada vez que navegas aquí');
       console.log('Datos actuales:', { nombre, avatar, email, acceso });
 
-      // Aquí puedes agregar cualquier lógica que quieras que se ejecute
-      // cada vez que navegues a esta pantalla
-    }, [nombre, avatar, email, acceso])
+      // Recargar datos desde AsyncStorage para asegurarse de que estén actualizados
+      const reloadUserData = async () => {
+        try {
+          console.log('🔄 Recargando datos del perfil...');
+          const [storedNombre, storedEmail, storedAvatar] = await AsyncStorage.multiGet([
+            'nombre', 'email', 'avatar'
+          ]);
+
+          const newUserData = {
+            nombre: storedNombre[1],
+            email: storedEmail[1],
+            avatar: storedAvatar[1]
+          };
+
+          console.log('📱 Datos en AsyncStorage:', newUserData);
+          console.log('🔍 Datos actuales del contexto:', { nombre, email, avatar });
+          console.log('🔧 updateUserData disponible:', !!updateUserData);
+
+          // Actualizar estados locales inmediatamente
+          if (newUserData.nombre && newUserData.nombre !== currentNombre) {
+            console.log('🔄 Actualizando nombre local:', newUserData.nombre);
+            setCurrentNombre(newUserData.nombre);
+          }
+          if (newUserData.email && newUserData.email !== currentEmail) {
+            console.log('🔄 Actualizando email local:', newUserData.email);
+            setCurrentEmail(newUserData.email);
+          }
+
+          // Actualizar siempre si hay datos en AsyncStorage y la función está disponible
+          if (updateUserData && (newUserData.nombre || newUserData.email || newUserData.avatar)) {
+            console.log('✅ Actualizando datos del perfil desde AsyncStorage:', newUserData);
+            await updateUserData(newUserData);
+          }
+        } catch (error) {
+          console.error('❌ Error recargando datos del perfil:', error);
+        }
+      };
+
+      reloadUserData();
+    }, [nombre, avatar, email, acceso, updateUserData, currentNombre, currentEmail])
   );
   const searchUser = () => {
     axios.get(`users/by/asefsfxf323-dxc/${idUsuarioSearch}`)
@@ -61,20 +115,21 @@ const Perfil = ({
     navigation.navigate("Home");
   };
   const RenderPerfil = () => {
+    console.log('🖼️ Avatar value:', avatar, typeof avatar);
     return (
 
       <ScrollView style={style.containerRegistro}>
         <View style={style.perfilContenedor}>
           <View style={style.columna4}>
-            {avatar === 'null' ? (
+            {(!avatar || avatar === 'null' || avatar === null || avatar === undefined || avatar === '') ? (
               <FontAwesome name={'user-circle'} style={style.iconAvatar} />
             ) : (
               <Image source={{ uri: avatar }} style={style.avatar} />
             )}
           </View>
           <View style={style.columna2}>
-            <Text style={style.nombre}>{nombre}</Text>
-            <Text style={style.nombre}>{email}</Text>
+            <Text style={style.nombre}>{currentNombre || nombre}</Text>
+            <Text style={style.nombre}>{currentEmail || email}</Text>
           </View>
         </View>
         <View>
@@ -127,7 +182,7 @@ const Perfil = ({
               />
             </TouchableOpacity>
           )}
-          {acceso === 'solucion' || acceso === 'admin' || acceso === 'veo' && (
+          {(acceso === 'solucion' || acceso === 'admin' || acceso === 'veo') && (
             <TouchableOpacity
               style={style.btnLista}
               onPress={() => navigation.navigate('usuarios')}>

@@ -1,6 +1,6 @@
-const {poolConection} = require('../../../lib/connection-pg.js')
+const { poolConection } = require('../../../lib/connection-pg.js')
 const DatabaseError = require('../../../lib/errors/database-error');
-const {uploadImage}   = require('../../../lib/image')
+const { uploadImage } = require('../../../lib/image')
 /** FINALIZAR PEDIDO */
 const FINALIZAR_PEDIDO = 'SELECT * FROM finalizar_pedidos($1, $2, $3, $4, $5, $6, $7, $8, $9)';
 
@@ -19,14 +19,14 @@ const FINALIZAR_PEDIDO = 'SELECT * FROM finalizar_pedidos($1, $2, $3, $4, $5, $6
  */
 
 module.exports.main = async (event) => {
-    const {
-        idConductor,
-    } = event.pathParameters;
+  const {
+    idConductor,
+  } = event.pathParameters;
   const body = JSON.parse(event.body);
   const {
     _id, kilos, factura, valor_total, forma_pago, remision, fechaEntrega
   } = body;
-  
+
   try {
     const client = await poolConection.connect();
     const image_url = await uploadImage(body);
@@ -36,8 +36,8 @@ module.exports.main = async (event) => {
       _id, kilos, factura, valor_total, forma_pago, remision, fechaEntrega, image_url, idConductor
     ])
     return {
-        status: true
-      }
+      status: true
+    }
   } catch (error) {
     console.error(error)
     throw new DatabaseError(error);

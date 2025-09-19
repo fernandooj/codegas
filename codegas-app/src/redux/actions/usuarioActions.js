@@ -496,6 +496,42 @@ const getPointsByClient = async (clientId) => {
   }
 };
 
+const createPoints = async (pointsData) => {
+  try {
+    const response = await axios.post(`pun/punto/create-varios`, pointsData);
+    return response.data;
+  } catch (error) {
+    console.error('Error en createPoints:', {
+      function: 'createPoints',
+      pointsData: pointsData,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+const updatePoints = async (pointsData) => {
+  try {
+    const response = await axios.post(`pun/punto/update-varios`, pointsData);
+    return response.data;
+  } catch (error) {
+    console.error('Error en updatePoints:', {
+      function: 'updatePoints',
+      pointsData: pointsData,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
 const signUp = async (userData) => {
   try {
     const response = await axios.post("user/sign_up", userData);
@@ -533,13 +569,14 @@ const updateUserProfile = async (userId, userData) => {
   }
 };
 
-const getVeos = async () => {
+const getVeos = async (limit = 100, start = 0, searchParam = 'undefined', id) => {
   try {
-    const response = await axios.get('users/acceso/veo');
+    const response = await axios.get(`/users/acceso/${limit}/${start}/veo/${searchParam}/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error en getVeos:', {
       function: 'getVeos',
+      parameters: { limit, start, searchParam, id },
       error: error,
       message: error.message,
       response: error.response?.data,
@@ -567,6 +604,31 @@ const getActiveZones = async () => {
   }
 };
 
+
+// Enviar token FCM al backend
+const sendFCMToken = (userId, fcmToken) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.post('user/fcm-token', {
+        userId,
+        fcmToken
+      });
+
+      if (response.data.code === 1) {
+        console.log('FCM token sent successfully');
+        return { success: true, data: response.data };
+      } else {
+        console.log('Error sending FCM token:', response.data.message);
+        return { success: false, error: response.data.message };
+      }
+    } catch (error) {
+      console.error('Error sending FCM token:', error);
+      return { success: false, error: error.message };
+    }
+  };
+};
+
+
 export {
   getPerfil,
   getUsuarios,
@@ -590,32 +652,11 @@ export {
   changeValorUnitario,
   getUserById,
   getPointsByClient,
+  createPoints,
+  updatePoints,
   signUp,
   updateUserProfile,
   getVeos,
   getActiveZones,
   sendFCMToken
-};
-
-// Enviar token FCM al backend
-const sendFCMToken = (userId, fcmToken) => {
-  return async (dispatch) => {
-    try {
-      const response = await axios.post('user/fcm-token', {
-        userId,
-        fcmToken
-      });
-
-      if (response.data.code === 1) {
-        console.log('FCM token sent successfully');
-        return { success: true, data: response.data };
-      } else {
-        console.log('Error sending FCM token:', response.data.message);
-        return { success: false, error: response.data.message };
-      }
-    } catch (error) {
-      console.error('Error sending FCM token:', error);
-      return { success: false, error: error.message };
-    }
-  };
 };

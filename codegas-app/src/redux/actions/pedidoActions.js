@@ -311,13 +311,41 @@ const guardarNovedadCerrarPedido = async (id, fechaEntrega, novedad, perfil_nove
 // Acción para finalizar pedido
 const finalizarPedido = async (id, pedidoData) => {
   try {
+    // Extraer mime type de la imagen base64 si existe
+    let mimeType = null;
+    let imagenFinal = pedidoData.imagen;
+
+    if (pedidoData.imagen && pedidoData.imagen.startsWith('data:')) {
+      // Extraer mime type del formato: data:image/jpeg;base64,/9j/4AAQ...
+      const mimeMatch = pedidoData.imagen.match(/data:([^;]+);base64,/);
+      mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    }
+
+    // Enviar como JSON (como el backend espera con JSON.parse)
+    const data = {
+      email: pedidoData.email || '',
+      _id: id,
+      kilos: pedidoData.kilos,
+      factura: pedidoData.factura,
+      valor_total: pedidoData.valor_total,
+      forma_pago: pedidoData.forma_pago,
+      fechaEntrega: pedidoData.fechaEntrega,
+      remision: pedidoData.remision,
+      imagen: imagenFinal, // Enviar imagen en base64 si existe
+      mime: mimeType       // Mime type extraído de la imagen
+    };
+
+    console.log('ID del pedido:', id);
+    console.log('Datos del pedido:', pedidoData);
+    console.log('Enviando JSON al backend:', data);
+
     const response = await axios({
       method: 'post',
-      url: `ped/pedido/finalizar/${id}`,
-      data: JSON.stringify(pedidoData),
+      url: `ped/pedido/finalizar/${pedidoData.idUsuario || 1}`, // Usar idUsuario como idConductor
+      data: data, // Enviar como JSON object (axios lo convertirá automáticamente)
       headers: {
         'Content-Type': 'application/json'
-      },
+      }
     });
     return response.data;
   } catch (error) {

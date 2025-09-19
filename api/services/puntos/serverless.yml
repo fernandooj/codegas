@@ -12,10 +12,20 @@ createPuntoVarios:
   name: ${self:custom.base}-create-punto-varios
   handler: services/puntos/src/create-punto-varios.main
   events:
-    - httpApi: 'POST /pun/punto/varios'
+    - httpApi: 'POST /pun/punto/create-varios'
   package:
     include:
       - services/puntos/src/create-punto-varios.js
+      - lib/errors/database-error.js
+
+updatePuntoVarios:
+  name: ${self:custom.base}-update-punto-varios
+  handler: services/puntos/src/update-punto-varios.main
+  events:
+    - httpApi: 'POST /pun/punto/update-varios'
+  package:
+    include:
+      - services/puntos/src/update-punto-varios.js
       - lib/errors/database-error.js
 
 deletePunto:

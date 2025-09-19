@@ -13,6 +13,8 @@ export interface Ubicacion {
     observacion?: string;
     idCliente?: string;
     _id?: string;
+    location?: any;
+    place_name?: string;
 }
 
 export interface Veo {
@@ -42,6 +44,7 @@ export interface User {
     avatar?: string[];
     activo?: boolean;
     editado?: boolean;
+    nombrepadre?: string;
     veos?: {
         nombre: string;
     };
@@ -109,6 +112,7 @@ export interface EditarPerfilProps {
         params?: {
             tipoAcceso?: string;
             idUsuario?: string;
+            scrollPosition?: number;
         };
     };
 }
@@ -116,6 +120,7 @@ export interface EditarPerfilProps {
 export interface ContextType {
     acceso: string;
     userId: string;
+    updateUserData?: (userData: { nombre?: string; email?: string; avatar?: string }) => Promise<void>;
 }
 
 export interface ApiResponse<T = any> {

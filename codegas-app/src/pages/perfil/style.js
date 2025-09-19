@@ -1,164 +1,175 @@
-import {StyleSheet, Dimensions, Platform} from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
- 
+
 let size = Dimensions.get('window').width;
- 
+
 export const style = MediaQueryStyleSheet.create({
-	container:{
-		flex:1,
-		backgroundColor:'#ffffff',
-	},	 
-	containerRegistro:{
-		flex:1,
-		marginBottom:80,
-		width:"100%",
+	container: {
+		flex: 1,
+		backgroundColor: '#ffffff',
 	},
-	subContainerRegistro:{
-		flex:1,
+	containerRegistro: {
+		flex: 1,
+		marginBottom: 80,
+		width: "100%",
+	},
+	subContainerRegistro: {
+		flex: 1,
 		alignItems: 'center',
 	},
-	separador:{
-		height:1,
-		width:"80%",
-		left:"10%",
-		marginTop:0,
-		backgroundColor:"rgba(0,0,0,.1)"
+	separador: {
+		height: 1,
+		width: "80%",
+		left: "10%",
+		marginTop: 0,
+		backgroundColor: "rgba(0,0,0,.1)"
 	},
-	iconAvatar:{
-		fontSize:50,
-		color:"#00218b"
+	iconAvatar: {
+		fontSize: 60,
+		color: "#00218b"
 	},
-	containerRegistro2:{
-		flex:1,
-		width:"100%",
-		marginTop:45,
-		marginBottom:45
+	containerRegistro2: {
+		flex: 1,
+		width: "100%",
+		marginTop: 45,
+		marginBottom: 45
 	},
-	cabezera:{
-		width:size.width,
-		height:110
-	},  
-	 
+	cabezera: {
+		width: '100%',
+		height: 140,
+		alignSelf: 'center'
+	},
+
 	//////////////////////////////////////////////////////////////////
-    //////////////////////      CABEZERA
-    //////////////////////////////////////////////////////////////////
-	perfilContenedor:{
-		flexDirection:"row",
-		borderBottomColor:"rgba(0,0,0,.2)",
-		borderBottomWidth:1,
-		paddingVertical:15,
+	//////////////////////      CABEZERA
+	//////////////////////////////////////////////////////////////////
+	perfilContenedor: {
+		flexDirection: "row",
+		borderBottomColor: "rgba(0,0,0,.2)",
+		borderBottomWidth: 1,
+		paddingVertical: 15,
 	},
-	columna1:{
-		alignItems:"center",
-		justifyContent:"center",
-		width:"25%"
+	columna1: {
+		alignItems: "center",
+		justifyContent: "center",
+		width: "25%"
 	},
-	btnLista:{
-		flexDirection:"row",
-		justifyContent:"center",
-		alignItems:"center",
-		borderBottomColor:"rgba(0,0,0,.2)",
-		borderBottomWidth:1,
-		padding:0
+	columna2: {
+		justifyContent: "center",
+		paddingLeft: 15,
+		width: "75%"
 	},
-	txtLista:{
+	columna4: {
+		alignItems: "center",
+		justifyContent: "center",
+		width: "25%"
+	},
+	btnLista: {
+		flexDirection: "row",
+		justifyContent: "center",
+		alignItems: "center",
+		borderBottomColor: "rgba(0,0,0,.2)",
+		borderBottomWidth: 1,
+		padding: 0
+	},
+	txtLista: {
 		fontFamily: "Comfortaa-Light",
-		width:"80%",
-		fontSize:20,
-		left:20
+		width: "80%",
+		fontSize: 20,
+		left: 20
 	},
-	avatar:{
-		width:60,
-		height:60,
-		borderRadius:30
+	avatar: {
+		width: 60,
+		height: 60,
+		borderRadius: 30
 	},
-	nombre:{
+	nombre: {
 		fontFamily: "Comfortaa-Light",
-		fontSize:17
+		fontSize: 17
 	},
-	icon:{
-		width:80,
-		height:80
+	icon: {
+		width: 80,
+		height: 80
 	},
-	footer:{
-		position:"absolute",
-		bottom:0,
-		width:"100%"
+	footer: {
+		position: "absolute",
+		bottom: 0,
+		width: "100%"
 	},
-    //////////////////////////////////////////////////////////////////
-    //////////////////////      INPUTS
-    //////////////////////////////////////////////////////////////////
-    input:{
-        width:"85%",
-		paddingVertical:10,
-		height:45,
-		paddingLeft:10,
-		borderWidth:1,
+	//////////////////////////////////////////////////////////////////
+	//////////////////////      INPUTS
+	//////////////////////////////////////////////////////////////////
+	input: {
+		width: "85%",
+		paddingVertical: 10,
+		height: 45,
+		paddingLeft: 10,
+		borderWidth: 1,
 		fontFamily: "Comfortaa-Light",
-		backgroundColor:'#ffffff',
+		backgroundColor: '#ffffff',
 		shadowColor: 'rgba(0,0,0, .7)', // IOS
-		borderColor:"rgba(0,0,0,.2)",
+		borderColor: "rgba(0,0,0,.2)",
 		shadowOffset: { height: 2, width: 2 }, // IOS
 		shadowOpacity: .5, // IOS
 		shadowRadius: 5, //IOS
 		backgroundColor: '#fff',
 		elevation: 7, // Android
-		marginLeft:10,
-		marginBottom:15,
-		borderRadius:5,
-		textAlignVertical:"center",
+		marginLeft: 10,
+		marginBottom: 15,
+		borderRadius: 5,
+		textAlignVertical: "center",
 	},
-	inputInvalid:{
-		borderWidth:1,
-        borderColor:"rgba(255, 0, 0, 0.42)"
-    },
-    titulo:{
+	inputInvalid: {
+		borderWidth: 1,
+		borderColor: "rgba(255, 0, 0, 0.42)"
+	},
+	titulo: {
 		fontFamily: "Comfortaa-Regular",
-		color:"#002587",
-		fontSize:22,
-		marginBottom:20,
+		color: "#002587",
+		fontSize: 22,
+		marginBottom: 20,
 	},
-	btnGuardar:{
-		flexDirection:"row",
-		backgroundColor:"#00218b",
-		paddingTop:Platform.OS==='android' ?5 :10,
-		paddingBottom:10,
-		paddingHorizontal:20,
-		borderRadius:20
+	btnGuardar: {
+		flexDirection: "row",
+		backgroundColor: "#00218b",
+		paddingTop: Platform.OS === 'android' ? 5 : 10,
+		paddingBottom: 10,
+		paddingHorizontal: 20,
+		borderRadius: 20
 	},
-	textGuardar:{
+	textGuardar: {
 		fontFamily: "Comfortaa-Light",
-		color:"#ffffff"
+		color: "#ffffff"
 	},
-	iconCargando:{
-		color:"#ffffff"
+	iconCargando: {
+		color: "#ffffff"
 	},
-	btnOlvidar:{
-		marginVertical:25
+	btnOlvidar: {
+		marginVertical: 25
 	},
-	textOlvidar:{
+	textOlvidar: {
 		fontFamily: "Comfortaa-Light",
-		color:"#00218b"
+		color: "#00218b"
 	},
 
-	tituloRegresar:{
+	tituloRegresar: {
 		fontFamily: "Comfortaa-Light",
-		textAlign:"center",
-		fontSize:22,
-		marginTop:30,
+		textAlign: "center",
+		fontSize: 22,
+		marginTop: 30,
 	}
-},{
+}, {
 	"@media (max-device-width: 410)": {
-		columna1:{
-			width:"30%"
+		columna1: {
+			width: "30%"
 		},
-		txtLista:{
-			fontSize:18,
-			left:20
+		txtLista: {
+			fontSize: 18,
+			left: 20
 		},
-		icon:{
-			width:80,
-			height:80
+		icon: {
+			width: 80,
+			height: 80
 		},
 	}
 })

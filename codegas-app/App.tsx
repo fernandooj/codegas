@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { View, Text } from 'react-native';
 import configStore from './src/redux/store.js';
@@ -7,8 +7,9 @@ import axios from 'axios';
 import { DataProvider } from './src/context/context';
 import Toast from 'react-native-toast-message';
 import pushNotificationService from './src/services/pushNotificationService';
-import { runAllFirebaseTests } from './TestFirebase';
+// import { runAllFirebaseTests } from './TestFirebase';
 import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
+import SplashScreen from './src/components/SplashScreen';
 const store = configStore();
 
 // export const URL = 'https://216vhep1ye.execute-api.us-east-1.amazonaws.com';
@@ -18,7 +19,8 @@ export const VERSION = '1.0.0';
 axios.defaults.baseURL = URL;
 
 function App(): React.JSX.Element {
-  const [firebaseInitialized, setFirebaseInitialized] = React.useState(false);
+  const [firebaseInitialized, setFirebaseInitialized] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     const initializeFirebase = async () => {
@@ -53,9 +55,9 @@ function App(): React.JSX.Element {
         console.log('✅ Push notification service initialized');
 
         // Test Firebase installation (remove this in production)
-        setTimeout(() => {
-          runAllFirebaseTests();
-        }, 1000);
+        // setTimeout(() => {
+        //   runAllFirebaseTests();
+        // }, 1000);
 
       } catch (error) {
         console.error('❌ Error during app initialization:', error);
@@ -67,23 +69,32 @@ function App(): React.JSX.Element {
     initializeFirebase();
   }, []);
 
-  // Show loading screen while Firebase initializes
-  if (!firebaseInitialized) {
+  // Eliminar la pantalla de carga - Firebase se inicializa en segundo plano
+  // if (!firebaseInitialized) {
+  //   return (
+  //     <View style={{
+  //       flex: 1,
+  //       justifyContent: 'center',
+  //       alignItems: 'center',
+  //       backgroundColor: '#fff',
+  //     }}>
+  //       <Text style={{
+  //         fontSize: 18,
+  //         fontWeight: '600',
+  //         color: '#333',
+  //       }}>
+  //         Inicializando Firebase...
+  //       </Text>
+  //     </View>
+  //   );
+  // }
+
+  // Mostrar splash screen personalizado
+  if (showSplash) {
     return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-      }}>
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '600',
-          color: '#333',
-        }}>
-          Inicializando Firebase...
-        </Text>
-      </View>
+      <SplashScreen
+        onFinish={() => setShowSplash(false)}
+      />
     );
   }
 

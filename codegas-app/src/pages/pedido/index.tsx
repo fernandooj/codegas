@@ -24,7 +24,8 @@ import {
     asignarConductor,
     asignarFechaEntrega,
     guardarNovedadCerrarPedido,
-    cambiarEstadoPedido
+    cambiarEstadoPedido,
+    finalizarPedido
 } from '../../redux/actions/pedidoActions';
 import { getVehiculos } from '../../redux/actions/vehiculoActions';
 
@@ -48,6 +49,7 @@ import {
 // Importar modales separados
 import EditarPedidoModal from './EditarPedidoModal';
 import NovedadModal from './NovedadModal';
+import CerrarPedidoModal from './CerrarPedidoModal';
 
 // Configurar el calendario en español
 setupCalendarLocale();
@@ -84,6 +86,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         modalFechaEntrega,
         modalNovedad,
         modalPerfiles,
+        modalCerrarPedido,
         terminoBuscador,
         showSearch,
         final,
@@ -121,7 +124,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             idVehiculo,
             placa,
             estadoInicial,
-            textEstado
+            textEstado,
+            imagenCerrar
         }
     } = state;
 
@@ -129,6 +133,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     // Estados locales
     const [idUsuario, setIdUsuario] = useState<string | undefined>();
     const [acceso, setAcceso] = useState<AccesoUsuario | undefined>();
+    const [pedidoIdParaCerrar, setPedidoIdParaCerrar] = useState<string | undefined>(); // Estado para el ID del pedido
     const [top] = useState(new Animated.Value(size.height));
     const [modalScale] = useState(new Animated.Value(0));
     const [modalMainScale] = useState(new Animated.Value(0));
@@ -184,7 +189,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         // Si hay término de búsqueda, implementar debounce
         if (terminoBuscador && terminoBuscador.length >= 2) {
             const searchTimeout = setTimeout(() => {
-                console.log('🔍 Búsqueda en tiempo real:', terminoBuscador);
                 updateState(actions.setShowSearch(true));
                 dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador));
             }, 500); // Debounce de 500ms
@@ -385,6 +389,114 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         });
     };
 
+    const handleCerrarPedido = async (data: any, pedidoId?: string): Promise<void> => {
+        const { kilos, factura, valor_total, remision, forma_pago, novedad, imagen } = data;
+        const { email, tokenPhone } = context.user || {};
+
+        // Mostrar confirmación
+        Alert.alert(
+            'Confirmar cierre de pedido',
+            '¿Está seguro de que desea cerrar este pedido?',
+            [
+                {
+                    text: 'Cancelar',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Confirmar',
+                    onPress: () => confirmarCierrePedido(data, pedidoId)
+                }
+            ]
+        );
+    };
+
+    const confirmarCierrePedido = async (data: any, pedidoId?: string): Promise<void> => {
+        try {
+            const { kilos, factura, valor_total, remision, forma_pago, novedad, imagen } = data;
+            const { email, tokenPhone } = context.user || {};
+
+            // Usar el pedidoId pasado como parámetro o el id del estado como fallback
+            const finalPedidoId = pedidoId || id;
+
+            console.log('🔍 DEBUG - ID del pedido en confirmarCierrePedido:', finalPedidoId);
+            console.log('🔍 DEBUG - ID del estado:', id);
+            console.log('🔍 DEBUG - pedidoId parámetro:', pedidoId);
+            console.log('🔍 DEBUG - pedidoIdParaCerrar:', pedidoIdParaCerrar);
+            console.log('🔍 DEBUG - Datos recibidos:', data);
+
+            if (!finalPedidoId) {
+                Alert.alert('Error', 'No se pudo obtener el ID del pedido');
+                return;
+            }
+
+            // Preparar datos para el backend
+            const pedidoData = {
+                email: email || '',
+                idUsuario: idUsuario, // Agregar idUsuario para el endpoint
+                kilos,
+                factura,
+                valor_total,
+                forma_pago,
+                fechaEntrega: fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss'),
+                remision,
+                novedad: novedad || '', // Incluir novedad en los datos
+                imagen: imagen || null
+            };
+
+            console.log('Enviando datos al backend:', pedidoData);
+
+            // Llamar al endpoint de finalizar pedido
+            const response = await finalizarPedido(finalPedidoId, pedidoData);
+
+            if (response.status) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Pedido cerrado exitosamente',
+                    text2: `Factura: ${factura}`,
+                    position: 'top',
+                    topOffset: 100,
+                    visibilityTime: 3000
+                });
+
+                // Cerrar modal y recargar pedidos
+                updateState(actions.setModalCerrarPedido(false));
+                setPedidoIdParaCerrar(undefined); // Limpiar el ID capturado
+                loadPedidos();
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error al cerrar pedido',
+                    text2: 'Tenemos un problema, inténtelo más tarde'
+                });
+            }
+        } catch (error) {
+            console.error('Error cerrando pedido:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Error al cerrar pedido',
+                text2: 'Ocurrió un error inesperado'
+            });
+        }
+    };
+
+    const handleGuardarNovedadCerrar = async (novedad: string): Promise<void> => {
+        try {
+            // Usar la función existente guardarNovedadInnactivo
+            await guardarNovedadInnactivo();
+
+            Toast.show({
+                type: 'success',
+                text1: 'Novedad guardada correctamente'
+            });
+        } catch (error) {
+            console.error('Error guardando novedad:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Error al guardar novedad'
+            });
+        }
+    };
+
     const asignarConductorFunc = async (vehiculoData?: { _id: string, placa: string }): Promise<void> => {
         try {
             // Usar datos pasados como parámetro o del estado
@@ -515,7 +627,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         {
                             backgroundColor: getPedidoBackgroundColor(e),
                             borderRadius: 12,
-                            marginHorizontal: 15,
+                            marginHorizontal: 8, // Reducido de 15 a 8 para más cercanía a los bordes
                             marginVertical: 8,
                             padding: 16,
                             shadowColor: '#000',
@@ -579,7 +691,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     }}>
                         <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
                             <FontAwesome name="building" style={{ fontSize: 14, color: '#007bff', marginRight: 6, marginTop: 2 }} />
-                            <Text style={[style.textPedido, { fontSize: 15, fontWeight: '600', color: '#333', flex: 1, lineHeight: 18 }]}>
+                            <Text style={{ fontSize: 15, fontWeight: '600', color: '#333', flex: 1, lineHeight: 18 }}>
                                 {e.razon_social}
                             </Text>
                         </View>
@@ -587,7 +699,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                                 <FontAwesome name="id-card" style={{ fontSize: 12, color: '#6c757d', marginRight: 6 }} />
-                                <Text style={[style.textPedido, { fontSize: 13, color: '#6c757d' }]}>
+                                <Text style={{ fontSize: 13, color: '#6c757d' }}>
                                     {e.cedula}
                                 </Text>
                             </View>
@@ -619,55 +731,58 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
                     {/* Rest of card content */}
                     <View style={{ gap: 12 }}>
+                        {/* Primera fila: N° Pedido (25%) + Zona (75%) */}
                         <View style={{ flexDirection: 'row', gap: 8 }}>
                             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                                 <FontAwesome name="hashtag" style={{ fontSize: 12, color: '#007bff', marginRight: 6 }} />
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>N° Pedido</Text>
-                                    <Text style={[style.textPedido, { fontSize: 13, fontWeight: '600' }]} numberOfLines={1}>
+                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#333' }} numberOfLines={1}>
                                         {e._id}
                                     </Text>
                                 </View>
                             </View>
-                            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center' }}>
                                 <FontAwesome name="map-marker" style={{ fontSize: 12, color: '#dc3545', marginRight: 6 }} />
                                 <View style={{ flex: 1 }}>
                                     <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>Zona</Text>
-                                    <Text style={[style.textPedido, { fontSize: 13, fontWeight: '600' }]} numberOfLines={1}>
+                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#333' }} numberOfLines={2}>
                                         {e.zona || 'Sin zona'}
                                     </Text>
                                 </View>
                             </View>
                         </View>
 
+                        {/* Segunda fila: CODT (25%) + Dirección (75%) */}
                         <View style={{ flexDirection: 'row', gap: 8 }}>
-                            <View style={{ flex: 3, flexDirection: 'row', alignItems: 'flex-start' }}>
-                                <FontAwesome name="home" style={{ fontSize: 12, color: '#28a745', marginRight: 6, marginTop: 2 }} />
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>Dirección</Text>
-                                    <Text style={[style.textPedido, { fontSize: 12 }]} numberOfLines={2}>
-                                        {e.direccion || "Sin dirección"}
-                                    </Text>
-                                </View>
-                            </View>
-                            {e.codt && (
+                            {e.codt ? (
                                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-start' }}>
                                     <FontAwesome name="code" style={{ fontSize: 12, color: '#6f42c1', marginRight: 6, marginTop: 2 }} />
                                     <View style={{ flex: 1 }}>
                                         <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>CODT</Text>
-                                        <Text style={[style.textPedido, { fontSize: 12, fontWeight: '600' }]} numberOfLines={1}>
+                                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#333' }} numberOfLines={1}>
                                             {e.codt}
                                         </Text>
                                     </View>
                                 </View>
+                            ) : (
+                                <View style={{ flex: 1 }} />
                             )}
+                            <View style={{ flex: 3, flexDirection: 'row', alignItems: 'flex-start' }}>
+                                <FontAwesome name="home" style={{ fontSize: 12, color: '#28a745', marginRight: 6, marginTop: 2 }} />
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>Dirección</Text>
+                                    <Text style={{ fontSize: 12, color: '#333' }} numberOfLines={2}>
+                                        {e.direccion || "Sin dirección"}
+                                    </Text>
+                                </View>
+                            </View>
                         </View>
-
                     </View>
 
                     {acceso !== "conductor" && (
                         <View style={{
-                            backgroundColor: 'white',
+                            backgroundColor: '#ffffff', // Color de fondo más específico
                             paddingHorizontal: 16,
                             paddingVertical: 12,
                             marginTop: 12,
@@ -800,7 +915,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
                     <TouchableOpacity
                         style={{
-                            backgroundColor: '#007bff',
+                            backgroundColor: '#007bff', // Ya tiene backgroundColor sólido
                             borderRadius: 8,
                             width: 36,
                             height: 36,
@@ -828,7 +943,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         marginHorizontal: 20, // Margen para que no toque los bordes
                     }}>
                         <View style={{
-                            backgroundColor: '#fff',
+                            backgroundColor: '#fff', // Ya tiene backgroundColor sólido
                             borderRadius: 10, // Reducido de 12 a 10
                             flexDirection: "row",
                             alignItems: 'center',
@@ -868,7 +983,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             {terminoBuscador ? (
                                 <TouchableOpacity
                                     style={{
-                                        backgroundColor: '#dc3545',
+                                        backgroundColor: '#dc3545', // Ya tiene backgroundColor sólido
                                         borderRadius: 6,
                                         width: 32,
                                         height: 32,
@@ -935,7 +1050,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     valor_total,
                     forma_pago,
                     motivo_no_cierre,
-                    perfil_novedad
+                    perfil_novedad,
+                    imagenCerrar
                 }}
                 acceso={acceso}
                 getEstadoColor={getEstadoColor}
@@ -943,6 +1059,18 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onChangeState={handleChangeStateModal}
                 onAssignVehicle={() => updateState(actions.setModalConductor(true))}
                 onCancelOrder={cancelarPedidoCliente}
+                onClosePedido={() => {
+                    // Capturar el ID del pedido antes de cerrar el modal
+                    console.log('🔍 Capturando ID del pedido antes de cerrar:', id);
+                    setPedidoIdParaCerrar(id);
+
+                    // Primero cerrar el modal principal
+                    closePedidoModal();
+                    // Luego abrir el modal de cerrar pedido con un pequeño delay
+                    setTimeout(() => {
+                        updateState(actions.setModalCerrarPedido(true));
+                    }, 300);
+                }}
                 // Props para CambiarEstadoModal
                 modalPerfiles={modalPerfiles}
                 onEstadoChange={handleEstadoChange}
@@ -979,6 +1107,36 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onSave={guardarNovedadInnactivo}
             />
 
+            <CerrarPedidoModal
+                visible={modalCerrarPedido}
+                pedidoId={pedidoIdParaCerrar} // Usar el ID capturado antes de cerrar el modal
+                onClose={() => {
+                    updateState(actions.setModalCerrarPedido(false));
+                    setPedidoIdParaCerrar(undefined); // Limpiar el ID capturado
+                    // Reabrir el modal principal después de un pequeño delay
+                    setTimeout(() => {
+                        openPedidoModal({
+                            // Mantener los mismos datos del pedido
+                            id, estado, estadoEntrega, razon_social, cedula, forma,
+                            cantidadKl, cantidadPrecio, fechaEntrega, creado, usuarioCrea,
+                            capacidad, observacion, observacion_pedido, entregado,
+                            placaPedido, conductorPedido, kilos, factura, valor_total,
+                            forma_pago, motivo_no_cierre, perfil_novedad, idVehiculo, placa
+                        });
+                    }, 200);
+                }}
+                entregado={entregado}
+                imagenCerrar={undefined} // TODO: Agregar imagen del estado
+                kilos={kilos}
+                factura={factura}
+                valor_total={valor_total}
+                remision={undefined} // TODO: Agregar remision del estado
+                forma_pago={forma_pago}
+                valor_unitario={undefined} // TODO: Agregar valor_unitario del estado
+                onCerrarPedido={handleCerrarPedido}
+                onGuardarNovedad={handleGuardarNovedadCerrar}
+            />
+
             {renderCabezera()}
 
             <ScrollView
@@ -1006,7 +1164,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         <View style={{
                             height: 60,
                             width: '90%',
-                            backgroundColor: '#28a745',
+                            backgroundColor: '#28a745', // Ya tiene backgroundColor sólido
                             borderRadius: 8,
                             flexDirection: 'row',
                             alignItems: 'center',
@@ -1032,7 +1190,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         <View style={{
                             height: 60,
                             width: '90%',
-                            backgroundColor: '#dc3545',
+                            backgroundColor: '#dc3545', // Ya tiene backgroundColor sólido
                             borderRadius: 8,
                             flexDirection: 'row',
                             alignItems: 'center',

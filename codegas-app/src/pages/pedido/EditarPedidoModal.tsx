@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ScrollView, Animated, Image, Dimensions } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import moment from 'moment';
 import { style } from './style';
@@ -21,6 +21,7 @@ interface EditarPedidoModalProps {
     onChangeState: () => void;
     onAssignVehicle: () => void;
     onCancelOrder: () => void;
+    onClosePedido: () => void;
     // Props para CambiarEstadoModal
     modalPerfiles: boolean;
     onEstadoChange: (nuevoEstado: EstadoPedido) => void;
@@ -56,6 +57,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     onChangeState,
     onAssignVehicle,
     onCancelOrder,
+    onClosePedido,
     modalPerfiles,
     onEstadoChange,
     onConfirmStateChange,
@@ -117,7 +119,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                 padding: 20,
             }}>
                 <Animated.View style={{
-                    backgroundColor: 'white',
+                    backgroundColor: '#ffffff', // Color de fondo más específico
                     borderRadius: 16,
                     width: '100%',
                     maxHeight: '90%',
@@ -517,49 +519,351 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                             </View>
                         )}
 
-                        {/* Mostrar información del pedido entregado/cerrado */}
+                        {/* Mostrar información del pedido entregado/cerrado - DISEÑO MEJORADO */}
                         {entregado && (
-                            <View>
-                                <View style={style.separador}></View>
-                                <Text style={style.tituloModal}>Pedido Finalizado</Text>
-                                {kilos && (
-                                    <View style={style.pedido}>
-                                        <Text style={style.txtPedidoFinalizado}>Kilos: </Text>
-                                        <Text style={style.txtPedidoFinalizado}>{kilos}</Text>
+                            <View style={{ marginBottom: 20 }}>
+                                {/* Header con icono de éxito */}
+                                <View style={{
+                                    alignItems: 'center',
+                                    marginBottom: 24,
+                                    paddingVertical: 20,
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: 16,
+                                    marginHorizontal: 20
+                                }}>
+                                    <View style={{
+                                        backgroundColor: '#d4edda',
+                                        borderRadius: 40,
+                                        width: 60,
+                                        height: 60,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        marginBottom: 12,
+                                        shadowColor: '#28a745',
+                                        shadowOffset: { width: 0, height: 3 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 6,
+                                        elevation: 4
+                                    }}>
+                                        <FontAwesome name="check-circle" style={{ fontSize: 28, color: '#28a745' }} />
                                     </View>
-                                )}
-                                {factura && (
-                                    <View style={style.pedido}>
-                                        <Text style={style.txtPedidoFinalizado}>Factura: </Text>
-                                        <Text style={style.txtPedidoFinalizado}>{factura}</Text>
-                                    </View>
-                                )}
-                                {valor_total && (
-                                    <View style={style.pedido}>
-                                        <Text style={style.txtPedidoFinalizado}>Total: </Text>
-                                        <Text style={style.txtPedidoFinalizado}>
-                                            {formatCurrency(valor_total)}
+                                    <Text style={{
+                                        fontSize: 18,
+                                        fontWeight: 'bold',
+                                        color: '#28a745',
+                                        marginBottom: 6
+                                    }}>
+                                        🎉 Pedido Finalizado
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 13,
+                                        color: '#666',
+                                        textAlign: 'center'
+                                    }}>
+                                        Completado y entregado exitosamente
+                                    </Text>
+                                </View>
+
+                                {/* Imagen de la factura si existe */}
+                                {pedidoData.imagenCerrar && (
+                                    <View style={{
+                                        marginBottom: 20,
+                                        marginHorizontal: 20,
+                                        alignItems: 'center'
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: '600',
+                                            color: '#333',
+                                            marginBottom: 12,
+                                            textAlign: 'center'
+                                        }}>
+                                            📷 Imagen de la Factura
                                         </Text>
+                                        <View style={{
+                                            borderRadius: 12,
+                                            overflow: 'hidden',
+                                            shadowColor: '#000',
+                                            shadowOffset: { width: 0, height: 4 },
+                                            shadowOpacity: 0.15,
+                                            shadowRadius: 8,
+                                            elevation: 5,
+                                            backgroundColor: '#fff'
+                                        }}>
+                                            <Image
+                                                source={{ uri: pedidoData.imagenCerrar }}
+                                                style={{
+                                                    width: 280,
+                                                    height: 200,
+                                                    borderRadius: 12
+                                                }}
+                                                resizeMode="cover"
+                                            />
+                                        </View>
+                                        <View style={{
+                                            backgroundColor: '#e8f5e8',
+                                            borderRadius: 8,
+                                            padding: 8,
+                                            marginTop: 12,
+                                            flexDirection: 'row',
+                                            alignItems: 'center'
+                                        }}>
+                                            <FontAwesome name="camera" style={{ fontSize: 12, color: '#28a745', marginRight: 6 }} />
+                                            <Text style={{ color: '#28a745', fontSize: 12, fontWeight: '500' }}>
+                                                Imagen registrada exitosamente
+                                            </Text>
+                                        </View>
                                     </View>
                                 )}
-                                {forma_pago && (
-                                    <View style={style.pedido}>
-                                        <Text style={style.txtPedidoFinalizado}>Forma de pago: </Text>
-                                        <Text style={style.txtPedidoFinalizado}>{forma_pago}</Text>
+
+                                {/* Cards de información mejoradas */}
+                                <View style={{ marginHorizontal: 20, gap: 12 }}>
+                                    {/* Card principal con total */}
+                                    <View style={{
+                                        backgroundColor: '#fff',
+                                        borderRadius: 12,
+                                        padding: 16,
+                                        borderLeftWidth: 4,
+                                        borderLeftColor: '#28a745',
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.1,
+                                        shadowRadius: 4,
+                                        elevation: 3
+                                    }}>
+                                        <View style={{
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: 12
+                                        }}>
+                                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>
+                                                💰 Total Facturado
+                                            </Text>
+                                            <Text style={{ fontSize: 20, color: '#28a745', fontWeight: 'bold' }}>
+                                                {valor_total ? formatCurrency(valor_total) : 'N/A'}
+                                            </Text>
+                                        </View>
+                                        {forma_pago && (
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                paddingTop: 12,
+                                                borderTopWidth: 1,
+                                                borderTopColor: '#e9ecef'
+                                            }}>
+                                                <Text style={{ fontSize: 14, color: '#666' }}>Forma de pago:</Text>
+                                                <View style={{
+                                                    backgroundColor: forma_pago === 'Contado' ? '#e3f2fd' : '#e8f5e8',
+                                                    paddingHorizontal: 10,
+                                                    paddingVertical: 4,
+                                                    borderRadius: 16
+                                                }}>
+                                                    <Text style={{
+                                                        fontSize: 12,
+                                                        color: forma_pago === 'Contado' ? '#2196f3' : '#4caf50',
+                                                        fontWeight: '600'
+                                                    }}>
+                                                        {forma_pago === 'Contado' ? '💵 Contado' : '💳 Crédito'}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        )}
                                     </View>
-                                )}
-                                {motivo_no_cierre && (
-                                    <View style={style.pedido}>
-                                        <Text style={style.txtPedidoFinalizado}>Motivo no cierre: </Text>
-                                        <Text style={style.txtPedidoFinalizado}>{motivo_no_cierre}</Text>
+
+                                    {/* Card de detalles */}
+                                    <View style={{
+                                        backgroundColor: '#fff',
+                                        borderRadius: 12,
+                                        padding: 16,
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.1,
+                                        shadowRadius: 4,
+                                        elevation: 3
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontWeight: '600',
+                                            color: '#333',
+                                            marginBottom: 12,
+                                            textAlign: 'center'
+                                        }}>
+                                            📋 Información del Pedido
+                                        </Text>
+
+                                        <View style={{ gap: 8 }}>
+                                            {kilos && (
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    paddingVertical: 6
+                                                }}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <FontAwesome name="balance-scale" style={{ fontSize: 14, color: '#666', marginRight: 8 }} />
+                                                        <Text style={{ fontSize: 13, color: '#666' }}>Kilos:</Text>
+                                                    </View>
+                                                    <Text style={{ fontSize: 13, color: '#333', fontWeight: '600' }}>{kilos}</Text>
+                                                </View>
+                                            )}
+
+                                            {factura && (
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    paddingVertical: 6
+                                                }}>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <FontAwesome name="file-invoice" style={{ fontSize: 14, color: '#666', marginRight: 8 }} />
+                                                        <Text style={{ fontSize: 13, color: '#666' }}>Factura:</Text>
+                                                    </View>
+                                                    <Text style={{ fontSize: 13, color: '#333', fontWeight: '600' }}>{factura}</Text>
+                                                </View>
+                                            )}
+                                        </View>
                                     </View>
-                                )}
-                                {perfil_novedad && (
-                                    <View style={style.pedido}>
-                                        <Text style={style.txtPedidoFinalizado}>Perfil novedad: </Text>
-                                        <Text style={style.txtPedidoFinalizado}>{perfil_novedad}</Text>
-                                    </View>
-                                )}
+
+                                    {/* Card de información adicional si existen otros campos */}
+                                    {(motivo_no_cierre || perfil_novedad) && (
+                                        <View style={{
+                                            backgroundColor: '#fff3cd',
+                                            borderRadius: 12,
+                                            padding: 16,
+                                            borderLeftWidth: 4,
+                                            borderLeftColor: '#ffc107'
+                                        }}>
+                                            <Text style={{
+                                                fontSize: 14,
+                                                fontWeight: '600',
+                                                color: '#856404',
+                                                marginBottom: 8,
+                                                textAlign: 'center'
+                                            }}>
+                                                ℹ️ Información Adicional
+                                            </Text>
+                                            {motivo_no_cierre && (
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between',
+                                                    marginBottom: 6
+                                                }}>
+                                                    <Text style={{ fontSize: 12, color: '#856404', flex: 1 }}>Motivo no cierre:</Text>
+                                                    <Text style={{ fontSize: 12, color: '#856404', fontWeight: '600', flex: 2, textAlign: 'right' }}>
+                                                        {motivo_no_cierre}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                            {perfil_novedad && (
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <Text style={{ fontSize: 12, color: '#856404', flex: 1 }}>Perfil novedad:</Text>
+                                                    <Text style={{ fontSize: 12, color: '#856404', fontWeight: '600', flex: 2, textAlign: 'right' }}>
+                                                        {perfil_novedad}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Sección de cerrar pedido */}
+                        {(acceso === "admin" || acceso === "conductor" || acceso === "despacho") && fechaEntrega && !entregado && (
+                            <View style={{
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: 10,
+                                padding: 16,
+                                marginTop: 20,
+                                borderLeftWidth: 4,
+                                borderLeftColor: '#28a745'
+                            }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                                    <FontAwesome name="check-circle" style={{ fontSize: 18, color: '#28a745', marginRight: 10 }} />
+                                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#333' }}>
+                                        Finalización del Pedido
+                                    </Text>
+                                </View>
+
+                                <Text style={{ fontSize: 14, color: '#666', marginBottom: 16, lineHeight: 20 }}>
+                                    Complete la información de entrega para finalizar este pedido.
+                                </Text>
+
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: '#28a745',
+                                        paddingVertical: 14,
+                                        paddingHorizontal: 20,
+                                        borderRadius: 8,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.1,
+                                        shadowRadius: 4,
+                                        elevation: 3,
+                                    }}
+                                    onPress={onClosePedido}
+                                    activeOpacity={0.8}
+                                >
+                                    <FontAwesome name="edit" style={{ fontSize: 16, color: 'white', marginRight: 10 }} />
+                                    <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                                        Cerrar Pedido
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {/* Botón cancelar pedido para clientes */}
+                        {acceso === "cliente" && (
+                            <View style={{
+                                backgroundColor: '#fff3cd',
+                                borderRadius: 10,
+                                padding: 16,
+                                marginTop: 20,
+                                borderLeftWidth: 4,
+                                borderLeftColor: '#dc3545'
+                            }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                                    <FontAwesome name="exclamation-triangle" style={{ fontSize: 18, color: '#dc3545', marginRight: 10 }} />
+                                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#333' }}>
+                                        Cancelación de Pedido
+                                    </Text>
+                                </View>
+
+                                <Text style={{ fontSize: 14, color: '#666', marginBottom: 16, lineHeight: 20 }}>
+                                    ¿Necesita cancelar este pedido? Esta acción no se puede deshacer.
+                                </Text>
+
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: '#dc3545',
+                                        paddingVertical: 14,
+                                        paddingHorizontal: 20,
+                                        borderRadius: 8,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.1,
+                                        shadowRadius: 4,
+                                        elevation: 3,
+                                    }}
+                                    onPress={onCancelOrder}
+                                    activeOpacity={0.8}
+                                >
+                                    <FontAwesome name="times-circle" style={{ fontSize: 16, color: 'white', marginRight: 10 }} />
+                                    <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                                        Cancelar Pedido
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
                         )}
                     </ScrollView>
