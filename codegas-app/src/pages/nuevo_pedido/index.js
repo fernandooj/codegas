@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react'
-import { View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert, ScrollView, Animated } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
@@ -10,7 +10,7 @@ import ModalSelector from 'react-native-modal-selector'
 import { Calendar } from 'react-native-calendars';
 import { TextInputMask } from 'react-native-masked-text'
 
-import { connect, useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { DataContext } from "../../context/context"
 import { getUsuariosAcceso, getUsuarios, getPointsByClient } from '../../redux/actions/usuarioActions'
 import { verificarPedidoHoy, crearPedido } from '../../redux/actions/pedidoActions'
@@ -19,20 +19,19 @@ import { style } from './style'
 
 import { frecuencias, dias, diasN, dia1, dia2 } from '../../utils/pedido_info'
 
-const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
+const Nuevo_pedido = ({ navigation }) => {
     const context = useContext(DataContext);
     const { acceso, userId: idUsuario, email, nombre } = context;
     const dispatch = useDispatch();
     const campoMonto = useRef(null);
 
-    // Selector de Redux para obtener los clientes (solo si no es cliente)
-    const clientes = useSelector(state => {
-        // Si el acceso es cliente, no necesitamos cargar clientes
-        if (acceso === 'cliente') {
-            return [];
-        }
-        return state.usuario.usuariosAcceso || [];
-    });
+    // Estados para animaciones del modal
+    const [modalAnimation] = useState(new Animated.Value(0));
+    const [overlayAnimation] = useState(new Animated.Value(0));
+
+    // Selector de Redux para obtener los clientes
+    const clientes = useSelector(state => state.usuario.usuarios || []);
+    const usuariosAcceso = useSelector(state => state.usuario.usuariosAcceso || []);
 
     const [state, setState] = useState({
         imagen: [],
@@ -70,30 +69,49 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
     });
 
     useEffect(() => {
-        const initializeComponent = async () => {
-            // Solo cargar usuarios si no es cliente
-            if (acceso !== 'cliente') {
-                try {
-                    // Usar la acción de Redux en lugar de axios directo
-                    await dispatch(getUsuariosAcceso(100, 0, 'adminsolucion'));
-                } catch (error) {
-                    console.error('Error fetching usuarios:', error);
-                }
+        if (!nombre && idUsuario) {
+            navigation.navigate("verPerfil", { tipoAcceso: null });
+        }
+
+        setState(prev => ({ ...prev, idUsuario, acceso, email, nombre }));
+
+        if (acceso === 'cliente') {
+            getPuntos(idUsuario);
+        }
+
+        // Solo cargar usuarios si no es cliente
+        if (acceso !== 'cliente') {
+            // Usar la misma lógica que en clientes: cargar usuarios con acceso 'cliente'
+            const action = getUsuarios(100, 0, 'cliente', '', idUsuario);
+            if (action && typeof action === 'function') {
+                dispatch(action);
             }
+        }
+    }, [context, navigation, dispatch, acceso, idUsuario, nombre]);
 
-            if (!nombre && idUsuario) {
-                navigation.navigate("verPerfil", { tipoAcceso: null });
-            }
+    // Efecto para animaciones del modal
+    useEffect(() => {
+        if (state.showClientes) {
+            // Reset animations
+            modalAnimation.setValue(0);
+            overlayAnimation.setValue(0);
 
-            setState(prev => ({ ...prev, idUsuario, acceso, email, nombre }));
-
-            if (acceso === 'cliente') {
-                getPuntos(idUsuario);
-            }
-        };
-
-        initializeComponent();
-    }, [context, navigation]);
+            // Start entrance animations
+            Animated.parallel([
+                Animated.timing(overlayAnimation, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: false,
+                }),
+                Animated.spring(modalAnimation, {
+                    toValue: 1,
+                    tension: 100,
+                    friction: 8,
+                    useNativeDriver: false,
+                }),
+            ]).start();
+        }
+    }, [state.showClientes]);
 
     const getPuntos = async (id) => {
         try {
@@ -126,7 +144,7 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
         }
     };
 
-    const getClientes = async () => {
+    const getClientes = () => {
         const { terminoBuscador, idUsuario, acceso } = state;
 
         // Si el acceso es cliente, no debe llamar a ningún endpoint de usuarios
@@ -139,41 +157,94 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
             return;
         }
 
-        try {
-            await dispatch(getUsuarios(10, 0, 'cliente', terminoBuscador, idUsuario));
-            // Los clientes se obtendrán del estado de Redux y se actualizarán automáticamente
-        } catch (error) {
-            console.error('Error fetching clientes:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Error al cargar clientes',
-                text2: 'Intente más tarde'
-            });
+        // Usar la misma lógica que en la página de clientes
+        const action = getUsuarios(10, 0, 'cliente', terminoBuscador, idUsuario);
+        if (action && typeof action === 'function') {
+            dispatch(action);
         }
     };
     const renderUsuarios = () => {
         return clientes.map((e, key) => {
+            const isInactive = !e.activo;
             return (
-                <View style={[style.contenedorUsers, { backgroundColor: e.activo ? "white" : "red" }]} key={key}>
-                    <TouchableOpacity
-                        style={{ flexDirection: "row" }}
-                        onPress={() => filtroClientes(e)}
-                        disabled={!e.activo} // Deshabilitar si no está activo
-                    >
-                        <View style={{ width: "90%" }}>
+                <TouchableOpacity
+                    key={key}
+                    style={[
+                        style.clienteCard,
+                        isInactive && style.clienteCardInactive
+                    ]}
+                    onPress={() => filtroClientes(e)}
+                    disabled={isInactive}
+                    activeOpacity={0.7}
+                >
+                    <View style={style.clienteCardContent}>
+                        {/* Avatar placeholder */}
+                        <View style={[
+                            style.clienteAvatar,
+                            isInactive && style.clienteAvatarInactive
+                        ]}>
+                            <FontAwesome
+                                name="user"
+                                size={20}
+                                style={[
+                                    style.clienteAvatarIcon,
+                                    isInactive && style.clienteAvatarIconInactive
+                                ]}
+                            />
+                        </View>
+
+                        {/* Client info */}
+                        <View style={style.clienteInfo}>
                             {e.acceso === "cliente" && (
-                                <Text style={[style.textUsers, !e.activo && { color: 'white' }]}>
-                                    {e.idPadre ? "Punto consumo: " + e.idPadre.razon_social : e.razon_social}
+                                <Text style={[
+                                    style.clienteRazonSocial,
+                                    isInactive && style.clienteTextInactive
+                                ]}>
+                                    {e.razon_social || 'Sin razón social'}
                                 </Text>
                             )}
-                            <Text style={[style.textUsers, !e.activo && { color: 'white' }]}>{e.nombre}</Text>
-                            <Text style={[style.textUsers, !e.activo && { color: 'white' }]}>{e.codt}</Text>
+                            <Text style={[
+                                style.clienteNombre,
+                                isInactive && style.clienteTextInactive
+                            ]}>
+                                {e.nombre}
+                            </Text>
+                            {e.codt && (
+                                <Text style={[
+                                    style.clienteCodt,
+                                    isInactive && style.clienteTextInactive
+                                ]}>
+                                    CODT: {e.codt}
+                                </Text>
+                            )}
+
+                            {/* Badge de estado */}
+                            <View style={[
+                                style.clienteStatusBadge,
+                                isInactive ? style.clienteStatusBadgeInactive : style.clienteStatusBadgeActive
+                            ]}>
+                                <Text style={[
+                                    style.clienteStatusText,
+                                    isInactive ? style.clienteStatusTextInactive : style.clienteStatusTextActive
+                                ]}>
+                                    {isInactive ? 'INACTIVO' : 'ACTIVO'}
+                                </Text>
+                            </View>
                         </View>
-                        <View style={{ justifyContent: "center" }}>
-                            <FontAwesome name={'angle-right'} style={style.iconCerrar} />
+
+                        {/* Arrow icon */}
+                        <View style={style.clienteArrowContainer}>
+                            <FontAwesome
+                                name="chevron-right"
+                                size={16}
+                                style={[
+                                    style.clienteArrowIcon,
+                                    isInactive && style.clienteArrowIconInactive
+                                ]}
+                            />
                         </View>
-                    </TouchableOpacity>
-                </View>
+                    </View>
+                </TouchableOpacity>
             )
         })
     };
@@ -214,52 +285,154 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
     };
     const modalCliente = () => {
         const { showRenderUsuarios, terminoBuscador } = state;
+
+        const closeModal = () => {
+            Animated.parallel([
+                Animated.timing(overlayAnimation, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: false,
+                }),
+                Animated.timing(modalAnimation, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: false,
+                }),
+            ]).start(() => {
+                setState(prev => ({
+                    ...prev,
+                    showClientes: false,
+                    terminoBuscador: '',
+                    showRenderUsuarios: false
+                }));
+            });
+        };
+
         return (
-            <Modal transparent visible={true} animationType="fade" >
-                <TouchableOpacity activeOpacity={1} >
-                    <View style={style.contenedorModalCliente}>
-                        <View style={style.subContenedorModalCliente}>
+            <Modal transparent visible={true} animationType="none" onRequestClose={closeModal}>
+                <Animated.View
+                    style={[
+                        style.modalOverlay,
+                        {
+                            opacity: overlayAnimation,
+                        }
+                    ]}
+                >
+                    <Animated.View
+                        style={[
+                            style.modalContainer,
+                            {
+                                transform: [
+                                    {
+                                        scale: modalAnimation.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [0.3, 1],
+                                        }),
+                                    },
+                                    {
+                                        translateY: modalAnimation.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [50, 0],
+                                        }),
+                                    },
+                                ],
+                            }
+                        ]}
+                    >
+                        {/* Header del Modal */}
+                        <View style={style.modalHeader}>
+                            <Text style={style.modalTitle}>
+                                Seleccionar Cliente
+                            </Text>
                             <TouchableOpacity
-                                activeOpacity={1}
-                                onPress={() => setState(prev => ({
-                                    ...prev,
-                                    showClientes: false,
-                                    terminoBuscador: '',
-                                    clientes: []
-                                }))}
-                                style={style.btnModalClose}
+                                onPress={closeModal}
+                                style={style.modalCloseButton}
                             >
-                                <FontAwesome name={'times-circle'} style={style.iconCerrar} />
+                                <FontAwesome name="times" size={16} style={style.modalCloseIcon} />
                             </TouchableOpacity>
-                            <View style={{ flexDirection: "row" }}>
+                        </View>
+
+                        {/* Barra de búsqueda */}
+                        <View style={style.modalSearchContainer}>
+                            <View style={style.modalSearchInputContainer}>
                                 <TextInput
-                                    placeholder="Buscar cliente"
+                                    placeholder="Buscar cliente por nombre o razón social..."
                                     value={terminoBuscador}
-                                    style={style.inputStep2}
+                                    style={style.modalSearchInput}
                                     onChangeText={(terminoBuscador) => setState(prev => ({ ...prev, terminoBuscador }))}
+                                    placeholderTextColor="#999"
                                 />
                                 <TouchableOpacity
-                                    style={style.buscarCliente}
+                                    style={style.modalSearchButton}
                                     onPress={() => {
                                         if (terminoBuscador.length > 1) {
                                             getClientes();
                                             setState(prev => ({ ...prev, showRenderUsuarios: true }));
                                         } else {
-                                            alert("Inserte un valor");
+                                            Toast.show({
+                                                type: 'info',
+                                                text1: 'Ingrese al menos 2 caracteres para buscar'
+                                            });
                                         }
                                     }}
                                 >
-                                    <FontAwesome name='search' style={style.iconSearch} />
+                                    <FontAwesome name='search' style={style.modalSearchIcon} />
                                 </TouchableOpacity>
                             </View>
-                            {showRenderUsuarios && (
-                                <ScrollView>
-                                    {renderUsuarios()}
-                                </ScrollView>
+                        </View>
+
+                        {/* Lista de clientes */}
+                        <View style={style.modalContent}>
+                            {showRenderUsuarios ? (
+                                clientes.length > 0 ? (
+                                    <ScrollView style={style.modalScrollView}>
+                                        {renderUsuarios()}
+                                    </ScrollView>
+                                ) : (
+                                    <View style={style.modalEmptyState}>
+                                        <FontAwesome
+                                            name="users"
+                                            size={48}
+                                            style={style.modalEmptyIcon}
+                                        />
+                                        <Text style={style.modalEmptyText}>
+                                            No se encontraron clientes
+                                        </Text>
+                                        <Text style={style.modalEmptySubtext}>
+                                            Intenta con otro término de búsqueda
+                                        </Text>
+                                    </View>
+                                )
+                            ) : (
+                                <View style={style.modalEmptyState}>
+                                    <FontAwesome
+                                        name="search"
+                                        size={48}
+                                        style={style.modalEmptyIcon}
+                                    />
+                                    <Text style={style.modalEmptyText}>
+                                        Buscar Clientes
+                                    </Text>
+                                    <Text style={style.modalEmptySubtext}>
+                                        Ingresa el nombre o razón social del cliente
+                                    </Text>
+                                </View>
                             )}
                         </View>
-                    </View>
-                </TouchableOpacity>
+
+                        {/* Footer */}
+                        <View style={style.modalFooter}>
+                            <TouchableOpacity
+                                style={style.modalCancelButton}
+                                onPress={closeModal}
+                            >
+                                <Text style={style.modalCancelText}>
+                                    Cancelar
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+                </Animated.View>
             </Modal>
         )
     };
@@ -460,49 +633,130 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
                     </View>
                 )}
                 {acceso !== "cliente" && renderCliente()}
-                {puntos.length > 1 ? (
-                    <View>
-                        <Text>Selecciona el punto de entrega</Text>
-                        {puntos.map((e, key) => {
-                            return (
-                                <TouchableOpacity
-                                    key={key}
-                                    style={style.btnZona}
-                                    onPress={() => setState(prev => ({ ...prev, puntoId: e._id }))}
-                                >
-                                    <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon} resizeMode={'contain'} />
-                                    <View>
-                                        <Text style={style.textZona}>{e.direccion}</Text>
-                                        <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
-                                        {e.observacion && (
-                                            <Text style={style.textZona}>
-                                                Observacion: {e.observacion === "" ? "&nbsp;" : e.observacion}
+
+                {/* Sección de puntos de entrega mejorada */}
+                {puntos.length > 0 && (
+                    <View style={style.puntosEntregaContainer}>
+                        {puntos.length > 1 ? (
+                            <>
+                                <Text style={style.puntosEntregaTitle}>
+                                    Selecciona el punto de entrega
+                                </Text>
+                                {puntos.map((e, key) => {
+                                    const isSelected = puntoId === e._id;
+                                    return (
+                                        <TouchableOpacity
+                                            key={key}
+                                            style={[
+                                                style.puntoEntregaCard,
+                                                isSelected && style.puntoEntregaCardSelected
+                                            ]}
+                                            onPress={() => setState(prev => ({ ...prev, puntoId: e._id }))}
+                                            activeOpacity={0.7}
+                                        >
+                                            <View style={style.puntoEntregaHeader}>
+                                                <View style={[
+                                                    style.puntoEntregaIcon,
+                                                    isSelected && style.puntoEntregaIconSelected
+                                                ]}>
+                                                    <FontAwesome
+                                                        name="map-marker"
+                                                        style={style.puntoEntregaIconImage}
+                                                    />
+                                                </View>
+
+                                                <View style={style.puntoEntregaInfo}>
+                                                    <Text style={style.puntoEntregaDireccion}>
+                                                        {e.direccion}
+                                                    </Text>
+                                                    <Text style={style.puntoEntregaCapacidad}>
+                                                        🏭 Capacidad: {e.capacidad} kg
+                                                    </Text>
+                                                    {e.observacion && e.observacion.trim() !== "" && (
+                                                        <Text style={style.puntoEntregaObservacion}>
+                                                            💬 {e.observacion}
+                                                        </Text>
+                                                    )}
+                                                </View>
+
+                                                {isSelected && (
+                                                    <View style={style.puntoEntregaCheckContainer}>
+                                                        <FontAwesome
+                                                            name="check-circle"
+                                                            style={style.puntoEntregaCheckIcon}
+                                                        />
+                                                    </View>
+                                                )}
+                                            </View>
+
+                                            {isSelected && (
+                                                <View style={style.puntoEntregaBadge}>
+                                                    <Text style={style.puntoEntregaBadgeText}>
+                                                        SELECCIONADO
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </TouchableOpacity>
+                                    )
+                                })}
+                            </>
+                        ) : (
+                            // Punto único - diseño especial
+                            puntos.map((e, key) => {
+                                return (
+                                    <View key={key} style={[
+                                        style.puntoEntregaCard,
+                                        style.puntoEntregaCardSingle
+                                    ]}>
+                                        <View style={style.puntoEntregaHeader}>
+                                            <View style={[
+                                                style.puntoEntregaIcon,
+                                                style.puntoEntregaIconSelected
+                                            ]}>
+                                                <FontAwesome
+                                                    name="map-marker"
+                                                    style={style.puntoEntregaIconImage}
+                                                />
+                                            </View>
+
+                                            <View style={style.puntoEntregaInfo}>
+                                                <Text style={[
+                                                    style.puntoEntregaDireccion,
+                                                    { color: '#28a745' }
+                                                ]}>
+                                                    Punto de entrega único
+                                                </Text>
+                                                <Text style={style.puntoEntregaDireccion}>
+                                                    {e.direccion}
+                                                </Text>
+                                                <Text style={style.puntoEntregaCapacidad}>
+                                                    🏭 Capacidad: {e.capacidad} kg
+                                                </Text>
+                                                {e.observacion && e.observacion.trim() !== "" && (
+                                                    <Text style={style.puntoEntregaObservacion}>
+                                                        💬 {e.observacion}
+                                                    </Text>
+                                                )}
+                                            </View>
+
+                                            <View style={style.puntoEntregaCheckContainer}>
+                                                <FontAwesome
+                                                    name="check-circle"
+                                                    style={style.puntoEntregaCheckIcon}
+                                                />
+                                            </View>
+                                        </View>
+
+                                        <View style={style.puntoEntregaBadge}>
+                                            <Text style={style.puntoEntregaBadgeText}>
+                                                PUNTO AUTOMÁTICO
                                             </Text>
-                                        )}
+                                        </View>
                                     </View>
-                                    {(puntoId === e._id) && <FontAwesome name="check" style={style.iconCheck} />}
-                                </TouchableOpacity>
-                            )
-                        })}
+                                )
+                            })
+                        )}
                     </View>
-                ) : (
-                    puntos.map((e, key) => {
-                        return (
-                            <View key={key} style={style.btnZona} >
-                                <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon} resizeMode={'contain'} />
-                                <View>
-                                    <Text style={style.textZona}>Punto de entrega</Text>
-                                    <Text style={style.textZona}>{e.direccion}</Text>
-                                    <Text style={style.textZona}>Capacidad: {e.capacidad}</Text>
-                                    {e.observacion && e.observacion.length !== 0 ? (
-                                        <Text style={style.textZona}>
-                                            Observacion: {e.observacion === "" ? "&nbsp;" : e.observacion}
-                                        </Text>
-                                    ) : null}
-                                </View>
-                            </View>
-                        )
-                    })
                 )}
                 {solicitud ? (
                     <TouchableOpacity
@@ -712,23 +966,4 @@ const Nuevo_pedido = ({ navigation, getUsuariosAcceso }) => {
     );
 };
 
-const mapState = state => {
-    return {
-
-    };
-};
-
-const mapDispatch = dispatch => {
-    return {
-        getUsuariosAcceso: (acceso) => {
-            dispatch(getUsuariosAcceso(10, 0, acceso));
-        },
-    };
-};
-
-
-
-export default connect(
-    mapState,
-    mapDispatch
-)(Nuevo_pedido);
+export default Nuevo_pedido;

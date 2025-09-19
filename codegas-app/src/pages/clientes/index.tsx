@@ -247,7 +247,7 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
 
             <View style={style.userActionContainer}>
               {tieneHijos && (
-                <View style={style.childrenBadge}>
+                <View testID="children-badge" style={style.childrenBadge}>
                   <Text style={style.childrenBadgeText}>
                     {usuario.children.length}
                   </Text>
@@ -285,7 +285,7 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
     if (usuarios.length === 0) {
       return (
         <View style={style.loadingContainer}>
-          <ActivityIndicator color="#00218b" />
+          <ActivityIndicator testID="activity-indicator" color="#00218b" />
         </View>
       );
     }
@@ -347,6 +347,7 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
             />
             {terminoBuscador && terminoBuscador.length > 0 && (
               <TouchableOpacity
+                testID="close-icon"
                 onPress={() => updateState({ terminoBuscador: '', showSearch: true })}
                 style={style.clearButton}
               >
@@ -354,6 +355,7 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
               </TouchableOpacity>
             )}
             <TouchableOpacity
+              testID="search-button"
               onPress={handleSearch}
               style={style.searchButton}
             >
@@ -377,6 +379,7 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
 
       <ScrollView
         ref={scrollViewRef}
+        testID="users-scroll-view"
         style={style.scrollView}
         onScroll={onScroll}
         keyboardDismissMode="on-drag"

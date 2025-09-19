@@ -150,6 +150,7 @@ export const initialState = {
         imagen: undefined,
         perfil: undefined,
         idZona: undefined,
+        coordenadas: undefined,
     }
 };
 

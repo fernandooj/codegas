@@ -124,6 +124,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 idZona: undefined,
                 nombreZona: undefined,
                 capacidad: undefined,
+                lat: undefined,
+                lng: undefined,
+                is_active: true,
                 nuevo: true,
                 acceso: 'cliente',
             },
@@ -270,6 +273,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 nombreZona: data.nombreZona,
                                 observacion: data.observacion,
                                 capacidad: data.capacidad,
+                                lat: data.lat?.toString() || '',
+                                lng: data.lng?.toString() || '',
+                                is_active: data.is_active !== undefined ? data.is_active : true,
                                 _id: data._id
                             };
                         } else {
@@ -283,6 +289,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 nombreZona: data.nombreZona,
                                 observacion: data.observacion,
                                 capacidad: data.capacidad,
+                                lat: data.lat?.toString() || '',
+                                lng: data.lng?.toString() || '',
+                                is_active: data.is_active !== undefined ? data.is_active : true,
                                 _id: data._id
                             };
                         }
@@ -520,7 +529,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
                 <ScrollView
                     keyboardDismissMode="on-drag"
-                    style={{ flex: 1 }}
+                    style={style.scrollViewContainer}
                     contentContainerStyle={style.scrollViewContent}
                 >
                     {/* ACCESO */}
@@ -815,64 +824,41 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
                     {
                         (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "comercial") || acceso === "cliente")
-                        && <View style={{ marginBottom: 20 }}>
-                            <Text style={{
-                                fontSize: 16,
-                                fontWeight: '600',
-                                color: '#333',
-                                marginBottom: 8
-                            }}>
+                        && <View style={style.veoContainer}>
+                            <Text style={style.veoLabel}>
                                 Comercial VEO
                             </Text>
                             <TouchableOpacity
                                 onPress={() => accesoPerfil == "cliente" ? null : updateState({ modalCliente: true })}
-                                style={{
-                                    backgroundColor: '#fff',
-                                    borderRadius: 12,
-                                    borderWidth: 2,
-                                    borderColor: veo ? '#28a745' : '#e9ecef',
-                                    shadowColor: veo ? 'rgba(40,167,69, .15)' : 'rgba(0,0,0, .1)',
-                                    shadowOffset: { height: 2, width: 0 },
-                                    shadowOpacity: .3,
-                                    shadowRadius: 4,
-                                    elevation: 3,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 16,
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    minHeight: 56,
-                                }}
+                                style={[
+                                    style.veoSelector,
+                                    veo && style.veoSelectorSelected
+                                ]}
                             >
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{
-                                        fontSize: 16,
-                                        color: veo ? '#28a745' : '#999',
-                                        fontWeight: veo ? '600' : '400'
-                                    }}>
+                                <View style={style.veoSelectorContent}>
+                                    <Text style={[
+                                        style.veoSelectorText,
+                                        veo && style.veoSelectorTextSelected
+                                    ]}>
                                         {veo || "Seleccionar VEO"}
                                     </Text>
                                     {veo && (
-                                        <Text style={{
-                                            fontSize: 12,
-                                            color: '#28a745',
-                                            marginTop: 2
-                                        }}>
+                                        <Text style={style.veoSelectorSecondaryText}>
                                             VEO asignado
                                         </Text>
                                     )}
                                 </View>
-                                <View style={{
-                                    backgroundColor: veo ? '#28a745' : '#f8f9fa',
-                                    borderRadius: 8,
-                                    padding: 8,
-                                    borderWidth: 1,
-                                    borderColor: veo ? '#28a745' : '#e9ecef'
-                                }}>
+                                <View style={[
+                                    style.veoSelectorIconContainer,
+                                    veo && style.veoSelectorIconContainerSelected
+                                ]}>
                                     <FontAwesome
                                         name="chevron-down"
                                         size={14}
-                                        color={veo ? '#fff' : '#666'}
+                                        style={[
+                                            style.veoSelectorIcon,
+                                            veo && style.veoSelectorIconSelected
+                                        ]}
                                     />
                                 </View>
                             </TouchableOpacity>
@@ -895,30 +881,13 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     {/* BOTON ACTUALIZAR USUARIO */}
                     {
                         (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
-                        && <View style={{ marginTop: 20, marginBottom: 20 }}>
+                        && <View style={style.updateUserContainer}>
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: '#00218b',
-                                    paddingVertical: 16,
-                                    paddingHorizontal: 24,
-                                    borderRadius: 12,
-                                    alignItems: 'center',
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    shadowColor: 'rgba(0,0,0, .2)',
-                                    shadowOffset: { height: 2, width: 0 },
-                                    shadowOpacity: .3,
-                                    shadowRadius: 4,
-                                    elevation: 4,
-                                }}
+                                style={style.updateUserButton}
                                 onPress={() => editarUsuario("editar")}
                             >
-                                {cargando && <ActivityIndicator color="white" style={{ marginRight: 8 }} />}
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 16,
-                                    fontWeight: '600'
-                                }}>
+                                {cargando && <ActivityIndicator color="white" style={style.updateUserButtonLoading} />}
+                                <Text style={style.updateUserButtonText}>
                                     {cargando ? "Guardando..." : "Actualizar Usuario"}
                                 </Text>
                             </TouchableOpacity>
@@ -928,77 +897,41 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     {/* BOTONES DE ESTADO Y ACCIONES */}
                     {
                         (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
-                        && <View style={{
-                            marginTop: 20,
-                            marginBottom: 20,
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            gap: 12
-                        }}>
+                        && <View style={style.actionButtonsContainer}>
                             {/* BOTON CAMBIAR ESTADO */}
                             <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: activo ? "#dc3545" : "#28a745",
-                                    paddingVertical: 14,
-                                    paddingHorizontal: 16,
-                                    borderRadius: 12,
-                                    alignItems: 'center',
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    shadowColor: activo ? 'rgba(220,53,69, .3)' : 'rgba(40,167,69, .3)',
-                                    shadowOffset: { height: 2, width: 0 },
-                                    shadowOpacity: .4,
-                                    shadowRadius: 4,
-                                    elevation: 4,
-                                }}
+                                style={[
+                                    style.actionButton,
+                                    activo ? style.actionButtonDeactivate : style.actionButtonActivate
+                                ]}
                                 onPress={() => cambiarEstadoUsuario()}
                             >
                                 <FontAwesome
                                     name={activo ? "ban" : "check"}
                                     size={16}
                                     color="white"
-                                    style={{ marginRight: 8 }}
+                                    style={style.actionButtonIcon}
                                 />
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 14,
-                                    fontWeight: '600'
-                                }}>
+                                <Text style={style.actionButtonText}>
                                     {activo ? "Desactivar" : "Activar"}
                                 </Text>
                             </TouchableOpacity>
 
                             {/* BOTON ELIMINAR */}
                             <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: "#dc3545",
-                                    paddingVertical: 14,
-                                    paddingHorizontal: 16,
-                                    borderRadius: 12,
-                                    alignItems: 'center',
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    shadowColor: 'rgba(220,53,69, .3)',
-                                    shadowOffset: { height: 2, width: 0 },
-                                    shadowOpacity: .4,
-                                    shadowRadius: 4,
-                                    elevation: 4,
-                                }}
+                                style={[
+                                    style.actionButton,
+                                    style.actionButtonDelete
+                                ]}
                                 onPress={() => eliminarUsuario()}
                             >
                                 <FontAwesome
                                     name="trash"
                                     size={16}
                                     color="white"
-                                    style={{ marginRight: 8 }}
+                                    style={style.actionButtonIcon}
                                 />
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 14,
-                                    fontWeight: '600'
-                                }}>
+                                <Text style={style.actionButtonText}>
                                     Eliminar
                                 </Text>
                             </TouchableOpacity>
@@ -1009,32 +942,14 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     {
                         // Mostrar botones principales solo para perfil propio o modo crear/admin
                         (tipoAcceso === "" || (tipoAcceso === "admin" || tipoAcceso === "crear")) && (
-                            <View style={{ marginTop: 30, marginBottom: 20 }}>
+                            <View style={style.mainButtonsContainer}>
                                 {/* BOTON GUARDAR/CREAR PRINCIPAL */}
                                 <TouchableOpacity
-                                    style={{
-                                        backgroundColor: '#00218b',
-                                        paddingVertical: 16,
-                                        paddingHorizontal: 24,
-                                        borderRadius: 12,
-                                        alignItems: 'center',
-                                        flexDirection: 'row',
-                                        justifyContent: 'center',
-                                        marginBottom: 12,
-                                        shadowColor: 'rgba(0,0,0, .2)',
-                                        shadowOffset: { height: 2, width: 0 },
-                                        shadowOpacity: .3,
-                                        shadowRadius: 4,
-                                        elevation: 4,
-                                    }}
+                                    style={style.primaryButton}
                                     onPress={() => tipoAcceso === "" ? handleSubmit("editar") : handleSubmit()}
                                 >
-                                    {cargando && <ActivityIndicator color="white" style={{ marginRight: 8 }} />}
-                                    <Text style={{
-                                        color: 'white',
-                                        fontSize: 16,
-                                        fontWeight: '600'
-                                    }}>
+                                    {cargando && <ActivityIndicator color="white" style={style.primaryButtonLoading} />}
+                                    <Text style={style.primaryButtonText}>
                                         {cargando
                                             ? "Guardando..."
                                             : (tipoAcceso === ""
@@ -1049,43 +964,23 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     }
 
                     {/* BOTONES SECUNDARIOS */}
-                    <View style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        gap: 12,
-                        marginTop: 12
-                    }}>
+                    <View style={style.secondaryButtonsContainer}>
                         {
                             (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "veo"))
                             && <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: '#fd7e14',
-                                    paddingVertical: 14,
-                                    paddingHorizontal: 16,
-                                    borderRadius: 12,
-                                    alignItems: 'center',
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    shadowColor: 'rgba(253,126,20, .3)',
-                                    shadowOffset: { height: 2, width: 0 },
-                                    shadowOpacity: .4,
-                                    shadowRadius: 4,
-                                    elevation: 4,
-                                }}
+                                style={[
+                                    style.secondaryButton,
+                                    style.secondaryButtonCharts
+                                ]}
                                 onPress={() => navigation.navigate("chart", { idUsuario })}
                             >
                                 <FontAwesome
                                     name="bar-chart"
                                     size={16}
                                     color="white"
-                                    style={{ marginRight: 8 }}
+                                    style={style.secondaryButtonIcon}
                                 />
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 14,
-                                    fontWeight: '600'
-                                }}>
+                                <Text style={style.secondaryButtonText}>
                                     Ver Gráficos
                                 </Text>
                             </TouchableOpacity>
@@ -1094,34 +989,19 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         {
                             (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
                             && <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: '#007bff',
-                                    paddingVertical: 14,
-                                    paddingHorizontal: 16,
-                                    borderRadius: 12,
-                                    alignItems: 'center',
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    shadowColor: 'rgba(0,123,255, .3)',
-                                    shadowOffset: { height: 2, width: 0 },
-                                    shadowOpacity: .4,
-                                    shadowRadius: 4,
-                                    elevation: 4,
-                                }}
+                                style={[
+                                    style.secondaryButton,
+                                    style.secondaryButtonReview
+                                ]}
                                 onPress={() => navigation.navigate("puntos", { idUsuario })}
                             >
                                 <FontAwesome
                                     name="clipboard"
                                     size={16}
                                     color="white"
-                                    style={{ marginRight: 8 }}
+                                    style={style.secondaryButtonIcon}
                                 />
-                                <Text style={{
-                                    color: 'white',
-                                    fontSize: 14,
-                                    fontWeight: '600'
-                                }}>
+                                <Text style={style.secondaryButtonText}>
                                     Crear Revisión
                                 </Text>
                             </TouchableOpacity>
@@ -1246,6 +1126,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             nombre: nombreUbicacion,
             observacion,
             nombreZona,
+            lat: '',
+            lng: '',
+            is_active: true,
             nuevo: true,
             acceso: 'cliente',
         };
@@ -1264,7 +1147,13 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         ? (ubicaciones[key].celular = value)
                         : type == 'capacidad'
                             ? (ubicaciones[key].capacidad = value)
-                            : (ubicaciones[key].nombre = value);
+                            : type == 'lat'
+                                ? (ubicaciones[key].lat = value)
+                                : type == 'lng'
+                                    ? (ubicaciones[key].lng = value)
+                                    : type == 'is_active'
+                                        ? (ubicaciones[key].is_active = value === "true")
+                                        : (ubicaciones[key].nombre = value);
         updateState({ ubicaciones });
     }, [state.ubicaciones, updateState]);
 
@@ -1280,83 +1169,33 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         console.log('Modal zonas - zonas from Redux:', zonas);
 
         return (
-            <View style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 2000
-            }}>
-                <View style={{
-                    backgroundColor: '#fff',
-                    borderRadius: 12,
-                    margin: 20,
-                    maxHeight: '80%',
-                    width: '90%',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8
-                }}>
+            <View style={style.modalZonaOverlay}>
+                <View style={style.modalZonaContainer}>
                     {/* Header del Modal */}
-                    <View style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: 20,
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#e9ecef'
-                    }}>
-                        <Text style={{
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                            color: '#333'
-                        }}>
+                    <View style={style.modalZonaHeader}>
+                        <Text style={style.modalZonaTitle}>
                             Seleccionar Zona
                         </Text>
                         <TouchableOpacity
                             onPress={() => updateState({ modalZona: false })}
-                            style={{
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: 15,
-                                width: 30,
-                                height: 30,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderWidth: 1,
-                                borderColor: '#e9ecef'
-                            }}
+                            style={style.modalZonaCloseButton}
                         >
-                            <FontAwesome name="times" size={16} color="#6c757d" />
+                            <FontAwesome name="times" size={16} style={style.modalZonaCloseIcon} />
                         </TouchableOpacity>
                     </View>
 
                     {/* Barra de búsqueda */}
-                    <View style={{ padding: 20, paddingBottom: 10 }}>
+                    <View style={style.zonaSearchContainer}>
                         <TextInput
                             placeholder="Buscar zona..."
                             value={terminoBuscador}
                             onChangeText={terminoBuscador => updateState({ terminoBuscador })}
-                            style={{
-                                backgroundColor: '#f8f9fa',
-                                borderWidth: 1,
-                                borderColor: '#e9ecef',
-                                borderRadius: 8,
-                                paddingHorizontal: 15,
-                                paddingVertical: 12,
-                                fontSize: 16,
-                                color: '#333'
-                            }}
+                            style={style.zonaSearchInput}
                         />
                     </View>
 
                     {/* Lista de zonas */}
-                    <ScrollView style={{ maxHeight: 300 }}>
+                    <ScrollView style={style.zonaListContainer}>
                         {zonas
                             .filter(zona =>
                                 terminoBuscador === '' ||
@@ -1366,28 +1205,19 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 <TouchableOpacity
                                     key={key}
                                     onPress={() => actualizaZona(zona._id, zona.nombre)}
-                                    style={{
-                                        padding: 15,
-                                        borderBottomWidth: 1,
-                                        borderBottomColor: '#f1f3f4',
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        backgroundColor: idZona === zona._id ? '#e3f2fd' : '#fff'
-                                    }}
+                                    style={[
+                                        style.zonaItem,
+                                        idZona === zona._id && style.zonaItemSelected
+                                    ]}
                                 >
-                                    <Text style={{
-                                        fontSize: 16,
-                                        color: '#333',
-                                        flex: 1
-                                    }}>
+                                    <Text style={style.zonaItemText}>
                                         {zona.nombre}
                                     </Text>
                                     {idZona === zona._id && (
                                         <FontAwesome
                                             name="check"
                                             size={18}
-                                            color="#2196f3"
+                                            style={style.zonaItemCheck}
                                         />
                                     )}
                                 </TouchableOpacity>
@@ -1396,25 +1226,12 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     </ScrollView>
 
                     {/* Footer */}
-                    <View style={{
-                        padding: 20,
-                        borderTopWidth: 1,
-                        borderTopColor: '#e9ecef'
-                    }}>
+                    <View style={style.modalFooter}>
                         <TouchableOpacity
-                            style={{
-                                backgroundColor: '#6c757d',
-                                borderRadius: 8,
-                                padding: 15
-                            }}
+                            style={style.modalCancelButton}
                             onPress={() => updateState({ modalZona: false })}
                         >
-                            <Text style={{
-                                color: '#fff',
-                                textAlign: 'center',
-                                fontSize: 16,
-                                fontWeight: '600'
-                            }}>
+                            <Text style={style.modalButtonText}>
                                 Cancelar
                             </Text>
                         </TouchableOpacity>
@@ -1695,251 +1512,194 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     const modalUbicacion: ModalUbicacionFunction = useCallback(() => {
         let { modalZona, ubicaciones, activeScroll } = state;
         return (
-            <View style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 1000
-            }}>
+            <View style={style.modalUbicacionOverlay}>
                 {modalZona ? modalZonas() : null}
-                <View style={{
-                    backgroundColor: '#fff',
-                    borderRadius: 12,
-                    margin: 20,
-                    maxHeight: '90%',
-                    width: '90%',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8
-                }}>
+                <View style={style.modalUbicacionContainer}>
                     {/* Header del Modal */}
-                    <View style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: 20,
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#e9ecef'
-                    }}>
-                        <Text style={{
-                            fontSize: 18,
-                            fontWeight: 'bold',
-                            color: '#333'
-                        }}>
+                    <View style={style.modalUbicacionHeader}>
+                        <Text style={style.modalUbicacionTitle}>
                             Ubicaciones de Entrega
                         </Text>
                         <TouchableOpacity
                             onPress={() => updateState({ modalUbicacion: false })}
-                            style={{
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: 15,
-                                width: 30,
-                                height: 30,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderWidth: 1,
-                                borderColor: '#e9ecef'
-                            }}
+                            style={style.modalUbicacionCloseButton}
                         >
-                            <FontAwesome name="times" size={16} color="#6c757d" />
+                            <FontAwesome name="times" size={16} style={style.modalUbicacionCloseIcon} />
                         </TouchableOpacity>
                     </View>
 
                     {/* Contenido del Modal */}
-                    <ScrollView style={{ maxHeight: 400 }} keyboardDismissMode="on-drag">
-                        <View style={{ padding: 20 }}>
-                            <Text style={{
-                                fontSize: 14,
-                                color: '#666',
-                                marginBottom: 20,
-                                lineHeight: 20
-                            }}>
+                    <ScrollView style={style.modalUbicacionScrollView} keyboardDismissMode="on-drag">
+                        <View style={style.modalContentPadding}>
+                            <Text style={style.modalUbicacionDescription}>
                                 Si el pedido lo realizará el encargado del punto por favor inserta su información, de lo contrario solo inserta la dirección y zona
                             </Text>
 
                             {ubicaciones.map((ubicacion, key) => (
-                                <View key={key} style={{
-                                    backgroundColor: '#f8f9fa',
-                                    borderRadius: 8,
-                                    padding: 15,
-                                    marginBottom: 15,
-                                    borderWidth: 1,
-                                    borderColor: '#e9ecef'
-                                }}>
-                                    <View style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'flex-start',
-                                        marginBottom: 10
-                                    }}>
-                                        <Text style={{
-                                            fontSize: 16,
-                                            fontWeight: '600',
-                                            color: '#333',
-                                            flex: 1
-                                        }}>
+                                <View key={key} style={style.ubicacionCard}>
+                                    <View style={style.ubicacionHeader}>
+                                        <Text style={style.ubicacionTitle}>
                                             Ubicación {key + 1}
                                         </Text>
                                         <TouchableOpacity
                                             onPress={() => eliminarUbicacion(key)}
-                                            style={{
-                                                backgroundColor: '#dc3545',
-                                                borderRadius: 12,
-                                                width: 24,
-                                                height: 24,
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}
+                                            style={style.ubicacionDeleteButton}
                                         >
-                                            <FontAwesome name="trash" size={12} color="#fff" />
+                                            <FontAwesome name="trash" size={12} style={style.ubicacionDeleteIcon} />
                                         </TouchableOpacity>
                                     </View>
 
                                     {/* Campos de la ubicación */}
-                                    <View style={{ marginBottom: 15 }}>
-                                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 5 }}>
+                                    <View style={style.ubicacionFieldContainer}>
+                                        <Text style={style.ubicacionFieldLabel}>
                                             Dirección *
                                         </Text>
                                         <TextInput
                                             placeholder="Dirección"
                                             value={ubicacion.direccion ? ubicacion.direccion.toUpperCase() : ubicacion.direccion}
                                             onChangeText={direccion => actualizaArrayUbicacion("direccion", direccion, key)}
-                                            style={{
-                                                backgroundColor: '#fff',
-                                                borderWidth: 1,
-                                                borderColor: '#e9ecef',
-                                                borderRadius: 6,
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 8,
-                                                fontSize: 14,
-                                                color: '#333'
-                                            }}
+                                            style={style.ubicacionFieldInput}
                                         />
                                     </View>
 
-                                    <View style={{ marginBottom: 15 }}>
-                                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 5 }}>
+                                    <View style={style.ubicacionFieldContainer}>
+                                        <Text style={style.ubicacionFieldLabel}>
                                             Zona *
                                         </Text>
                                         <TouchableOpacity
-                                            style={{
-                                                backgroundColor: '#fff',
-                                                borderWidth: 1,
-                                                borderColor: '#e9ecef',
-                                                borderRadius: 6,
-                                                paddingHorizontal: 12,
-                                                paddingVertical: 12,
-                                                flexDirection: 'row',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center'
-                                            }}
+                                            style={style.ubicacionSelector}
                                             onPress={() => updateState({ modalZona: true, key })}
                                         >
-                                            <Text style={{ fontSize: 14, color: '#333', flex: 1 }}>
+                                            <Text style={style.ubicacionSelectorText}>
                                                 {ubicacion.nombreZona || "Seleccionar zona"}
                                             </Text>
-                                            <FontAwesome name="chevron-down" size={14} color="#666" />
+                                            <FontAwesome name="chevron-down" size={14} style={style.ubicacionSelectorIcon} />
                                         </TouchableOpacity>
                                     </View>
 
-                                    <TextInput
-                                        placeholder="Capacidad almacenamiento"
-                                        value={ubicacion.capacidad}
-                                        onChangeText={capacidad => actualizaArrayUbicacion("capacidad", capacidad, key)}
-                                        style={{
-                                            backgroundColor: '#fff',
-                                            borderWidth: 1,
-                                            borderColor: '#e9ecef',
-                                            borderRadius: 6,
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 8,
-                                            fontSize: 14,
-                                            color: '#333',
-                                            marginBottom: 15
-                                        }}
-                                    />
+                                    {/* Campos de Coordenadas (Latitud y Longitud) */}
+                                    <View style={style.latLngContainer}>
+                                        <View style={style.latLngFieldContainer}>
+                                            <Text style={style.ubicacionFieldLabel}>
+                                                Latitud
+                                            </Text>
+                                            <TextInput
+                                                placeholder="Ej: 4.6230545"
+                                                value={ubicacion.lat || ''}
+                                                onChangeText={lat => actualizaArrayUbicacion("lat", lat, key)}
+                                                style={style.ubicacionFieldInput}
+                                                keyboardType="numeric"
+                                            />
+                                        </View>
+                                        <View style={style.latLngFieldContainer}>
+                                            <Text style={style.ubicacionFieldLabel}>
+                                                Longitud
+                                            </Text>
+                                            <TextInput
+                                                placeholder="Ej: -74.1910443"
+                                                value={ubicacion.lng || ''}
+                                                onChangeText={lng => actualizaArrayUbicacion("lng", lng, key)}
+                                                style={style.ubicacionFieldInput}
+                                                keyboardType="numeric"
+                                            />
+                                        </View>
+                                    </View>
 
-                                    <TextInput
-                                        placeholder="Observaciones ingreso del vehículo"
-                                        onChangeText={observacion => actualizaArrayUbicacion("observacion", observacion, key)}
-                                        style={{
-                                            backgroundColor: '#fff',
-                                            borderWidth: 1,
-                                            borderColor: '#e9ecef',
-                                            borderRadius: 6,
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 8,
-                                            fontSize: 14,
-                                            color: '#333',
-                                            marginBottom: 15
-                                        }}
-                                    />
+                                    <View style={style.ubicacionFieldContainer}>
+                                        <Text style={style.ubicacionFieldLabel}>
+                                            Capacidad almacenamiento
+                                        </Text>
+                                        <TextInput
+                                            placeholder="Capacidad almacenamiento"
+                                            value={ubicacion.capacidad}
+                                            onChangeText={capacidad => actualizaArrayUbicacion("capacidad", capacidad, key)}
+                                            style={style.ubicacionFieldInput}
+                                        />
+                                    </View>
+
+                                    <View style={style.ubicacionFieldContainer}>
+                                        <Text style={style.ubicacionFieldLabel}>
+                                            Observaciones
+                                        </Text>
+                                        <TextInput
+                                            placeholder="Observaciones ingreso del vehículo"
+                                            onChangeText={observacion => actualizaArrayUbicacion("observacion", observacion, key)}
+                                            style={style.ubicacionFieldInput}
+                                        />
+                                    </View>
+
+                                    {/* Campo de Estado Activo */}
+                                    <View style={style.ubicacionFieldContainer}>
+                                        <Text style={style.ubicacionFieldLabel}>
+                                            Estado del punto
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={[
+                                                style.ubicacionSelector,
+                                                ubicacion.is_active === false && { borderColor: '#dc3545' }
+                                            ]}
+                                            onPress={() => actualizaArrayUbicacion("is_active", ubicacion.is_active === false ? "true" : "false", key)}
+                                        >
+                                            <Text style={[
+                                                style.ubicacionSelectorText,
+                                                { color: ubicacion.is_active === false ? '#dc3545' : '#28a745' }
+                                            ]}>
+                                                {ubicacion.is_active === false ? "Inactivo" : "Activo"}
+                                            </Text>
+                                            <FontAwesome
+                                                name={ubicacion.is_active === false ? "times-circle" : "check-circle"}
+                                                size={14}
+                                                style={[
+                                                    style.ubicacionSelectorIcon,
+                                                    { color: ubicacion.is_active === false ? '#dc3545' : '#28a745' }
+                                                ]}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
 
                                     {(ubicacion.nuevo || ubicacion.idCliente) && (
                                         <>
-                                            <TextInput
-                                                placeholder="Email"
-                                                value={ubicacion.email}
-                                                onFocus={() => updateState({ activeScroll: true })}
-                                                onBlur={() => updateState({ activeScroll: false })}
-                                                onChangeText={emailUbicacion => actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
-                                                style={{
-                                                    backgroundColor: '#fff',
-                                                    borderWidth: 1,
-                                                    borderColor: '#e9ecef',
-                                                    borderRadius: 6,
-                                                    paddingHorizontal: 12,
-                                                    paddingVertical: 8,
-                                                    fontSize: 14,
-                                                    color: '#333',
-                                                    marginBottom: 15
-                                                }}
-                                            />
+                                            <View style={style.ubicacionFieldContainer}>
+                                                <Text style={style.ubicacionFieldLabel}>
+                                                    Email
+                                                </Text>
+                                                <TextInput
+                                                    placeholder="Email"
+                                                    value={ubicacion.email}
+                                                    onFocus={() => updateState({ activeScroll: true })}
+                                                    onBlur={() => updateState({ activeScroll: false })}
+                                                    onChangeText={emailUbicacion => actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
+                                                    style={style.ubicacionFieldInput}
+                                                />
+                                            </View>
 
-                                            <TextInput
-                                                placeholder="Celular"
-                                                value={ubicacion.celular}
-                                                onFocus={() => updateState({ activeScroll: true })}
-                                                onBlur={() => updateState({ activeScroll: false })}
-                                                onChangeText={celularUbicacion => actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
-                                                style={{
-                                                    backgroundColor: '#fff',
-                                                    borderWidth: 1,
-                                                    borderColor: '#e9ecef',
-                                                    borderRadius: 6,
-                                                    paddingHorizontal: 12,
-                                                    paddingVertical: 8,
-                                                    fontSize: 14,
-                                                    color: '#333',
-                                                    marginBottom: 15
-                                                }}
-                                            />
+                                            <View style={style.ubicacionFieldContainer}>
+                                                <Text style={style.ubicacionFieldLabel}>
+                                                    Celular
+                                                </Text>
+                                                <TextInput
+                                                    placeholder="Celular"
+                                                    value={ubicacion.celular}
+                                                    onFocus={() => updateState({ activeScroll: true })}
+                                                    onBlur={() => updateState({ activeScroll: false })}
+                                                    onChangeText={celularUbicacion => actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
+                                                    style={style.ubicacionFieldInput}
+                                                />
+                                            </View>
 
-                                            <TextInput
-                                                placeholder="Nombre"
-                                                value={ubicacion.nombre}
-                                                onFocus={() => updateState({ activeScroll: true })}
-                                                onBlur={() => updateState({ activeScroll: false })}
-                                                onChangeText={nombreUbicacion => actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                style={{
-                                                    backgroundColor: '#fff',
-                                                    borderWidth: 1,
-                                                    borderColor: '#e9ecef',
-                                                    borderRadius: 6,
-                                                    paddingHorizontal: 12,
-                                                    paddingVertical: 8,
-                                                    fontSize: 14,
-                                                    color: '#333',
-                                                    marginBottom: 15
-                                                }}
-                                            />
+                                            <View style={style.ubicacionFieldContainer}>
+                                                <Text style={style.ubicacionFieldLabel}>
+                                                    Nombre
+                                                </Text>
+                                                <TextInput
+                                                    placeholder="Nombre"
+                                                    value={ubicacion.nombre}
+                                                    onFocus={() => updateState({ activeScroll: true })}
+                                                    onBlur={() => updateState({ activeScroll: false })}
+                                                    onChangeText={nombreUbicacion => actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
+                                                    style={style.ubicacionFieldInput}
+                                                />
+                                            </View>
                                         </>
                                     )}
                                 </View>
@@ -1948,18 +1708,10 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                             {/* Botón Agregar Ubicación */}
                             <TouchableOpacity
                                 onPress={() => actualizaUbicacion()}
-                                style={{
-                                    backgroundColor: '#28a745',
-                                    borderRadius: 8,
-                                    padding: 15,
-                                    flexDirection: 'row',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    marginBottom: 20
-                                }}
+                                style={style.addUbicacionButton}
                             >
-                                <FontAwesome name="plus" size={16} color="#fff" style={{ marginRight: 8 }} />
-                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                <FontAwesome name="plus" size={16} color="#fff" style={style.addUbicacionIcon} />
+                                <Text style={style.addUbicacionText}>
                                     Agregar Ubicación
                                 </Text>
                             </TouchableOpacity>
@@ -1967,36 +1719,20 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     </ScrollView>
 
                     {/* Footer del Modal */}
-                    <View style={{
-                        flexDirection: 'row',
-                        padding: 20,
-                        borderTopWidth: 1,
-                        borderTopColor: '#e9ecef'
-                    }}>
+                    <View style={[style.modalFooter, style.modalFooterRow]}>
                         <TouchableOpacity
-                            style={{
-                                flex: 1,
-                                backgroundColor: '#6c757d',
-                                borderRadius: 8,
-                                padding: 15,
-                                marginRight: 10
-                            }}
+                            style={style.modalCancelButton}
                             onPress={() => updateState({ modalUbicacion: false })}
                         >
-                            <Text style={{ color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: '600' }}>
+                            <Text style={style.modalButtonText}>
                                 Cancelar
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={{
-                                flex: 1,
-                                backgroundColor: '#007bff',
-                                borderRadius: 8,
-                                padding: 15
-                            }}
+                            style={style.modalSaveButton}
                             onPress={() => guardarUbicacion()}
                         >
-                            <Text style={{ color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: '600' }}>
+                            <Text style={style.modalButtonText}>
                                 Guardar
                             </Text>
                         </TouchableOpacity>
@@ -2031,17 +1767,27 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
             // Preparar datos para crear puntos nuevos
             if (puntosNuevos.length > 0) {
-                const puntosParaCrear = puntosNuevos.map(punto => ({
-                    observacion: punto.observacion || '',
-                    direccion: punto.direccion,
-                    capacidad: punto.capacidad || 0,
-                    punto: punto.capacidad || 0,
-                    location: punto.location || null,
-                    place_name: punto.place_name || null,
-                    idZona: punto.idZona,
-                    idCliente: idUsuario,
-                    idPadre: null
-                }));
+                const puntosParaCrear = puntosNuevos.map(punto => {
+                    // Convertir lat/lng a coordenadas POINT si están disponibles
+                    let location = punto.location || null;
+                    if (punto.lat && punto.lng && punto.lat.trim() !== '' && punto.lng.trim() !== '') {
+                        // Formato POINT de PostgreSQL: (lng, lat)
+                        location = `(${punto.lng}, ${punto.lat})`;
+                    }
+
+                    return {
+                        observacion: punto.observacion || '',
+                        direccion: punto.direccion,
+                        capacidad: punto.capacidad || 0,
+                        punto: punto.capacidad || 0,
+                        location: location,
+                        place_name: punto.place_name || null,
+                        is_active: punto.is_active !== undefined ? punto.is_active : true,
+                        idZona: punto.idZona,
+                        idCliente: idUsuario,
+                        idPadre: null
+                    };
+                });
 
                 console.log('Creando puntos nuevos:', puntosParaCrear);
                 const resultCreate = await createPoints(puntosParaCrear);
@@ -2050,17 +1796,27 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
             // Preparar datos para actualizar puntos existentes
             if (puntosExistentes.length > 0) {
-                const puntosParaActualizar = puntosExistentes.map(punto => ({
-                    _id: punto._id,
-                    observacion: punto.observacion || '',
-                    direccion: punto.direccion,
-                    capacidad: punto.capacidad || 0,
-                    location: punto.location || null,
-                    place_name: punto.place_name || null,
-                    idZona: punto.idZona,
-                    idCliente: idUsuario,
-                    idPadre: null
-                }));
+                const puntosParaActualizar = puntosExistentes.map(punto => {
+                    // Convertir lat/lng a coordenadas POINT si están disponibles
+                    let location = punto.location || null;
+                    if (punto.lat && punto.lng && punto.lat.trim() !== '' && punto.lng.trim() !== '') {
+                        // Formato POINT de PostgreSQL: (lng, lat)
+                        location = `(${punto.lng}, ${punto.lat})`;
+                    }
+
+                    return {
+                        _id: punto._id,
+                        observacion: punto.observacion || '',
+                        direccion: punto.direccion,
+                        capacidad: punto.capacidad || 0,
+                        location: location,
+                        place_name: punto.place_name || null,
+                        is_active: punto.is_active !== undefined ? punto.is_active : true,
+                        idZona: punto.idZona,
+                        idCliente: idUsuario,
+                        idPadre: null
+                    };
+                });
 
                 console.log('Actualizando puntos existentes:', puntosParaActualizar);
                 const resultUpdate = await updatePoints(puntosParaActualizar);
@@ -2112,20 +1868,13 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             {
                 password !== confirmar
                 && <TouchableOpacity
-                    style={{
-                        backgroundColor: '#dc3545',
-                        paddingVertical: 12,
-                        paddingHorizontal: 20,
-                        borderRadius: 8,
-                        alignItems: 'center',
-                        marginTop: 10
-                    }}
+                    style={style.passwordMismatchButton}
                     disabled={showLoading}
                 >
                     {showLoading ? (
                         <ActivityIndicator color="white" />
                     ) : (
-                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                        <Text style={style.passwordMismatchText}>
                             No coinciden
                         </Text>
                     )}
@@ -2181,7 +1930,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     ///////////////////////////////////////////////////////////////////////
     const handleSubmit: HandleSubmitFunction = useCallback((esEditar?: string) => {
         const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = state;
-        console.log({ razon_social, cedula, direccion_factura, nombre, email, tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario })
+        console.log({ razon_social, cedula, direccion_factura, nombre, email, tipo, celular, acceso, codt, imagen, ubicaciones, valorUnitario })
         if (acceso === "cliente") {
             if (razon_social == "" || direccion_factura == "" || nombre == "" || email == "" || tipo == "" || ubicaciones.length < 1) {
                 Alert.alert(

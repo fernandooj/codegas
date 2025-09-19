@@ -66,6 +66,12 @@ export interface Pedido {
     imagencerrar?: string;
     motivo_no_cierre?: string;
     perfil_novedad?: string;
+    coordenadas?: {
+        x?: number;
+        y?: number;
+    };
+    lat?: number;
+    lng?: number;
     eliminado: boolean;
 }
 
@@ -173,6 +179,12 @@ export interface SelectedPedidoData {
     imagen?: string;
     perfil?: string;
     idZona?: string;
+    coordenadas?: {
+        x?: number;
+        y?: number;
+        lat?: number;
+        lng?: number;
+    };
 }
 
 // Action Types para el reducer

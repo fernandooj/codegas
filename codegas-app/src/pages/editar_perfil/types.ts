@@ -15,6 +15,9 @@ export interface Ubicacion {
     _id?: string;
     location?: any;
     place_name?: string;
+    is_active?: boolean;
+    lat?: string;
+    lng?: string;
 }
 
 export interface Veo {

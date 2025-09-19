@@ -1,4 +1,4 @@
-const {poolConection} = require('../../../lib/connection-pg.js')
+const { poolConection } = require('../../../lib/connection-pg.js')
 
 /** save point */
 const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7, $8, $9)';
@@ -16,25 +16,26 @@ const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7, $8, $9
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
 
- module.exports.main = async (event) => {
-    const body = JSON.parse(event.body);
-    const points = Array.isArray(body) ? body : [body]; // check if body is an array or not
-  
-    const client = await poolConection.connect();
-  
-    try {
-      await Promise.all(points.map(point => {
-        const {
-           observacion, direccion, capacidad, punto, location, place_name, idZona, idCliente, idPadre
-        } = point;
-        return client.query(SAVE_POINT, [observacion, direccion, capacidad, punto, location, place_name, idZona, idCliente, idPadre]);
-      }));
-  
-      return {
-          status: true
-        }
-    } catch (error) {
-      throw JSON.stringify(error);
+module.exports.main = async (event) => {
+  const body = JSON.parse(event.body);
+  const points = Array.isArray(body) ? body : [body]; // check if body is an array or not
+
+  const client = await poolConection.connect();
+
+  try {
+    await Promise.all(points.map(point => {
+      const {
+        observacion, direccion, capacidad, punto, location, place_name, idZona, idCliente, idPadre
+      } = point;
+
+      return client.query(SAVE_POINT, [direccion, capacidad, observacion, punto, location, place_name, idZona, idCliente, idPadre]);
+    }));
+
+    return {
+      status: true
     }
-  };
-  
+  } catch (error) {
+    throw JSON.stringify(error);
+  }
+};
+

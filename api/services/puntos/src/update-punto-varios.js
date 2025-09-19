@@ -1,7 +1,7 @@
 const { poolConection } = require('../../../lib/connection-pg.js')
 
 /** update point */
-const UPDATE_POINT = 'UPDATE puntos SET observacion = $1, direccion = $2, capacidad = $3, punto = $4, coordenadas = $5, place_name = $6, idZona = $7, idCliente = $8, idPadre = $9 WHERE _id = $10';
+const UPDATE_POINT = 'UPDATE puntos SET observacion = $1, direccion = $2, capacidad = $3, punto = $4, coordenadas = $5, place_name = $6, is_active = $7, idZona = $8, idCliente = $9, idPadre = $10 WHERE _id = $11';
 
 /**
  * Updates points in the database.
@@ -29,7 +29,7 @@ module.exports.main = async (event) => {
     try {
         await Promise.all(points.map(point => {
             const {
-                _id, observacion, direccion, capacidad, location, place_name, idZona, idCliente, idPadre
+                _id, observacion, direccion, capacidad, location, place_name, is_active, idZona, idCliente, idPadre
             } = point;
 
             // Convert location to point format if it's a string
@@ -40,6 +40,8 @@ module.exports.main = async (event) => {
                 coordenadas = `${location.lng}, ${location.lat}`; // Convert to lng,lat format
             }
 
+            const isActiveVal = is_active !== undefined ? is_active : true;
+
             return client.query(UPDATE_POINT, [
                 observacion,
                 direccion,
@@ -47,6 +49,7 @@ module.exports.main = async (event) => {
                 capacidad, // punto field
                 coordenadas,
                 place_name,
+                isActiveVal,
                 idZona,
                 idCliente,
                 idPadre,

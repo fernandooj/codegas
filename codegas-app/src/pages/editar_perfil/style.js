@@ -868,6 +868,364 @@ export const style = MediaQueryStyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: '600'
+    },
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////////        VEO SELECTOR STYLES
+    /////////////////////////////////////////////////////////////////
+    veoContainer: {
+        marginBottom: 20
+    },
+    veoLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 8
+    },
+    veoSelector: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#e9ecef',
+        shadowColor: 'rgba(0,0,0, .1)',
+        shadowOffset: { height: 2, width: 0 },
+        shadowOpacity: .3,
+        shadowRadius: 4,
+        elevation: 3,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        minHeight: 56,
+    },
+    veoSelectorSelected: {
+        borderColor: '#28a745',
+        shadowColor: 'rgba(40,167,69, .15)',
+    },
+    veoSelectorContent: {
+        flex: 1
+    },
+    veoSelectorText: {
+        fontSize: 16,
+        color: '#999',
+        fontWeight: '400'
+    },
+    veoSelectorTextSelected: {
+        color: '#28a745',
+        fontWeight: '600'
+    },
+    veoSelectorSecondaryText: {
+        fontSize: 12,
+        color: '#28a745',
+        marginTop: 2
+    },
+    veoSelectorIconContainer: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        padding: 8,
+        borderWidth: 1,
+        borderColor: '#e9ecef'
+    },
+    veoSelectorIconContainerSelected: {
+        backgroundColor: '#28a745',
+        borderColor: '#28a745'
+    },
+    veoSelectorIcon: {
+        color: '#666'
+    },
+    veoSelectorIconSelected: {
+        color: '#fff'
+    },
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////////        MODAL VEO STYLES
+    /////////////////////////////////////////////////////////////////
+    modalVeoOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    },
+    modalVeoContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        margin: 20,
+        maxHeight: '90%',
+        width: '90%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8
+    },
+    modalVeoHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e9ecef'
+    },
+    modalVeoTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333'
+    },
+    modalVeoSearchContainer: {
+        padding: 20,
+        paddingBottom: 10
+    },
+    modalVeoSearchInput: {
+        backgroundColor: '#f8f9fa',
+        borderWidth: 1,
+        borderColor: '#e9ecef',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: '#333'
+    },
+    modalVeoList: {
+        maxHeight: 400
+    },
+    modalVeoEmptyState: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    modalVeoEmptyIcon: {
+        marginBottom: 16
+    },
+    modalVeoEmptyText: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center'
+    },
+    modalVeoEmptySubtext: {
+        fontSize: 14,
+        color: '#999',
+        textAlign: 'center',
+        marginTop: 8
+    },
+    veoItem: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f3f4',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#fff'
+    },
+    veoItemSelected: {
+        backgroundColor: '#e3f2fd'
+    },
+    veoItemContent: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    veoItemPrefix: {
+        color: '#2196f3',
+        marginRight: 8
+    },
+    veoItemTextContainer: {
+        flex: 1
+    },
+    veoItemText: {
+        fontSize: 16,
+        color: '#333',
+        fontWeight: 'normal'
+    },
+    veoItemTextSelected: {
+        fontWeight: 'bold'
+    },
+    veoItemSubtext: {
+        fontSize: 12,
+        color: '#666',
+        marginTop: 2
+    },
+    veoItemActions: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    veoItemUsersIcon: {
+        marginRight: 8
+    },
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////////        UPDATE BUTTON STYLES
+    /////////////////////////////////////////////////////////////////
+    updateUserContainer: {
+        marginTop: 20,
+        marginBottom: 20
+    },
+    updateUserButton: {
+        backgroundColor: '#00218b',
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        shadowColor: 'rgba(0,0,0, .2)',
+        shadowOffset: { height: 2, width: 0 },
+        shadowOpacity: .3,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    updateUserButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600'
+    },
+    updateUserButtonLoading: {
+        marginRight: 8
+    },
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////////        SCROLL VIEW STYLES
+    /////////////////////////////////////////////////////////////////
+    scrollViewContainer: {
+        flex: 1
+    },
+    scrollViewContentContainer: {
+        paddingBottom: 20
+    },
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////////        MODAL ZONA OVERLAY STYLES
+    /////////////////////////////////////////////////////////////////
+    modalZonaOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2000
+    },
+    modalZonaContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        margin: 20,
+        maxHeight: '80%',
+        width: '90%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8
+    },
+    modalZonaHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e9ecef'
+    },
+    modalZonaTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333'
+    },
+    modalZonaCloseButton: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#e9ecef'
+    },
+    modalZonaCloseIcon: {
+        color: "#6c757d"
+    },
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////////        MODAL UBICACION OVERLAY STYLES
+    /////////////////////////////////////////////////////////////////
+    modalUbicacionOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    },
+    modalUbicacionContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        margin: 20,
+        maxHeight: '90%',
+        width: '90%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8
+    },
+    modalUbicacionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e9ecef'
+    },
+    modalUbicacionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333'
+    },
+    modalUbicacionCloseButton: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#e9ecef'
+    },
+    modalUbicacionCloseIcon: {
+        color: "#6c757d"
+    },
+    modalUbicacionContent: {
+        maxHeight: 400
+    },
+    modalUbicacionScrollView: {
+        maxHeight: 400
+    },
+    modalUbicacionDescription: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 20,
+        lineHeight: 20
+    },
+
+    /////////////////////////////////////////////////////////////////
+    ////////////////////        LAT/LNG CONTAINER STYLES
+    /////////////////////////////////////////////////////////////////
+    latLngContainer: {
+        flexDirection: 'row',
+        marginBottom: 15,
+        gap: 10
+    },
+    latLngFieldContainer: {
+        flex: 1
     }
 
 })
