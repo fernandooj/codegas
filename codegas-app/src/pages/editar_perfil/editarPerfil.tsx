@@ -9,6 +9,8 @@ import {
     ImageBackground,
     ActivityIndicator,
     Alert,
+    Animated,
+    Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
@@ -22,9 +24,12 @@ import TomarFoto from '../components/tomarFoto';
 import Toast from 'react-native-toast-message';
 import { DataContext } from "../../context/context"
 import { accesos } from '../../utils/constants';
+import { getZonas } from '../../redux/actions/zonaActions';
 import {
     getUserById,
     getPointsByClient,
+    createPoints,
+    updatePoints,
     signUp,
     updateUserProfile,
     getVeos,
@@ -80,11 +85,12 @@ import {
 } from './types';
 
 // Import FormData as a type to avoid conflicts
-import { FormData as FormDataType } from 'form-data';
+import FormDataType from 'form-data';
 const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     const context = useContext<ContextType>(DataContext);
     const dispatch = useDispatch();
     const perfil = useSelector((state: RootState) => state.usuario.perfil.user);
+    const zonas = useSelector((state: any) => state.zona?.zonas || []);
 
     const [state, setState] = useState<EditarPerfilState>({
         razon_social: '',
@@ -145,6 +151,10 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         confirmar: ''
     });
 
+    // Estado para animaciones del modal
+    const [modalAnimation] = useState(new Animated.Value(0));
+    const [overlayAnimation] = useState(new Animated.Value(0));
+
     const updateState: UpdateStateFunction = useCallback((updates) => {
         setState(prevState => ({ ...prevState, ...updates }));
     }, []);
@@ -154,7 +164,37 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             let acceso = accesoPerfil == 'despacho' ? 'cliente' : 'usuario';
             updateState({ accesoPerfil, acceso, userId });
 
+            // Cargar zonas
+            try {
+                console.log('Loading zonas...');
+                const result = await dispatch(getZonas() as any);
+                console.log('Zonas result:', result);
+            } catch (error) {
+                console.error('Error loading zonas:', error);
+            }
+
+            // Cargar VEOs
+            try {
+                console.log('Loading VEOs...');
+                const veosResult = await getVeos(100, 0, 'undefined', userId);
+                console.log('VEOs result:', veosResult);
+
+                if (veosResult && veosResult.user) {
+                    // Transformar los datos al formato esperado por el modal
+                    const veosFormatted = veosResult.user.map((veo: any, index: number) => ({
+                        key: veo._id || index.toString(),
+                        label: veo.nombre || 'Sin nombre'
+                    }));
+                    updateState({ veos: veosFormatted });
+                }
+            } catch (error) {
+                console.error('Error loading VEOs:', error);
+            }
+
             const params = route?.params;
+            console.log('🔍 Parámetros de ruta:', params);
+            console.log('🔍 userId del contexto:', userId);
+
             if (params?.tipoAcceso) {
                 updateState({ tipoAcceso: params.tipoAcceso });
                 if (params.tipoAcceso == "solucion") {
@@ -166,8 +206,17 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 try {
                     const e = await getUserById(userId);
                     const { user } = e;
-                    const ubi = await getPointsByClient(params?.idUsuario);
-                    let ubicaciones = ubi.status ? ubi.puntos : [];
+                    // Usar userId del contexto cuando se edita perfil propio, no params.idUsuario
+                    let ubicaciones = [];
+                    if (userId && userId !== null && userId !== undefined && userId !== 'undefined' && userId !== 'null' && userId.toString().trim() !== '') {
+                        console.log('📍 Obteniendo puntos para userId:', userId);
+                        const ubi = await getPointsByClient(userId);
+                        ubicaciones = ubi.status ? ubi.puntos : [];
+                        console.log('📍 Ubicaciones obtenidas:', ubicaciones.length);
+                    } else {
+                        console.log('⚠️ userId no válido para obtener puntos:', userId);
+                        console.log('⚠️ Tipo de userId:', typeof userId);
+                    }
                     updateState({
                         razon_social: user.razon_social ? user.razon_social : '',
                         cedula: user.cedula ? user.cedula : '',
@@ -186,16 +235,26 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         ubicaciones: ubicaciones,
                         accesoPerfil: 'cliente',
                         direccion_factura: user.direccion_factura ? user.direccion_factura : "",
+                        veo: user.nombrepadre || "",
                     });
                 } catch (error) {
                     console.error('Error loading user data:', error);
                 }
-            } else if (params?.tipoAcceso == "editar") {
+            } else if (params?.tipoAcceso === "editar") {
                 try {
                     const e = await getUserById(params.idUsuario);
                     const { user } = e;
-                    const ubi = await getPointsByClient(params.idUsuario);
-                    let ubicaciones = ubi.status ? ubi.puntos : [];
+                    // Validar que params.idUsuario existe antes de hacer la llamada
+                    let ubicaciones = [];
+                    if (params.idUsuario && params.idUsuario !== null && params.idUsuario !== undefined && params.idUsuario !== 'undefined' && params.idUsuario !== 'null' && params.idUsuario.toString().trim() !== '') {
+                        console.log('📍 Obteniendo puntos para params.idUsuario:', params.idUsuario);
+                        const ubi = await getPointsByClient(params.idUsuario);
+                        ubicaciones = ubi.status ? ubi.puntos : [];
+                        console.log('📍 Ubicaciones obtenidas:', ubicaciones.length);
+                    } else {
+                        console.log('⚠️ params.idUsuario no válido para obtener puntos:', params.idUsuario);
+                        console.log('⚠️ Tipo de params.idUsuario:', typeof params.idUsuario);
+                    }
 
                     ubicaciones = ubicaciones.map(data => {
                         let data1 = params.idUsuario;
@@ -244,7 +303,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         ubicaciones,
                         activo: user.activo && user.activo,
                         idUsuario: user._id ? user._id : "",
-                        veo: user.veos ? user.veos.nombre : "",
+                        veo: user.nombrepadre || "",
                         codMagister: user.codMagister ? user.codMagister : "",
                         valorUnitario: user.valorunitario,
                         direccion_factura: user.direccion_factura ? user.direccion_factura : "",
@@ -281,11 +340,11 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         puntos = puntos.filter(e => {
             return e._id
         })
-        console.log({ editado, puntos, puntosNuevos })
+
         updateUserProfile(idUsuario, { editado, puntos, puntosNuevos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister, valorUnitario })
             .then(e => {
                 console.log(e)
-                if (acceso == "cliente") {
+                if (acceso === "cliente") {
                     ////////////////////////////////////////////        EDITO LOS CLIENTES
                     if (clientes.length > 0) {
 
@@ -350,47 +409,85 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     //         this.setState({cargando:false})
                     //     })
                     // }
-                    if (editado == false) {
-                        // Si es la primera vez editando, actualizar directamente sin mostrar formulario de contraseña
-                        AsyncStorage.setItem('nombre', e.user.nombre || '')
-                        Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
-                        setTimeout(() => {
-                            navigation.navigate("clientes", {
-                                scrollPosition: route?.params?.scrollPosition || 0
-                            });
-                        }, 1500);
-                        updateState({ cargando: false })
+                    // Actualizar AsyncStorage con los nuevos datos
+                    AsyncStorage.setItem('nombre', e.user.nombre || '')
+                    AsyncStorage.setItem('email', e.user.email || '')
+
+                    // Actualizar contexto en tiempo real
+                    if (context.updateUserData) {
+                        console.log('🔄 Actualizando contexto desde editarUsuario (cliente) con:', {
+                            nombre: e.user.nombre,
+                            email: e.user.email,
+                            avatar: e.user.avatar
+                        });
+                        context.updateUserData({
+                            nombre: e.user.nombre,
+                            email: e.user.email,
+                            avatar: e.user.avatar
+                        });
                     } else {
-                        AsyncStorage.setItem('nombre', e.user.nombre || '')
-                        Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
-                        setTimeout(() => {
-                            navigation.navigate("clientes", {
-                                scrollPosition: route?.params?.scrollPosition || 0
-                            });
-                        }, 1500);
-                        updateState({ cargando: false })
+                        console.log('❌ context.updateUserData no está disponible en editarUsuario (cliente)');
                     }
 
+                    Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
+
+                    // Solo navegar si venimos de la lista de clientes (tipoAcceso === "editar")
+                    if (state.tipoAcceso === "editar") {
+                        setTimeout(() => {
+                            navigation.navigate("clientes", {
+                                scrollPosition: route?.params?.scrollPosition || 0
+                            });
+                        }, 1500);
+                    } else {
+                        // Si es perfil propio, no navegar a ningún lado
+                        // Solo mostrar mensaje de éxito y quedarse en la misma pantalla
+                    }
+                    updateState({ cargando: false })
+
                 } else {
+                    // Para usuarios no cliente (admin, veo, etc.)
+                    // Actualizar AsyncStorage con los nuevos datos
+                    AsyncStorage.setItem('nombre', e.user.nombre || '')
+                    AsyncStorage.setItem('email', e.user.email || '')
+
+                    // Actualizar contexto en tiempo real
+                    if (context.updateUserData) {
+                        context.updateUserData({
+                            nombre: e.user.nombre,
+                            email: e.user.email,
+                            avatar: e.user.avatar
+                        });
+                    }
+
                     if (editaAvatar) {
                         if (imagen.length === 0) {
                             Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
-                            setTimeout(() => {
-                                navigation.navigate("clientes", {
-                                    scrollPosition: route?.params?.scrollPosition || 0
-                                });
-                            }, 1500);
+                            // Solo navegar si venimos de la lista de clientes (tipoAcceso === "editar")
+                            if (state.tipoAcceso === "editar") {
+                                setTimeout(() => {
+                                    navigation.navigate("clientes", {
+                                        scrollPosition: route?.params?.scrollPosition || 0
+                                    });
+                                }, 1500);
+                            } else {
+                                // Si es perfil propio, no navegar a ningún lado
+                            }
                             updateState({ cargando: false })
                         } else {
                             avatar(imagen, e.user._id)
                         }
                     } else {
                         Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
-                        setTimeout(() => {
-                            navigation.navigate("clientes", {
-                                scrollPosition: route?.params?.scrollPosition || 0
-                            });
-                        }, 1500);
+                        // Solo navegar si venimos de la lista de clientes (tipoAcceso === "editar")
+                        if (state.tipoAcceso === "editar") {
+                            setTimeout(() => {
+                                navigation.navigate("clientes", {
+                                    scrollPosition: route?.params?.scrollPosition || 0
+                                });
+                            }, 1500);
+                        } else {
+                            // Si es perfil propio, no navegar a ningún lado
+                        }
                         updateState({ cargando: false })
                     }
                 }
@@ -410,297 +507,628 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         nombre = nombre ? nombre.toUpperCase() : nombre;
 
         return (
-            <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
-                {tipoAcceso == "admin" ? <Text style={style.titulo}>Nuevo {acceso}</Text> : <Text style={style.titulo}>Editar perfil</Text>}
-                {/* ACCESO */}
-                {
-                    ((tipoAcceso == "admin" && accesoPerfil !== "despacho") || tipoAcceso == "editar")
-                    && <View style={style.tipo}>
-                        <Picker
-                            placeholder={{
-                                label: 'Acceso',
-                                value: null,
-                                color: '#00218b',
-                            }}
-                            items={accesos}
-                            onValueChange={acceso => { updateState({ acceso }) }}
-                            mode="dropdown"
-                            style={{
-                                ...style,
-                                placeholder: {
-                                    color: 'rgba(0,0,0,1)',
-                                    fontSize: 15,
-                                },
-                            }}
-                            value={acceso}
-                        />
-                    </View>
-                }
-                {/* EMAIL */}
-                <Text style={style.textInfo}>Email</Text>
-                <TextInput
-                    type='outlined'
-                    placeholder="Email"
+            <View style={style.formContainer}>
+                {/* Header moderno */}
+                <View style={style.headerContainer}>
+                    <Text style={style.headerTitle}>
+                        {tipoAcceso === "admin" ? `Nuevo ${acceso}` : 'Editar perfil'}
+                    </Text>
+                    <Text style={style.headerSubtitle}>
+                        Complete la información del usuario
+                    </Text>
+                </View>
 
-                    keyboardType='email-address'
-                    placeholderTextColor="#aaa"
-                    value={email}
-                    onChangeText={email => updateState({ email })}
-                    onBlur={email => verificaEmail()}
-                    style={email.length < 3 ? [style.input, style.inputRequired] : style.input}
-                    autoCapitalize="characters"
-                />
+                <ScrollView
+                    keyboardDismissMode="on-drag"
+                    style={{ flex: 1 }}
+                    contentContainerStyle={style.scrollViewContent}
+                >
+                    {/* ACCESO */}
+                    {
+                        // Mostrar campo solo si:
+                        // 1. No es edición de cliente (cliente no puede cambiar su tipo de acceso)
+                        // 2. Es admin y no es despacho
+                        // 3. Es modo crear
+                        ((tipoAcceso === "admin" && accesoPerfil !== "despacho") ||
+                            (tipoAcceso === "editar" && acceso !== "cliente") ||
+                            tipoAcceso === "crear")
+                        && <View style={style.fieldContainer}>
+                            <Text style={style.fieldLabel}>
+                                Tipo de Acceso
+                            </Text>
+                            <TouchableOpacity
+                                style={style.selectorContainer}
+                                onPress={() => {
+                                    // Filtrar opciones según el contexto
+                                    let opcionesAcceso = accesos;
 
-                {/* RAZON SOCIAL */}
-                {
-                    acceso == "cliente"
-                    && <View>
-                        <Text style={style.textInfo}>Razón Social</Text>
-                        <TextInput
-                            type='outlined'
-                            placeholderTextColor="#aaa"
-                            placeholder="Razón Social"
-                            autoCapitalize="characters"
-                            value={razon_social}
-                            onChangeText={razon_social => updateState({ razon_social })}
-                            style={razon_social.length < 3 ? [style.input, style.inputRequired] : style.input}
+                                    // Si es edición y el usuario no es cliente, quitar opción "cliente"
+                                    if (tipoAcceso === "editar" && acceso !== "cliente") {
+                                        opcionesAcceso = accesos.filter(item => item.value !== "cliente");
+                                    }
 
-                        />
-                    </View>
-                }
-
-                {/* CEDULA */}
-                <Text style={style.textInfo}>Cedula/ Nit</Text>
-                <TextInput
-                    type='outlined'
-                    placeholder="Cedula / Nit"
-                    placeholderTextColor="#aaa"
-                    keyboardType='numeric'
-                    value={cedula}
-                    onChangeText={cedula => updateState({ cedula })}
-                    style={cedula.length < 5 ? [style.input, style.inputRequired] : style.input}
-                />
-                {/* DIRECCION */}
-                {
-                    acceso == "cliente"
-                    && <View>
-                        <Text style={style.textInfo}>Dirección factura</Text>
-                        <TextInput
-                            type='outlined'
-                            placeholder="Dirección factura"
-                            placeholderTextColor="#aaa"
-                            autoCapitalize="characters"
-                            value={direccion_factura}
-                            onChangeText={direccion_factura => updateState({ direccion_factura })}
-                            style={direccion_factura.length < 3 ? [style.input, style.inputRequired] : style.input}
-                        />
-                    </View>
-                }
-                {/* UBICACION */}
-                {
-                    acceso == "cliente"
-                    && <View>
-                        <Text style={style.textInfo}>Ubicación entrega</Text>
-                        <TouchableOpacity style={ubicaciones.length < 1 ? [style.btnUbicacion, style.inputRequired] : style.btnUbicacion} onPress={() => updateState({ modalUbicacion: true })}>
-                            {
-                                ubicaciones[0]
-                                    ? ubicaciones[0].direccion
-                                        ? <Text>{ubicaciones.length < 1 ? "Ubicación entrega" : `Tienes ${ubicaciones.length} ubicaciones guardadas`}</Text>
-                                        : <Text>Ubicación entrega</Text>
-                                    : null
-                            }
-
-                        </TouchableOpacity>
-                    </View>
-                }
-                {/* CODT */}
-                {
-                    acceso == "cliente"
-                    && <>
-                        <Text style={style.textInfo}>Codt</Text>
-                        <TextInput
-                            type='outlined'
-                            placeholder="CODT"
-                            autoCapitalize='none'
-                            placeholderTextColor="#aaa"
-                            value={codt}
-                            onChangeText={codt => updateState({ codt })}
-                            style={style.input}
-                            editable={accesoPerfil == "cliente" ? false : true}
-                        />
-                    </>
-                }
-
-                {/* NOMBRES */}
-                <Text style={style.textInfo}>Nombres</Text>
-                <TextInput
-                    type='outlined'
-                    label='Nombres'
-                    placeholder="Nombres"
-                    autoCapitalize='none'
-                    placeholderTextColor="#aaa"
-                    value={nombre}
-                    onChangeText={nombre => updateState({ nombre })}
-                    style={nombre.length < 3 ? [style.input, style.inputRequired] : style.input}
-                />
-                {/* CELULAR */}
-                <Text style={style.textInfo}>Celular</Text>
-                <TextInput
-                    type='outlined'
-                    placeholder="Celular"
-                    autoCapitalize='none'
-                    placeholderTextColor="#aaa"
-                    value={celular}
-                    onChangeText={celular => updateState({ celular })}
-                    style={celular.length < 7 ? [style.input, style.inputRequired] : style.input}
-                />
-
-                {/* VEO */}
-                {
-                    acceso == "veo"
-                    && <><Text style={style.textInfo}>Codigo Magister</Text>
-                        <TextInput
-                            type='outlined'
-                            placeholder="Codigo Magister"
-                            autoCapitalize='none'
-                            placeholderTextColor="#aaa"
-                            value={codMagister}
-                            onChangeText={codMagister => updateState({ codMagister })}
-                            style={codMagister.length < 3 ? [style.input, style.inputRequired] : style.input}
-                        />
-                    </>
-                }
-                {/* VALOR UNITARIO */}
-                {
-                    acceso == "cliente"
-                    && <>
-                        <Text style={style.textInfo}>Valor Unitario</Text>
-                        <TextInput
-                            type='outlined'
-                            placeholder="Valor Unitario"
-                            autoCapitalize='none'
-                            placeholderTextColor="#aaa"
-                            value={valorUnitario}
-                            onChangeText={valorUnitario => updateState({ valorUnitario })}
-                            style={valorUnitario.length < 3 ? [style.input, style.inputRequired] : style.input}
-                            editable={accesoPerfil == "cliente" ? false : true}
-                            onBlur={() => cambiarValorUnitario()}
-                        />
-                    </>
-                }
-
-
-                {/* TIPO */}
-                {
-                    acceso == "cliente"
-                    && <View>
-                        <Text style={style.textInfo}>Tipo</Text>
-                        <View style={style.tipo}>
-                            <Picker
-                                placeholder={{
-                                    label: 'Tipo',
-                                    value: null,
-                                    color: '#00218b',
+                                    // Abrir modal para seleccionar acceso
+                                    Alert.alert(
+                                        'Seleccionar Tipo de Acceso',
+                                        'Elija el tipo de acceso:',
+                                        opcionesAcceso.map(item => ({
+                                            text: item.label,
+                                            onPress: () => updateState({ acceso: item.value })
+                                        }))
+                                    );
                                 }}
-                                items={[
-                                    { label: 'Residencial', value: 'Residencial', key: 'Residencial' },
-                                    { label: 'Comercial', value: 'Comercial', key: 'Comercial' },
-                                    { label: 'Industrial', value: 'Industrial', key: 'Industrial' }
+                            >
+                                <Text style={style.selectorText}>
+                                    {accesos.find(item => item.value === acceso)?.label || 'Seleccionar acceso'}
+                                </Text>
+                                <FontAwesome
+                                    name="chevron-down"
+                                    size={16}
+                                    color="#666"
+                                    style={style.selectorIcon}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    }
+
+                    {/* EMAIL */}
+                    <View style={style.fieldContainer}>
+                        <Text style={style.fieldLabel}>
+                            Email
+                        </Text>
+                        <TextInput
+                            placeholder="Ingrese el email"
+                            keyboardType='email-address'
+                            placeholderTextColor="#aaa"
+                            value={email}
+                            onChangeText={email => updateState({ email })}
+                            onBlur={email => verificaEmail()}
+                            style={[
+                                style.fieldInput,
+                                email.length < 3 && style.fieldInputError
+                            ]}
+                            autoCapitalize="none"
+                        />
+                    </View>
+
+                    {/* RAZON SOCIAL */}
+                    {
+                        acceso === "cliente"
+                        && <View style={style.fieldContainer}>
+                            <Text style={style.fieldLabel}>
+                                Razón Social
+                            </Text>
+                            <TextInput
+                                placeholder="Ingrese la razón social"
+                                placeholderTextColor="#aaa"
+                                autoCapitalize="characters"
+                                value={razon_social}
+                                onChangeText={razon_social => updateState({ razon_social })}
+                                style={[
+                                    style.fieldInput,
+                                    razon_social.length < 3 && style.fieldInputError
                                 ]}
-                                onValueChange={tipo => { updateState({ tipo }); }}
-
-                                mode="dropdown"
-                                style={{
-                                    placeholder: {
-                                        color: 'rgba(0,0,0,.2)',
-                                        fontSize: 15,
-                                    },
-                                }}
-                                value={tipo}
                             />
                         </View>
-                    </View>
-                }
+                    }
 
-                <ModalFilterPicker
-                    placeholderText="Filtrar ..."
-                    visible={modalCliente}
-                    onSelect={(e) => asignarVeo(e.key)}
-                    onCancel={() => updateState({ modalCliente: false })}
-                    options={veos}
-                    cancelButtonText="CANCELAR"
-                />
-
-                {
-                    (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "comercial") || acceso == "cliente")
-                    && <View>
-                        <Text style={style.textInfo}>Comercial Veo</Text>
-                        <TouchableOpacity onPress={() => accesoPerfil == "cliente" ? null : updateState({ modalCliente: true })} style={style.inputVeo}>
-                            <Text style={style.textVeo}>{veo ? veo : "Veos"}</Text>
-                        </TouchableOpacity>
-                    </View>
-                }
-
-                {/* AVATAR */}
-                {
-                    acceso !== "cliente"
-                    && <View>
-                        <TomarFoto
-                            width={110}
-                            source={imagen}
-                            titulo="Foto de perfil"
-                            limiteImagenes={1}
-                            imagenes={(imagen) => { updateState({ imagen, editaAvatar: true, showLoading: false }) }}
+                    {/* CEDULA */}
+                    <View style={style.fieldContainer}>
+                        <Text style={style.fieldLabel}>
+                            Cédula / NIT
+                        </Text>
+                        <TextInput
+                            placeholder="Ingrese la cédula o NIT"
+                            placeholderTextColor="#aaa"
+                            keyboardType='numeric'
+                            value={cedula}
+                            onChangeText={cedula => updateState({ cedula })}
+                            style={[
+                                style.fieldInput,
+                                cedula.length < 5 && style.fieldInputError
+                            ]}
                         />
                     </View>
-                }
-                {/* BOTON CAMBIAR ESTADO */}
-                {
-                    (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
-                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: activo ? "green" : "orange", marginBottom: 0 }]} onPress={() => cambiarEstadoUsuario()}>
-                        <Text style={style.textGuardar}>{activo ? "Desactivar" : "Activar"}</Text>
-                    </TouchableOpacity>
-                }
 
-                {/* BOTON ELIMINAR */}
-                {
-                    (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
-                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: "red", marginBottom: 0 }]} onPress={() => eliminarUsuario()}>
-                        <Text style={style.textGuardar}>{"Eliminar"}</Text>
-                    </TouchableOpacity>
-                }
+                    {/* DIRECCION */}
+                    {
+                        acceso === "cliente"
+                        && <View style={style.fieldContainer}>
+                            <Text style={style.fieldLabel}>
+                                Dirección de Facturación
+                            </Text>
+                            <TextInput
+                                placeholder="Ingrese la dirección de facturación"
+                                placeholderTextColor="#aaa"
+                                autoCapitalize="characters"
+                                value={direccion_factura}
+                                onChangeText={direccion_factura => updateState({ direccion_factura })}
+                                style={[
+                                    style.fieldInput,
+                                    direccion_factura.length < 3 && style.fieldInputError
+                                ]}
+                            />
+                        </View>
+                    }
+                    {/* UBICACION */}
+                    {
+                        acceso === "cliente"
+                        && <View style={style.fieldContainer}>
+                            <Text style={style.fieldLabel}>
+                                Ubicación entrega
+                            </Text>
+                            <TouchableOpacity
+                                style={[
+                                    style.selectorContainer,
+                                    ubicaciones.length < 1 && style.fieldInputError
+                                ]}
+                                onPress={() => updateState({ modalUbicacion: true })}
+                            >
+                                <Text style={[
+                                    style.selectorText,
+                                    ubicaciones.length < 1 && { color: '#dc3545' }
+                                ]}>
+                                    {ubicaciones.length < 1
+                                        ? "Agregar ubicación de entrega"
+                                        : `Tienes ${ubicaciones.length} ubicaciones guardadas`
+                                    }
+                                </Text>
+                                <FontAwesome
+                                    name="chevron-right"
+                                    size={16}
+                                    color="#666"
+                                    style={style.selectorIcon}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    }
+                    {/* CODT */}
+                    {
+                        acceso === "cliente"
+                        && <>
+                            <Text style={style.textInfo}>Codt</Text>
+                            <TextInput
+                                placeholder="CODT"
+                                autoCapitalize='none'
+                                placeholderTextColor="#aaa"
+                                value={codt}
+                                onChangeText={codt => updateState({ codt })}
+                                style={style.input}
+                                editable={accesoPerfil == "cliente" ? false : true}
+                            />
+                        </>
+                    }
 
-                {/* BOTON GUARDAR */}
-                {
-                    !tipoAcceso
-                        ? <TouchableOpacity style={style.btnGuardar} onPress={() => handleSubmit("editar")}>
-                            {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
-                            <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar"}</Text>
-                        </TouchableOpacity>
-                        : (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
-                            ? <TouchableOpacity style={style.btnGuardar} onPress={() => editarUsuario("editar")}>
-                                {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
-                                <Text style={style.textGuardar}>{cargando ? "Guardando" : "Editar"}</Text>
+                    {/* NOMBRES */}
+                    <Text style={style.textInfo}>Nombres</Text>
+                    <TextInput
+                        placeholder="Nombres"
+                        autoCapitalize='none'
+                        placeholderTextColor="#aaa"
+                        value={nombre}
+                        onChangeText={nombre => updateState({ nombre })}
+                        style={nombre.length < 3 ? [style.input, style.inputRequired] : style.input}
+                    />
+                    {/* CELULAR */}
+                    <Text style={style.textInfo}>Celular</Text>
+                    <TextInput
+                        placeholder="Celular"
+                        autoCapitalize='none'
+                        placeholderTextColor="#aaa"
+                        value={celular}
+                        onChangeText={celular => updateState({ celular })}
+                        style={celular.length < 7 ? [style.input, style.inputRequired] : style.input}
+                    />
+
+                    {/* VEO */}
+                    {
+                        acceso === "veo"
+                        && <><Text style={style.textInfo}>Codigo Magister</Text>
+                            <TextInput
+                                placeholder="Codigo Magister"
+                                autoCapitalize='none'
+                                placeholderTextColor="#aaa"
+                                value={codMagister}
+                                onChangeText={codMagister => updateState({ codMagister })}
+                                style={codMagister.length < 3 ? [style.input, style.inputRequired] : style.input}
+                            />
+                        </>
+                    }
+                    {/* VALOR UNITARIO */}
+                    {
+                        acceso === "cliente"
+                        && <>
+                            <Text style={style.textInfo}>Valor Unitario</Text>
+                            <TextInput
+                                placeholder="Valor Unitario"
+                                autoCapitalize='none'
+                                placeholderTextColor="#aaa"
+                                value={valorUnitario}
+                                onChangeText={valorUnitario => updateState({ valorUnitario })}
+                                style={valorUnitario.length < 3 ? [style.input, style.inputRequired] : style.input}
+                                editable={accesoPerfil == "cliente" ? false : true}
+                                onBlur={() => cambiarValorUnitario()}
+                            />
+                        </>
+                    }
+
+
+                    {/* TIPO */}
+                    {
+                        acceso === "cliente"
+                        && <View style={style.fieldContainer}>
+                            <Text style={style.fieldLabel}>
+                                Tipo de Cliente
+                            </Text>
+                            <TouchableOpacity
+                                style={[
+                                    style.modernSelectorContainer,
+                                    tipo && style.modernSelectorSelected
+                                ]}
+                                onPress={() => {
+                                    Alert.alert(
+                                        'Seleccionar Tipo',
+                                        'Elija el tipo de cliente:',
+                                        [
+                                            { label: 'Residencial', value: 'Residencial' },
+                                            { label: 'Comercial', value: 'Comercial' },
+                                            { label: 'Industrial', value: 'Industrial' }
+                                        ].map(item => ({
+                                            text: item.label,
+                                            onPress: () => updateState({ tipo: item.value })
+                                        }))
+                                    );
+                                }}
+                            >
+                                <View style={{ flex: 1 }}>
+                                    <Text style={[
+                                        style.modernSelectorText,
+                                        tipo && style.modernSelectorTextSelected
+                                    ]}>
+                                        {tipo || 'Seleccionar tipo'}
+                                    </Text>
+                                    {tipo && (
+                                        <Text style={style.modernSelectorSecondaryText}>
+                                            Tipo seleccionado
+                                        </Text>
+                                    )}
+                                </View>
+                                <View style={[
+                                    style.modernSelectorIconContainer,
+                                    tipo && style.modernSelectorIconContainerSelected
+                                ]}>
+                                    <FontAwesome
+                                        name="chevron-down"
+                                        size={14}
+                                        style={[
+                                            style.modernSelectorIcon,
+                                            tipo && style.modernSelectorIconSelected
+                                        ]}
+                                    />
+                                </View>
                             </TouchableOpacity>
-                            : (accesoPerfil == "admin" || accesoPerfil == "despacho")
-                            && <TouchableOpacity style={style.btnGuardar} onPress={() => handleSubmit()}>
-                                {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
-                                <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar"}</Text>
+                        </View>
+                    }
+
+                    {/* Modal VEOs personalizado */}
+                    {modalCliente && modalVeos()}
+
+                    {
+                        (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "comercial") || acceso === "cliente")
+                        && <View style={{ marginBottom: 20 }}>
+                            <Text style={{
+                                fontSize: 16,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8
+                            }}>
+                                Comercial VEO
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => accesoPerfil == "cliente" ? null : updateState({ modalCliente: true })}
+                                style={{
+                                    backgroundColor: '#fff',
+                                    borderRadius: 12,
+                                    borderWidth: 2,
+                                    borderColor: veo ? '#28a745' : '#e9ecef',
+                                    shadowColor: veo ? 'rgba(40,167,69, .15)' : 'rgba(0,0,0, .1)',
+                                    shadowOffset: { height: 2, width: 0 },
+                                    shadowOpacity: .3,
+                                    shadowRadius: 4,
+                                    elevation: 3,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 16,
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    minHeight: 56,
+                                }}
+                            >
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{
+                                        fontSize: 16,
+                                        color: veo ? '#28a745' : '#999',
+                                        fontWeight: veo ? '600' : '400'
+                                    }}>
+                                        {veo || "Seleccionar VEO"}
+                                    </Text>
+                                    {veo && (
+                                        <Text style={{
+                                            fontSize: 12,
+                                            color: '#28a745',
+                                            marginTop: 2
+                                        }}>
+                                            VEO asignado
+                                        </Text>
+                                    )}
+                                </View>
+                                <View style={{
+                                    backgroundColor: veo ? '#28a745' : '#f8f9fa',
+                                    borderRadius: 8,
+                                    padding: 8,
+                                    borderWidth: 1,
+                                    borderColor: veo ? '#28a745' : '#e9ecef'
+                                }}>
+                                    <FontAwesome
+                                        name="chevron-down"
+                                        size={14}
+                                        color={veo ? '#fff' : '#666'}
+                                    />
+                                </View>
                             </TouchableOpacity>
-                }
-                {
-                    (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "veo"))
-                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: "#feac00", marginBottom: 0 }]} onPress={() => navigation.navigate("chart", { idUsuario })}>
-                        <Text style={style.textGuardar}>{"Graficos"}</Text>
-                    </TouchableOpacity>
-                }
-                {
-                    (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
-                    && <TouchableOpacity style={[style.btnGuardar, { backgroundColor: "blue", marginBottom: 70 }]} onPress={() => navigation.navigate("puntos", { idUsuario })}>
-                        <Text style={style.textGuardar}>{"Crear Revisión"}</Text>
-                    </TouchableOpacity>
-                }
-            </ScrollView>
+                        </View>
+                    }
+
+                    {/* AVATAR */}
+                    {
+                        acceso !== "cliente"
+                        && <View>
+                            <TomarFoto
+                                width={110}
+                                source={imagen}
+                                titulo="Foto de perfil"
+                                limiteImagenes={1}
+                                imagenes={(imagen) => { updateState({ imagen, editaAvatar: true, showLoading: false }) }}
+                            />
+                        </View>
+                    }
+                    {/* BOTON ACTUALIZAR USUARIO */}
+                    {
+                        (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
+                        && <View style={{ marginTop: 20, marginBottom: 20 }}>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#00218b',
+                                    paddingVertical: 16,
+                                    paddingHorizontal: 24,
+                                    borderRadius: 12,
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    shadowColor: 'rgba(0,0,0, .2)',
+                                    shadowOffset: { height: 2, width: 0 },
+                                    shadowOpacity: .3,
+                                    shadowRadius: 4,
+                                    elevation: 4,
+                                }}
+                                onPress={() => editarUsuario("editar")}
+                            >
+                                {cargando && <ActivityIndicator color="white" style={{ marginRight: 8 }} />}
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    {cargando ? "Guardando..." : "Actualizar Usuario"}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
+
+                    {/* BOTONES DE ESTADO Y ACCIONES */}
+                    {
+                        (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
+                        && <View style={{
+                            marginTop: 20,
+                            marginBottom: 20,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            gap: 12
+                        }}>
+                            {/* BOTON CAMBIAR ESTADO */}
+                            <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: activo ? "#dc3545" : "#28a745",
+                                    paddingVertical: 14,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 12,
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    shadowColor: activo ? 'rgba(220,53,69, .3)' : 'rgba(40,167,69, .3)',
+                                    shadowOffset: { height: 2, width: 0 },
+                                    shadowOpacity: .4,
+                                    shadowRadius: 4,
+                                    elevation: 4,
+                                }}
+                                onPress={() => cambiarEstadoUsuario()}
+                            >
+                                <FontAwesome
+                                    name={activo ? "ban" : "check"}
+                                    size={16}
+                                    color="white"
+                                    style={{ marginRight: 8 }}
+                                />
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 14,
+                                    fontWeight: '600'
+                                }}>
+                                    {activo ? "Desactivar" : "Activar"}
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* BOTON ELIMINAR */}
+                            <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: "#dc3545",
+                                    paddingVertical: 14,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 12,
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    shadowColor: 'rgba(220,53,69, .3)',
+                                    shadowOffset: { height: 2, width: 0 },
+                                    shadowOpacity: .4,
+                                    shadowRadius: 4,
+                                    elevation: 4,
+                                }}
+                                onPress={() => eliminarUsuario()}
+                            >
+                                <FontAwesome
+                                    name="trash"
+                                    size={16}
+                                    color="white"
+                                    style={{ marginRight: 8 }}
+                                />
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 14,
+                                    fontWeight: '600'
+                                }}>
+                                    Eliminar
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
+
+                    {/* BOTONES DE ACCIÓN PRINCIPALES */}
+                    {
+                        // Mostrar botones principales solo para perfil propio o modo crear/admin
+                        (tipoAcceso === "" || (tipoAcceso === "admin" || tipoAcceso === "crear")) && (
+                            <View style={{ marginTop: 30, marginBottom: 20 }}>
+                                {/* BOTON GUARDAR/CREAR PRINCIPAL */}
+                                <TouchableOpacity
+                                    style={{
+                                        backgroundColor: '#00218b',
+                                        paddingVertical: 16,
+                                        paddingHorizontal: 24,
+                                        borderRadius: 12,
+                                        alignItems: 'center',
+                                        flexDirection: 'row',
+                                        justifyContent: 'center',
+                                        marginBottom: 12,
+                                        shadowColor: 'rgba(0,0,0, .2)',
+                                        shadowOffset: { height: 2, width: 0 },
+                                        shadowOpacity: .3,
+                                        shadowRadius: 4,
+                                        elevation: 4,
+                                    }}
+                                    onPress={() => tipoAcceso === "" ? handleSubmit("editar") : handleSubmit()}
+                                >
+                                    {cargando && <ActivityIndicator color="white" style={{ marginRight: 8 }} />}
+                                    <Text style={{
+                                        color: 'white',
+                                        fontSize: 16,
+                                        fontWeight: '600'
+                                    }}>
+                                        {cargando
+                                            ? "Guardando..."
+                                            : (tipoAcceso === ""
+                                                ? "Guardar Cambios"
+                                                : "Crear Usuario"
+                                            )
+                                        }
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    }
+
+                    {/* BOTONES SECUNDARIOS */}
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                        marginTop: 12
+                    }}>
+                        {
+                            (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "veo"))
+                            && <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#fd7e14',
+                                    paddingVertical: 14,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 12,
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    shadowColor: 'rgba(253,126,20, .3)',
+                                    shadowOffset: { height: 2, width: 0 },
+                                    shadowOpacity: .4,
+                                    shadowRadius: 4,
+                                    elevation: 4,
+                                }}
+                                onPress={() => navigation.navigate("chart", { idUsuario })}
+                            >
+                                <FontAwesome
+                                    name="bar-chart"
+                                    size={16}
+                                    color="white"
+                                    style={{ marginRight: 8 }}
+                                />
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 14,
+                                    fontWeight: '600'
+                                }}>
+                                    Ver Gráficos
+                                </Text>
+                            </TouchableOpacity>
+                        }
+
+                        {
+                            (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
+                            && <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#007bff',
+                                    paddingVertical: 14,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 12,
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    shadowColor: 'rgba(0,123,255, .3)',
+                                    shadowOffset: { height: 2, width: 0 },
+                                    shadowOpacity: .4,
+                                    shadowRadius: 4,
+                                    elevation: 4,
+                                }}
+                                onPress={() => navigation.navigate("puntos", { idUsuario })}
+                            >
+                                <FontAwesome
+                                    name="clipboard"
+                                    size={16}
+                                    color="white"
+                                    style={{ marginRight: 8 }}
+                                />
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 14,
+                                    fontWeight: '600'
+                                }}>
+                                    Crear Revisión
+                                </Text>
+                            </TouchableOpacity>
+                        }
+                    </View>
+                </ScrollView>
+            </View>
 
         );
     }, [state]);
@@ -791,7 +1219,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     if (res.status) {
                         Toast.show({ type: 'success', text1: `Usuario ${!activo ? 'activado' : 'desactivado'} con éxito` });
                         setTimeout(() => {
-                            navigation.navigate("Home");
+                            navigation.navigate("clientes");
                         }, 1500);
                     }
                 })
@@ -839,43 +1267,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                             : (ubicaciones[key].nombre = value);
         updateState({ ubicaciones });
     }, [state.ubicaciones, updateState]);
-    const modalZonas: ModalZonasFunction = useCallback(() => {
-        const { zonas, idZona, terminoBuscador } = state;
-
-        return (
-            <View animationType="fade" >
-                <TouchableOpacity activeOpacity={1}  >
-                    <View style={style.modalZona}>
-                        <View style={style.subModalZona}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => updateState({ modalZona: false })} style={style.btnModalClose}>
-                                <FontAwesome name={'times-circle'} style={style.iconCerrar} />
-                            </TouchableOpacity>
-                            <TextInput
-                                type='outlined'
-                                label='Buscar Zona'
-                                placeholder="Buscar Zona"
-
-                                onChangeText={terminoBuscador => updateState({ terminoBuscador })}
-                                style={style.inputZona}
-                            />
-                            <ScrollView>
-                                {
-                                    zonas.map((e, key) => {
-                                        return (
-                                            <TouchableOpacity style={style.btnZona} key={key} onPress={() => actualizaZona(e._id, e.nombre)}>
-                                                <Text style={style.textZona}>{e.nombre}</Text>
-                                                {idZona == e._id && <FontAwesome name={'check'} style={style.iconZona} />}
-                                            </TouchableOpacity>
-                                        )
-                                    })
-                                }
-                            </ScrollView>
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </View>
-        );
-    }, [state.zonas, state.idZona, state.terminoBuscador]);
 
     const actualizaZona: ActualizaZonaFunction = useCallback((id: string, nombre: string) => {
         const { key, ubicaciones } = state;
@@ -884,135 +1275,818 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         updateState({ ubicaciones, modalZona: false });
     }, [state.key, state.ubicaciones, updateState]);
 
-    const modalUbicacion: ModalUbicacionFunction = useCallback(() => {
-        let { modalZona, ubicaciones, activeScroll } = state;
-        return (
-            <View>
-                {modalZona ? modalZonas() : null}
-                <View>
-                    <TouchableOpacity activeOpacity={1}  >
-                        <View style={[style.modal, { top: activeScroll ? -150 : 0 }]}>
-                            <View style={style.subContenedorModal}>
-                                <TouchableOpacity activeOpacity={1} onPress={() => updateState({ modalUbicacion: false })} style={style.btnModalClose}>
-                                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
-                                </TouchableOpacity>
-                                <ScrollView keyboardDismissMode="on-drag" >
-                                    <Text style={style.tituloModal}>Si el pedido lo realizara el encargado del punto por favor inserta su informacion, de lo contrario solo inserta la dirección y zona</Text>
-                                    <View>
-                                        {
-                                            ubicaciones.map((e, key) => {
-                                                console.log({ dir: e.direccion })
-                                                return (
-                                                    <View key={key}>
-                                                        <View>
-                                                            <TextInput
-                                                                type='outlined'
-                                                                label='Dirección'
-                                                                placeholder="Dirección"
-                                                                value={e.direccion ? e.direccion.toUpperCase() : e.direccion}
-                                                                onChangeText={direccion => actualizaArrayUbicacion("direccion", direccion, key)}
-                                                                style={style.input}
-                                                            />
-                                                            <Text style={style.asterisco}>*</Text>
-                                                        </View>
-                                                        <View>
-                                                            <TouchableOpacity style={style.btnUbicacion} onPress={() => updateState({ modalZona: true, key })}>
-                                                                <Text style={style.textZona}>{e.nombreZona ? e.nombreZona : "Zona"}</Text>
-                                                            </TouchableOpacity>
-                                                            <Text style={style.asterisco}>*</Text>
-                                                        </View>
-                                                        <TextInput
-                                                            type='outlined'
-                                                            label='capacidad'
-                                                            placeholder="Capacidad almacenamiento"
-                                                            value={e.capacidad}
-                                                            onChangeText={capacidad => actualizaArrayUbicacion("capacidad", capacidad, key)}
-                                                            style={style.input}
-                                                        />
-                                                        <TextInput
-                                                            type='outlined'
-                                                            label='observacion al momento de ingresar el vehiculo'
-                                                            placeholder="observaciones ingreso del vehiculo"
-                                                            // value={e.observacion.toUpperCase()}
-                                                            onChangeText={observacion => actualizaArrayUbicacion("observacion", observacion, key)}
-                                                            style={[style.input, { marginBottom: (e.nuevo || !e.idCliente) && key > 0 ? 40 : 10 }]}
-                                                        />
-                                                        {
-                                                            (e.nuevo || e.idCliente)
-                                                            && <TextInput
-                                                                type='outlined'
-                                                                label='Email'
-                                                                placeholder="Email"
-                                                                value={e.email}
-                                                                onFocus={() => updateState({ activeScroll: true })}
-                                                                onBlur={() => updateState({ activeScroll: false })}
-                                                                onChangeText={emailUbicacion => actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
-                                                                style={style.input}
-                                                            />
-                                                        }
-                                                        {
-                                                            (e.nuevo || e.idCliente)
-                                                            && <TextInput
-                                                                type='outlined'
-                                                                label='Celular'
-                                                                placeholder="Celular"
-                                                                value={e.celular}
-                                                                onFocus={() => updateState({ activeScroll: true })}
-                                                                onBlur={() => updateState({ activeScroll: false })}
-                                                                onChangeText={celularUbicacion => actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
-                                                                style={style.input}
-                                                            />
-                                                        }
-                                                        {
-                                                            (e.nuevo || e.idCliente)
-                                                            && <TextInput
-                                                                type='outlined'
-                                                                label='Nombre'
-                                                                placeholder="Nombre"
-                                                                value={e.nombre}
-                                                                onFocus={() => updateState({ activeScroll: true })}
-                                                                onBlur={() => updateState({ activeScroll: false })}
-                                                                onChangeText={nombreUbicacion => actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                                style={[style.input, { marginBottom: key > 0 ? 40 : 10 }]}
-                                                            />
-                                                        }
-                                                        {
-                                                            key > 0
-                                                            && <TouchableOpacity style={style.btnEliminar} onPress={() => eliminarUbicacion(key)}>
-                                                                <FontAwesome name={'trash'} style={style.iconEliminar} />
-                                                            </TouchableOpacity>
-                                                        }
+    const modalZonas: ModalZonasFunction = useCallback(() => {
+        const { idZona, terminoBuscador } = state;
+        console.log('Modal zonas - zonas from Redux:', zonas);
 
-                                                        <Text style={style.separador}></Text>
-                                                    </View>
-                                                )
-                                            })
-                                        }
-                                    </View>
-                                    <View style={style.contenedorAdd}>
-                                        <TouchableOpacity onPress={() => actualizaUbicacion()} style={style.btnAdd}>
-                                            <FontAwesome name={'plus'} style={style.iconAdd} />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => guardarUbicacion()}>
-                                        <Text style={style.textGuardar}>Guardar</Text>
-                                    </TouchableOpacity>
-                                </ScrollView>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
+        return (
+            <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 2000
+            }}>
+                <View style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 12,
+                    margin: 20,
+                    maxHeight: '80%',
+                    width: '90%',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8
+                }}>
+                    {/* Header del Modal */}
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: 20,
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#e9ecef'
+                    }}>
+                        <Text style={{
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }}>
+                            Seleccionar Zona
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => updateState({ modalZona: false })}
+                            style={{
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: 15,
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                borderWidth: 1,
+                                borderColor: '#e9ecef'
+                            }}
+                        >
+                            <FontAwesome name="times" size={16} color="#6c757d" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Barra de búsqueda */}
+                    <View style={{ padding: 20, paddingBottom: 10 }}>
+                        <TextInput
+                            placeholder="Buscar zona..."
+                            value={terminoBuscador}
+                            onChangeText={terminoBuscador => updateState({ terminoBuscador })}
+                            style={{
+                                backgroundColor: '#f8f9fa',
+                                borderWidth: 1,
+                                borderColor: '#e9ecef',
+                                borderRadius: 8,
+                                paddingHorizontal: 15,
+                                paddingVertical: 12,
+                                fontSize: 16,
+                                color: '#333'
+                            }}
+                        />
+                    </View>
+
+                    {/* Lista de zonas */}
+                    <ScrollView style={{ maxHeight: 300 }}>
+                        {zonas
+                            .filter(zona =>
+                                terminoBuscador === '' ||
+                                zona.nombre.toLowerCase().includes(terminoBuscador.toLowerCase())
+                            )
+                            .map((zona, key) => (
+                                <TouchableOpacity
+                                    key={key}
+                                    onPress={() => actualizaZona(zona._id, zona.nombre)}
+                                    style={{
+                                        padding: 15,
+                                        borderBottomWidth: 1,
+                                        borderBottomColor: '#f1f3f4',
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        backgroundColor: idZona === zona._id ? '#e3f2fd' : '#fff'
+                                    }}
+                                >
+                                    <Text style={{
+                                        fontSize: 16,
+                                        color: '#333',
+                                        flex: 1
+                                    }}>
+                                        {zona.nombre}
+                                    </Text>
+                                    {idZona === zona._id && (
+                                        <FontAwesome
+                                            name="check"
+                                            size={18}
+                                            color="#2196f3"
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            ))
+                        }
+                    </ScrollView>
+
+                    {/* Footer */}
+                    <View style={{
+                        padding: 20,
+                        borderTopWidth: 1,
+                        borderTopColor: '#e9ecef'
+                    }}>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#6c757d',
+                                borderRadius: 8,
+                                padding: 15
+                            }}
+                            onPress={() => updateState({ modalZona: false })}
+                        >
+                            <Text style={{
+                                color: '#fff',
+                                textAlign: 'center',
+                                fontSize: 16,
+                                fontWeight: '600'
+                            }}>
+                                Cancelar
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         );
-    }, [state.modalZona, state.ubicaciones, state.activeScroll, modalZonas, updateState]);
+    }, [zonas, state.idZona, state.terminoBuscador, updateState, actualizaZona]);
+
+    // Effect para animaciones del modal VEO
+    useEffect(() => {
+        if (state.modalCliente) {
+            // Reset animations
+            modalAnimation.setValue(0);
+            overlayAnimation.setValue(0);
+
+            // Start entrance animations
+            Animated.parallel([
+                Animated.timing(overlayAnimation, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: false,
+                }),
+                Animated.spring(modalAnimation, {
+                    toValue: 1,
+                    tension: 100,
+                    friction: 8,
+                    useNativeDriver: false,
+                }),
+            ]).start();
+        }
+    }, [state.modalCliente]);
+
+    const modalVeos = useCallback(() => {
+        const { terminoBuscador, veos } = state;
+
+        const closeModal = () => {
+            Animated.parallel([
+                Animated.timing(overlayAnimation, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: false,
+                }),
+                Animated.timing(modalAnimation, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: false,
+                }),
+            ]).start(() => {
+                updateState({ modalCliente: false });
+            });
+        };
+
+        const renderVeoItem = (veo: any, index: number, nivel: number = 0) => {
+            const paddingLeft = nivel * 20;
+            const tieneHijos = veo.children && veo.children.length > 0;
+
+            return (
+                <View key={veo.key || index}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            asignarVeo(veo.key);
+                            closeModal();
+                        }}
+                        style={{
+                            padding: 15,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#f1f3f4',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            backgroundColor: state.idVeo === veo.key ? '#e3f2fd' : '#fff',
+                            marginLeft: paddingLeft,
+                            borderLeftWidth: nivel > 0 ? 2 : 0,
+                            borderLeftColor: '#2196f3'
+                        }}
+                    >
+                        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                            {nivel > 0 && (
+                                <Text style={{ color: '#2196f3', marginRight: 8 }}>
+                                    └─
+                                </Text>
+                            )}
+                            <View>
+                                <Text style={{
+                                    fontSize: 16,
+                                    color: '#333',
+                                    fontWeight: state.idVeo === veo.key ? 'bold' : 'normal'
+                                }}>
+                                    {veo.label}
+                                </Text>
+                                {tieneHijos && (
+                                    <Text style={{
+                                        fontSize: 12,
+                                        color: '#666',
+                                        marginTop: 2
+                                    }}>
+                                        {veo.children.length} subordinado(s)
+                                    </Text>
+                                )}
+                            </View>
+                        </View>
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            {tieneHijos && (
+                                <FontAwesome
+                                    name="users"
+                                    size={14}
+                                    color="#2196f3"
+                                    style={{ marginRight: 8 }}
+                                />
+                            )}
+                            {state.idVeo === veo.key && (
+                                <FontAwesome
+                                    name="check"
+                                    size={18}
+                                    color="#2196f3"
+                                />
+                            )}
+                        </View>
+                    </TouchableOpacity>
+
+                    {/* Renderizar hijos recursivamente */}
+                    {tieneHijos && veo.children.map((hijo: any, childIndex: number) =>
+                        renderVeoItem(hijo, childIndex, nivel + 1)
+                    )}
+                </View>
+            );
+        };
+
+        return (
+            <Modal
+                transparent
+                visible={true}
+                animationType="none"
+                onRequestClose={closeModal}
+            >
+                <Animated.View
+                    style={[
+                        style.modalOverlay,
+                        {
+                            opacity: overlayAnimation,
+                        }
+                    ]}
+                >
+                    <Animated.View
+                        style={[
+                            style.modalContainer,
+                            {
+                                transform: [
+                                    {
+                                        scale: modalAnimation.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [0.3, 1],
+                                        }),
+                                    },
+                                    {
+                                        translateY: modalAnimation.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [50, 0],
+                                        }),
+                                    },
+                                ],
+                            }
+                        ]}
+                    >
+                        {/* Header del Modal */}
+                        <View style={style.modalHeader}>
+                            <Text style={style.modalTitle}>
+                                Seleccionar VEO Comercial
+                            </Text>
+                            <TouchableOpacity
+                                onPress={closeModal}
+                                style={{
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: 15,
+                                    width: 30,
+                                    height: 30,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef'
+                                }}
+                            >
+                                <FontAwesome name="times" size={16} color="#6c757d" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Barra de búsqueda */}
+                        <View style={{ padding: 20, paddingBottom: 10 }}>
+                            <TextInput
+                                placeholder="Buscar VEO..."
+                                value={terminoBuscador}
+                                onChangeText={terminoBuscador => updateState({ terminoBuscador })}
+                                style={{
+                                    backgroundColor: '#f8f9fa',
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    color: '#333'
+                                }}
+                            />
+                        </View>
+
+                        {/* Lista de VEOs */}
+                        <ScrollView style={{ maxHeight: 400 }}>
+                            {veos.length === 0 ? (
+                                <View style={{
+                                    padding: 40,
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <FontAwesome
+                                        name="users"
+                                        size={48}
+                                        color="#e9ecef"
+                                        style={{ marginBottom: 16 }}
+                                    />
+                                    <Text style={{
+                                        fontSize: 16,
+                                        color: '#666',
+                                        textAlign: 'center'
+                                    }}>
+                                        No hay VEOs disponibles
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: '#999',
+                                        textAlign: 'center',
+                                        marginTop: 8
+                                    }}>
+                                        Contacta al administrador para asignar VEOs
+                                    </Text>
+                                </View>
+                            ) : (
+                                veos
+                                    .filter(veo =>
+                                        terminoBuscador === '' ||
+                                        veo.label.toLowerCase().includes(terminoBuscador.toLowerCase())
+                                    )
+                                    .map((veo, index) => renderVeoItem(veo, index))
+                            )}
+                        </ScrollView>
+
+                        {/* Footer */}
+                        <View style={{
+                            padding: 20,
+                            borderTopWidth: 1,
+                            borderTopColor: '#e9ecef'
+                        }}>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#6c757d',
+                                    borderRadius: 8,
+                                    padding: 15
+                                }}
+                                onPress={closeModal}
+                            >
+                                <Text style={{
+                                    color: '#fff',
+                                    textAlign: 'center',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    Cancelar
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+                </Animated.View>
+            </Modal>
+        );
+    }, [state.terminoBuscador, state.veos, state.idVeo, updateState, asignarVeo, overlayAnimation, modalAnimation]);
+
+    const modalUbicacion: ModalUbicacionFunction = useCallback(() => {
+        let { modalZona, ubicaciones, activeScroll } = state;
+        return (
+            <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 1000
+            }}>
+                {modalZona ? modalZonas() : null}
+                <View style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 12,
+                    margin: 20,
+                    maxHeight: '90%',
+                    width: '90%',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8
+                }}>
+                    {/* Header del Modal */}
+                    <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: 20,
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#e9ecef'
+                    }}>
+                        <Text style={{
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }}>
+                            Ubicaciones de Entrega
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => updateState({ modalUbicacion: false })}
+                            style={{
+                                backgroundColor: '#f8f9fa',
+                                borderRadius: 15,
+                                width: 30,
+                                height: 30,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                borderWidth: 1,
+                                borderColor: '#e9ecef'
+                            }}
+                        >
+                            <FontAwesome name="times" size={16} color="#6c757d" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Contenido del Modal */}
+                    <ScrollView style={{ maxHeight: 400 }} keyboardDismissMode="on-drag">
+                        <View style={{ padding: 20 }}>
+                            <Text style={{
+                                fontSize: 14,
+                                color: '#666',
+                                marginBottom: 20,
+                                lineHeight: 20
+                            }}>
+                                Si el pedido lo realizará el encargado del punto por favor inserta su información, de lo contrario solo inserta la dirección y zona
+                            </Text>
+
+                            {ubicaciones.map((ubicacion, key) => (
+                                <View key={key} style={{
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: 8,
+                                    padding: 15,
+                                    marginBottom: 15,
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef'
+                                }}>
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        marginBottom: 10
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: '600',
+                                            color: '#333',
+                                            flex: 1
+                                        }}>
+                                            Ubicación {key + 1}
+                                        </Text>
+                                        <TouchableOpacity
+                                            onPress={() => eliminarUbicacion(key)}
+                                            style={{
+                                                backgroundColor: '#dc3545',
+                                                borderRadius: 12,
+                                                width: 24,
+                                                height: 24,
+                                                justifyContent: 'center',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <FontAwesome name="trash" size={12} color="#fff" />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    {/* Campos de la ubicación */}
+                                    <View style={{ marginBottom: 15 }}>
+                                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 5 }}>
+                                            Dirección *
+                                        </Text>
+                                        <TextInput
+                                            placeholder="Dirección"
+                                            value={ubicacion.direccion ? ubicacion.direccion.toUpperCase() : ubicacion.direccion}
+                                            onChangeText={direccion => actualizaArrayUbicacion("direccion", direccion, key)}
+                                            style={{
+                                                backgroundColor: '#fff',
+                                                borderWidth: 1,
+                                                borderColor: '#e9ecef',
+                                                borderRadius: 6,
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 8,
+                                                fontSize: 14,
+                                                color: '#333'
+                                            }}
+                                        />
+                                    </View>
+
+                                    <View style={{ marginBottom: 15 }}>
+                                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 5 }}>
+                                            Zona *
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: '#fff',
+                                                borderWidth: 1,
+                                                borderColor: '#e9ecef',
+                                                borderRadius: 6,
+                                                paddingHorizontal: 12,
+                                                paddingVertical: 12,
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center'
+                                            }}
+                                            onPress={() => updateState({ modalZona: true, key })}
+                                        >
+                                            <Text style={{ fontSize: 14, color: '#333', flex: 1 }}>
+                                                {ubicacion.nombreZona || "Seleccionar zona"}
+                                            </Text>
+                                            <FontAwesome name="chevron-down" size={14} color="#666" />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <TextInput
+                                        placeholder="Capacidad almacenamiento"
+                                        value={ubicacion.capacidad}
+                                        onChangeText={capacidad => actualizaArrayUbicacion("capacidad", capacidad, key)}
+                                        style={{
+                                            backgroundColor: '#fff',
+                                            borderWidth: 1,
+                                            borderColor: '#e9ecef',
+                                            borderRadius: 6,
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 8,
+                                            fontSize: 14,
+                                            color: '#333',
+                                            marginBottom: 15
+                                        }}
+                                    />
+
+                                    <TextInput
+                                        placeholder="Observaciones ingreso del vehículo"
+                                        onChangeText={observacion => actualizaArrayUbicacion("observacion", observacion, key)}
+                                        style={{
+                                            backgroundColor: '#fff',
+                                            borderWidth: 1,
+                                            borderColor: '#e9ecef',
+                                            borderRadius: 6,
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 8,
+                                            fontSize: 14,
+                                            color: '#333',
+                                            marginBottom: 15
+                                        }}
+                                    />
+
+                                    {(ubicacion.nuevo || ubicacion.idCliente) && (
+                                        <>
+                                            <TextInput
+                                                placeholder="Email"
+                                                value={ubicacion.email}
+                                                onFocus={() => updateState({ activeScroll: true })}
+                                                onBlur={() => updateState({ activeScroll: false })}
+                                                onChangeText={emailUbicacion => actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
+                                                style={{
+                                                    backgroundColor: '#fff',
+                                                    borderWidth: 1,
+                                                    borderColor: '#e9ecef',
+                                                    borderRadius: 6,
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 8,
+                                                    fontSize: 14,
+                                                    color: '#333',
+                                                    marginBottom: 15
+                                                }}
+                                            />
+
+                                            <TextInput
+                                                placeholder="Celular"
+                                                value={ubicacion.celular}
+                                                onFocus={() => updateState({ activeScroll: true })}
+                                                onBlur={() => updateState({ activeScroll: false })}
+                                                onChangeText={celularUbicacion => actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
+                                                style={{
+                                                    backgroundColor: '#fff',
+                                                    borderWidth: 1,
+                                                    borderColor: '#e9ecef',
+                                                    borderRadius: 6,
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 8,
+                                                    fontSize: 14,
+                                                    color: '#333',
+                                                    marginBottom: 15
+                                                }}
+                                            />
+
+                                            <TextInput
+                                                placeholder="Nombre"
+                                                value={ubicacion.nombre}
+                                                onFocus={() => updateState({ activeScroll: true })}
+                                                onBlur={() => updateState({ activeScroll: false })}
+                                                onChangeText={nombreUbicacion => actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
+                                                style={{
+                                                    backgroundColor: '#fff',
+                                                    borderWidth: 1,
+                                                    borderColor: '#e9ecef',
+                                                    borderRadius: 6,
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 8,
+                                                    fontSize: 14,
+                                                    color: '#333',
+                                                    marginBottom: 15
+                                                }}
+                                            />
+                                        </>
+                                    )}
+                                </View>
+                            ))}
+
+                            {/* Botón Agregar Ubicación */}
+                            <TouchableOpacity
+                                onPress={() => actualizaUbicacion()}
+                                style={{
+                                    backgroundColor: '#28a745',
+                                    borderRadius: 8,
+                                    padding: 15,
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    marginBottom: 20
+                                }}
+                            >
+                                <FontAwesome name="plus" size={16} color="#fff" style={{ marginRight: 8 }} />
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                    Agregar Ubicación
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+
+                    {/* Footer del Modal */}
+                    <View style={{
+                        flexDirection: 'row',
+                        padding: 20,
+                        borderTopWidth: 1,
+                        borderTopColor: '#e9ecef'
+                    }}>
+                        <TouchableOpacity
+                            style={{
+                                flex: 1,
+                                backgroundColor: '#6c757d',
+                                borderRadius: 8,
+                                padding: 15,
+                                marginRight: 10
+                            }}
+                            onPress={() => updateState({ modalUbicacion: false })}
+                        >
+                            <Text style={{ color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: '600' }}>
+                                Cancelar
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{
+                                flex: 1,
+                                backgroundColor: '#007bff',
+                                borderRadius: 8,
+                                padding: 15
+                            }}
+                            onPress={() => guardarUbicacion()}
+                        >
+                            <Text style={{ color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: '600' }}>
+                                Guardar
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        );
+    }, [state.modalZona, state.ubicaciones, state.activeScroll, modalZonas, updateState, zonas]);
+
+    const guardarUbicacion: GuardarUbicacionFunction = useCallback(async () => {
+        try {
+            let { ubicaciones, idUsuario } = state;
+
+            // Filtrar ubicaciones válidas
+            ubicaciones = ubicaciones.filter((e, index) => {
+                return e.direccion != undefined && e.direccion != ""
+            });
+
+            // Validar que todas tengan zona
+            const isEmpty = ubicaciones.every(x => {
+                return x.idZona && x.idZona !== "";
+            });
+
+            if (!isEmpty) {
+                Alert.alert("Error", "Todas las ubicaciones deben tener una zona asignada");
+                return;
+            }
+
+            // Separar puntos nuevos de puntos existentes
+            const puntosNuevos = ubicaciones.filter(e => !e._id);
+            const puntosExistentes = ubicaciones.filter(e => e._id);
+
+            // Preparar datos para crear puntos nuevos
+            if (puntosNuevos.length > 0) {
+                const puntosParaCrear = puntosNuevos.map(punto => ({
+                    observacion: punto.observacion || '',
+                    direccion: punto.direccion,
+                    capacidad: punto.capacidad || 0,
+                    punto: punto.capacidad || 0,
+                    location: punto.location || null,
+                    place_name: punto.place_name || null,
+                    idZona: punto.idZona,
+                    idCliente: idUsuario,
+                    idPadre: null
+                }));
+
+                console.log('Creando puntos nuevos:', puntosParaCrear);
+                const resultCreate = await createPoints(puntosParaCrear);
+                console.log('Resultado crear puntos:', resultCreate);
+            }
+
+            // Preparar datos para actualizar puntos existentes
+            if (puntosExistentes.length > 0) {
+                const puntosParaActualizar = puntosExistentes.map(punto => ({
+                    _id: punto._id,
+                    observacion: punto.observacion || '',
+                    direccion: punto.direccion,
+                    capacidad: punto.capacidad || 0,
+                    location: punto.location || null,
+                    place_name: punto.place_name || null,
+                    idZona: punto.idZona,
+                    idCliente: idUsuario,
+                    idPadre: null
+                }));
+
+                console.log('Actualizando puntos existentes:', puntosParaActualizar);
+                const resultUpdate = await updatePoints(puntosParaActualizar);
+                console.log('Resultado actualizar puntos:', resultUpdate);
+            }
+
+            // Mostrar mensaje de éxito y cerrar modal
+            Toast.show({
+                type: 'success',
+                text1: 'Ubicaciones guardadas',
+                text2: 'Las ubicaciones se han guardado correctamente'
+            });
+
+            updateState({ ubicaciones, modalUbicacion: false });
+
+        } catch (error) {
+            console.error('Error al guardar ubicaciones:', error);
+            Alert.alert("Error", "No se pudieron guardar las ubicaciones. Inténtalo de nuevo.");
+        }
+    }, [state.ubicaciones, state.idUsuario, updateState]);
 
     const renderFormPass: RenderFormPassFunction = useCallback(() => {
         const { password, confirmar, showLoading, cargando } = state;
         return <View style={style.contenedorPerfil}>
             <Text style={style.tituloContrasena}>Inserta tu contraseña</Text>
             <TextInput
-                type='outlined'
-                label='Contraseña'
                 placeholder="Contraseña"
                 value={password}
                 onChangeText={password => updateState({ password })}
@@ -1020,8 +2094,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 secureTextEntry
             />
             <TextInput
-                type='outlined'
-                label='Confirmar'
                 placeholder="Confirmar"
                 value={confirmar}
                 onChangeText={confirmar => updateState({ confirmar })}
@@ -1039,10 +2111,25 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             </TouchableOpacity>
             {
                 password !== confirmar
-                && <Button
-                    title="No coinciden"
-                    color="#0071bb" loading={showLoading}
-                />
+                && <TouchableOpacity
+                    style={{
+                        backgroundColor: '#dc3545',
+                        paddingVertical: 12,
+                        paddingHorizontal: 20,
+                        borderRadius: 8,
+                        alignItems: 'center',
+                        marginTop: 10
+                    }}
+                    disabled={showLoading}
+                >
+                    {showLoading ? (
+                        <ActivityIndicator color="white" />
+                    ) : (
+                        <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                            No coinciden
+                        </Text>
+                    )}
+                </TouchableOpacity>
             }
         </View>;
     }, [state.password, state.confirmar, state.showLoading, state.cargando]);
@@ -1060,33 +2147,15 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             <Toast />
         </ImageBackground>
     );
-    const guardarUbicacion: GuardarUbicacionFunction = useCallback(() => {
-        let { ubicaciones } = state;
-        ubicaciones = ubicaciones.filter((e, index) => {
-            return e.direccion != undefined
-        });
-        ubicaciones = ubicaciones.filter((e, index) => {
-            return e.direccion != ""
-        });
-        const isEmpty = Object.values(ubicaciones).every(x => {
-            if (!x.idZona) {
-                return false
-            } else {
-                return true
-            }
-        });
-
-        !isEmpty ? Alert.alert("Error", "Zonas son obligatorios") : updateState({ ubicaciones, modalUbicacion: false });
-    }, [state.ubicaciones, updateState]);
     ///////////////////////////////////////////////////////////////
     //////////////          ACTUALIZA EL AVATAR
     ///////////////////////////////////////////////////////////////
     const avatar: AvatarFunction = useCallback((imagen: string[], idUser: string) => {
         updateState({ showLoading: true });
         let data = new FormDataType();
-        imagen = imagen[0];
+        const imagenFile = imagen[0];
         state.tipoAcceso ? data.append('crear', true) : null;
-        data.append('imagen', imagen);
+        data.append('imagen', imagenFile);
         data.append('imagenOtroUsuario', true);
         data.append('idUser', idUser);
         uploadAvatar(data)
@@ -1113,7 +2182,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     const handleSubmit: HandleSubmitFunction = useCallback((esEditar?: string) => {
         const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = state;
         console.log({ razon_social, cedula, direccion_factura, nombre, email, tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario })
-        if (acceso == "cliente") {
+        if (acceso === "cliente") {
             if (razon_social == "" || direccion_factura == "" || nombre == "" || email == "" || tipo == "" || ubicaciones.length < 1) {
                 Alert.alert(
                     'Todos los campos son obligatorios',
@@ -1182,11 +2251,25 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 console.log(e)
                 if (e.status) {
                     assignCommercial(e.user._id, idVeo)
-                    if (acceso == "cliente") {
+                    if (acceso === "cliente") {
                         if (clientes.length > 0) {
                             createMultipleUsers(clientes, e.user._id, e.user.nombre)
                                 .then(res => {
-                                    navigation.navigate("Home")
+                                    // Actualizar contexto si es edición de perfil propio
+                                    if (!state.tipoAcceso || state.tipoAcceso === "") {
+                                        // Actualizar contexto en tiempo real
+                                        if (context.updateUserData) {
+                                            context.updateUserData({
+                                                nombre: e.user.nombre,
+                                                email: e.user.email,
+                                                avatar: e.user.avatar
+                                            });
+                                        }
+                                    }
+                                    // Solo navegar si es creación de usuario, no edición de perfil propio
+                                    if (state.tipoAcceso && state.tipoAcceso !== "") {
+                                        navigation.navigate("Home")
+                                    }
                                     Toast.show({ type: 'success', text1: 'Usuario guardado con exito' })
 
                                 })
@@ -1198,7 +2281,21 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                             createMultiplePoints(puntos, e.user._id)
                                 .then(res => {
                                     console.log(res)
-                                    navigation.navigate("Home")
+                                    // Actualizar contexto si es edición de perfil propio
+                                    if (!state.tipoAcceso || state.tipoAcceso === "") {
+                                        // Actualizar contexto en tiempo real
+                                        if (context.updateUserData) {
+                                            context.updateUserData({
+                                                nombre: e.user.nombre,
+                                                email: e.user.email,
+                                                avatar: e.user.avatar
+                                            });
+                                        }
+                                    }
+                                    // Solo navegar si es creación de usuario, no edición de perfil propio
+                                    if (state.tipoAcceso && state.tipoAcceso !== "") {
+                                        navigation.navigate("Home")
+                                    }
                                     Toast.show({ type: 'success', text1: 'Usuario guardado con exito' })
                                 })
                                 .catch(err2 => {
@@ -1208,8 +2305,22 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         }
                     } else {
                         if (imagen.length === 0) {
-                            navigation.navigate("Home")
-                            Toast.show({ type: 'error', text1: 'Usuario eliminado con exito' })
+                            // Actualizar contexto si es edición de perfil propio
+                            if (!state.tipoAcceso || state.tipoAcceso === "") {
+                                // Actualizar contexto en tiempo real
+                                if (context.updateUserData) {
+                                    context.updateUserData({
+                                        nombre: e.user.nombre,
+                                        email: e.user.email,
+                                        avatar: e.user.avatar
+                                    });
+                                }
+                            }
+                            // Solo navegar si es creación de usuario, no edición de perfil propio
+                            if (state.tipoAcceso && state.tipoAcceso !== "") {
+                                navigation.navigate("Home")
+                            }
+                            Toast.show({ type: 'success', text1: 'Usuario guardado con exito' })
                         } else {
                             avatar(imagen, e.user._id)
                         }
@@ -1237,7 +2348,10 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     console.log(e)
                     if (e.status) {
                         Toast.show({ type: 'success', text1: 'Información editada' })
-                        navigation.navigate("Home")
+                        // Solo navegar si no es edición de perfil propio
+                        if (state.tipoAcceso && state.tipoAcceso !== "") {
+                            navigation.navigate("Home")
+                        }
                     } else {
                         Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
                     }
@@ -1251,16 +2365,22 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     const edicionExitosa: EdicionExitosaFunction = useCallback(async (nombre: string) => {
         updateState({ cargando: false });
         Toast.show({ type: 'success', text1: 'Usuario Editado' });
-        navigation.navigate("Home");
-    }, [updateState, navigation]);
+        // Solo navegar si no es edición de perfil propio
+        if (state.tipoAcceso && state.tipoAcceso !== "") {
+            navigation.navigate("Home");
+        }
+    }, [updateState, navigation, state.tipoAcceso]);
     const loginExitoso: LoginExitosoFunction = useCallback(async (user: User) => {
         console.log(user);
         AsyncStorage.setItem('nombre', user.nombre || '');
         AsyncStorage.setItem('avatar', user.avatar ? JSON.stringify(user.avatar) : '');
         updateState({ cargando: false });
         Toast.show({ type: 'success', text1: 'Informacion guardado' });
-        navigation.navigate("Home");
-    }, [updateState, navigation]);
+        // Solo navegar si no es edición de perfil propio
+        if (state.tipoAcceso && state.tipoAcceso !== "") {
+            navigation.navigate("Home");
+        }
+    }, [updateState, navigation, state.tipoAcceso]);
 };
 
 export default VerPerfil; 

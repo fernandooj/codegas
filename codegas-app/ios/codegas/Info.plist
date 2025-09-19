@@ -32,15 +32,17 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Necesitamos acceder a tu camara</string>
+	<string>Esta aplicación necesita acceso a la cámara para tomar fotos de facturas y documentos</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Necesitamos acceder a tu ubicación</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Necesitamos acceder a tu ubicación</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Esta aplicación necesita acceso al micrófono para grabar videos con audio</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Necesitamos acceder a tu camara</string>
+	<string>Esta aplicación necesita acceso a la galería de fotos para seleccionar imágenes de facturas y documentos</string>
 	<key>RCTNewArchEnabled</key>
 	<false/>
 	<key>UIAppFonts</key>

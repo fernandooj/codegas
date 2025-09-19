@@ -18,6 +18,7 @@ const DataProvider = ({ children }: any) => {
   const [_nombre, setNombre] = useState();
   const [_acceso, setAcceso] = useState();
   const [_email, setEmail] = useState();
+  const [_avatar, setAvatar] = useState();
   const [initializing, setInitializing] = useState(true);
   const [fcmToken, setFcmToken] = useState();
 
@@ -26,7 +27,7 @@ const DataProvider = ({ children }: any) => {
       const userData = await getUserByUid(uid);
       console.log('Datos recibidos de getUserByUid:', userData);
 
-      const { _id, acceso, nombre, email: newEmail } = userData || {};
+      const { _id, acceso, nombre, email: newEmail, avatar } = userData || {};
 
       // Validar que _id existe antes de proceder
       if (!_id) {
@@ -39,6 +40,7 @@ const DataProvider = ({ children }: any) => {
       setAcceso(acceso);
       setNombre(nombre);
       setEmail(newEmail);
+      setAvatar(avatar);
 
       // Guardar en AsyncStorage para persistencia solo si los valores no son undefined
       try {
@@ -47,6 +49,7 @@ const DataProvider = ({ children }: any) => {
         if (acceso) itemsToStore.push(['acceso', String(acceso)]);
         if (nombre) itemsToStore.push(['nombre', String(nombre)]);
         if (newEmail) itemsToStore.push(['email', String(newEmail)]);
+        if (avatar) itemsToStore.push(['avatar', String(avatar)]);
 
         // Validar que todos los elementos sean arrays válidos
         const validItems = itemsToStore.filter(item =>
@@ -58,7 +61,7 @@ const DataProvider = ({ children }: any) => {
 
         if (validItems.length > 0) {
           await AsyncStorage.multiSet(validItems);
-          console.log('Datos guardados en AsyncStorage:', { _id, acceso, nombre, email: newEmail });
+          console.log('Datos guardados en AsyncStorage:', { _id, acceso, nombre, email: newEmail, avatar });
         }
       } catch (error) {
         console.error('Error guardando en AsyncStorage:', error);
@@ -84,13 +87,15 @@ const DataProvider = ({ children }: any) => {
       const acceso = await AsyncStorage.getItem('acceso');
       const nombre = await AsyncStorage.getItem('nombre');
       const email = await AsyncStorage.getItem('email');
+      const avatar = await AsyncStorage.getItem('avatar');
 
       if (userId) {
         setUserId(userId);
         setAcceso(acceso);
         setNombre(nombre);
         setEmail(email);
-        console.log('Datos cargados desde AsyncStorage:', { userId, acceso, nombre, email });
+        setAvatar(avatar);
+        console.log('Datos cargados desde AsyncStorage:', { userId, acceso, nombre, email, avatar });
       }
     } catch (error) {
       console.error('Error cargando desde AsyncStorage:', error);
@@ -187,13 +192,50 @@ const DataProvider = ({ children }: any) => {
     getFCMToken();
   }, []);
 
+  // Función para actualizar los datos del usuario en el contexto
+  const updateUserData = async (newUserData: any) => {
+    try {
+      console.log('🔄 updateUserData llamada con:', newUserData);
+      const { nombre, email, avatar } = newUserData;
+
+      // Actualizar estado del contexto
+      if (nombre !== undefined && nombre !== null) {
+        console.log('📝 Actualizando nombre en contexto:', nombre);
+        setNombre(nombre);
+      }
+      if (email !== undefined && email !== null) {
+        console.log('📧 Actualizando email en contexto:', email);
+        setEmail(email);
+      }
+      if (avatar !== undefined && avatar !== null) {
+        console.log('🖼️ Actualizando avatar en contexto:', avatar);
+        setAvatar(avatar);
+      }
+
+      // Actualizar AsyncStorage
+      const itemsToUpdate = [];
+      if (nombre !== undefined && nombre !== null) itemsToUpdate.push(['nombre', String(nombre)]);
+      if (email !== undefined && email !== null) itemsToUpdate.push(['email', String(email)]);
+      if (avatar !== undefined && avatar !== null) itemsToUpdate.push(['avatar', String(avatar)]);
+
+      if (itemsToUpdate.length > 0) {
+        await AsyncStorage.multiSet(itemsToUpdate);
+        console.log('✅ Datos del usuario actualizados en contexto y AsyncStorage:', { nombre, email, avatar });
+      }
+    } catch (error) {
+      console.error('❌ Error actualizando datos del usuario:', error);
+    }
+  };
+
   const userFlow = {
     user: userInfo,
     userId,
     acceso: _acceso,
     nombre: _nombre,
     email: _email,
+    avatar: _avatar,
     fcmToken,
+    updateUserData,
     login: async ({ email, password }: any) => {
       try {
         const { user } = await auth().signInWithEmailAndPassword(email, password);
@@ -268,6 +310,7 @@ const DataProvider = ({ children }: any) => {
         setAcceso(null);
         setNombre(null);
         setEmail(null);
+        setAvatar(null);
         setFcmToken(null);
 
         // Cerrar sesión en Firebase

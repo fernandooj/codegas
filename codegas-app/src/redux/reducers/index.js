@@ -1,10 +1,11 @@
- 
-import usuario  from "./usuario";
-import pedido   from "./pedido";
-import mensaje  from "./mensaje";
+
+import usuario from "./usuario";
+import pedido from "./pedido";
+import mensaje from "./mensaje";
 import vehiculo from "./vehiculo";
 import revision from "./revision";
 import tanque from "./tanque";
+import zona from "./zona";
 
 import { combineReducers } from "redux";
 
@@ -14,7 +15,8 @@ const reducerMap = {
   mensaje,
   vehiculo,
   revision,
-  tanque
+  tanque,
+  zona
 };
 
 export default combineReducers(reducerMap);

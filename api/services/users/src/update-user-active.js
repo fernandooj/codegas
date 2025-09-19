@@ -1,35 +1,33 @@
-const { Pool } = require('pg');
+const { poolConection } = require('../../../lib/connection-pg.js')
 
-/** RDS Pool */
-const pool = new Pool({
-  host: process.env.RDS_HOSTNAME,
-  database: process.env.RDS_DB,
-  port: process.env.RDS_PORT,
-  user: process.env.RDS_USERNAME,
-  password: process.env.RDS_PASSWORD,
-});
-
-/** create user update*/
+/** update user active */
 const UPDATE_USER_ACTIVE = 'SELECT * FROM update_user_active($1, $2)';
 
-
-/** update user active info
- *  save user active in the table
- * @param {boolean} active - username user
- * @returns {response} Response contains the data of cognito
+/**
+ * Updates user active status in the database.
+ *
+ * @param {string} userId - ID of the user to update.
+ * @param {boolean} isActive - Active status (true/false).
+ * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
+ * @throws {string} - Throws a string with an error message if the operation fails.
  */
 
 module.exports.main = async (event) => {
-  // context.callbackWaitsForEmptyEventLoop = false;
-  const {
-    active
-  } = event;
-  const client  = await pool.connect();
+  const { userId, isActive } = event.pathParameters;
+
+  const client = await poolConection.connect();
 
   try {
-    await client.query(UPDATE_USER, [id, active])
-    return {status:true}
-  } catch (error) { 
+    await client.query(UPDATE_USER_ACTIVE, [userId, isActive]);
+
+    return {
+      status: true,
+      message: `Usuario ${isActive === 'true' ? 'activado' : 'desactivado'} correctamente`
+    };
+  } catch (error) {
+    console.error('Error updating user active status:', error);
     throw JSON.stringify(error);
+  } finally {
+    client.release();
   }
-}; 
+};

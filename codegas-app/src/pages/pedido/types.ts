@@ -428,6 +428,16 @@ export interface MarkedDates {
     };
 }
 
+export interface CerrarPedidoData {
+    kilos: string;
+    factura: string;
+    valor_total: string;
+    remision: string;
+    forma_pago: string;
+    novedad: string;
+    imagen?: string;
+}
+
 // Utility types
 export type EstadoPedido = 'activo' | 'innactivo' | 'espera' | 'noentregado';
 export type FormaPedido = 'cantidad' | 'monto';

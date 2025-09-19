@@ -284,7 +284,6 @@ const verPerfil = (props) => {
         direccion_factura = direccion_factura ? direccion_factura.toUpperCase() : direccion_factura;
         nombre = nombre ? nombre.toUpperCase() : nombre;
 
-        console.log({ tipoAcceso })
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
                 {tipoAcceso == "admin" ? <Text style={style.titulo}>Nuevo {acceso}</Text> : <Text style={style.titulo}>Editar perfil</Text>}
@@ -690,7 +689,7 @@ const verPerfil = (props) => {
             try {
                 const res = await changeUserStatus(idUsuario, !activo);
                 if (res.status) {
-                    navigation.navigate("Home")
+                    navigation.navigate("clientes")
                     Toast.show({
                         type: 'success',
                         text1: 'Usuario guardado con exito',

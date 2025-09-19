@@ -54,21 +54,22 @@ export const style = MediaQueryStyleSheet.create({
         fontSize: 16,
     },
     contenedorUsers: {
-        paddingVertical: 10,
-        paddingLeft: 10,
+        paddingVertical: 15,
+        paddingHorizontal: 15,
         backgroundColor: '#ffffff',
-        shadowColor: 'rgba(0,0,0, .7)', // IOS
+        shadowColor: 'rgba(0,0,0, 0.1)',
         borderColor: "rgba(0,0,0,0)",
-        shadowOffset: { height: 2, width: 2 }, // IOS
-        shadowOpacity: .5, // IOS
-        shadowRadius: 5, //IOS
-        backgroundColor: '#fff',
-        elevation: 5, // Android
+        shadowOffset: { height: 2, width: 0 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
         marginLeft: 5,
-        marginTop: 10,
-        borderRadius: 5,
+        marginTop: 8,
+        borderRadius: 12,
         textAlignVertical: "center",
-        width: "97%"
+        width: "97%",
+        borderWidth: 1,
+        borderColor: '#f0f0f0'
     },
     textUsers: {
         fontFamily: "Comfortaa-Regular",
