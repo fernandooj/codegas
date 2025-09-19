@@ -8,6 +8,7 @@ import {
   GET_PEDIDOS_CHART
 } from "./constants/actionsTypes";
 import axios from "axios";
+import moment from "moment";
 
 
 const getPedido = pedidoId => {
@@ -43,7 +44,7 @@ const getPedidoByUser = userId => {
 };
 
 
-const getPedidos = (idUser, start, limit, acceso, search) => {
+const getPedidos = (idUser, start, limit, acceso, search, estado = 'todos', ordenPor = 'fecha_creacion', tipoOrden = 'DESC') => {
   return async (dispatch) => {
     try {
       // Validar parámetros antes de hacer la petición
@@ -51,13 +52,23 @@ const getPedidos = (idUser, start, limit, acceso, search) => {
       const validStart = start && start !== 'undefined' ? start : '0';
       const validLimit = limit && limit !== 'undefined' ? limit : '10';
       const validAcceso = acceso && acceso !== 'undefined' ? acceso : 'all';
-      const validSearch = search && search !== 'undefined' ? search : '';
+      const validSearch = search && search !== 'undefined' && search !== '' ? search : 'all';
+      const validEstado = estado && estado !== 'undefined' ? estado : 'todos';
+      const validOrdenPor = ordenPor && ordenPor !== 'undefined' ? ordenPor : 'fecha_creacion';
+      const validTipoOrden = tipoOrden && tipoOrden !== 'undefined' ? tipoOrden : 'DESC';
 
-      console.log('Parámetros validados:', { validIdUser, validStart, validLimit, validAcceso, validSearch });
+      console.log('Parámetros validados:', { validIdUser, validStart, validLimit, validAcceso, validSearch, validEstado, validOrdenPor, validTipoOrden });
 
-      const response = await axios.get(`/ped/pedido/todos/app/${validIdUser}/${validLimit}/${validStart}/${validAcceso}/${validSearch}`);
+      // Construir URL y mostrarla para debug
+      const newUrl = `/ped/pedido/todos/app/${validIdUser}/${validLimit}/${validStart}/${validAcceso}/${validSearch}/${validEstado}/${validOrdenPor}/${validTipoOrden}`;
+      console.log('🔍 URL generada:', newUrl);
+      console.log('🔍 URL esperada:', '/ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}/{search}/{estado}/{ordenPor}/{tipoOrden}');
+
+      // Usar la nueva ruta con todos los parámetros (backend debe estar actualizado)
+      const response = await axios.get(newUrl);
+
       if (response.status !== 200) {
-        throw new Error(`Ruquest failed with status ${response.status}`)
+        throw new Error(`Request failed with status ${response.status}`)
       }
       dispatch({
         type: GET_PEDIDOS,
@@ -212,7 +223,13 @@ const getNovedadesByPedido = async (pedidoId) => {
 // Acción para guardar novedad inactivo
 const guardarNovedadInactivo = async (pedidoId, novedad) => {
   try {
-    const response = await axios.post(`nov/novedad/`, { pedidoId, novedad });
+    const response = await axios.post(`ped/pedido/novedad`, {
+      _id: pedidoId,
+      novedad,
+      perfil_novedad: 'inactivo',
+      fechaEntrega: moment().format('YYYY-MM-DD HH:mm:ss'),
+      conductorId: null
+    });
     return response.data;
   } catch (error) {
     console.error('Error en guardarNovedadInactivo:', {

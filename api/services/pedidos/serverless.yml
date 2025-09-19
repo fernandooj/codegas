@@ -14,6 +14,8 @@ getPedidos:
   events:
     - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}/{search}'
     - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}'
+    - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}/{search}/{estado}'
+    - httpApi: 'GET /ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}/{search}/{estado}/{ordenPor}/{tipoOrden}'
   package:
     include:
       - services/pedidos/src/get-pedidos.js

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -60,6 +60,30 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     onCerrarPedido,
     onGuardarNovedad
 }) => {
+    // Debug para ver qué pedidoId recibe el modal
+    console.log('🔍 CerrarPedidoModal - pedidoId recibido:', pedidoId);
+    console.log('🔍 CerrarPedidoModal - visible:', visible);
+
+    // Monitorear cambios en pedidoId
+    useEffect(() => {
+        console.log('🔍 CerrarPedidoModal - useEffect pedidoId cambió a:', pedidoId);
+    }, [pedidoId]);
+
+    // Limpiar campos cuando el modal se abre
+    useEffect(() => {
+        if (visible) {
+            console.log('🔍 CerrarPedidoModal - Modal abierto, limpiando campos');
+            setKilos('');
+            setFactura('');
+            setValorTotal('');
+            setValorTotalRaw('');
+            setRemision('');
+            setFormaPago('');
+            setNovedad('');
+            setImagen(undefined);
+        }
+    }, [visible]);
+
     // Estados locales para el formulario
     const [kilos, setKilos] = useState(kilosProps || '');
     const [factura, setFactura] = useState(facturaProps || '');
@@ -92,6 +116,8 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     };
 
     const handleCerrarPedido = async () => {
+        console.log('🔍 CerrarPedidoModal - Iniciando cierre con pedidoId:', pedidoId);
+
         if (!kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !novedad) {
             Alert.alert('Error', 'Por favor llene todos los campos');
             return;
@@ -114,6 +140,9 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             console.log('📷 Imagen convertida a base64:', imagenBase64 ? 'Éxito' : 'Error');
         }
 
+        console.log('🔍 CerrarPedidoModal - pedidoId antes de enviar:', pedidoId);
+
+        // Llamar a la función de cierre
         onCerrarPedido({
             kilos,
             factura,
@@ -123,6 +152,19 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             novedad,
             imagen: imagenBase64 // Enviar imagen en base64
         }, pedidoId); // Pasar el pedidoId como segundo parámetro
+
+        // Limpiar campos después de enviar (para la próxima vez)
+        setTimeout(() => {
+            console.log('🔍 CerrarPedidoModal - Limpiando campos después del envío');
+            setKilos('');
+            setFactura('');
+            setValorTotal('');
+            setValorTotalRaw('');
+            setRemision('');
+            setFormaPago('');
+            setNovedad('');
+            setImagen(undefined);
+        }, 1000);
     };
 
     const handleGuardarNovedad = () => {
@@ -1026,7 +1068,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                 fontSize: 16,
                                                 fontWeight: '600'
                                             }}>
-                                                Guardar Novedad
+                                                Guardar Novedad, sin Cerrar
                                             </Text>
                                         </TouchableOpacity>
                                     </View>

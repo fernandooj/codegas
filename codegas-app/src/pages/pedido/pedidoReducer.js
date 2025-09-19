@@ -10,6 +10,7 @@ export const PEDIDO_ACTIONS = {
     SET_MODAL_CARROS_FILTRO: 'SET_MODAL_CARROS_FILTRO',
     SET_MODAL_ZONAS: 'SET_MODAL_ZONAS',
     SET_MODAL_CERRAR_PEDIDO: 'SET_MODAL_CERRAR_PEDIDO',
+    SET_MODAL_ORDENAMIENTO: 'SET_MODAL_ORDENAMIENTO',
 
     // Search and filter states
     SET_TERMINO_BUSCADOR: 'SET_TERMINO_BUSCADOR',
@@ -17,6 +18,9 @@ export const PEDIDO_ACTIONS = {
     SET_FECHA_ENTREGA_FILTRO: 'SET_FECHA_ENTREGA_FILTRO',
     SET_FECHA_SOLICITUD_FILTRO: 'SET_FECHA_SOLICITUD_FILTRO',
     SET_SHOW_SEARCH: 'SET_SHOW_SEARCH',
+    SET_ESTADO_FILTRO: 'SET_ESTADO_FILTRO',
+    SET_ORDEN_POR: 'SET_ORDEN_POR',
+    SET_TIPO_ORDEN: 'SET_TIPO_ORDEN',
 
     // Pagination states
     SET_INICIO: 'SET_INICIO',
@@ -68,6 +72,7 @@ export const initialState = {
     modalCarrosFiltro: false,
     modalZonas: false,
     modalCerrarPedido: false,
+    modalOrdenamiento: false,
 
     // Search and filter states
     terminoBuscador: undefined,
@@ -75,6 +80,9 @@ export const initialState = {
     fechaEntregaFiltro: new Date().toISOString().split('T')[0], // YYYY-MM-DD
     fechaSolicitudFiltro: undefined,
     showSearch: false,
+    estadoFiltro: 'todos', // Estado para filtrar pedidos
+    ordenPor: 'fecha_creacion', // Campo por el cual ordenar
+    tipoOrden: 'DESC', // ASC o DESC
 
     // Pagination states
     inicio: 0,
@@ -176,6 +184,8 @@ export const pedidoReducer = (state, action) => {
             return { ...state, modalZonas: action.payload };
         case PEDIDO_ACTIONS.SET_MODAL_CERRAR_PEDIDO:
             return { ...state, modalCerrarPedido: action.payload };
+        case PEDIDO_ACTIONS.SET_MODAL_ORDENAMIENTO:
+            return { ...state, modalOrdenamiento: action.payload };
 
         // Search and filter states
         case PEDIDO_ACTIONS.SET_TERMINO_BUSCADOR:
@@ -188,6 +198,12 @@ export const pedidoReducer = (state, action) => {
             return { ...state, fechaSolicitudFiltro: action.payload };
         case PEDIDO_ACTIONS.SET_SHOW_SEARCH:
             return { ...state, showSearch: action.payload };
+        case PEDIDO_ACTIONS.SET_ESTADO_FILTRO:
+            return { ...state, estadoFiltro: action.payload };
+        case PEDIDO_ACTIONS.SET_ORDEN_POR:
+            return { ...state, ordenPor: action.payload };
+        case PEDIDO_ACTIONS.SET_TIPO_ORDEN:
+            return { ...state, tipoOrden: action.payload };
 
         // Pagination states
         case PEDIDO_ACTIONS.SET_INICIO:
@@ -280,6 +296,7 @@ export const pedidoActions = {
     setModalCarrosFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_CARROS_FILTRO, payload: value }),
     setModalZonas: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_ZONAS, payload: value }),
     setModalCerrarPedido: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_CERRAR_PEDIDO, payload: value }),
+    setModalOrdenamiento: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_ORDENAMIENTO, payload: value }),
 
     // Search and filter actions
     setTerminoBuscador: (value) => ({ type: PEDIDO_ACTIONS.SET_TERMINO_BUSCADOR, payload: value }),
@@ -287,6 +304,9 @@ export const pedidoActions = {
     setFechaEntregaFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_FECHA_ENTREGA_FILTRO, payload: value }),
     setFechaSolicitudFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_FECHA_SOLICITUD_FILTRO, payload: value }),
     setShowSearch: (value) => ({ type: PEDIDO_ACTIONS.SET_SHOW_SEARCH, payload: value }),
+    setEstadoFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_ESTADO_FILTRO, payload: value }),
+    setOrdenPor: (value) => ({ type: PEDIDO_ACTIONS.SET_ORDEN_POR, payload: value }),
+    setTipoOrden: (value) => ({ type: PEDIDO_ACTIONS.SET_TIPO_ORDEN, payload: value }),
 
     // Pagination actions
     setInicio: (value) => ({ type: PEDIDO_ACTIONS.SET_INICIO, payload: value }),

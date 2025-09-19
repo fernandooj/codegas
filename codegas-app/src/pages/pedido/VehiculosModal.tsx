@@ -88,13 +88,25 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                     borderBottomWidth: 1,
                     borderBottomColor: '#e9ecef',
                 }}>
-                    <Text style={{
-                        fontSize: 18,
-                        fontWeight: '700',
-                        color: '#333',
-                    }}>
-                        Asignación de Vehículo
-                    </Text>
+                    <View>
+                        <Text style={{
+                            fontSize: 18,
+                            fontWeight: '700',
+                            color: '#333',
+                        }}>
+                            Asignación de Vehículo
+                        </Text>
+                        <Text style={{
+                            fontSize: 12,
+                            color: '#666',
+                            marginTop: 2
+                        }}>
+                            {!showCalendar ?
+                                (idVehiculo ? 'Paso 2: Selecciona fecha de entrega' : 'Paso 1: Selecciona un vehículo') :
+                                'Paso 2: Selecciona fecha de entrega'
+                            }
+                        </Text>
+                    </View>
                     <TouchableOpacity
                         onPress={onClose}
                         style={{
@@ -226,32 +238,50 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                             onDayPress={(day: CalendarDay) => {
                                 setFechaSeleccionadaLocal(day.dateString);
                                 onDateSelect(day.dateString);
+                                // Después de seleccionar fecha, asignar vehículo y cerrar modal
+                                setTimeout(() => {
+                                    // Pasar la fecha directamente a onSaveDate si es posible
+                                    if (onSaveDate.length > 0) {
+                                        onSaveDate(day.dateString);
+                                    } else {
+                                        onSaveDate();
+                                    }
+
+                                    // Asignar vehículo con la fecha seleccionada
+                                    const vehiculoSeleccionado = vehiculos.find(v => v._id === idVehiculo);
+                                    if (vehiculoSeleccionado) {
+                                        setTimeout(() => {
+                                            onAssignVehicle(vehiculoSeleccionado);
+                                        }, 500);
+                                    }
+
+                                    Alert.alert(
+                                        'Vehículo y fecha asignados',
+                                        `Vehículo: ${placa}\nFecha: ${moment(day.dateString).format('DD/MM/YYYY')}`,
+                                        [{ text: 'OK' }]
+                                    );
+                                }, 300);
                             }}
                         />
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: '#28a745',
-                                paddingVertical: 15,
-                                paddingHorizontal: 20,
-                                borderRadius: 8,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginTop: 15,
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 4,
-                                elevation: 3,
-                            }}
-                            onPress={onSaveDate}
-                            activeOpacity={0.8}
-                        >
-                            <FontAwesome name="calendar-check-o" style={{ fontSize: 16, color: 'white', marginRight: 10 }} />
-                            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-                                Guardar Fecha
+
+                        {/* Información sobre guardado automático */}
+                        <View style={{
+                            backgroundColor: '#f8f9fa',
+                            padding: 12,
+                            borderRadius: 8,
+                            marginTop: 15,
+                            flexDirection: 'row',
+                            alignItems: 'center'
+                        }}>
+                            <FontAwesome name="info-circle" size={14} color="#007bff" style={{ marginRight: 8 }} />
+                            <Text style={{
+                                fontSize: 12,
+                                color: '#666',
+                                flex: 1
+                            }}>
+                                El vehículo y fecha se asignarán automáticamente al seleccionar la fecha
                             </Text>
-                        </TouchableOpacity>
+                        </View>
                     </View>
                 ) : (
                     <ScrollView
@@ -302,11 +332,11 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                             elevation: 2,
                                         }}
                                         onPress={() => {
-                                            // Primero seleccionar el vehículo
+                                            // Seleccionar el vehículo
                                             onVehicleSelect(e);
-                                            // Luego asignar automáticamente con los datos del vehículo
+                                            // Cambiar automáticamente al tab de fecha
                                             setTimeout(() => {
-                                                onAssignVehicle(e); // Pasar datos del vehículo
+                                                onToggleCalendar(true);
                                             }, 100);
                                         }}
                                         activeOpacity={0.8}
@@ -379,10 +409,39 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                             })
                         )}
 
-                        {/* Mensaje informativo - asignación automática */}
+                        {/* Botón para continuar a fecha cuando se haya seleccionado vehículo */}
+                        {idVehiculo && !showCalendar && (
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#007bff',
+                                    paddingVertical: 12,
+                                    paddingHorizontal: 20,
+                                    borderRadius: 8,
+                                    marginTop: 15,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 4,
+                                    elevation: 3,
+                                }}
+                                onPress={() => onToggleCalendar(true)}
+                                activeOpacity={0.8}
+                            >
+                                <FontAwesome name="calendar" style={{ fontSize: 16, color: '#fff', marginRight: 8 }} />
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                    Continuar a selección de fecha
+                                </Text>
+                                <FontAwesome name="arrow-right" style={{ fontSize: 14, color: '#fff', marginLeft: 8 }} />
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Mensaje informativo */}
                         <View
                             style={{
-                                backgroundColor: '#e8f5e8',
+                                backgroundColor: idVehiculo ? '#e3f2fd' : '#e8f5e8',
                                 paddingVertical: 12,
                                 paddingHorizontal: 16,
                                 borderRadius: 8,
@@ -391,15 +450,18 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                 justifyContent: 'center',
                                 marginTop: 15,
                                 borderLeftWidth: 4,
-                                borderLeftColor: '#28a745',
+                                borderLeftColor: idVehiculo ? '#2196f3' : '#28a745',
                             }}
                         >
                             <FontAwesome
-                                name="info-circle"
-                                style={{ fontSize: 16, color: '#28a745', marginRight: 10 }}
+                                name={idVehiculo ? "check-circle" : "info-circle"}
+                                style={{ fontSize: 16, color: idVehiculo ? '#2196f3' : '#28a745', marginRight: 10 }}
                             />
-                            <Text style={{ color: '#28a745', fontSize: 14, fontWeight: '500', textAlign: 'center', flex: 1 }}>
-                                Selecciona un vehículo para asignarlo automáticamente
+                            <Text style={{ color: idVehiculo ? '#2196f3' : '#28a745', fontSize: 14, fontWeight: '500', textAlign: 'center', flex: 1 }}>
+                                {idVehiculo ?
+                                    `Vehículo ${placa} seleccionado. Ahora selecciona la fecha.` :
+                                    'Selecciona un vehículo para continuar'
+                                }
                             </Text>
                         </View>
 

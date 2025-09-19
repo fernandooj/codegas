@@ -17,8 +17,6 @@ import { style } from './style';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
-import ModalFilterPicker from 'react-native-modal-filter-picker';
-import { Picker } from '@react-native-picker/picker';
 import Footer from '../components/footer';
 import TomarFoto from '../components/tomarFoto';
 import Toast from 'react-native-toast-message';
@@ -181,13 +179,38 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 console.log('Loading VEOs...');
                 const veosResult = await getVeos(100, 0, 'undefined', userId);
                 console.log('VEOs result:', veosResult);
+                console.log('VEOs raw data:', veosResult?.user?.slice(0, 2)); // Mostrar los primeros 2 para ver estructura
 
                 if (veosResult && veosResult.user) {
-                    // Transformar los datos al formato esperado por el modal
-                    const veosFormatted = veosResult.user.map((veo: any, index: number) => ({
+                    // Función para transformar recursivamente los VEOs y sus children
+                    const transformarVeoRecursivamente = (veo: any, index: number): any => ({
                         key: veo._id || index.toString(),
-                        label: veo.nombre || 'Sin nombre'
-                    }));
+                        _id: veo._id || index.toString(),
+                        label: veo.nombre || 'Sin nombre',
+                        idPadre: veo.idPadre || null,
+                        email: veo.email || null,
+                        children: veo.children && veo.children.length > 0
+                            ? veo.children.map((child: any, childIndex: number) =>
+                                transformarVeoRecursivamente(child, childIndex)
+                            )
+                            : []
+                    });
+
+                    // Transformar los datos al formato esperado por el modal, PRESERVANDO los children del backend
+                    const veosFormatted = veosResult.user.map((veo: any, index: number) =>
+                        transformarVeoRecursivamente(veo, index)
+                    );
+
+                    console.log('VEOs formateados:', veosFormatted.length);
+                    console.log('VEOs con idPadre:', veosFormatted.filter(v => v.idPadre).length);
+                    console.log('VEOs sin idPadre (padres):', veosFormatted.filter(v => !v.idPadre).length);
+
+                    // Mostrar algunos ejemplos para debugging
+                    console.log('🔍 Ejemplos de VEOs:');
+                    veosFormatted.slice(0, 3).forEach(veo => {
+                        console.log(`  - ${veo.label} (ID: ${veo._id}, Padre: ${veo.idPadre})`);
+                    });
+
                     updateState({ veos: veosFormatted });
                 }
             } catch (error) {
@@ -1285,9 +1308,66 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             });
         };
 
+        // Función para renderizar el árbol completo de VEOs usando los children del backend
+        const renderVeoTree = () => {
+            console.log('🌳 Usando datos del backend directamente');
+            console.log('🌳 VEOs totales:', veos.length);
+            console.log('🌳 VEOs con children:', veos.filter(v => v.children && v.children.length > 0));
+
+            // Filtrar VEOs basándose en el término de búsqueda (recursivamente)
+            const filtrarVeosRecursivamente = (veosArray: any[]): any[] => {
+                return veosArray.reduce((acc, veo) => {
+                    const coincideNombre = terminoBuscador === '' ||
+                        veo.label.toLowerCase().includes(terminoBuscador.toLowerCase());
+
+                    // Filtrar children recursivamente
+                    const childrenFiltrados = veo.children && veo.children.length > 0 ?
+                        filtrarVeosRecursivamente(veo.children) : [];
+
+                    // Incluir el VEO si coincide el nombre o tiene hijos que coinciden
+                    if (coincideNombre || childrenFiltrados.length > 0) {
+                        acc.push({
+                            ...veo,
+                            children: childrenFiltrados
+                        });
+                    }
+
+                    return acc;
+                }, []);
+            };
+
+            // Obtener solo los VEOs padre (aquellos sin idPadre)
+            const veosPadre = veos.filter(veo =>
+                !veo.idPadre ||
+                veo.idPadre === null ||
+                veo.idPadre === undefined ||
+                veo.idPadre === '' ||
+                veo.idPadre === 'null' ||
+                veo.idPadre === 'undefined'
+            );
+
+            console.log('🌳 VEOs padre encontrados:', veosPadre.length);
+
+            // Aplicar filtro si hay término de búsqueda
+            const veosFiltrados = terminoBuscador === '' ? veosPadre : filtrarVeosRecursivamente(veosPadre);
+
+            console.log('🔍 VEOs después de filtrar:', veosFiltrados.length);
+
+            return veosFiltrados.map((veo, index) => renderVeoItem(veo, index, 0));
+        };
+
         const renderVeoItem = (veo: any, index: number, nivel: number = 0) => {
-            const paddingLeft = nivel * 20;
+            const paddingLeft = nivel * 25;
             const tieneHijos = veo.children && veo.children.length > 0;
+            const esSeleccionado = state.idVeo === veo.key;
+
+            console.log(`👤 Renderizando VEO: ${veo.label}, Nivel: ${nivel}, Tiene hijos: ${tieneHijos}, Children: ${veo.children?.length || 0}`);
+
+            // Generar el prefijo visual para el árbol
+            const getTreePrefix = (nivel: number, esUltimo: boolean = false) => {
+                if (nivel === 0) return '';
+                return esUltimo ? '└── ' : '├── ';
+            };
 
             return (
                 <View key={veo.key || index}>
@@ -1297,67 +1377,149 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                             closeModal();
                         }}
                         style={{
-                            padding: 15,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#f1f3f4',
                             flexDirection: 'row',
-                            justifyContent: 'space-between',
                             alignItems: 'center',
-                            backgroundColor: state.idVeo === veo.key ? '#e3f2fd' : '#fff',
-                            marginLeft: paddingLeft,
-                            borderLeftWidth: nivel > 0 ? 2 : 0,
-                            borderLeftColor: '#2196f3'
+                            paddingVertical: 16,
+                            paddingHorizontal: 16,
+                            paddingLeft: 16 + (paddingLeft * 0.8), // Reducir un poco el padding para que no se vea tan separado
+                            backgroundColor: esSeleccionado ? '#e8f5e8' : '#fff',
+                            borderRadius: 12,
+                            marginVertical: 2,
+                            marginHorizontal: 8,
+                            borderWidth: esSeleccionado ? 2 : 1,
+                            borderColor: esSeleccionado ? '#4caf50' : '#f0f0f0',
+                            shadowColor: esSeleccionado ? '#4caf50' : '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: esSeleccionado ? 0.15 : 0.05,
+                            shadowRadius: 4,
+                            elevation: esSeleccionado ? 4 : 1
                         }}
+                        activeOpacity={0.7}
                     >
-                        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                            {nivel > 0 && (
-                                <Text style={{ color: '#2196f3', marginRight: 8 }}>
-                                    └─
-                                </Text>
-                            )}
-                            <View>
+                        {/* Prefijo visual del árbol */}
+                        {nivel > 0 && (
+                            <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                marginRight: 8,
+                                minWidth: nivel * 20
+                            }}>
                                 <Text style={{
-                                    fontSize: 16,
-                                    color: '#333',
-                                    fontWeight: state.idVeo === veo.key ? 'bold' : 'normal'
+                                    fontSize: 14,
+                                    color: '#2196f3',
+                                    fontWeight: 'bold',
+                                    fontFamily: 'monospace'
                                 }}>
-                                    {veo.label}
+                                    {getTreePrefix(nivel)}
                                 </Text>
-                                {tieneHijos && (
-                                    <Text style={{
-                                        fontSize: 12,
-                                        color: '#666',
-                                        marginTop: 2
-                                    }}>
-                                        {veo.children.length} subordinado(s)
-                                    </Text>
-                                )}
                             </View>
+                        )}
+
+                        {/* Icono principal */}
+                        <View style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            backgroundColor: esSeleccionado ? '#4caf50' : (tieneHijos ? '#2196f3' : '#ff9800'),
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginRight: 14,
+                            shadowColor: esSeleccionado ? '#4caf50' : (tieneHijos ? '#2196f3' : '#ff9800'),
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 4,
+                            elevation: 3
+                        }}>
+                            <Text style={{
+                                fontSize: 18,
+                                color: '#fff'
+                            }}>
+                                {tieneHijos ? '👥' : '👤'}
+                            </Text>
                         </View>
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {/* Información del VEO */}
+                        <View style={{ flex: 1 }}>
+                            <Text style={{
+                                fontSize: 17,
+                                fontWeight: esSeleccionado ? '700' : '600',
+                                color: esSeleccionado ? '#2e7d32' : '#333',
+                                marginBottom: 4
+                            }}>
+                                {veo.label}
+                            </Text>
+
                             {tieneHijos && (
-                                <FontAwesome
-                                    name="users"
-                                    size={14}
-                                    color="#2196f3"
-                                    style={{ marginRight: 8 }}
-                                />
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    marginBottom: 2
+                                }}>
+                                    <Text style={{
+                                        fontSize: 12,
+                                        color: '#2196f3',
+                                        fontWeight: '600'
+                                    }}>
+                                        🏢 {veo.children.length} subordinado{veo.children.length !== 1 ? 's' : ''}
+                                    </Text>
+                                </View>
                             )}
-                            {state.idVeo === veo.key && (
-                                <FontAwesome
-                                    name="check"
-                                    size={18}
-                                    color="#2196f3"
-                                />
+
+                            {veo.email && (
+                                <Text style={{
+                                    fontSize: 12,
+                                    color: '#666',
+                                    fontStyle: 'italic'
+                                }}>
+                                    📧 {veo.email}
+                                </Text>
+                            )}
+                        </View>
+
+                        {/* Indicadores de estado */}
+                        <View style={{ alignItems: 'center' }}>
+                            {esSeleccionado && (
+                                <View style={{
+                                    backgroundColor: '#4caf50',
+                                    borderRadius: 12,
+                                    paddingHorizontal: 8,
+                                    paddingVertical: 4,
+                                    marginBottom: 4
+                                }}>
+                                    <Text style={{
+                                        fontSize: 10,
+                                        color: '#fff',
+                                        fontWeight: '700'
+                                    }}>
+                                        ✓ SELECCIONADO
+                                    </Text>
+                                </View>
+                            )}
+
+                            {tieneHijos && (
+                                <View style={{
+                                    backgroundColor: '#e3f2fd',
+                                    borderRadius: 10,
+                                    paddingHorizontal: 6,
+                                    paddingVertical: 3
+                                }}>
+                                    <Text style={{
+                                        fontSize: 9,
+                                        color: '#1976d2',
+                                        fontWeight: '700'
+                                    }}>
+                                        JEFE
+                                    </Text>
+                                </View>
                             )}
                         </View>
                     </TouchableOpacity>
 
                     {/* Renderizar hijos recursivamente */}
-                    {tieneHijos && veo.children.map((hijo: any, childIndex: number) =>
-                        renderVeoItem(hijo, childIndex, nivel + 1)
-                    )}
+                    {tieneHijos && veo.children.map((hijo: any, childIndex: number) => {
+                        console.log(`  ↳ Renderizando hijo: ${hijo.label} de ${veo.label}`);
+                        return renderVeoItem(hijo, childIndex, nivel + 1);
+                    })}
                 </View>
             );
         };
@@ -1439,7 +1601,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                             />
                         </View>
 
-                        {/* Lista de VEOs */}
+                        {/* Lista de VEOs en formato árbol */}
                         <ScrollView style={{ maxHeight: 400 }}>
                             {veos.length === 0 ? (
                                 <View style={{
@@ -1470,12 +1632,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                     </Text>
                                 </View>
                             ) : (
-                                veos
-                                    .filter(veo =>
-                                        terminoBuscador === '' ||
-                                        veo.label.toLowerCase().includes(terminoBuscador.toLowerCase())
-                                    )
-                                    .map((veo, index) => renderVeoItem(veo, index))
+                                renderVeoTree()
                             )}
                         </ScrollView>
 
