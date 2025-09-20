@@ -1,5 +1,6 @@
 import React, { useEffect, useContext } from 'react';
-import { View, Text, TouchableOpacity, ImageBackground, Image, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, ImageBackground, Image, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 
@@ -9,6 +10,7 @@ import { getVehiculos } from '../../redux/actions/vehiculoActions';
 import { getPedidos } from '../../redux/actions/pedidoActions';
 import { DataContext } from '../../context/context';
 import { style } from './style';
+import { colors } from '../../utils/colors';
 
 const Home = ({ navigation }) => {
   const { login, acceso, userId, nombre } = useContext(DataContext)
@@ -94,12 +96,12 @@ const Home = ({ navigation }) => {
 
   const renderLeyendaEstados = () => {
     const estados = [
-      { color: 'rgba(91, 192, 222, 0.79)', texto: 'En espera', icon: '⏰' },
-      { color: 'rgba(255, 235, 0, 0.79)', texto: 'Activo', icon: '▶️' },
-      { color: 'rgba(240, 173, 78, 0.79)', texto: 'Asignado', icon: '🚛' },
-      { color: 'rgba(92, 184, 92, 0.79)', texto: 'Entregado', icon: '✅' },
-      { color: '#ffffff', texto: 'No entregado', icon: '❌', textColor: '#333' },
-      { color: 'rgba(217, 83, 79, 0.79)', texto: 'Inactivo', icon: '⏸️' }
+      { color: colors.espera, texto: 'En espera', icon: '⏰' },
+      { color: colors.activo, texto: 'Activo', icon: '▶️' },
+      { color: colors.asignado, texto: 'Asignado', icon: '🚛' },
+      { color: colors.otro, texto: 'Entregado', icon: '✅' },
+      { color: colors.noentregado, texto: 'No entregado', icon: '❌', textColor: '#333' },
+      { color: colors.innactivo, texto: 'Inactivo', icon: '⏸️' }
     ];
 
     return (

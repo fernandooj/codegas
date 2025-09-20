@@ -2,7 +2,7 @@ const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
 const { uploadImage } = require('../../../lib/image');
 const { uploadPDF } = require('../../../lib/pdf');
- 
+
 const ADD_IMAGES_REPORTE_EMERGENCIA = 'SELECT * FROM add_images_reporte_emergencia($1, $2, $3)';
 
 module.exports.main = async (event) => {
@@ -10,17 +10,22 @@ module.exports.main = async (event) => {
   const { idReporte, type, name } = body;
 
   try {
+    // Validar que los campos requeridos existen
+    if (!body.imagen || !body.mime || !idReporte || !type) {
+      throw new Error('Missing required fields: imagen, mime, idReporte, type');
+    }
+
     const client = await poolConection.connect();
     const uploadedUrls = [];
 
-    if(body.mime=="application/pdf"){
+    if (body.mime == "application/pdf") {
       const uri = await uploadPDF(body);
-      uploadedUrls.push({uri, name});
+      uploadedUrls.push({ uri, name });
     } else {
       const uri = await uploadImage(body);
-      uploadedUrls.push(uri);
+      uploadedUrls.push({ uri, name });
     }
-   
+
     await client.query(ADD_IMAGES_REPORTE_EMERGENCIA, [uploadedUrls, type, idReporte]);
 
     return {
@@ -32,6 +37,5 @@ module.exports.main = async (event) => {
   }
 };
 
-  
- 
- 
+
+
