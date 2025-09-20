@@ -22,6 +22,7 @@ interface EditarPedidoModalProps {
     onAssignVehicle: () => void;
     onCancelOrder: () => void;
     onClosePedido: () => void;
+    navigation?: any; // Para navegación
     // Props para CambiarEstadoModal
     modalPerfiles: boolean;
     onEstadoChange: (nuevoEstado: EstadoPedido) => void;
@@ -58,6 +59,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     onAssignVehicle,
     onCancelOrder,
     onClosePedido,
+    navigation,
     modalPerfiles,
     onEstadoChange,
     onConfirmStateChange,
@@ -152,7 +154,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
         }
         closeNavigationModal();
     };
-
+    console.log(pedidoData);
     return (
         <Modal
             transparent={true}
@@ -361,6 +363,58 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                 {observacion_pedido}
                                             </Text>
                                         )}
+
+                                        {/* Botón para Reporte de Emergencia */}
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: '#dc3545',
+                                                paddingVertical: 12,
+                                                paddingHorizontal: 16,
+                                                borderRadius: 8,
+                                                marginTop: 12,
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                shadowColor: '#000',
+                                                shadowOffset: { width: 0, height: 2 },
+                                                shadowOpacity: 0.1,
+                                                shadowRadius: 4,
+                                                elevation: 3,
+                                            }}
+                                            onPress={() => {
+                                                // Cerrar el modal actual
+
+                                                onClose();
+                                                // Navegar a la página de reporte de emergencia con el ID del pedido
+                                                if (navigation) {
+                                                    navigation.navigate('nuevoReporteEmergencia', {
+                                                        usuarioId: pedidoData.usuarioId,
+                                                        puntoId: pedidoData.puntoId,
+                                                        codt: pedidoData.codt,
+                                                        razon_social: pedidoData.razon_social,
+                                                        nombre: pedidoData.nombre
+                                                    });
+                                                } else {
+                                                    console.log('Navigation no disponible');
+                                                }
+                                            }}
+                                        >
+                                            <FontAwesome
+                                                name="exclamation-triangle"
+                                                style={{
+                                                    color: '#fff',
+                                                    fontSize: 16,
+                                                    marginRight: 8
+                                                }}
+                                            />
+                                            <Text style={{
+                                                color: '#fff',
+                                                fontWeight: '600',
+                                                fontSize: 14
+                                            }}>
+                                                Reporte de Emergencia
+                                            </Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             )}

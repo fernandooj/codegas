@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import { style } from './style';
 import axios from 'axios';
 import { DataContext } from '../../context/context';
 
-export default function FooterComponent({ navigation }) {
+export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
   const { userId } = useContext(DataContext)
   const [user, setUser] = useState({});
   const [badgeMessage, setBadgeMessage] = useState(true);
@@ -31,20 +32,20 @@ export default function FooterComponent({ navigation }) {
   };
 
   const recivePedido = async (messages) => {
-    let badgeSocketPedido = badgeSocketPedido;
-    let suma = badgeSocketPedido + messages;
+    let badgeSocketPedidoValue = badgeSocketPedido;
+    let suma = badgeSocketPedidoValue + messages;
     let badgePedido = JSON.stringify(suma);
     await AsyncStorage.setItem('badgeSocketPedido', badgePedido);
-    setBadgeSocketPedido(badgeSocketPedido + messages);
+    setBadgeSocketPedido(badgeSocketPedidoValue + messages);
     setBadgePedido(true);
   };
 
   const recivePedidoConductor = async (messages) => {
-    let badgeSocketPedido = badgeSocketPedido;
-    let suma = badgeSocketPedido + messages;
+    let badgeSocketPedidoValue = badgeSocketPedido;
+    let suma = badgeSocketPedidoValue + messages;
     let badgePedido = JSON.stringify(suma);
     await AsyncStorage.setItem('badgeSocketPedido', badgePedido);
-    setBadgeSocketPedido(badgeSocketPedido + messages);
+    setBadgeSocketPedido(badgeSocketPedidoValue + messages);
     setBadgePedido(true);
   };
 
@@ -61,60 +62,72 @@ export default function FooterComponent({ navigation }) {
     navigation.navigate('conversacion');
   };
 
+  // Función para determinar si un tab está activo
+  const isActiveTab = (tabName) => {
+    return currentRoute === tabName;
+  };
+
 
   return (
-    <View style={style.contenedorFooter}>
-      <TouchableOpacity style={style.subContenedorFooter} onPress={() => navigation.navigate('Home')}>
-        <Image source={require('../../assets/img/footer/img1.png')} style={style.icon} resizeMode={'contain'} />
-        <Text style={style.textFooter}>Inicio</Text>
-        {badgeSocketConversacion > 0 && badgeCuenta && (
-          <View style={style.badge}>
-            <Text style={style.textBadge}>{badgeSocketConversacion}</Text>
-          </View>
-        )}
-        {badgeSocketMessage > 0 && badgeMessage && (
-          <View style={style.badge}>
-            <Text style={style.textBadge}>{badgeSocketMessage}</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+    <View style={style.footerWrapper}>
 
-      {user.acceso !== 'conductor' && (
+      {/* Contenedor del footer principal */}
+      <View style={style.contenedorFooter}>
+
+        {/* Tab Home */}
         <TouchableOpacity
-          style={style.subContenedorFooter2}
-          onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'IniciarSesion')}
+          style={style.tabContainer}
+          onPress={() => navigation.navigate('Home')}
         >
-          <Image source={require('../../assets/img/footer/img2.png')} style={style.icon} resizeMode={'contain'} />
-          <Text style={style.textFooter}>Nuevo Pedido</Text>
-        </TouchableOpacity>
-      )}
-
-
-      <TouchableOpacity
-        style={style.subContenedorFooter3}
-        onPress={() => { navigation.navigate(userId ? 'pedido' : 'IniciarSesion') }}
-      >
-        <Image source={require('../../assets/img/footer/img3.png')} style={style.icon} resizeMode={'contain'} />
-        <Text style={style.textFooter}>Pedidos</Text>
-        {badgeSocketPedido > 0 && (
-          <View style={style.badge}>
-            <Text style={style.textBadge}>{badgeSocketPedido}</Text>
+          <View style={style.iconContainer}>
+            <FontAwesome name="home" style={style.iconFont} />
           </View>
+        </TouchableOpacity>
+
+        {/* Tab Nuevo Pedido - Solo si no es conductor */}
+        {user.acceso !== 'conductor' && (
+          <TouchableOpacity
+            style={style.tabContainer}
+            onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'IniciarSesion')}
+          >
+            <View style={style.iconContainer}>
+              <FontAwesome name="plus" style={style.iconFont} />
+            </View>
+          </TouchableOpacity>
         )}
-      </TouchableOpacity>
 
+        {/* Tab Pedidos */}
+        <TouchableOpacity
+          style={style.tabContainer}
+          onPress={() => navigation.navigate('pedido')}
+        >
+          <View style={style.iconContainer}>
+            <Image
+              source={require('../../assets/img/footer/img2.png')}
+              style={style.icon}
+              resizeMode={'contain'}
+            />
+          </View>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={style.subContenedorFooter}
-        onPress={() =>
-          userId
-            ? navigation.navigate('Perfil')
-            : navigation.navigate('IniciarSesion')
-        }
-      >
-        <Image source={require('../../assets/img/footer/img4.png')} style={style.icon} resizeMode={'contain'} />
-        <Text style={style.textFooter}>Perfil</Text>
-      </TouchableOpacity>
+        {/* Tab Perfil */}
+        <TouchableOpacity
+          style={style.tabContainer}
+          onPress={() =>
+            userId
+              ? navigation.navigate('Perfil')
+              : navigation.navigate('IniciarSesion')
+          }
+        >
+          <View style={style.iconContainer}>
+            <Image
+              source={require('../../assets/img/footer/img4.png')}
+              style={style.icon}
+              resizeMode={'contain'}
+            />
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

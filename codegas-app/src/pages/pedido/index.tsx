@@ -131,7 +131,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             estadoInicial,
             textEstado,
             imagenCerrar,
-            coordenadas
+            coordenadas,
+            nombre,
+            codt,
+            puntoId
         }
     } = state;
 
@@ -1325,9 +1328,13 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     motivo_no_cierre,
                     perfil_novedad,
                     imagenCerrar,
-                    coordenadas
+                    coordenadas,
+                    nombre,
+                    codt,
+                    puntoId
                 }}
                 acceso={acceso}
+                navigation={navigation}
                 getEstadoColor={getEstadoColor}
                 getEstadoBackgroundColor={getEstadoBackgroundColor}
                 onChangeState={handleChangeStateModal}

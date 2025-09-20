@@ -1,0 +1,418 @@
+import React, { useState, useEffect } from 'react'
+import { View, Text, Image, TouchableOpacity, Modal, Alert, Platform, PermissionsAndroid } from 'react-native'
+import ImagePicker from 'react-native-image-crop-picker';
+import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+import Lightbox from 'react-native-lightbox-v2';
+import { launchCamera, launchImageLibrary, MediaType, ImagePickerResponse } from 'react-native-image-picker';
+import { style } from './style'
+import { TomarFotoProps, ImagenData } from './tomarFoto.types'
+
+const TomarFoto: React.FC<TomarFotoProps> = ({
+    source = [],
+    width,
+    titulo,
+    descripcion,
+    multiple = false,
+    limiteImagenes = 4,
+    imagenes,
+    avatar,
+    tipoMensaje,
+    cerrar,
+    soloLectura = false,
+    mostrarSoloConImagenes = false,
+    permitirSubir = true
+}) => {
+    const [imagenesState, setImagenesState] = useState<any[]>(source);
+    const [showModal, setShowModal] = useState(false);
+    const [isAndroidShareOpen, setIsAndroidShareOpen] = useState(false);
+    // Función para solicitar permisos de cámara
+    const requestCameraPermission = async (): Promise<boolean> => {
+        if (Platform.OS === 'android') {
+            try {
+                const granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.CAMERA,
+                    {
+                        title: 'Permiso de Cámara',
+                        message: 'Esta aplicación necesita acceso a la cámara para tomar fotos',
+                        buttonNeutral: 'Preguntar después',
+                        buttonNegative: 'Cancelar',
+                        buttonPositive: 'OK',
+                    }
+                );
+                return granted === PermissionsAndroid.RESULTS.GRANTED;
+            } catch (err) {
+                console.warn('Error solicitando permiso de cámara:', err);
+                return false;
+            }
+        }
+        return true; // iOS maneja permisos automáticamente
+    }
+
+    // Función para abrir cámara usando react-native-image-picker
+    const openCamera = async () => {
+        const hasPermission = await requestCameraPermission();
+        if (!hasPermission) {
+            Alert.alert('Error', 'Se necesita permiso de cámara para tomar fotos');
+            return;
+        }
+
+        const options = {
+            mediaType: 'photo' as MediaType,
+            quality: 0.8 as any,
+            maxWidth: 800,
+            maxHeight: 600,
+            includeBase64: false,
+            saveToPhotos: false,
+        };
+
+        launchCamera(options, (response: ImagePickerResponse) => {
+            console.log('📷 Respuesta de cámara:', response);
+
+            if (response.didCancel) {
+                console.log('📷 Usuario canceló la cámara');
+                return;
+            }
+
+            if (response.errorMessage) {
+                console.error('📷 Error de cámara:', response.errorMessage);
+                Alert.alert('Error', `Error al abrir cámara: ${response.errorMessage}`);
+                return;
+            }
+
+            if (response.assets && response.assets[0] && response.assets[0].uri) {
+                handleImageSelected(response.assets[0].uri);
+                console.log('📷 Foto tomada exitosamente:', response.assets[0].uri);
+                Alert.alert('Éxito', 'Foto tomada correctamente');
+            }
+        });
+    }
+
+    // Función para abrir galería usando react-native-image-picker
+    const openGallery = () => {
+        const options = {
+            mediaType: 'photo' as MediaType,
+            quality: 0.8 as any,
+            maxWidth: 800,
+            maxHeight: 600,
+            includeBase64: false,
+            selectionLimit: multiple ? 4 : 1,
+        };
+
+        launchImageLibrary(options, (response: ImagePickerResponse) => {
+            console.log('🖼️ Respuesta de galería:', response);
+
+            if (response.didCancel) {
+                console.log('🖼️ Usuario canceló la galería');
+                return;
+            }
+
+            if (response.errorMessage) {
+                console.error('🖼️ Error de galería:', response.errorMessage);
+                Alert.alert('Error', `Error al abrir galería: ${response.errorMessage}`);
+                return;
+            }
+
+            if (response.assets && response.assets.length > 0) {
+                if (multiple) {
+                    response.assets.forEach(asset => {
+                        if (asset.uri) {
+                            handleImageSelected(asset.uri);
+                        }
+                    });
+                } else {
+                    if (response.assets[0].uri) {
+                        handleImageSelected(response.assets[0].uri);
+                    }
+                }
+            }
+        });
+    }
+
+    // Función para manejar la imagen seleccionada
+    const handleImageSelected = (imageUri: string) => {
+        // Si no es múltiple, limpiar imágenes anteriores
+        if (!multiple) {
+            const newImage = { uri: imageUri };
+            setImagenesState([newImage]);
+            imagenes?.(newImage);
+        } else {
+            // Si es múltiple, agregar a la lista
+            if (imagenesState.length < limiteImagenes) {
+                const newImage = { uri: imageUri };
+                const newImagenes = [...imagenesState, newImage];
+                setImagenesState(newImagenes);
+                imagenes?.(newImagenes);
+            } else {
+                Alert.alert('Límite alcanzado', `Solo se pueden subir ${limiteImagenes} imágenes`);
+            }
+        }
+    }
+
+    // Función para manejar la selección de imagen (modal)
+    const handleTomarFoto = () => {
+        Alert.alert(
+            'Seleccionar Imagen',
+            'Elige una opción',
+            [
+                {
+                    text: 'Cámara',
+                    onPress: openCamera
+                },
+                {
+                    text: 'Galería',
+                    onPress: openGallery
+                },
+                {
+                    text: 'Cancelar',
+                    style: 'cancel'
+                }
+            ]
+        );
+    };
+
+    // Función legacy para compatibilidad
+    const subirImagen = async () => {
+        const options = {
+            compressImageMaxWidth: 900,
+            compressImageMaxHeight: 900,
+            width: 900,
+            height: 900,
+            includeBase64: true,
+            mediaType: 'photo' as any,
+            forgeJpg: true,
+        };
+
+        ImagePicker.openPicker(options).then(response => {
+            if (response) {
+                let base64 = `data:${response.mime};base64,${(response as any).data}`
+                let imagen = {
+                    uri: response.path,
+                    type: response.mime ? response.mime : 'image/jpeg',
+                    name: (response as any).fileName ? (response as any).fileName : `imagen.jpg`,
+                    path: response.path,
+                    imagen: base64
+                };
+
+                const newImagenes = [...imagenesState, imagen];
+                setImagenesState(newImagenes);
+                setShowModal(false);
+                setIsAndroidShareOpen(false);
+                imagenes?.(imagen);
+            }
+        });
+    }
+
+    const tomarFoto = () => {
+        const options = {
+            compressImageMaxWidth: 900,
+            compressImageMaxHeight: 900,
+            width: 900,
+            height: 900,
+            includeBase64: true,
+            mediaType: 'photo' as any,
+            forgeJpg: true,
+        };
+        ImagePicker.openCamera(options).then(response => {
+            if (response) {
+                let base64 = `data:${response.mime};base64,${(response as any).data}`
+                let imagen = {
+                    uri: response.path,
+                    type: response.mime ? response.mime : 'image/jpeg',
+                    name: (response as any).fileName ? (response as any).fileName : `imagen.jpg`,
+                    path: response.path
+                };
+                const newImagenes = [...imagenesState, imagen];
+                setImagenesState(newImagenes);
+                setShowModal(false);
+                setIsAndroidShareOpen(false);
+                imagenes?.(base64);
+            }
+        });
+    }
+    const renderImagenes = () => {
+        let img: any[] = []
+
+        imagenesState.map((e: any) => {
+            if (e.uri) {
+                img.push(e)
+            } else {
+                img.push({ uri: e })
+            }
+        })
+
+        return img.map((e: any, key: number) => {
+            return (
+                    <View key={key}>
+                    <TouchableOpacity onPress={() => {
+                        // Mostrar imagen en modal o navegación
+                        Alert.alert('Imagen', 'Imagen seleccionada');
+                    }}>
+                        <Image source={{ uri: e.uri }} style={style.imagenesFotos} resizeMode="cover" />
+                    </TouchableOpacity>
+                    {!soloLectura && (
+                        <FontAwesome name={'trash'} style={style.iconTrash} onPress={() => eliminarImagen(key)} />
+                    )}
+                    </View>
+            )
+        })
+    }
+
+    const eliminarImagen = (keyImagen: number) => {
+        Alert.alert(
+            'Eliminar Imagen',
+            'seguro desea eliminar esta imagen',
+            [
+                {
+                    text: 'Cancelar',
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel'
+                },
+                { text: 'Eliminar', onPress: () => eliminar() }
+            ],
+            { cancelable: false }
+        );
+        const eliminar = () => {
+            let newImagenes = imagenesState.filter((e, key) => { return key != keyImagen })
+            console.log({ keyImagen })
+            console.log(newImagenes)
+            setImagenesState(newImagenes)
+            imagenes?.(newImagenes)
+        }
+    }
+    const renderModal = () => {
+        return (
+            <Modal
+                transparent
+                visible={isAndroidShareOpen}
+                animationType="fade"
+                onRequestClose={() => { }}
+            >
+                <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => { tipoMensaje ? cerrar?.() : setIsAndroidShareOpen(false); }}
+                    style={style.btnModal}
+                >
+                    <View style={style.contenedorModal}>
+                        <TouchableOpacity style={style.btnOpcionModal} onPress={openGallery}>
+                            <Text style={style.textModal}>Subir Imagen</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={style.btnOpcionModal} onPress={openCamera}>
+                            <Text style={style.textModal}>Tomar Foto</Text>
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        )
+    }
+
+    /*
+        TIPOMENSAJE == cuando la foto es para el chat, no muestra, la opcion de tomar foto, si no que muestra directamente el modal
+    */
+        return (
+            <View style={style.contenedorPortada}>
+                {
+                    showModal
+                && renderModal()
+                }
+                {
+                    tipoMensaje
+                    ? renderModal()
+                    : permitirSubir && !soloLectura && !mostrarSoloConImagenes && (multiple ? imagenesState.length < limiteImagenes : imagenesState.length === 0)
+                    && <View style={{
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: 12,
+                        padding: 16,
+                        marginBottom: 20,
+                        alignItems: 'center'
+                    }}>
+                        <FontAwesome name="camera" style={{ fontSize: 32, color: '#007bff', marginBottom: 8 }} />
+                        <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 }}>
+                            {titulo || 'Foto'}
+                        </Text>
+                        <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 }}>
+                            {descripcion || 'Tome una foto clara para completar el proceso'}
+                        </Text>
+
+                        {!soloLectura && (
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#007bff',
+                                    borderRadius: 10,
+                                    paddingHorizontal: 20,
+                                    paddingVertical: 12,
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}
+                                onPress={() => {
+                                    console.log('📷 Botón tomar foto presionado');
+                                    handleTomarFoto();
+                                }}
+                                activeOpacity={0.8}
+                            >
+                                <FontAwesome name="camera" style={{ fontSize: 16, color: '#fff', marginRight: 8 }} />
+                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                    {multiple ? 'Subir Foto' : (imagenesState.length > 0 ? 'Cambiar Foto' : 'Tomar Foto')}
+                                </Text>
+                        </TouchableOpacity>
+                        )}
+
+                        {imagenesState.length > 0 && !multiple && (
+                            <View style={{
+                                marginTop: 12,
+                                alignItems: 'center'
+                            }}>
+                                <Image
+                                    source={{ uri: imagenesState[0].uri }}
+                                    style={{
+                                        width: 150,
+                                        height: 150,
+                                        borderRadius: 10,
+                                        marginBottom: 8
+                                    }}
+                                    resizeMode="cover"
+                                />
+                                <View style={{
+                                    backgroundColor: '#d4edda',
+                                    borderRadius: 8,
+                                    padding: 8,
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}>
+                                    <FontAwesome name="check" style={{ fontSize: 14, color: '#28a745', marginRight: 8 }} />
+                                    <Text style={{ color: '#28a745', fontSize: 14, fontWeight: '500' }}>
+                                        Foto agregada correctamente
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
+                    </View>
+                }
+            {
+                !tipoMensaje && imagenesState.length > 0
+                && <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                    {renderImagenes()}
+            </View>
+            }
+            {
+                !tipoMensaje && mostrarSoloConImagenes && imagenesState.length === 0
+                && <View style={{
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 20,
+                    alignItems: 'center'
+                }}>
+                    <FontAwesome name="image" style={{ fontSize: 32, color: '#6c757d', marginBottom: 8 }} />
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#6c757d', marginBottom: 8 }}>
+                        No hay imágenes
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#6c757d', textAlign: 'center' }}>
+                        Las imágenes aparecerán aquí después de tomar las fotos
+                    </Text>
+                </View>
+            }
+        </View>
+    );
+};
+
+export default TomarFoto;

@@ -14,8 +14,8 @@ import {
     Platform
 } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
-import { launchCamera, launchImageLibrary, MediaType, ImagePickerResponse } from 'react-native-image-picker';
 import { style } from './style';
+import TomarFoto from '../components/tomarFoto';
 
 interface CerrarPedidoModalProps {
     visible: boolean;
@@ -134,7 +134,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
         }
 
         // Convertir imagen a base64 antes de enviar
-        let imagenBase64 = null;
+        let imagenBase64: string | null = null;
         if (imagen) {
             imagenBase64 = await convertImageToBase64(imagen);
             console.log('📷 Imagen convertida a base64:', imagenBase64 ? 'Éxito' : 'Error');
@@ -150,7 +150,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             remision,
             forma_pago: formaPago,
             novedad,
-            imagen: imagenBase64 // Enviar imagen en base64
+            imagen: imagenBase64 || undefined // Enviar imagen en base64
         }, pedidoId); // Pasar el pedidoId como segundo parámetro
 
         // Limpiar campos después de enviar (para la próxima vez)
@@ -198,115 +198,12 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
         }
     };
 
-    const requestCameraPermission = async () => {
-        if (Platform.OS === 'android') {
-            try {
-                const granted = await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.CAMERA,
-                    {
-                        title: 'Permiso de Cámara',
-                        message: 'Esta aplicación necesita acceso a la cámara para tomar fotos',
-                        buttonNeutral: 'Preguntar después',
-                        buttonNegative: 'Cancelar',
-                        buttonPositive: 'OK',
-                    }
-                );
-                return granted === PermissionsAndroid.RESULTS.GRANTED;
-            } catch (err) {
-                console.warn('Error solicitando permiso de cámara:', err);
-                return false;
-            }
+    // Función para manejar cuando se selecciona una imagen
+    const handleImageSelected = (imagenData: any) => {
+        if (imagenData && imagenData.uri) {
+            setImagen(imagenData.uri);
+            console.log('📷 Imagen seleccionada:', imagenData.uri);
         }
-        return true; // iOS maneja permisos automáticamente
-    };
-
-    const openCamera = async () => {
-        const hasPermission = await requestCameraPermission();
-        if (!hasPermission) {
-            Alert.alert('Error', 'Se necesita permiso de cámara para tomar fotos');
-            return;
-        }
-
-        const options = {
-            mediaType: 'photo' as MediaType,
-            quality: 0.8,
-            maxWidth: 800,
-            maxHeight: 600,
-            includeBase64: false,
-            saveToPhotos: false,
-        };
-
-        launchCamera(options, (response: ImagePickerResponse) => {
-            console.log('📷 Respuesta de cámara:', response);
-
-            if (response.didCancel) {
-                console.log('📷 Usuario canceló la cámara');
-                return;
-            }
-
-            if (response.errorMessage) {
-                console.error('📷 Error de cámara:', response.errorMessage);
-                Alert.alert('Error', `Error al abrir cámara: ${response.errorMessage}`);
-                return;
-            }
-
-            if (response.assets && response.assets[0] && response.assets[0].uri) {
-                setImagen(response.assets[0].uri);
-                console.log('📷 Foto tomada exitosamente:', response.assets[0].uri);
-                Alert.alert('Éxito', 'Foto tomada correctamente');
-            }
-        });
-    };
-
-    const openGallery = () => {
-        const options = {
-            mediaType: 'photo' as MediaType,
-            quality: 0.8,
-            maxWidth: 800,
-            maxHeight: 600,
-            includeBase64: false,
-            selectionLimit: 1,
-        };
-
-        launchImageLibrary(options, (response: ImagePickerResponse) => {
-            console.log('🖼️ Respuesta de galería:', response);
-
-            if (response.didCancel) {
-                console.log('🖼️ Usuario canceló la galería');
-                return;
-            }
-
-            if (response.errorMessage) {
-                console.error('🖼️ Error de galería:', response.errorMessage);
-                Alert.alert('Error', `Error al abrir galería: ${response.errorMessage}`);
-                return;
-            }
-
-            if (response.assets && response.assets[0] && response.assets[0].uri) {
-                setImagen(response.assets[0].uri);
-            }
-        });
-    };
-
-    const handleTomarFoto = () => {
-        Alert.alert(
-            'Seleccionar Imagen',
-            'Elige una opción',
-            [
-                {
-                    text: 'Cámara',
-                    onPress: openCamera
-                },
-                {
-                    text: 'Galería',
-                    onPress: openGallery
-                },
-                {
-                    text: 'Cancelar',
-                    style: 'cancel'
-                }
-            ]
-        );
     };
 
     if (!visible) return null;
@@ -593,7 +490,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                     borderBottomColor: '#f8f9fa'
                                                 }}>
                                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <FontAwesome name="file-invoice" style={{ fontSize: 16, color: '#666', marginRight: 8 }} />
+                                                        <FontAwesome name="file-text-o" style={{ fontSize: 16, color: '#666', marginRight: 8 }} />
                                                         <Text style={{ fontSize: 14, color: '#666', fontWeight: '500' }}>Factura:</Text>
                                                     </View>
                                                     <Text style={{ fontSize: 14, color: '#333', fontWeight: '600' }}>{facturaProps}</Text>
@@ -644,72 +541,14 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                 // Formulario para cerrar pedido
                                 <View>
                                     {/* Sección de foto */}
-                                    <View style={{
-                                        backgroundColor: '#f8f9fa',
-                                        borderRadius: 12,
-                                        padding: 16,
-                                        marginBottom: 20,
-                                        alignItems: 'center'
-                                    }}>
-                                        <FontAwesome name="camera" style={{ fontSize: 32, color: '#007bff', marginBottom: 8 }} />
-                                        <Text style={{ fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 8 }}>
-                                            Foto de Factura
-                                        </Text>
-                                        <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', marginBottom: 16 }}>
-                                            Tome una foto clara de la factura para completar el pedido
-                                        </Text>
-
-                                        <TouchableOpacity
-                                            style={{
-                                                backgroundColor: '#007bff',
-                                                borderRadius: 10,
-                                                paddingHorizontal: 20,
-                                                paddingVertical: 12,
-                                                flexDirection: 'row',
-                                                alignItems: 'center'
-                                            }}
-                                            onPress={() => {
-                                                console.log('📷 Botón tomar foto presionado');
-                                                handleTomarFoto();
-                                            }}
-                                            activeOpacity={0.8}
-                                        >
-                                            <FontAwesome name="camera" style={{ fontSize: 16, color: '#fff', marginRight: 8 }} />
-                                            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-                                                {imagen ? 'Cambiar Foto' : 'Tomar Foto'}
-                                            </Text>
-                                        </TouchableOpacity>
-
-                                        {imagen && (
-                                            <View style={{
-                                                marginTop: 12,
-                                                alignItems: 'center'
-                                            }}>
-                                                <Image
-                                                    source={{ uri: imagen }}
-                                                    style={{
-                                                        width: 150,
-                                                        height: 150,
-                                                        borderRadius: 10,
-                                                        marginBottom: 8
-                                                    }}
-                                                    resizeMode="cover"
-                                                />
-                                                <View style={{
-                                                    backgroundColor: '#d4edda',
-                                                    borderRadius: 8,
-                                                    padding: 8,
-                                                    flexDirection: 'row',
-                                                    alignItems: 'center'
-                                                }}>
-                                                    <FontAwesome name="check" style={{ fontSize: 14, color: '#28a745', marginRight: 8 }} />
-                                                    <Text style={{ color: '#28a745', fontSize: 14, fontWeight: '500' }}>
-                                                        Foto agregada correctamente
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        )}
-                                    </View>
+                                    <TomarFoto
+                                        source={imagen ? [imagen] : []}
+                                        titulo="Foto de Factura"
+                                        descripcion="Tome una foto clara de la factura para completar el pedido"
+                                        multiple={false}
+                                        limiteImagenes={1}
+                                        imagenes={handleImageSelected}
+                                    />
 
                                     {/* Formulario de datos */}
                                     <View style={{ gap: 16 }}>

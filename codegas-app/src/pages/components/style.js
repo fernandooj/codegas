@@ -1,75 +1,219 @@
 import { Dimensions, Platform } from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
 const size = Dimensions.get('window');
+
 export const style = MediaQueryStyleSheet.create({
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////			CABEZERA
+	///////////////////////////			FOOTER DISEÑO MODERNO CON GLASSMORPHISM
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////			FOOTER
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	contenedorFooter: {
-		backgroundColor: "rgba(255, 204, 0, 0.48)",
-		alignItems: "center",
-		flexDirection: "row",
-		position: "absolute",
+	// Wrapper principal del footer
+	footerWrapper: {
+		position: 'absolute',
 		bottom: 0,
-		width: "100%",
 		left: 0,
-		height: 65,
-		paddingBottom: 0,
+		right: 0,
+		height: Platform.OS === 'ios' ? 100 : 90,
+		alignItems: 'center',
+		justifyContent: 'flex-end',
 	},
+
+	// Contenedor principal del footer
+	contenedorFooter: {
+		backgroundColor: "#ffffff",
+		alignItems: "center",
+		justifyContent: "center",
+		flexDirection: "row",
+		width: "100%",
+		height: Platform.OS === 'ios' ? 75 : 70,
+		paddingHorizontal: 15,
+		paddingTop: 15,
+		paddingBottom: Platform.OS === 'ios' ? 35 : 25, // Extra padding for safe area
+		shadowColor: "#000000",
+		shadowOffset: { width: 0, height: -8 },
+		shadowOpacity: 0.1,
+		shadowRadius: 20,
+		elevation: 20,
+		borderTopLeftRadius: 35,
+		borderTopRightRadius: 35,
+		marginBottom: 0, // Remove bottom margin
+		position: 'relative',
+		overflow: 'visible',
+		borderTopWidth: 1,
+		borderTopColor: "rgba(0, 0, 0, 0.1)",
+	},
+
+	// Contenedores de tabs
 	subContenedorFooter: {
-		borderWidth: 0,
-		width: "25.3%",
-		alignItems: "center"
+		alignItems: 'center',
+		justifyContent: 'center',
+		position: 'relative',
+		paddingVertical: 0,
+		flex: 1,
 	},
+
 	subContenedorFooter2: {
-		borderWidth: 0,
-		width: "28.9%",
-		alignItems: "center"
+		alignItems: 'center',
+		justifyContent: 'center',
+		position: 'relative',
+		paddingVertical: 8,
+		flex: 1,
 	},
+
 	subContenedorFooter3: {
-		width: "21.9%",
-		alignItems: "center"
+		alignItems: 'center',
+		justifyContent: 'center',
+		position: 'relative',
+		paddingVertical: 8,
+		flex: 1,
 	},
-	subContenedorFooterConductor: {
-		width: "50.5%",
-		alignItems: "center"
+
+	// Contenedores específicos para cada tab
+	firstTabContainer: {
+		alignItems: 'center',
+		justifyContent: 'center',
+		position: 'relative',
+		paddingVertical: 8,
+		flex: 1,
 	},
-	icon: {
+
+	tabContainer: {
+		alignItems: 'center',
+		justifyContent: 'center',
+		position: 'relative',
+		paddingVertical: 0,
+		flex: 1,
+		height: '100%',
+	},
+
+	// Ícono activo elevado
+	activeTabWrapper: {
+		position: 'absolute',
+		left: '25%', // Moved left to avoid overlapping with Pedidos tab
+		marginLeft: -40,
+		top: -35,
+		width: 80,
+		height: 80,
+		borderRadius: 40,
+		backgroundColor: "#ffffff",
+		alignItems: "center",
+		justifyContent: "center",
+		shadowColor: "#ffffff",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.6,
+		shadowRadius: 20,
+		elevation: 20,
+		zIndex: 100,
+		borderWidth: 4,
+		borderColor: "#002587",
+		// Efecto de iluminación
+		shadowColor: "#002587",
+		shadowOffset: { width: 0, height: 0 },
+		shadowOpacity: 0.8,
+		shadowRadius: 25,
+	},
+
+	elevatedIconContainer: {
 		width: 70,
-		height: 34,
+		height: 70,
+		borderRadius: 35,
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "rgba(0, 37, 135, 0.1)",
 	},
+
+	// Contenedor de íconos
+	iconContainer: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "rgba(0, 37, 135, 0.1)",
+		marginBottom: 0,
+	},
+
+	// Estilos de íconos
+	icon: {
+		width: 24,
+		height: 24,
+		tintColor: "#002587",
+	},
+
+	// Iconos FontAwesome
+	iconFont: {
+		fontSize: 24,
+		color: "#002587",
+		fontWeight: "400",
+	},
+
+	// Ícono activo
+	activeIcon: {
+		width: 32,
+		height: 32,
+		tintColor: "#002587",
+	},
+
+	// Ícono activo FontAwesome
+	activeIconFont: {
+		fontSize: 32,
+		color: "#002587",
+		fontWeight: "600",
+	},
+
+	// Texto del footer
 	textFooter: {
-		fontFamily: "Comfortaa-Regular",
+		fontFamily: "Comfortaa-Medium",
 		textAlign: "center",
 		color: "#002587",
-		fontSize: 12,
-		top: 4
+		fontSize: 11,
+		fontWeight: "500",
+		marginTop: 4,
+		lineHeight: 13,
 	},
+
+	// Badge para notificaciones
 	badge: {
-		backgroundColor: "red",
+		backgroundColor: "#ef4444",
 		position: "absolute",
-		bottom: 20,
-		right: 10,
-		width: 16,
-		height: 16,
-		textAlign: "center",
+		top: -8,
+		right: 8,
+		minWidth: 20,
+		height: 20,
+		borderRadius: 10,
+		alignItems: "center",
 		justifyContent: "center",
-		borderRadius: 8,
-		padding: 0
+		paddingHorizontal: 4,
+		borderWidth: 3,
+		borderColor: "#ffffff",
+		zIndex: 50,
+		shadowColor: "#ef4444",
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.4,
+		shadowRadius: 6,
+		elevation: 8,
 	},
+
+	// Badge para ícono elevado
+	badgeElevated: {
+		top: -10,
+		right: -10,
+		zIndex: 150,
+	},
+
 	textBadge: {
-		fontFamily: "Comfortaa-Light",
+		fontFamily: "Comfortaa-Bold",
 		textAlign: "center",
 		color: "#ffffff",
-		fontSize: 9
+		fontSize: 10,
+		fontWeight: "bold",
+		lineHeight: 11,
 	},
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////			TOMAR FOTO
+	///////////////////////////			OTROS ESTILOS ORIGINALES
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	contenedorPortada: {
 		alignItems: "center"
 	},
@@ -146,7 +290,7 @@ export const style = MediaQueryStyleSheet.create({
 	///////////////////////////			SUBIR PDF
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	contenedorPdf: {
-		width: size.width / 1.3,
+		width: "100%",
 		paddingVertical: 10,
 		paddingLeft: 10,
 		fontFamily: "Comfortaa-Light",
@@ -158,7 +302,7 @@ export const style = MediaQueryStyleSheet.create({
 		shadowRadius: 5, //IOS
 		backgroundColor: '#fff',
 		elevation: 7, // Android
-		marginLeft: 10,
+		marginLeft: 0,
 		marginVertical: 11,
 		borderRadius: 5,
 		textAlignVertical: "center",
@@ -168,7 +312,6 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	iconTrashPdf: {
 		flexWrap: 'wrap',
-
 		paddingHorizontal: 10,
 		fontSize: 17
 	},
@@ -178,8 +321,61 @@ export const style = MediaQueryStyleSheet.create({
 
 }, {
 	"@media (min-device-height: 812)": {
+		footerWrapper: {
+			height: 110,
+		},
 		contenedorFooter: {
-			height: 75
+			height: 80,
+			marginBottom: 0,
+			paddingBottom: 40,
+			borderTopLeftRadius: 40,
+			borderTopRightRadius: 40,
+		},
+		activeTabWrapper: {
+			width: 85,
+			height: 85,
+			borderRadius: 42.5,
+			top: -40,
+			left: '25%', // Moved left to avoid overlapping with Pedidos tab
+			marginLeft: -42.5,
+		},
+		elevatedIconContainer: {
+			width: 75,
+			height: 75,
+			borderRadius: 37.5,
+		},
+		icon: {
+			width: 26,
+			height: 26,
+		},
+		iconFont: {
+			fontSize: 26,
+		},
+		activeIcon: {
+			width: 34,
+			height: 34,
+		},
+		activeIconFont: {
+			fontSize: 34,
+		},
+		textFooter: {
+			fontSize: 12,
+			marginTop: 5,
+		},
+		badge: {
+			minWidth: 22,
+			height: 22,
+			borderRadius: 11,
+			top: -10,
+			right: 10,
+		},
+		badgeElevated: {
+			top: -12,
+			right: -12,
+		},
+		textBadge: {
+			fontSize: 11,
+			lineHeight: 12,
 		},
 	}
 })

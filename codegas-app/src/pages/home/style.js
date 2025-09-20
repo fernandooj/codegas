@@ -19,8 +19,8 @@ export const style = MediaQueryStyleSheet.create({
 	// Header
 	header: {
 		alignItems: 'center',
-		paddingTop: 20,
-		paddingBottom: 30,
+		paddingTop: 10,
+		paddingBottom: 10,
 		backgroundColor: '#fff',
 		marginBottom: 20,
 		shadowColor: '#000',
