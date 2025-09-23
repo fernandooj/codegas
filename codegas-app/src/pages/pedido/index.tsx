@@ -406,8 +406,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         updateState(actions.setModalNovedad(true));
                         updateState(actions.setPedidoData({ estadoEntrega: "asignado" }));
                     } else {
-                        updateState(actions.setModalFechaEntrega(true));
+                        // Ya no se abre el modal de fecha al cambiar estado
                         updateState(actions.setPedidoData({ estadoEntrega: "asignado" }));
+                        Alert.alert('Éxito', 'Pedido actualizado correctamente');
+                        loadPedidos();
                     }
                 } else if (estado == "innactivo") {
                     updateState(actions.setModalNovedad(true));
