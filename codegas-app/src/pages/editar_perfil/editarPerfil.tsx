@@ -1,28 +1,20 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    ScrollView,
-    Button,
-    TextInput,
     ImageBackground,
-    ActivityIndicator,
     Alert,
-    Animated,
-    Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
-import { FontAwesome } from '@react-native-vector-icons/fontawesome';
-import Footer from '../components/footer';
-import TomarFoto from '../components/tomarFoto';
 import Toast from 'react-native-toast-message';
 import { DataContext } from "../../context/context"
-import { accesos } from '../../utils/constants';
 import { getZonas } from '../../redux/actions/zonaActions';
+import auth from '@react-native-firebase/auth';
+import Footer from '../components/footer';
+import ModalVeos from './ModalVeos';
+import ModalUbicacion from './ModalUbicacion';
+import FormPass from './FormPass';
+import PerfilForm from './PerfilForm';
 import {
     getUserById,
     getPointsByClient,
@@ -85,7 +77,7 @@ import {
 // Import FormData as a type to avoid conflicts
 import FormDataType from 'form-data';
 const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
-    const context = useContext<ContextType>(DataContext);
+    const context = useContext(DataContext) as ContextType;
     const dispatch = useDispatch();
     const perfil = useSelector((state: RootState) => state.usuario.perfil.user);
     const zonas = useSelector((state: any) => state.zona?.zonas || []);
@@ -124,7 +116,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 capacidad: undefined,
                 lat: undefined,
                 lng: undefined,
-                is_active: true,
+                activo: true,
                 nuevo: true,
                 acceso: 'cliente',
             },
@@ -152,9 +144,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         confirmar: ''
     });
 
-    // Estado para animaciones del modal
-    const [modalAnimation] = useState(new Animated.Value(0));
-    const [overlayAnimation] = useState(new Animated.Value(0));
 
     const updateState: UpdateStateFunction = useCallback((updates) => {
         setState(prevState => ({ ...prevState, ...updates }));
@@ -167,19 +156,14 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
             // Cargar zonas
             try {
-                console.log('Loading zonas...');
                 const result = await dispatch(getZonas() as any);
-                console.log('Zonas result:', result);
             } catch (error) {
                 console.error('Error loading zonas:', error);
             }
 
             // Cargar VEOs
             try {
-                console.log('Loading VEOs...');
                 const veosResult = await getVeos(100, 0, 'undefined', userId);
-                console.log('VEOs result:', veosResult);
-                console.log('VEOs raw data:', veosResult?.user?.slice(0, 2)); // Mostrar los primeros 2 para ver estructura
 
                 if (veosResult && veosResult.user) {
                     // Función para transformar recursivamente los VEOs y sus children
@@ -201,14 +185,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         transformarVeoRecursivamente(veo, index)
                     );
 
-                    console.log('VEOs formateados:', veosFormatted.length);
-                    console.log('VEOs con idPadre:', veosFormatted.filter(v => v.idPadre).length);
-                    console.log('VEOs sin idPadre (padres):', veosFormatted.filter(v => !v.idPadre).length);
 
                     // Mostrar algunos ejemplos para debugging
-                    console.log('🔍 Ejemplos de VEOs:');
-                    veosFormatted.slice(0, 3).forEach(veo => {
-                        console.log(`  - ${veo.label} (ID: ${veo._id}, Padre: ${veo.idPadre})`);
+                    veosFormatted.slice(0, 3).forEach((veo: any) => {
                     });
 
                     updateState({ veos: veosFormatted });
@@ -218,12 +197,14 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             }
 
             const params = route?.params;
-            console.log('🔍 Parámetros de ruta:', params);
-            console.log('🔍 userId del contexto:', userId);
 
             if (params?.tipoAcceso) {
                 updateState({ tipoAcceso: params.tipoAcceso });
                 if (params.tipoAcceso == "solucion") {
+                    updateState({ acceso: "cliente" });
+                }
+                // Si es crear desde clientes, establecer como cliente
+                if (params.tipoAcceso == "crear") {
                     updateState({ acceso: "cliente" });
                 }
             }
@@ -235,13 +216,48 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     // Usar userId del contexto cuando se edita perfil propio, no params.idUsuario
                     let ubicaciones = [];
                     if (userId && userId !== null && userId !== undefined && userId !== 'undefined' && userId !== 'null' && userId.toString().trim() !== '') {
-                        console.log('📍 Obteniendo puntos para userId:', userId);
                         const ubi = await getPointsByClient(userId);
                         ubicaciones = ubi.status ? ubi.puntos : [];
-                        console.log('📍 Ubicaciones obtenidas:', ubicaciones.length);
+
+                        // Mapear las ubicaciones para asegurar que todos los campos estén correctamente asignados
+                        ubicaciones = ubicaciones.map((data: any) => {
+                            let data1 = userId;
+                            let data2 = data.idCliente;
+                            if (data1 === data2) {
+                                return {
+                                    direccion: data.direccion,
+                                    email: undefined,
+                                    idCliente: undefined,
+                                    idZona: data.idZona,
+                                    nombre: undefined,
+                                    celular: undefined,
+                                    nombreZona: data.nombreZona,
+                                    observacion: data.observacion,
+                                    capacidad: data.capacidad,
+                                    lat: data.lat?.toString() || '',
+                                    lng: data.lng?.toString() || '',
+                                    activo: data.activo !== undefined ? data.activo : true,
+                                    _id: data._id
+                                };
+                            } else {
+                                return {
+                                    direccion: data.direccion,
+                                    email: data.email,
+                                    idCliente: data.idCliente,
+                                    idZona: data.idZona,
+                                    nombre: data.nombre,
+                                    celular: data.celular,
+                                    nombreZona: data.nombreZona,
+                                    observacion: data.observacion,
+                                    capacidad: data.capacidad,
+                                    lat: data.lat?.toString() || '',
+                                    lng: data.lng?.toString() || '',
+                                    activo: data.activo !== undefined ? data.activo : true,
+                                    _id: data._id
+                                };
+                            }
+                        });
                     } else {
-                        console.log('⚠️ userId no válido para obtener puntos:', userId);
-                        console.log('⚠️ Tipo de userId:', typeof userId);
                     }
                     updateState({
                         razon_social: user.razon_social ? user.razon_social : '',
@@ -273,16 +289,12 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     // Validar que params.idUsuario existe antes de hacer la llamada
                     let ubicaciones = [];
                     if (params.idUsuario && params.idUsuario !== null && params.idUsuario !== undefined && params.idUsuario !== 'undefined' && params.idUsuario !== 'null' && params.idUsuario.toString().trim() !== '') {
-                        console.log('📍 Obteniendo puntos para params.idUsuario:', params.idUsuario);
                         const ubi = await getPointsByClient(params.idUsuario);
                         ubicaciones = ubi.status ? ubi.puntos : [];
-                        console.log('📍 Ubicaciones obtenidas:', ubicaciones.length);
                     } else {
-                        console.log('⚠️ params.idUsuario no válido para obtener puntos:', params.idUsuario);
-                        console.log('⚠️ Tipo de params.idUsuario:', typeof params.idUsuario);
                     }
 
-                    ubicaciones = ubicaciones.map(data => {
+                    ubicaciones = ubicaciones.map((data: any) => {
                         let data1 = params.idUsuario;
                         let data2 = data.idCliente;
                         if (data1 === data2) {
@@ -298,7 +310,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 capacidad: data.capacidad,
                                 lat: data.lat?.toString() || '',
                                 lng: data.lng?.toString() || '',
-                                is_active: data.is_active !== undefined ? data.is_active : true,
+                                activo: data.activo !== undefined ? data.activo : true,
                                 _id: data._id
                             };
                         } else {
@@ -314,13 +326,12 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 capacidad: data.capacidad,
                                 lat: data.lat?.toString() || '',
                                 lng: data.lng?.toString() || '',
-                                is_active: data.is_active !== undefined ? data.is_active : true,
+                                activo: data.activo !== undefined ? data.activo : true,
                                 _id: data._id
                             };
                         }
                     });
 
-                    console.log(user);
                     updateState({
                         razon_social: user.razon_social ? user.razon_social : "",
                         cedula: user.cedula ? user.cedula : "",
@@ -350,7 +361,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     }, [context, route?.params, updateState]);
     const editarUsuario: EditarUsuarioFunction = useCallback((e?: any) => {
         updateState({ cargando: true });
-        const { razon_social, cedula, ubicaciones, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas, editado, codMagister, valorUnitario } = state;
+        const { razon_social, cedula, ubicaciones, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas, editado, codMagister, valorUnitario, idVeo } = state;
         let clientes = ubicaciones.filter(e => {
             return e.email && e.idCliente
         })
@@ -374,8 +385,22 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         })
 
         updateUserProfile(idUsuario, { editado, puntos, puntosNuevos, razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicacionesEliminadas, codMagister, valorUnitario })
-            .then(e => {
-                console.log(e)
+            .then(async (e) => {
+
+                // Asignar VEO si se ha seleccionado uno
+                if (idVeo && idVeo !== '') {
+                    try {
+                        await assignCommercial(idUsuario, idVeo);
+                    } catch (error) {
+                        console.error('Error al asignar VEO durante actualización:', error);
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Error al asignar VEO',
+                            text2: 'Usuario actualizado pero no se pudo asignar el comercial'
+                        });
+                    }
+                }
+
                 if (acceso === "cliente") {
                     ////////////////////////////////////////////        EDITO LOS CLIENTES
                     if (clientes.length > 0) {
@@ -392,13 +417,11 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 updateState({ cargando: false })
                             })
                             .catch(err2 => {
-                                console.log(err2)
                                 updateState({ cargando: false })
                             })
                     }
                     ////////////////////////////////////////////        INSERTO LOS CLIENTES
                     if (clientesNuevos.length > 0) {
-                        console.log("perrito")
                         createMultipleUsers(clientesNuevos, idUsuario, e.user.nombre)
                             .then(res => {
                                 AsyncStorage.setItem('nombre', e.user.nombre)
@@ -411,54 +434,21 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 updateState({ cargando: false })
                             })
                             .catch(err2 => {
-                                console.log(err2)
                                 updateState({ cargando: false })
                             })
                     }
-                    ////////////////////////////////////////////       EDITO LOS PUNTOS
-                    // if(puntos.length>0){
-                    //     axios.put("pun/punto/varios",{puntos, idPadre:idUsuario})
-                    //     .then(res=>{
-                    //         AsyncStorage.setItem('nombre', e.data.user.nombre)
-                    //         //navigation.navigate("Home")
-                    //         Toast.show("Usuario guardado con exito")
-                    //     })
-                    //     .catch(err2=>{
-                    //         console.log(err2)
-                    //         this.setState({cargando:false})
-                    //     })
-                    // }
-                    ////////////////////////////////////////////       INSERTO LOS PUNTOS
-                    // if(puntosNuevos.length>0){
-                    //     axios.post("pun/punto/varios", {puntos:puntosNuevos, idPadre:idUsuario, idCliente:idUsuario})
-                    //     .then(res=>{
-                    //         AsyncStorage.setItem('nombre', e.data.user.nombre)
-                    //         navigation.navigate("Home")
-                    //         Toast.show("Usuario guardado con exito")
-                    //     })
-                    //     .catch(err2=>{
-                    //         console.log(err2)
-                    //         this.setState({cargando:false})
-                    //     })
-                    // }
-                    // Actualizar AsyncStorage con los nuevos datos
+
                     AsyncStorage.setItem('nombre', e.user.nombre || '')
                     AsyncStorage.setItem('email', e.user.email || '')
 
                     // Actualizar contexto en tiempo real
                     if (context.updateUserData) {
-                        console.log('🔄 Actualizando contexto desde editarUsuario (cliente) con:', {
-                            nombre: e.user.nombre,
-                            email: e.user.email,
-                            avatar: e.user.avatar
-                        });
                         context.updateUserData({
                             nombre: e.user.nombre,
                             email: e.user.email,
                             avatar: e.user.avatar
                         });
                     } else {
-                        console.log('❌ context.updateUserData no está disponible en editarUsuario (cliente)');
                     }
 
                     Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
@@ -525,530 +515,19 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 }
             })
             .catch(err => {
-                console.log(err);
                 updateState({ cargando: false });
             })
-    }, [state.razon_social, state.cedula, state.ubicaciones, state.direccion_factura, state.nombre, state.email, state.celular, state.tipo, state.acceso, state.codt, state.imagen, state.editaAvatar, state.idUsuario, state.ubicacionesEliminadas, state.editado, state.codMagister, state.valorUnitario, updateState, navigation]);
+    }, [state.razon_social, state.cedula, state.ubicaciones, state.direccion_factura, state.nombre, state.email, state.celular, state.tipo, state.acceso, state.codt, state.imagen, state.editaAvatar, state.idUsuario, state.ubicacionesEliminadas, state.editado, state.codMagister, state.valorUnitario, state.idVeo, updateState, navigation]);
 
-    const renderPerfil: RenderPerfilFunction = useCallback(() => {
-        let { razon_social, cedula, direccion_factura, email, nombre, celular, codt, acceso, valorUnitario, tipoAcceso, imagen, cargando, ubicaciones, tipo, activo, idUsuario, accesoPerfil, modalCliente, veos, veo, editado, codMagister } = state;
-        valorUnitario = valorUnitario ? valorUnitario.toString() : '';
-        razon_social = razon_social ? razon_social.toUpperCase() : razon_social;
-        email = email ? email.toUpperCase() : email;
-        direccion_factura = direccion_factura ? direccion_factura.toUpperCase() : direccion_factura;
-        nombre = nombre ? nombre.toUpperCase() : nombre;
-
-        return (
-            <View style={style.formContainer}>
-                {/* Header moderno */}
-                <View style={style.headerContainer}>
-                    <Text style={style.headerTitle}>
-                        {tipoAcceso === "admin" ? `Nuevo ${acceso}` : 'Editar perfil'}
-                    </Text>
-                    <Text style={style.headerSubtitle}>
-                        Complete la información del usuario
-                    </Text>
-                </View>
-
-                <ScrollView
-                    keyboardDismissMode="on-drag"
-                    style={style.scrollViewContainer}
-                    contentContainerStyle={style.scrollViewContent}
-                >
-                    {/* ACCESO */}
-                    {
-                        // Mostrar campo solo si:
-                        // 1. No es edición de cliente (cliente no puede cambiar su tipo de acceso)
-                        // 2. Es admin y no es despacho
-                        // 3. Es modo crear
-                        ((tipoAcceso === "admin" && accesoPerfil !== "despacho") ||
-                            (tipoAcceso === "editar" && acceso !== "cliente") ||
-                            tipoAcceso === "crear")
-                        && <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>
-                                Tipo de Acceso
-                            </Text>
-                            <TouchableOpacity
-                                style={style.selectorContainer}
-                                onPress={() => {
-                                    // Filtrar opciones según el contexto
-                                    let opcionesAcceso = accesos;
-
-                                    // Si es edición y el usuario no es cliente, quitar opción "cliente"
-                                    if (tipoAcceso === "editar" && acceso !== "cliente") {
-                                        opcionesAcceso = accesos.filter(item => item.value !== "cliente");
-                                    }
-
-                                    // Abrir modal para seleccionar acceso
-                                    Alert.alert(
-                                        'Seleccionar Tipo de Acceso',
-                                        'Elija el tipo de acceso:',
-                                        opcionesAcceso.map(item => ({
-                                            text: item.label,
-                                            onPress: () => updateState({ acceso: item.value })
-                                        }))
-                                    );
-                                }}
-                            >
-                                <Text style={style.selectorText}>
-                                    {accesos.find(item => item.value === acceso)?.label || 'Seleccionar acceso'}
-                                </Text>
-                                <FontAwesome
-                                    name="chevron-down"
-                                    size={16}
-                                    color="#666"
-                                    style={style.selectorIcon}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    }
-
-                    {/* EMAIL */}
-                    <View style={style.fieldContainer}>
-                        <Text style={style.fieldLabel}>
-                            Email
-                        </Text>
-                        <TextInput
-                            placeholder="Ingrese el email"
-                            keyboardType='email-address'
-                            placeholderTextColor="#aaa"
-                            value={email}
-                            onChangeText={email => updateState({ email })}
-                            onBlur={email => verificaEmail()}
-                            style={[
-                                style.fieldInput,
-                                email.length < 3 && style.fieldInputError
-                            ]}
-                            autoCapitalize="none"
-                        />
-                    </View>
-
-                    {/* RAZON SOCIAL */}
-                    {
-                        acceso === "cliente"
-                        && <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>
-                                Razón Social
-                            </Text>
-                            <TextInput
-                                placeholder="Ingrese la razón social"
-                                placeholderTextColor="#aaa"
-                                autoCapitalize="characters"
-                                value={razon_social}
-                                onChangeText={razon_social => updateState({ razon_social })}
-                                style={[
-                                    style.fieldInput,
-                                    razon_social.length < 3 && style.fieldInputError
-                                ]}
-                            />
-                        </View>
-                    }
-
-                    {/* CEDULA */}
-                    <View style={style.fieldContainer}>
-                        <Text style={style.fieldLabel}>
-                            Cédula / NIT
-                        </Text>
-                        <TextInput
-                            placeholder="Ingrese la cédula o NIT"
-                            placeholderTextColor="#aaa"
-                            keyboardType='numeric'
-                            value={cedula}
-                            onChangeText={cedula => updateState({ cedula })}
-                            style={[
-                                style.fieldInput,
-                                cedula.length < 5 && style.fieldInputError
-                            ]}
-                        />
-                    </View>
-
-                    {/* DIRECCION */}
-                    {
-                        acceso === "cliente"
-                        && <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>
-                                Dirección de Facturación
-                            </Text>
-                            <TextInput
-                                placeholder="Ingrese la dirección de facturación"
-                                placeholderTextColor="#aaa"
-                                autoCapitalize="characters"
-                                value={direccion_factura}
-                                onChangeText={direccion_factura => updateState({ direccion_factura })}
-                                style={[
-                                    style.fieldInput,
-                                    direccion_factura.length < 3 && style.fieldInputError
-                                ]}
-                            />
-                        </View>
-                    }
-                    {/* UBICACION */}
-                    {
-                        acceso === "cliente"
-                        && <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>
-                                Ubicación entrega
-                            </Text>
-                            <TouchableOpacity
-                                style={[
-                                    style.selectorContainer,
-                                    ubicaciones.length < 1 && style.fieldInputError
-                                ]}
-                                onPress={() => updateState({ modalUbicacion: true })}
-                            >
-                                <Text style={[
-                                    style.selectorText,
-                                    ubicaciones.length < 1 && { color: '#dc3545' }
-                                ]}>
-                                    {ubicaciones.length < 1
-                                        ? "Agregar ubicación de entrega"
-                                        : `Tienes ${ubicaciones.length} ubicaciones guardadas`
-                                    }
-                                </Text>
-                                <FontAwesome
-                                    name="chevron-right"
-                                    size={16}
-                                    color="#666"
-                                    style={style.selectorIcon}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    }
-                    {/* CODT */}
-                    {
-                        acceso === "cliente"
-                        && <>
-                            <Text style={style.textInfo}>Codt</Text>
-                            <TextInput
-                                placeholder="CODT"
-                                autoCapitalize='none'
-                                placeholderTextColor="#aaa"
-                                value={codt}
-                                onChangeText={codt => updateState({ codt })}
-                                style={style.input}
-                                editable={accesoPerfil == "cliente" ? false : true}
-                            />
-                        </>
-                    }
-
-                    {/* NOMBRES */}
-                    <Text style={style.textInfo}>Nombres</Text>
-                    <TextInput
-                        placeholder="Nombres"
-                        autoCapitalize='none'
-                        placeholderTextColor="#aaa"
-                        value={nombre}
-                        onChangeText={nombre => updateState({ nombre })}
-                        style={nombre.length < 3 ? [style.input, style.inputRequired] : style.input}
-                    />
-                    {/* CELULAR */}
-                    <Text style={style.textInfo}>Celular</Text>
-                    <TextInput
-                        placeholder="Celular"
-                        autoCapitalize='none'
-                        placeholderTextColor="#aaa"
-                        value={celular}
-                        onChangeText={celular => updateState({ celular })}
-                        style={celular.length < 7 ? [style.input, style.inputRequired] : style.input}
-                    />
-
-                    {/* VEO */}
-                    {
-                        acceso === "veo"
-                        && <><Text style={style.textInfo}>Codigo Magister</Text>
-                            <TextInput
-                                placeholder="Codigo Magister"
-                                autoCapitalize='none'
-                                placeholderTextColor="#aaa"
-                                value={codMagister}
-                                onChangeText={codMagister => updateState({ codMagister })}
-                                style={codMagister.length < 3 ? [style.input, style.inputRequired] : style.input}
-                            />
-                        </>
-                    }
-                    {/* VALOR UNITARIO */}
-                    {
-                        acceso === "cliente"
-                        && <>
-                            <Text style={style.textInfo}>Valor Unitario</Text>
-                            <TextInput
-                                placeholder="Valor Unitario"
-                                autoCapitalize='none'
-                                placeholderTextColor="#aaa"
-                                value={valorUnitario}
-                                onChangeText={valorUnitario => updateState({ valorUnitario })}
-                                style={valorUnitario.length < 3 ? [style.input, style.inputRequired] : style.input}
-                                editable={accesoPerfil == "cliente" ? false : true}
-                                onBlur={() => cambiarValorUnitario()}
-                            />
-                        </>
-                    }
-
-
-                    {/* TIPO */}
-                    {
-                        acceso === "cliente"
-                        && <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>
-                                Tipo de Cliente
-                            </Text>
-                            <TouchableOpacity
-                                style={[
-                                    style.modernSelectorContainer,
-                                    tipo && style.modernSelectorSelected
-                                ]}
-                                onPress={() => {
-                                    Alert.alert(
-                                        'Seleccionar Tipo',
-                                        'Elija el tipo de cliente:',
-                                        [
-                                            { label: 'Residencial', value: 'Residencial' },
-                                            { label: 'Comercial', value: 'Comercial' },
-                                            { label: 'Industrial', value: 'Industrial' }
-                                        ].map(item => ({
-                                            text: item.label,
-                                            onPress: () => updateState({ tipo: item.value })
-                                        }))
-                                    );
-                                }}
-                            >
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[
-                                        style.modernSelectorText,
-                                        tipo && style.modernSelectorTextSelected
-                                    ]}>
-                                        {tipo || 'Seleccionar tipo'}
-                                    </Text>
-                                    {tipo && (
-                                        <Text style={style.modernSelectorSecondaryText}>
-                                            Tipo seleccionado
-                                        </Text>
-                                    )}
-                                </View>
-                                <View style={[
-                                    style.modernSelectorIconContainer,
-                                    tipo && style.modernSelectorIconContainerSelected
-                                ]}>
-                                    <FontAwesome
-                                        name="chevron-down"
-                                        size={14}
-                                        style={[
-                                            style.modernSelectorIcon,
-                                            tipo && style.modernSelectorIconSelected
-                                        ]}
-                                    />
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    }
-
-                    {/* Modal VEOs personalizado */}
-                    {modalCliente && modalVeos()}
-
-                    {
-                        (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "comercial") || acceso === "cliente")
-                        && <View style={style.veoContainer}>
-                            <Text style={style.veoLabel}>
-                                Comercial VEO
-                            </Text>
-                            <TouchableOpacity
-                                onPress={() => accesoPerfil == "cliente" ? null : updateState({ modalCliente: true })}
-                                style={[
-                                    style.veoSelector,
-                                    veo && style.veoSelectorSelected
-                                ]}
-                            >
-                                <View style={style.veoSelectorContent}>
-                                    <Text style={[
-                                        style.veoSelectorText,
-                                        veo && style.veoSelectorTextSelected
-                                    ]}>
-                                        {veo || "Seleccionar VEO"}
-                                    </Text>
-                                    {veo && (
-                                        <Text style={style.veoSelectorSecondaryText}>
-                                            VEO asignado
-                                        </Text>
-                                    )}
-                                </View>
-                                <View style={[
-                                    style.veoSelectorIconContainer,
-                                    veo && style.veoSelectorIconContainerSelected
-                                ]}>
-                                    <FontAwesome
-                                        name="chevron-down"
-                                        size={14}
-                                        style={[
-                                            style.veoSelectorIcon,
-                                            veo && style.veoSelectorIconSelected
-                                        ]}
-                                    />
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    }
-
-                    {/* AVATAR */}
-                    {
-                        acceso !== "cliente"
-                        && <View>
-                            <TomarFoto
-                                width={110}
-                                source={imagen}
-                                titulo="Foto de perfil"
-                                limiteImagenes={1}
-                                imagenes={(imagen) => { updateState({ imagen, editaAvatar: true, showLoading: false }) }}
-                            />
-                        </View>
-                    }
-                    {/* BOTON ACTUALIZAR USUARIO */}
-                    {
-                        (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
-                        && <View style={style.updateUserContainer}>
-                            <TouchableOpacity
-                                style={style.updateUserButton}
-                                onPress={() => editarUsuario("editar")}
-                            >
-                                {cargando && <ActivityIndicator color="white" style={style.updateUserButtonLoading} />}
-                                <Text style={style.updateUserButtonText}>
-                                    {cargando ? "Guardando..." : "Actualizar Usuario"}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
-
-                    {/* BOTONES DE ESTADO Y ACCIONES */}
-                    {
-                        (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
-                        && <View style={style.actionButtonsContainer}>
-                            {/* BOTON CAMBIAR ESTADO */}
-                            <TouchableOpacity
-                                style={[
-                                    style.actionButton,
-                                    activo ? style.actionButtonDeactivate : style.actionButtonActivate
-                                ]}
-                                onPress={() => cambiarEstadoUsuario()}
-                            >
-                                <FontAwesome
-                                    name={activo ? "ban" : "check"}
-                                    size={16}
-                                    color="white"
-                                    style={style.actionButtonIcon}
-                                />
-                                <Text style={style.actionButtonText}>
-                                    {activo ? "Desactivar" : "Activar"}
-                                </Text>
-                            </TouchableOpacity>
-
-                            {/* BOTON ELIMINAR */}
-                            <TouchableOpacity
-                                style={[
-                                    style.actionButton,
-                                    style.actionButtonDelete
-                                ]}
-                                onPress={() => eliminarUsuario()}
-                            >
-                                <FontAwesome
-                                    name="trash"
-                                    size={16}
-                                    color="white"
-                                    style={style.actionButtonIcon}
-                                />
-                                <Text style={style.actionButtonText}>
-                                    Eliminar
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
-
-                    {/* BOTONES DE ACCIÓN PRINCIPALES */}
-                    {
-                        // Mostrar botones principales solo para perfil propio o modo crear/admin
-                        (tipoAcceso === "" || (tipoAcceso === "admin" || tipoAcceso === "crear")) && (
-                            <View style={style.mainButtonsContainer}>
-                                {/* BOTON GUARDAR/CREAR PRINCIPAL */}
-                                <TouchableOpacity
-                                    style={style.primaryButton}
-                                    onPress={() => tipoAcceso === "" ? handleSubmit("editar") : handleSubmit()}
-                                >
-                                    {cargando && <ActivityIndicator color="white" style={style.primaryButtonLoading} />}
-                                    <Text style={style.primaryButtonText}>
-                                        {cargando
-                                            ? "Guardando..."
-                                            : (tipoAcceso === ""
-                                                ? "Guardar Cambios"
-                                                : "Crear Usuario"
-                                            )
-                                        }
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        )
-                    }
-
-                    {/* BOTONES SECUNDARIOS */}
-                    <View style={style.secondaryButtonsContainer}>
-                        {
-                            (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "veo"))
-                            && <TouchableOpacity
-                                style={[
-                                    style.secondaryButton,
-                                    style.secondaryButtonCharts
-                                ]}
-                                onPress={() => navigation.navigate("chart", { idUsuario })}
-                            >
-                                <FontAwesome
-                                    name="bar-chart"
-                                    size={16}
-                                    color="white"
-                                    style={style.secondaryButtonIcon}
-                                />
-                                <Text style={style.secondaryButtonText}>
-                                    Ver Gráficos
-                                </Text>
-                            </TouchableOpacity>
-                        }
-
-                        {
-                            (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
-                            && <TouchableOpacity
-                                style={[
-                                    style.secondaryButton,
-                                    style.secondaryButtonReview
-                                ]}
-                                onPress={() => navigation.navigate("puntos", { idUsuario })}
-                            >
-                                <FontAwesome
-                                    name="clipboard"
-                                    size={16}
-                                    color="white"
-                                    style={style.secondaryButtonIcon}
-                                />
-                                <Text style={style.secondaryButtonText}>
-                                    Crear Revisión
-                                </Text>
-                            </TouchableOpacity>
-                        }
-                    </View>
-                </ScrollView>
-            </View>
-
-        );
-    }, [state]);
 
     const cambiarValorUnitario: CambiarValorUnitarioFunction = useCallback(() => {
-        let { valorUnitario, idUsuario } = state;
-        changeValorUnitario(valorUnitario, idUsuario)
-            .then(res => {
-                if (res.status) {
-                    Toast.show({ type: 'success', text1: 'Valor unitario editado' })
-                }
-            })
-    }, [state.valorUnitario, state.idUsuario]);
+        // Esta función ya no hace nada automáticamente
+        // El valor unitario se actualizará cuando se presione el botón "Actualizar Usuario"
+    }, []);
     const verificaEmail: VerificaEmailFunction = useCallback(() => {
         let { email } = state;
         checkEmail(email)
-            .then(res => {
+            .then((res: any) => {
                 if (res.data && res.data.status === "SUCCESS") {
                     Toast.show({ type: 'error', text1: 'Este email ya existe!' })
                 }
@@ -1058,23 +537,15 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             })
     }, [state.email]);
     const asignarVeo: AsignarVeoFunction = useCallback((idVeo: string) => {
-        const { idUsuario, veos, tipoAcceso } = state;
+        const { veos } = state;
         let veo = veos.filter(e => {
             return e.key == idVeo
         });
+
+        // Solo actualizar el estado local
+        // La asignación real se hace cuando se presiona "Actualizar Usuario"
         updateState({ veo: veo[0].label, modalCliente: false, idVeo });
-        assignCommercial(idUsuario, idVeo)
-            .then(res => {
-                if (res.status) {
-                    setTimeout(() => {
-                        Toast.show({ type: 'success', text1: 'Usuario asignado' })
-                    }, 100);
-                }
-            })
-            .catch(err => {
-                console.log(err)
-            })
-    }, [state.idUsuario, state.veos, state.tipoAcceso, updateState]);
+    }, [state.veos, updateState]);
     const eliminarUsuario: EliminarUsuarioFunction = useCallback(() => {
         const { nombre, idUsuario } = state;
         Alert.alert(
@@ -1082,7 +553,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             `al usuario ${nombre}`,
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
-                { text: 'Cancelar', onPress: () => console.log("cancelado") },
             ],
             { cancelable: false }
         );
@@ -1099,7 +569,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     }
                 })
                 .catch(err => {
-                    console.log(err);
                     Toast.show({ type: 'error', text1: 'Error al eliminar usuario' });
                 });
         }
@@ -1112,7 +581,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             `al usuario ${nombre}`,
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
-                { text: 'Cancelar', onPress: () => console.log("cancelado") },
             ],
             { cancelable: false }
         );
@@ -1127,7 +595,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     }
                 })
                 .catch(err => {
-                    console.log(err);
                     Toast.show({ type: 'error', text1: 'Error al cambiar estado del usuario' });
                 });
         }
@@ -1151,7 +618,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             nombreZona,
             lat: '',
             lng: '',
-            is_active: true,
+            activo: true,
             nuevo: true,
             acceso: 'cliente',
         };
@@ -1174,8 +641,8 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 ? (ubicaciones[key].lat = value)
                                 : type == 'lng'
                                     ? (ubicaciones[key].lng = value)
-                                    : type == 'is_active'
-                                        ? (ubicaciones[key].is_active = value === "true")
+                                    : type == 'activo'
+                                        ? (ubicaciones[key].activo = value === "true")
                                         : (ubicaciones[key].nombre = value);
         updateState({ ubicaciones });
     }, [state.ubicaciones, updateState]);
@@ -1187,717 +654,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         updateState({ ubicaciones, modalZona: false });
     }, [state.key, state.ubicaciones, updateState]);
 
-    const modalZonas: ModalZonasFunction = useCallback(() => {
-        const { idZona, terminoBuscador } = state;
-        console.log('Modal zonas - zonas from Redux:', zonas);
 
-        return (
-            <View style={style.modalZonaOverlay}>
-                <View style={style.modalZonaContainer}>
-                    {/* Header del Modal */}
-                    <View style={style.modalZonaHeader}>
-                        <Text style={style.modalZonaTitle}>
-                            Seleccionar Zona
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => updateState({ modalZona: false })}
-                            style={style.modalZonaCloseButton}
-                        >
-                            <FontAwesome name="times" size={16} style={style.modalZonaCloseIcon} />
-                        </TouchableOpacity>
-                    </View>
 
-                    {/* Barra de búsqueda */}
-                    <View style={style.zonaSearchContainer}>
-                        <TextInput
-                            placeholder="Buscar zona..."
-                            value={terminoBuscador}
-                            onChangeText={terminoBuscador => updateState({ terminoBuscador })}
-                            style={style.zonaSearchInput}
-                        />
-                    </View>
 
-                    {/* Lista de zonas */}
-                    <ScrollView style={style.zonaListContainer}>
-                        {zonas
-                            .filter(zona =>
-                                terminoBuscador === '' ||
-                                zona.nombre.toLowerCase().includes(terminoBuscador.toLowerCase())
-                            )
-                            .map((zona, key) => (
-                                <TouchableOpacity
-                                    key={key}
-                                    onPress={() => actualizaZona(zona._id, zona.nombre)}
-                                    style={[
-                                        style.zonaItem,
-                                        idZona === zona._id && style.zonaItemSelected
-                                    ]}
-                                >
-                                    <Text style={style.zonaItemText}>
-                                        {zona.nombre}
-                                    </Text>
-                                    {idZona === zona._id && (
-                                        <FontAwesome
-                                            name="check"
-                                            size={18}
-                                            style={style.zonaItemCheck}
-                                        />
-                                    )}
-                                </TouchableOpacity>
-                            ))
-                        }
-                    </ScrollView>
-
-                    {/* Footer */}
-                    <View style={style.modalFooter}>
-                        <TouchableOpacity
-                            style={style.modalCancelButton}
-                            onPress={() => updateState({ modalZona: false })}
-                        >
-                            <Text style={style.modalButtonText}>
-                                Cancelar
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-        );
-    }, [zonas, state.idZona, state.terminoBuscador, updateState, actualizaZona]);
-
-    // Effect para animaciones del modal VEO
-    useEffect(() => {
-        if (state.modalCliente) {
-            // Reset animations
-            modalAnimation.setValue(0);
-            overlayAnimation.setValue(0);
-
-            // Start entrance animations
-            Animated.parallel([
-                Animated.timing(overlayAnimation, {
-                    toValue: 1,
-                    duration: 300,
-                    useNativeDriver: false,
-                }),
-                Animated.spring(modalAnimation, {
-                    toValue: 1,
-                    tension: 100,
-                    friction: 8,
-                    useNativeDriver: false,
-                }),
-            ]).start();
-        }
-    }, [state.modalCliente]);
-
-    const modalVeos = useCallback(() => {
-        const { terminoBuscador, veos } = state;
-
-        const closeModal = () => {
-            Animated.parallel([
-                Animated.timing(overlayAnimation, {
-                    toValue: 0,
-                    duration: 200,
-                    useNativeDriver: false,
-                }),
-                Animated.timing(modalAnimation, {
-                    toValue: 0,
-                    duration: 200,
-                    useNativeDriver: false,
-                }),
-            ]).start(() => {
-                updateState({ modalCliente: false });
-            });
-        };
-
-        // Función para renderizar el árbol completo de VEOs usando los children del backend
-        const renderVeoTree = () => {
-            console.log('🌳 Usando datos del backend directamente');
-            console.log('🌳 VEOs totales:', veos.length);
-            console.log('🌳 VEOs con children:', veos.filter(v => v.children && v.children.length > 0));
-
-            // Filtrar VEOs basándose en el término de búsqueda (recursivamente)
-            const filtrarVeosRecursivamente = (veosArray: any[]): any[] => {
-                return veosArray.reduce((acc, veo) => {
-                    const coincideNombre = terminoBuscador === '' ||
-                        veo.label.toLowerCase().includes(terminoBuscador.toLowerCase());
-
-                    // Filtrar children recursivamente
-                    const childrenFiltrados = veo.children && veo.children.length > 0 ?
-                        filtrarVeosRecursivamente(veo.children) : [];
-
-                    // Incluir el VEO si coincide el nombre o tiene hijos que coinciden
-                    if (coincideNombre || childrenFiltrados.length > 0) {
-                        acc.push({
-                            ...veo,
-                            children: childrenFiltrados
-                        });
-                    }
-
-                    return acc;
-                }, []);
-            };
-
-            // Obtener solo los VEOs padre (aquellos sin idPadre)
-            const veosPadre = veos.filter(veo =>
-                !veo.idPadre ||
-                veo.idPadre === null ||
-                veo.idPadre === undefined ||
-                veo.idPadre === '' ||
-                veo.idPadre === 'null' ||
-                veo.idPadre === 'undefined'
-            );
-
-            console.log('🌳 VEOs padre encontrados:', veosPadre.length);
-
-            // Aplicar filtro si hay término de búsqueda
-            const veosFiltrados = terminoBuscador === '' ? veosPadre : filtrarVeosRecursivamente(veosPadre);
-
-            console.log('🔍 VEOs después de filtrar:', veosFiltrados.length);
-
-            return veosFiltrados.map((veo, index) => renderVeoItem(veo, index, 0));
-        };
-
-        const renderVeoItem = (veo: any, index: number, nivel: number = 0) => {
-            const paddingLeft = nivel * 25;
-            const tieneHijos = veo.children && veo.children.length > 0;
-            const esSeleccionado = state.idVeo === veo.key;
-
-            console.log(`👤 Renderizando VEO: ${veo.label}, Nivel: ${nivel}, Tiene hijos: ${tieneHijos}, Children: ${veo.children?.length || 0}`);
-
-            // Generar el prefijo visual para el árbol
-            const getTreePrefix = (nivel: number, esUltimo: boolean = false) => {
-                if (nivel === 0) return '';
-                return esUltimo ? '└── ' : '├── ';
-            };
-
-            return (
-                <View key={veo.key || index}>
-                    <TouchableOpacity
-                        onPress={() => {
-                            asignarVeo(veo.key);
-                            closeModal();
-                        }}
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            paddingVertical: 16,
-                            paddingHorizontal: 16,
-                            paddingLeft: 16 + (paddingLeft * 0.8), // Reducir un poco el padding para que no se vea tan separado
-                            backgroundColor: esSeleccionado ? '#e8f5e8' : '#fff',
-                            borderRadius: 12,
-                            marginVertical: 2,
-                            marginHorizontal: 8,
-                            borderWidth: esSeleccionado ? 2 : 1,
-                            borderColor: esSeleccionado ? '#4caf50' : '#f0f0f0',
-                            shadowColor: esSeleccionado ? '#4caf50' : '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: esSeleccionado ? 0.15 : 0.05,
-                            shadowRadius: 4,
-                            elevation: esSeleccionado ? 4 : 1
-                        }}
-                        activeOpacity={0.7}
-                    >
-                        {/* Prefijo visual del árbol */}
-                        {nivel > 0 && (
-                            <View style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                marginRight: 8,
-                                minWidth: nivel * 20
-                            }}>
-                                <Text style={{
-                                    fontSize: 14,
-                                    color: '#2196f3',
-                                    fontWeight: 'bold',
-                                    fontFamily: 'monospace'
-                                }}>
-                                    {getTreePrefix(nivel)}
-                                </Text>
-                            </View>
-                        )}
-
-                        {/* Icono principal */}
-                        <View style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: 20,
-                            backgroundColor: esSeleccionado ? '#4caf50' : (tieneHijos ? '#2196f3' : '#ff9800'),
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginRight: 14,
-                            shadowColor: esSeleccionado ? '#4caf50' : (tieneHijos ? '#2196f3' : '#ff9800'),
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.3,
-                            shadowRadius: 4,
-                            elevation: 3
-                        }}>
-                            <Text style={{
-                                fontSize: 18,
-                                color: '#fff'
-                            }}>
-                                {tieneHijos ? '👥' : '👤'}
-                            </Text>
-                        </View>
-
-                        {/* Información del VEO */}
-                        <View style={{ flex: 1 }}>
-                            <Text style={{
-                                fontSize: 17,
-                                fontWeight: esSeleccionado ? '700' : '600',
-                                color: esSeleccionado ? '#2e7d32' : '#333',
-                                marginBottom: 4
-                            }}>
-                                {veo.label}
-                            </Text>
-
-                            {tieneHijos && (
-                                <View style={{
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    marginBottom: 2
-                                }}>
-                                    <Text style={{
-                                        fontSize: 12,
-                                        color: '#2196f3',
-                                        fontWeight: '600'
-                                    }}>
-                                        🏢 {veo.children.length} subordinado{veo.children.length !== 1 ? 's' : ''}
-                                    </Text>
-                                </View>
-                            )}
-
-                            {veo.email && (
-                                <Text style={{
-                                    fontSize: 12,
-                                    color: '#666',
-                                    fontStyle: 'italic'
-                                }}>
-                                    📧 {veo.email}
-                                </Text>
-                            )}
-                        </View>
-
-                        {/* Indicadores de estado */}
-                        <View style={{ alignItems: 'center' }}>
-                            {esSeleccionado && (
-                                <View style={{
-                                    backgroundColor: '#4caf50',
-                                    borderRadius: 12,
-                                    paddingHorizontal: 8,
-                                    paddingVertical: 4,
-                                    marginBottom: 4
-                                }}>
-                                    <Text style={{
-                                        fontSize: 10,
-                                        color: '#fff',
-                                        fontWeight: '700'
-                                    }}>
-                                        ✓ SELECCIONADO
-                                    </Text>
-                                </View>
-                            )}
-
-                            {tieneHijos && (
-                                <View style={{
-                                    backgroundColor: '#e3f2fd',
-                                    borderRadius: 10,
-                                    paddingHorizontal: 6,
-                                    paddingVertical: 3
-                                }}>
-                                    <Text style={{
-                                        fontSize: 9,
-                                        color: '#1976d2',
-                                        fontWeight: '700'
-                                    }}>
-                                        JEFE
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    </TouchableOpacity>
-
-                    {/* Renderizar hijos recursivamente */}
-                    {tieneHijos && veo.children.map((hijo: any, childIndex: number) => {
-                        console.log(`  ↳ Renderizando hijo: ${hijo.label} de ${veo.label}`);
-                        return renderVeoItem(hijo, childIndex, nivel + 1);
-                    })}
-                </View>
-            );
-        };
-
-        return (
-            <Modal
-                transparent
-                visible={true}
-                animationType="none"
-                onRequestClose={closeModal}
-            >
-                <Animated.View
-                    style={[
-                        style.modalOverlay,
-                        {
-                            opacity: overlayAnimation,
-                        }
-                    ]}
-                >
-                    <Animated.View
-                        style={[
-                            style.modalContainer,
-                            {
-                                transform: [
-                                    {
-                                        scale: modalAnimation.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [0.3, 1],
-                                        }),
-                                    },
-                                    {
-                                        translateY: modalAnimation.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [50, 0],
-                                        }),
-                                    },
-                                ],
-                            }
-                        ]}
-                    >
-                        {/* Header del Modal */}
-                        <View style={style.modalHeader}>
-                            <Text style={style.modalTitle}>
-                                Seleccionar VEO Comercial
-                            </Text>
-                            <TouchableOpacity
-                                onPress={closeModal}
-                                style={{
-                                    backgroundColor: '#f8f9fa',
-                                    borderRadius: 15,
-                                    width: 30,
-                                    height: 30,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    borderWidth: 1,
-                                    borderColor: '#e9ecef'
-                                }}
-                            >
-                                <FontAwesome name="times" size={16} color="#6c757d" />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Barra de búsqueda */}
-                        <View style={{ padding: 20, paddingBottom: 10 }}>
-                            <TextInput
-                                placeholder="Buscar VEO..."
-                                value={terminoBuscador}
-                                onChangeText={terminoBuscador => updateState({ terminoBuscador })}
-                                style={{
-                                    backgroundColor: '#f8f9fa',
-                                    borderWidth: 1,
-                                    borderColor: '#e9ecef',
-                                    borderRadius: 8,
-                                    paddingHorizontal: 15,
-                                    paddingVertical: 12,
-                                    fontSize: 16,
-                                    color: '#333'
-                                }}
-                            />
-                        </View>
-
-                        {/* Lista de VEOs en formato árbol */}
-                        <ScrollView style={{ maxHeight: 400 }}>
-                            {veos.length === 0 ? (
-                                <View style={{
-                                    padding: 40,
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <FontAwesome
-                                        name="users"
-                                        size={48}
-                                        color="#e9ecef"
-                                        style={{ marginBottom: 16 }}
-                                    />
-                                    <Text style={{
-                                        fontSize: 16,
-                                        color: '#666',
-                                        textAlign: 'center'
-                                    }}>
-                                        No hay VEOs disponibles
-                                    </Text>
-                                    <Text style={{
-                                        fontSize: 14,
-                                        color: '#999',
-                                        textAlign: 'center',
-                                        marginTop: 8
-                                    }}>
-                                        Contacta al administrador para asignar VEOs
-                                    </Text>
-                                </View>
-                            ) : (
-                                renderVeoTree()
-                            )}
-                        </ScrollView>
-
-                        {/* Footer */}
-                        <View style={{
-                            padding: 20,
-                            borderTopWidth: 1,
-                            borderTopColor: '#e9ecef'
-                        }}>
-                            <TouchableOpacity
-                                style={{
-                                    backgroundColor: '#6c757d',
-                                    borderRadius: 8,
-                                    padding: 15
-                                }}
-                                onPress={closeModal}
-                            >
-                                <Text style={{
-                                    color: '#fff',
-                                    textAlign: 'center',
-                                    fontSize: 16,
-                                    fontWeight: '600'
-                                }}>
-                                    Cancelar
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </Animated.View>
-                </Animated.View>
-            </Modal>
-        );
-    }, [state.terminoBuscador, state.veos, state.idVeo, updateState, asignarVeo, overlayAnimation, modalAnimation]);
-
-    const modalUbicacion: ModalUbicacionFunction = useCallback(() => {
-        let { modalZona, ubicaciones, activeScroll } = state;
-        return (
-            <View style={style.modalUbicacionOverlay}>
-                {modalZona ? modalZonas() : null}
-                <View style={style.modalUbicacionContainer}>
-                    {/* Header del Modal */}
-                    <View style={style.modalUbicacionHeader}>
-                        <Text style={style.modalUbicacionTitle}>
-                            Ubicaciones de Entrega
-                        </Text>
-                        <TouchableOpacity
-                            onPress={() => updateState({ modalUbicacion: false })}
-                            style={style.modalUbicacionCloseButton}
-                        >
-                            <FontAwesome name="times" size={16} style={style.modalUbicacionCloseIcon} />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Contenido del Modal */}
-                    <ScrollView style={style.modalUbicacionScrollView} keyboardDismissMode="on-drag">
-                        <View style={style.modalContentPadding}>
-                            <Text style={style.modalUbicacionDescription}>
-                                Si el pedido lo realizará el encargado del punto por favor inserta su información, de lo contrario solo inserta la dirección y zona
-                            </Text>
-
-                            {ubicaciones.map((ubicacion, key) => (
-                                <View key={key} style={style.ubicacionCard}>
-                                    <View style={style.ubicacionHeader}>
-                                        <Text style={style.ubicacionTitle}>
-                                            Ubicación {key + 1}
-                                        </Text>
-                                        <TouchableOpacity
-                                            onPress={() => eliminarUbicacion(key)}
-                                            style={style.ubicacionDeleteButton}
-                                        >
-                                            <FontAwesome name="trash" size={12} style={style.ubicacionDeleteIcon} />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {/* Campos de la ubicación */}
-                                    <View style={style.ubicacionFieldContainer}>
-                                        <Text style={style.ubicacionFieldLabel}>
-                                            Dirección *
-                                        </Text>
-                                        <TextInput
-                                            placeholder="Dirección"
-                                            value={ubicacion.direccion ? ubicacion.direccion.toUpperCase() : ubicacion.direccion}
-                                            onChangeText={direccion => actualizaArrayUbicacion("direccion", direccion, key)}
-                                            style={style.ubicacionFieldInput}
-                                        />
-                                    </View>
-
-                                    <View style={style.ubicacionFieldContainer}>
-                                        <Text style={style.ubicacionFieldLabel}>
-                                            Zona *
-                                        </Text>
-                                        <TouchableOpacity
-                                            style={style.ubicacionSelector}
-                                            onPress={() => updateState({ modalZona: true, key })}
-                                        >
-                                            <Text style={style.ubicacionSelectorText}>
-                                                {ubicacion.nombreZona || "Seleccionar zona"}
-                                            </Text>
-                                            <FontAwesome name="chevron-down" size={14} style={style.ubicacionSelectorIcon} />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {/* Campos de Coordenadas (Latitud y Longitud) */}
-                                    <View style={style.latLngContainer}>
-                                        <View style={style.latLngFieldContainer}>
-                                            <Text style={style.ubicacionFieldLabel}>
-                                                Latitud
-                                            </Text>
-                                            <TextInput
-                                                placeholder="Ej: 4.6230545"
-                                                value={ubicacion.lat || ''}
-                                                onChangeText={lat => actualizaArrayUbicacion("lat", lat, key)}
-                                                style={style.ubicacionFieldInput}
-                                                keyboardType="numeric"
-                                            />
-                                        </View>
-                                        <View style={style.latLngFieldContainer}>
-                                            <Text style={style.ubicacionFieldLabel}>
-                                                Longitud
-                                            </Text>
-                                            <TextInput
-                                                placeholder="Ej: -74.1910443"
-                                                value={ubicacion.lng || ''}
-                                                onChangeText={lng => actualizaArrayUbicacion("lng", lng, key)}
-                                                style={style.ubicacionFieldInput}
-                                                keyboardType="numeric"
-                                            />
-                                        </View>
-                                    </View>
-
-                                    <View style={style.ubicacionFieldContainer}>
-                                        <Text style={style.ubicacionFieldLabel}>
-                                            Capacidad almacenamiento
-                                        </Text>
-                                        <TextInput
-                                            placeholder="Capacidad almacenamiento"
-                                            value={ubicacion.capacidad}
-                                            onChangeText={capacidad => actualizaArrayUbicacion("capacidad", capacidad, key)}
-                                            style={style.ubicacionFieldInput}
-                                        />
-                                    </View>
-
-                                    <View style={style.ubicacionFieldContainer}>
-                                        <Text style={style.ubicacionFieldLabel}>
-                                            Observaciones
-                                        </Text>
-                                        <TextInput
-                                            placeholder="Observaciones ingreso del vehículo"
-                                            onChangeText={observacion => actualizaArrayUbicacion("observacion", observacion, key)}
-                                            style={style.ubicacionFieldInput}
-                                        />
-                                    </View>
-
-                                    {/* Campo de Estado Activo */}
-                                    <View style={style.ubicacionFieldContainer}>
-                                        <Text style={style.ubicacionFieldLabel}>
-                                            Estado del punto
-                                        </Text>
-                                        <TouchableOpacity
-                                            style={[
-                                                style.ubicacionSelector,
-                                                ubicacion.is_active === false && { borderColor: '#dc3545' }
-                                            ]}
-                                            onPress={() => actualizaArrayUbicacion("is_active", ubicacion.is_active === false ? "true" : "false", key)}
-                                        >
-                                            <Text style={[
-                                                style.ubicacionSelectorText,
-                                                { color: ubicacion.is_active === false ? '#dc3545' : '#28a745' }
-                                            ]}>
-                                                {ubicacion.is_active === false ? "Inactivo" : "Activo"}
-                                            </Text>
-                                            <FontAwesome
-                                                name={ubicacion.is_active === false ? "times-circle" : "check-circle"}
-                                                size={14}
-                                                style={[
-                                                    style.ubicacionSelectorIcon,
-                                                    { color: ubicacion.is_active === false ? '#dc3545' : '#28a745' }
-                                                ]}
-                                            />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {(ubicacion.nuevo || ubicacion.idCliente) && (
-                                        <>
-                                            <View style={style.ubicacionFieldContainer}>
-                                                <Text style={style.ubicacionFieldLabel}>
-                                                    Email
-                                                </Text>
-                                                <TextInput
-                                                    placeholder="Email"
-                                                    value={ubicacion.email}
-                                                    onFocus={() => updateState({ activeScroll: true })}
-                                                    onBlur={() => updateState({ activeScroll: false })}
-                                                    onChangeText={emailUbicacion => actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
-                                                    style={style.ubicacionFieldInput}
-                                                />
-                                            </View>
-
-                                            <View style={style.ubicacionFieldContainer}>
-                                                <Text style={style.ubicacionFieldLabel}>
-                                                    Celular
-                                                </Text>
-                                                <TextInput
-                                                    placeholder="Celular"
-                                                    value={ubicacion.celular}
-                                                    onFocus={() => updateState({ activeScroll: true })}
-                                                    onBlur={() => updateState({ activeScroll: false })}
-                                                    onChangeText={celularUbicacion => actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
-                                                    style={style.ubicacionFieldInput}
-                                                />
-                                            </View>
-
-                                            <View style={style.ubicacionFieldContainer}>
-                                                <Text style={style.ubicacionFieldLabel}>
-                                                    Nombre
-                                                </Text>
-                                                <TextInput
-                                                    placeholder="Nombre"
-                                                    value={ubicacion.nombre}
-                                                    onFocus={() => updateState({ activeScroll: true })}
-                                                    onBlur={() => updateState({ activeScroll: false })}
-                                                    onChangeText={nombreUbicacion => actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                    style={style.ubicacionFieldInput}
-                                                />
-                                            </View>
-                                        </>
-                                    )}
-                                </View>
-                            ))}
-
-                            {/* Botón Agregar Ubicación */}
-                            <TouchableOpacity
-                                onPress={() => actualizaUbicacion()}
-                                style={style.addUbicacionButton}
-                            >
-                                <FontAwesome name="plus" size={16} color="#fff" style={style.addUbicacionIcon} />
-                                <Text style={style.addUbicacionText}>
-                                    Agregar Ubicación
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </ScrollView>
-
-                    {/* Footer del Modal */}
-                    <View style={[style.modalFooter, style.modalFooterRow]}>
-                        <TouchableOpacity
-                            style={style.modalCancelButton}
-                            onPress={() => updateState({ modalUbicacion: false })}
-                        >
-                            <Text style={style.modalButtonText}>
-                                Cancelar
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={style.modalSaveButton}
-                            onPress={() => guardarUbicacion()}
-                        >
-                            <Text style={style.modalButtonText}>
-                                Guardar
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-        );
-    }, [state.modalZona, state.ubicaciones, state.activeScroll, modalZonas, updateState, zonas]);
 
     const guardarUbicacion: GuardarUbicacionFunction = useCallback(async () => {
         try {
@@ -1939,16 +698,14 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         punto: punto.capacidad || 0,
                         location: location,
                         place_name: punto.place_name || null,
-                        is_active: punto.is_active !== undefined ? punto.is_active : true,
+                        activo: punto.activo !== undefined ? punto.activo : true,
                         idZona: punto.idZona,
                         idCliente: idUsuario,
                         idPadre: null
                     };
                 });
 
-                console.log('Creando puntos nuevos:', puntosParaCrear);
                 const resultCreate = await createPoints(puntosParaCrear);
-                console.log('Resultado crear puntos:', resultCreate);
             }
 
             // Preparar datos para actualizar puntos existentes
@@ -1968,16 +725,14 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         capacidad: punto.capacidad || 0,
                         location: location,
                         place_name: punto.place_name || null,
-                        is_active: punto.is_active !== undefined ? punto.is_active : true,
+                        activo: punto.activo !== undefined ? punto.activo : true,
                         idZona: punto.idZona,
                         idCliente: idUsuario,
                         idPadre: null
                     };
                 });
 
-                console.log('Actualizando puntos existentes:', puntosParaActualizar);
                 const resultUpdate = await updatePoints(puntosParaActualizar);
-                console.log('Resultado actualizar puntos:', resultUpdate);
             }
 
             // Mostrar mensaje de éxito y cerrar modal
@@ -1995,64 +750,45 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         }
     }, [state.ubicaciones, state.idUsuario, updateState]);
 
-    const renderFormPass: RenderFormPassFunction = useCallback(() => {
-        const { password, confirmar, showLoading, cargando } = state;
-        return <View style={style.contenedorPerfil}>
-            <Text style={style.tituloContrasena}>Inserta tu contraseña</Text>
-            <TextInput
-                placeholder="Contraseña"
-                value={password}
-                onChangeText={password => updateState({ password })}
-                style={style.input}
-                secureTextEntry
-            />
-            <TextInput
-                placeholder="Confirmar"
-                value={confirmar}
-                onChangeText={confirmar => updateState({ confirmar })}
-                style={style.input}
-                secureTextEntry={true}
-            />
-            {/* <Button color="#0071bb" loading={showLoading} 
-                        title="Guardar"
-                        disabled={ password!==confirmar ?true :false} 
-                        onPress={() => savePassword()}
-                    /> */}
-            <TouchableOpacity style={style.btnGuardar} onPress={() => cambiarPass()}>
-                {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
-                <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar"}</Text>
-            </TouchableOpacity>
-            {
-                password !== confirmar
-                && <TouchableOpacity
-                    style={style.passwordMismatchButton}
-                    disabled={showLoading}
-                >
-                    {showLoading ? (
-                        <ActivityIndicator color="white" />
-                    ) : (
-                        <Text style={style.passwordMismatchText}>
-                            No coinciden
-                        </Text>
-                    )}
-                </TouchableOpacity>
-            }
-        </View>;
-    }, [state.password, state.confirmar, state.showLoading, state.cargando]);
-    const { modalUbicacion: showModalUbicacion, showPass } = state;
+    const cambiarPass: CambiarPassFunction = useCallback(() => {
+        const { email, password, confirmar } = state;
+        if (password.length < 3 || confirmar.length < 3) {
+            Alert.alert("Error", "Inserte ambos campos")
+        }
+        else if (password != confirmar) {
+            Alert.alert("Error", "Las contraseñas no coinciden")
+        } else {
+            changePassword(email, password)
+                .then(e => {
+                    if (e.status) {
+                        Toast.show({ type: 'success', text1: 'Información editada' })
+                        // Solo navegar si no es edición de perfil propio
+                        if (state.tipoAcceso && state.tipoAcceso !== "") {
+                            navigation.navigate("Home")
+                        }
+                    } else {
+                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
+                    }
+                })
+                .catch(err => {
+                })
+        }
+    }, [state.email, state.password, state.confirmar, navigation]);
 
-    return (
-        <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
-            {showModalUbicacion ? modalUbicacion() : null}
-            {
-                showPass
-                    ? renderFormPass()
-                    : renderPerfil()
-            }
-            <Footer navigation={navigation} />
-            <Toast />
-        </ImageBackground>
-    );
+    const renderFormPass = useCallback(() => {
+        const { password, confirmar, showLoading, cargando } = state;
+        return (
+            <FormPass
+                password={password}
+                confirmar={confirmar}
+                showLoading={showLoading}
+                cargando={cargando}
+                onUpdatePassword={(password) => updateState({ password })}
+                onUpdateConfirmar={(confirmar) => updateState({ confirmar })}
+                onSubmit={cambiarPass}
+            />
+        );
+    }, [state.password, state.confirmar, state.showLoading, state.cargando, updateState, cambiarPass]);
     ///////////////////////////////////////////////////////////////
     //////////////          ACTUALIZA EL AVATAR
     ///////////////////////////////////////////////////////////////
@@ -2066,7 +802,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         data.append('idUser', idUser);
         uploadAvatar(data)
             .then((res) => {
-                console.log(res);
                 if (res.status) {
                     if (state.tipoAcceso) {
                         Alert.alert("Éxito", "Usuario guardado con exito");
@@ -2087,14 +822,12 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     ///////////////////////////////////////////////////////////////////////
     const handleSubmit: HandleSubmitFunction = useCallback((esEditar?: string) => {
         const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = state;
-        console.log({ razon_social, cedula, direccion_factura, nombre, email, tipo, celular, acceso, codt, imagen, ubicaciones, valorUnitario })
         if (acceso === "cliente") {
             if (razon_social == "" || direccion_factura == "" || nombre == "" || email == "" || tipo == "" || ubicaciones.length < 1) {
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
                     [
-                        { text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
                     ],
                     { cancelable: false }
                 )
@@ -2112,7 +845,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     'Todos los campos son obligatorios',
                     "",
                     [
-                        { text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
                     ],
                     { cancelable: false }
                 )
@@ -2138,6 +870,28 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
         updateState({ ubicaciones, ubicacionesEliminadas });
     }, [state.ubicaciones, state.ubicacionesEliminadas, updateState]);
+    // Función para crear usuario en Firebase Authentication
+    const createFirebaseUser = async (email: string, password: string, displayName: string) => {
+        try {
+            const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+            await userCredential.user.updateProfile({
+                displayName: displayName,
+            });
+
+            return {
+                success: true,
+                uid: userCredential.user.uid,
+                user: userCredential.user
+            };
+        } catch (error: any) {
+            console.error('Error al crear usuario en Firebase:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    };
+
     const guardarUsuario: GuardarUsuarioFunction = useCallback((e?: any) => {
         updateState({ cargando: true });
         const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, ubicaciones, imagen, codMagister, valorUnitario, idVeo } = state;
@@ -2151,16 +905,71 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             return { direccion: e.direccion, idZona: e.idZona, observacion: e.observacion, capacidad: e.capacidad }
         })
 
-        signUp({ razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, puntos, codMagister, valorUnitario })
-            .then(e => {
+        // Generar contraseña aleatoria
+        const generatedPassword = Math.floor(1000 + Math.random() * 9000).toString();
 
-                console.log(e)
+        signUp({
+            razon_social,
+            cedula,
+            direccion_factura,
+            nombre,
+            email,
+            celular,
+            tipo,
+            acceso,
+            codt,
+            puntos,
+            codMagister,
+            valorUnitario,
+            pass: generatedPassword,
+            uid: null,
+            descuento: null,
+            tokenPhone: null,
+            codigoRegistro: null,
+            idPadre: null
+        })
+            .then(async (e) => {
                 if (e.status) {
-                    assignCommercial(e.user._id, idVeo)
+                    // Asignar VEO si se ha seleccionado uno
+                    if (idVeo && idVeo !== '') {
+                        try {
+                            await assignCommercial(e.user._id, idVeo);
+                        } catch (error) {
+                            console.error('Error al asignar VEO durante creación:', error);
+                            Toast.show({
+                                type: 'error',
+                                text1: 'Error al asignar VEO',
+                                text2: 'Usuario creado pero no se pudo asignar el comercial'
+                            });
+                        }
+                    }
+
                     if (acceso === "cliente") {
                         if (clientes.length > 0) {
                             createMultipleUsers(clientes, e.user._id, e.user.nombre)
-                                .then(res => {
+                                .then(async (res) => {
+                                    // Crear usuario en Firebase después de crear clientes múltiples
+                                    const firebaseResult = await createFirebaseUser(
+                                        email.toLowerCase().trim(),
+                                        generatedPassword,
+                                        nombre
+                                    );
+
+                                    if (!firebaseResult.success) {
+                                        console.error('Error al crear usuario en Firebase:', firebaseResult.error);
+                                        Toast.show({
+                                            type: 'error',
+                                            text1: 'Usuario creado en sistema',
+                                            text2: 'Error al crear en Firebase: ' + firebaseResult.error
+                                        });
+                                    } else {
+                                        Toast.show({
+                                            type: 'success',
+                                            text1: 'Usuario creado exitosamente',
+                                            text2: 'Creado en sistema y Firebase'
+                                        });
+                                    }
+
                                     // Actualizar contexto si es edición de perfil propio
                                     if (!state.tipoAcceso || state.tipoAcceso === "") {
                                         // Actualizar contexto en tiempo real
@@ -2172,44 +981,75 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                             });
                                         }
                                     }
-                                    // Solo navegar si es creación de usuario, no edición de perfil propio
-                                    if (state.tipoAcceso && state.tipoAcceso !== "") {
-                                        navigation.navigate("Home")
-                                    }
-                                    Toast.show({ type: 'success', text1: 'Usuario guardado con exito' })
+
+                                    // Abrir automáticamente el modal de ubicaciones para agregar puntos de entrega
+                                    setTimeout(() => {
+                                        updateState({
+                                            modalUbicacion: true,
+                                            idUsuario: e.user._id,
+                                            cargando: false
+                                        });
+                                    }, 1500);
 
                                 })
                                 .catch(err2 => {
-                                    console.log(err2)
                                     updateState({ cargando: false })
                                 })
                         } else {
-                            createMultiplePoints(puntos, e.user._id)
-                                .then(res => {
-                                    console.log(res)
-                                    // Actualizar contexto si es edición de perfil propio
-                                    if (!state.tipoAcceso || state.tipoAcceso === "") {
-                                        // Actualizar contexto en tiempo real
-                                        if (context.updateUserData) {
-                                            context.updateUserData({
-                                                nombre: e.user.nombre,
-                                                email: e.user.email,
-                                                avatar: e.user.avatar
-                                            });
-                                        }
-                                    }
-                                    // Solo navegar si es creación de usuario, no edición de perfil propio
-                                    if (state.tipoAcceso && state.tipoAcceso !== "") {
-                                        navigation.navigate("Home")
-                                    }
-                                    Toast.show({ type: 'success', text1: 'Usuario guardado con exito' })
-                                })
-                                .catch(err2 => {
-                                    console.log(err2)
-                                    updateState({ cargando: false })
-                                })
+                            // No hay clientes nuevos, crear usuario en Firebase y abrir modal de ubicaciones
+                            const firebaseResult = await createFirebaseUser(
+                                email.toLowerCase().trim(),
+                                generatedPassword,
+                                nombre
+                            );
+
+                            if (!firebaseResult.success) {
+                                console.error('Error al crear usuario en Firebase:', firebaseResult.error);
+                                Toast.show({
+                                    type: 'error',
+                                    text1: 'Usuario creado en sistema',
+                                    text2: 'Error al crear en Firebase: ' + firebaseResult.error
+                                });
+                            } else {
+                                Toast.show({
+                                    type: 'success',
+                                    text1: 'Usuario creado exitosamente',
+                                    text2: 'Creado en sistema y Firebase'
+                                });
+                            }
+
+                            // Abrir automáticamente el modal de ubicaciones para agregar puntos de entrega
+                            setTimeout(() => {
+                                updateState({
+                                    modalUbicacion: true,
+                                    idUsuario: e.user._id,
+                                    cargando: false
+                                });
+                            }, 1500);
                         }
                     } else {
+                        // Crear usuario en Firebase para usuarios no cliente
+                        const firebaseResult = await createFirebaseUser(
+                            email.toLowerCase().trim(),
+                            generatedPassword,
+                            nombre
+                        );
+
+                        if (!firebaseResult.success) {
+                            console.error('Error al crear usuario en Firebase:', firebaseResult.error);
+                            Toast.show({
+                                type: 'error',
+                                text1: 'Usuario creado en sistema',
+                                text2: 'Error al crear en Firebase: ' + firebaseResult.error
+                            });
+                        } else {
+                            Toast.show({
+                                type: 'success',
+                                text1: 'Usuario creado exitosamente',
+                                text2: 'Creado en sistema y Firebase'
+                            });
+                        }
+
                         if (imagen.length === 0) {
                             // Actualizar contexto si es edición de perfil propio
                             if (!state.tipoAcceso || state.tipoAcceso === "") {
@@ -2222,11 +1062,15 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                     });
                                 }
                             }
+
                             // Solo navegar si es creación de usuario, no edición de perfil propio
                             if (state.tipoAcceso && state.tipoAcceso !== "") {
-                                navigation.navigate("Home")
+                                setTimeout(() => {
+                                    navigation.navigate("Home")
+                                }, 1500);
                             }
-                            Toast.show({ type: 'success', text1: 'Usuario guardado con exito' })
+
+                            updateState({ cargando: false });
                         } else {
                             avatar(imagen, e.user._id)
                         }
@@ -2237,36 +1081,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 }
             })
             .catch(err => {
-                console.log(err);
                 updateState({ cargando: false });
             })
-    }, [state.razon_social, state.cedula, state.direccion_factura, state.nombre, state.email, state.celular, state.tipo, state.acceso, state.codt, state.ubicaciones, state.imagen, state.codMagister, state.valorUnitario, state.idVeo, updateState, navigation]);
-    const cambiarPass: CambiarPassFunction = useCallback(() => {
-        const { email, password, confirmar } = state;
-        if (password.length < 3 || confirmar.length < 3) {
-            Alert.alert("Error", "Inserte ambos campos")
-        }
-        else if (password != confirmar) {
-            Alert.alert("Error", "Las contraseñas no coinciden")
-        } else {
-            changePassword(email, password)
-                .then(e => {
-                    console.log(e)
-                    if (e.status) {
-                        Toast.show({ type: 'success', text1: 'Información editada' })
-                        // Solo navegar si no es edición de perfil propio
-                        if (state.tipoAcceso && state.tipoAcceso !== "") {
-                            navigation.navigate("Home")
-                        }
-                    } else {
-                        Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-        }
-    }, [state.email, state.password, state.confirmar, navigation]);
+    }, [state.razon_social, state.cedula, state.direccion_factura, state.nombre, state.email, state.celular, state.tipo, state.acceso, state.codt, state.ubicaciones, state.imagen, state.codMagister, state.valorUnitario, state.idVeo, updateState, navigation, createFirebaseUser, context.updateUserData]);
 
     const edicionExitosa: EdicionExitosaFunction = useCallback(async (nombre: string) => {
         updateState({ cargando: false });
@@ -2277,7 +1094,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         }
     }, [updateState, navigation, state.tipoAcceso]);
     const loginExitoso: LoginExitosoFunction = useCallback(async (user: User) => {
-        console.log(user);
         AsyncStorage.setItem('nombre', user.nombre || '');
         AsyncStorage.setItem('avatar', user.avatar ? JSON.stringify(user.avatar) : '');
         updateState({ cargando: false });
@@ -2287,6 +1103,89 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             navigation.navigate("Home");
         }
     }, [updateState, navigation, state.tipoAcceso]);
+
+    const renderPerfil = useCallback(() => {
+        const { razon_social, cedula, direccion_factura, email, nombre, celular, tipo, acceso, codt, valorUnitario, codMagister, imagen, ubicaciones, veo, activo, cargando, tipoAcceso, accesoPerfil, idUsuario, veos } = state;
+
+        return (
+            <PerfilForm
+                razon_social={razon_social}
+                cedula={cedula}
+                direccion_factura={direccion_factura}
+                email={email}
+                nombre={nombre}
+                celular={celular}
+                tipo={tipo}
+                acceso={acceso}
+                codt={codt}
+                valorUnitario={valorUnitario}
+                codMagister={codMagister}
+                imagen={imagen}
+                ubicaciones={ubicaciones as any}
+                veo={veo}
+                activo={activo}
+                cargando={cargando}
+                tipoAcceso={tipoAcceso}
+                accesoPerfil={accesoPerfil}
+                idUsuario={idUsuario}
+                veos={veos as any}
+                onUpdateState={updateState}
+                onVerificaEmail={verificaEmail}
+                onEditarUsuario={() => editarUsuario("editar")}
+                onCambiarEstadoUsuario={cambiarEstadoUsuario}
+                onEliminarUsuario={eliminarUsuario}
+                onHandleSubmit={handleSubmit}
+                onNavigate={navigation.navigate}
+            />
+        );
+    }, [state, updateState, verificaEmail, editarUsuario, cambiarEstadoUsuario, eliminarUsuario, handleSubmit, navigation]);
+
+    const { modalUbicacion: showModalUbicacion, modalCliente, modalZona, showPass, terminoBuscador, idZona, activeScroll } = state;
+
+    return (
+        <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
+            {/* Modal de VEOs */}
+            <ModalVeos
+                visible={modalCliente}
+                veos={state.veos as any}
+                terminoBuscador={terminoBuscador}
+                idVeo={state.idVeo}
+                onClose={() => updateState({ modalCliente: false })}
+                onSelectVeo={asignarVeo}
+                onUpdateTermino={(termino) => updateState({ terminoBuscador: termino })}
+            />
+
+            {/* Modal de Ubicaciones */}
+            <ModalUbicacion
+                visible={showModalUbicacion}
+                ubicaciones={state.ubicaciones as any}
+                modalZona={modalZona}
+                zonas={zonas}
+                idZona={idZona}
+                terminoBuscador={terminoBuscador}
+                activeScroll={activeScroll}
+                onClose={() => updateState({ modalUbicacion: false })}
+                onSave={guardarUbicacion}
+                onAddUbicacion={actualizaUbicacion}
+                onDeleteUbicacion={eliminarUbicacion}
+                onUpdateUbicacion={actualizaArrayUbicacion}
+                onOpenZonas={(key) => updateState({ modalZona: true, key })}
+                onCloseZonas={() => updateState({ modalZona: false })}
+                onSelectZona={actualizaZona}
+                onUpdateTermino={(termino) => updateState({ terminoBuscador: termino })}
+                onUpdateActiveScroll={(active) => updateState({ activeScroll: active })}
+            />
+
+            {/* Formulario principal */}
+            {
+                showPass
+                    ? renderFormPass()
+                    : renderPerfil()
+            }
+            <Footer navigation={navigation} />
+            <Toast />
+        </ImageBackground>
+    );
 };
 
 export default VerPerfil; 

@@ -35,7 +35,7 @@ import { style } from './style';
 import { setupCalendarLocale } from '../../utils/calendar';
 import { formatCurrency } from '../../utils/number';
 import { usePedidoState } from './usePedidoState';
-import { colors } from '../../utils/colors';
+import { colors, estadoColors, estadoBackgroundColors } from '../../utils/colors';
 import {
     PedidoProps,
     Pedido as PedidoType,
@@ -51,6 +51,7 @@ import {
 import EditarPedidoModal from './EditarPedidoModal';
 import NovedadModal from './NovedadModal';
 import CerrarPedidoModal from './CerrarPedidoModal';
+import ModalOrdenamiento from './ModalOrdenamiento';
 
 // Configurar el calendario en español
 setupCalendarLocale();
@@ -165,25 +166,31 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         keyboardDidShowListener.current = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
         keyboardDidHideListener.current = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
 
+        // Solo cargar pedidos si tenemos los datos necesarios
         if (idUsuario && acceso) {
-            loadPedidos('load');
+            // Delay mínimo para evitar cargas múltiples
+            const timeoutId = setTimeout(() => {
+                loadPedidos('load');
+            }, 50);
+
+            return () => clearTimeout(timeoutId);
         }
 
         return () => {
             keyboardDidShowListener.current?.remove();
             keyboardDidHideListener.current?.remove();
         };
-    }, [context, idUsuario, acceso]);
+    }, [context]);
 
     useEffect(() => {
         updateState(actions.setPedidosFiltro(pedidos));
+        // Ocultar spinner cuando lleguen los pedidos
+        if (pedidos && pedidos.length >= 0) {
+            updateState(actions.setShowSpin1(false));
+        }
     }, [pedidos, updateState, actions]);
 
-    useEffect(() => {
-        if (idUsuario && acceso) {
-            loadPedidos('load');
-        }
-    }, [idUsuario, acceso]);
+    // Removido - duplicado con el primer useEffect
 
     useEffect(() => {
         if (!terminoBuscador && showSearch) {
@@ -191,7 +198,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
     }, [terminoBuscador, showSearch, updateState, actions]);
 
-    // Effect para búsqueda en tiempo real con debounce
+    // Effect optimizado para búsqueda en tiempo real con debounce
     useEffect(() => {
         if (!idUsuario || !acceso) return;
 
@@ -199,62 +206,70 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         if (terminoBuscador && terminoBuscador.length >= 2) {
             const searchTimeout = setTimeout(() => {
                 updateState(actions.setShowSearch(true));
+                // Solo limpiar pedidos si hay búsqueda activa
+                dispatch({
+                    type: 'GET_PEDIDOS',
+                    pedidos: []
+                });
                 dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
-            }, 500); // Debounce de 500ms
+            }, 300); // Debounce reducido de 500ms a 300ms
 
             return () => clearTimeout(searchTimeout);
         }
-        // Si no hay término de búsqueda, cargar todos los pedidos
-        else if (terminoBuscador === '') {
+        // Si no hay término de búsqueda y estaba en búsqueda, recargar todos
+        else if (terminoBuscador === '' && showSearch) {
             updateState(actions.setShowSearch(false));
-            dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
-        }
-    }, [terminoBuscador, idUsuario, acceso, dispatch, updateState, actions, estadoFiltro, ordenPor, tipoOrden]);
-
-    useEffect(() => {
-        // Recargar pedidos cuando cambie el filtro de estado
-        if (idUsuario && acceso) {
-            // Mostrar indicador de carga
-            updateState(actions.setShowSpin1(true));
-
-            // Limpiar pedidos primero
             dispatch({
                 type: 'GET_PEDIDOS',
                 pedidos: []
             });
-
-            // Reiniciar paginación y limpiar estado
-            updateState(actions.setInicio(0));
-            updateState(actions.setFinal(false));
-            updateState(actions.setLimit(20));
-
-            // Pequeño delay para asegurar que el estado se actualice
-            setTimeout(async () => {
-                try {
-                    // Cargar pedidos desde el inicio con el nuevo filtro
-                    await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
-                } catch (error) {
-                    console.error('Error cargando pedidos:', error);
-                    Alert.alert(
-                        'Funcionalidad no disponible',
-                        'Los filtros y ordenamiento requieren actualizar el servidor. Mostrando todos los pedidos.',
-                        [{ text: 'OK' }]
-                    );
-                    // Resetear a valores por defecto
-                    updateState(actions.setEstadoFiltro('todos'));
-                    updateState(actions.setOrdenPor('fecha_creacion'));
-                    updateState(actions.setTipoOrden('DESC'));
-                    // Cargar pedidos con valores por defecto
-                    await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, 'todos', 'fecha_creacion', 'DESC'));
-                } finally {
-                    // Ocultar indicador de carga después de un momento
-                    setTimeout(() => {
-                        updateState(actions.setShowSpin1(false));
-                    }, 1000);
-                }
-            }, 100);
+            dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
         }
-    }, [estadoFiltro, idUsuario, acceso, dispatch, terminoBuscador, updateState, actions, ordenPor, tipoOrden]);
+    }, [terminoBuscador]); // Solo reaccionar a cambios en el término de búsqueda
+
+    // Effect optimizado para filtros y ordenamiento
+    useEffect(() => {
+        if (!idUsuario || !acceso) return;
+
+        // Mostrar indicador de carga
+        updateState(actions.setShowSpin1(true));
+
+        // Limpiar pedidos primero
+        dispatch({
+            type: 'GET_PEDIDOS',
+            pedidos: []
+        });
+
+        // Reiniciar paginación y limpiar estado
+        updateState(actions.setInicio(0));
+        updateState(actions.setFinal(false));
+        updateState(actions.setLimit(20));
+
+        // Cargar pedidos inmediatamente sin delay
+        const loadPedidosWithFilters = async () => {
+            try {
+                await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
+            } catch (error) {
+                console.error('Error cargando pedidos:', error);
+                Alert.alert(
+                    'Funcionalidad no disponible',
+                    'Los filtros y ordenamiento requieren actualizar el servidor. Mostrando todos los pedidos.',
+                    [{ text: 'OK' }]
+                );
+                // Resetear a valores por defecto
+                updateState(actions.setEstadoFiltro('todos'));
+                updateState(actions.setOrdenPor('fecha_creacion'));
+                updateState(actions.setTipoOrden('DESC'));
+                // Cargar pedidos con valores por defecto
+                await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, 'todos', 'fecha_creacion', 'DESC'));
+            } finally {
+                // Ocultar indicador de carga
+                updateState(actions.setShowSpin1(false));
+            }
+        };
+
+        loadPedidosWithFilters();
+    }, [estadoFiltro, ordenPor, tipoOrden]); // Solo reaccionar a cambios en filtros y ordenamiento
 
     useEffect(() => {
         // Cargar vehículos cuando tenemos el idUsuario
@@ -297,23 +312,11 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
     // Helper functions
     const getEstadoColor = (estado: EstadoPedido): string => {
-        switch (estado) {
-            case "activo": return "#28a745";
-            case "innactivo": return "#dc3545";
-            case "espera": return "#5bc0de";
-            case "noentregado": return "#ffc107";
-            default: return "#6c757d";
-        }
+        return estadoColors[estado] || estadoColors.default;
     };
 
     const getEstadoBackgroundColor = (estado: EstadoPedido): string => {
-        switch (estado) {
-            case "activo": return "#d4edda";
-            case "innactivo": return "#f8d7da";
-            case "espera": return "#d1ecf1";
-            case "noentregado": return "#fff3cd";
-            default: return "#f8f9fa";
-        }
+        return estadoBackgroundColors[estado] || estadoBackgroundColors.default;
     };
 
     const getPedidoBackgroundColor = (pedido: PedidoType): string => {
@@ -324,7 +327,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         // Si está activo y no entregado
         if (pedido.estado === "activo" && !pedido.entregado) {
             // Si tiene fecha de entrega -> Color naranja (asignado)
-            if (pedido.fechaentrega) return colors.asignado;
+            if (pedido.fechaentrega && !!pedido.conductor) return colors.asignado;
             // Si no tiene fecha de entrega -> Color amarillo (activo)
             return colors.activo;
         }
@@ -375,9 +378,15 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             return;
         }
 
-        let currentLimit = type === 'load' ? 20 : limit;
-        let currentStart = type === 'load' ? 0 : 0; // Siempre empezar desde 0 para filtros
-        let currentTerminoBuscador = type === 'load' ? undefined : terminoBuscador;
+        // Optimización: usar valores por defecto más eficientes
+        const currentLimit = type === 'load' ? 20 : limit || 20;
+        const currentStart = 0; // Siempre empezar desde 0
+        const currentTerminoBuscador = type === 'load' ? undefined : terminoBuscador;
+
+        // Solo mostrar spinner si es una carga inicial
+        if (type === 'load') {
+            updateState(actions.setShowSpin1(true));
+        }
 
         dispatch(getPedidos(idUsuario, currentStart, currentLimit, acceso, currentTerminoBuscador, estadoFiltro, ordenPor, tipoOrden));
     };
@@ -416,7 +425,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     };
 
     const guardarNovedadInnactivo = async (): Promise<void> => {
-        console.log({ id });
         try {
 
             if (!novedad || novedad.trim() === '') {
@@ -476,10 +484,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Usar el pedidoId pasado como parámetro, el pedidoIdParaCerrar, o el id del estado como fallback
             const finalPedidoId = pedidoId || pedidoIdParaCerrar || id;
 
-            console.log('🔍 DEBUG - ID del pedido en confirmarCierrePedido:', finalPedidoId);
-            console.log('🔍 DEBUG - ID del estado:', id);
-            console.log('🔍 DEBUG - pedidoId parámetro:', pedidoId);
-            console.log('🔍 DEBUG - pedidoIdParaCerrar:', pedidoIdParaCerrar);
 
             if (!finalPedidoId || finalPedidoId === 'undefined') {
                 Alert.alert('Error', 'No se pudo obtener el ID del pedido');
@@ -500,7 +504,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 imagen: imagen || null
             };
 
-            console.log('Enviando datos al backend:', pedidoData);
 
             // Llamar al endpoint de finalizar pedido
             const response = await finalizarPedido(finalPedidoId, pedidoData);
@@ -543,7 +546,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
 
     const handleGuardarNovedadCerrar = async (novedad: string): Promise<void> => {
-        console.log({ id });
         try {
 
             if (!novedad || novedad.trim() === '') {
@@ -1285,7 +1287,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 fontWeight: estadoFiltro === 'otro' ? '700' : '600',
                                 color: '#fff'
                             }}>
-                                Otro
+                                Cerrados
                             </Text>
                         </TouchableOpacity>
                     </ScrollView>
@@ -1342,7 +1344,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onCancelOrder={cancelarPedidoCliente}
                 onClosePedido={() => {
                     // Capturar el ID del pedido antes de cerrar el modal
-                    console.log('🔍 Capturando ID del pedido antes de cerrar:', id);
                     setPedidoIdParaCerrar(id);
 
                     // Primero cerrar el modal principal
@@ -1569,260 +1570,19 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             />
 
             {/* Modal de Ordenamiento */}
-            <Modal
-                transparent={true}
+            <ModalOrdenamiento
                 visible={modalOrdenamiento}
-                animationType="fade"
-                onRequestClose={() => updateState(actions.setModalOrdenamiento(false))}
-            >
-                <View style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: 20
-                }}>
-                    <View style={{
-                        backgroundColor: '#fff',
-                        borderRadius: 12,
-                        width: '90%',
-                        maxWidth: 400,
-                        padding: 20,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.3,
-                        shadowRadius: 8,
-                        elevation: 8,
-                    }}>
-                        {/* Header */}
-                        <View style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: 20,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#e9ecef',
-                            paddingBottom: 15
-                        }}>
-                            <Text style={{
-                                fontSize: 20,
-                                fontWeight: '700',
-                                color: '#333'
-                            }}>
-                                Ordenar por
-                            </Text>
-                            <TouchableOpacity
-                                onPress={() => updateState(actions.setModalOrdenamiento(false))}
-                                style={{
-                                    width: 30,
-                                    height: 30,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    borderRadius: 15,
-                                    backgroundColor: '#f8f9fa'
-                                }}
-                            >
-                                <FontAwesome name="close" style={{ fontSize: 16, color: '#666' }} />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Opciones de ordenamiento */}
-                        <View style={{ marginBottom: 20 }}>
-                            {[
-                                { key: 'fecha_creacion', label: 'Fecha creación', icon: 'calendar' },
-                                { key: 'razon_social', label: 'Razón social', icon: 'building' },
-                                { key: 'nombre_cliente', label: 'Nombre cliente', icon: 'user' },
-                                { key: 'fecha_solicitud', label: 'Fecha solicitud', icon: 'clock-o' },
-                                { key: 'precio', label: 'Precio', icon: 'dollar' },
-                                { key: 'cantidad', label: 'Cantidad', icon: 'cubes' },
-                                { key: 'vehiculo', label: 'Vehículo', icon: 'truck' }
-                            ].map((opcion) => (
-                                <TouchableOpacity
-                                    key={opcion.key}
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        paddingVertical: 12,
-                                        paddingHorizontal: 16,
-                                        marginBottom: 8,
-                                        borderRadius: 8,
-                                        backgroundColor: ordenPor === opcion.key ? '#e3f2fd' : '#f8f9fa',
-                                        borderWidth: ordenPor === opcion.key ? 2 : 1,
-                                        borderColor: ordenPor === opcion.key ? '#2196f3' : '#e9ecef'
-                                    }}
-                                    onPress={() => updateState(actions.setOrdenPor(opcion.key))}
-                                >
-                                    <FontAwesome
-                                        name={opcion.icon}
-                                        style={{
-                                            fontSize: 16,
-                                            color: ordenPor === opcion.key ? '#2196f3' : '#666',
-                                            marginRight: 12,
-                                            width: 20
-                                        }}
-                                    />
-                                    <Text style={{
-                                        fontSize: 16,
-                                        color: ordenPor === opcion.key ? '#2196f3' : '#333',
-                                        fontWeight: ordenPor === opcion.key ? '600' : '400',
-                                        flex: 1
-                                    }}>
-                                        {opcion.label}
-                                    </Text>
-                                    {ordenPor === opcion.key && (
-                                        <FontAwesome
-                                            name="check"
-                                            style={{ fontSize: 16, color: '#2196f3' }}
-                                        />
-                                    )}
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        {/* Selector de tipo de orden */}
-                        <View style={{ marginBottom: 20 }}>
-                            <Text style={{
-                                fontSize: 16,
-                                fontWeight: '600',
-                                color: '#333',
-                                marginBottom: 10
-                            }}>
-                                Tipo de orden:
-                            </Text>
-                            <View style={{ flexDirection: 'row', gap: 10 }}>
-                                <TouchableOpacity
-                                    style={{
-                                        flex: 1,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        paddingVertical: 10,
-                                        paddingHorizontal: 16,
-                                        borderRadius: 8,
-                                        backgroundColor: tipoOrden === 'DESC' ? '#e3f2fd' : '#f8f9fa',
-                                        borderWidth: tipoOrden === 'DESC' ? 2 : 1,
-                                        borderColor: tipoOrden === 'DESC' ? '#2196f3' : '#e9ecef'
-                                    }}
-                                    onPress={() => updateState(actions.setTipoOrden('DESC'))}
-                                >
-                                    <FontAwesome
-                                        name="sort-amount-desc"
-                                        style={{
-                                            fontSize: 14,
-                                            color: tipoOrden === 'DESC' ? '#2196f3' : '#666',
-                                            marginRight: 8
-                                        }}
-                                    />
-                                    <Text style={{
-                                        fontSize: 14,
-                                        color: tipoOrden === 'DESC' ? '#2196f3' : '#333',
-                                        fontWeight: tipoOrden === 'DESC' ? '600' : '400'
-                                    }}>
-                                        Descendente
-                                    </Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    style={{
-                                        flex: 1,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        paddingVertical: 10,
-                                        paddingHorizontal: 16,
-                                        borderRadius: 8,
-                                        backgroundColor: tipoOrden === 'ASC' ? '#e3f2fd' : '#f8f9fa',
-                                        borderWidth: tipoOrden === 'ASC' ? 2 : 1,
-                                        borderColor: tipoOrden === 'ASC' ? '#2196f3' : '#e9ecef'
-                                    }}
-                                    onPress={() => updateState(actions.setTipoOrden('ASC'))}
-                                >
-                                    <FontAwesome
-                                        name="sort-amount-asc"
-                                        style={{
-                                            fontSize: 14,
-                                            color: tipoOrden === 'ASC' ? '#2196f3' : '#666',
-                                            marginRight: 8
-                                        }}
-                                    />
-                                    <Text style={{
-                                        fontSize: 14,
-                                        color: tipoOrden === 'ASC' ? '#2196f3' : '#333',
-                                        fontWeight: tipoOrden === 'ASC' ? '600' : '400'
-                                    }}>
-                                        Ascendente
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        {/* Botones de acción */}
-                        <View style={{ flexDirection: 'row', gap: 10 }}>
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    paddingVertical: 12,
-                                    borderRadius: 8,
-                                    backgroundColor: '#6c757d',
-                                    alignItems: 'center'
-                                }}
-                                onPress={() => updateState(actions.setModalOrdenamiento(false))}
-                            >
-                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-                                    Cancelar
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    paddingVertical: 12,
-                                    borderRadius: 8,
-                                    backgroundColor: '#28a745',
-                                    alignItems: 'center'
-                                }}
-                                onPress={async () => {
-                                    updateState(actions.setModalOrdenamiento(false));
-                                    // Recargar pedidos con nuevo ordenamiento
-                                    updateState(actions.setShowSpin1(true));
-                                    dispatch({
-                                        type: 'GET_PEDIDOS',
-                                        pedidos: []
-                                    });
-                                    updateState(actions.setInicio(0));
-                                    updateState(actions.setFinal(false));
-                                    updateState(actions.setLimit(20));
-
-                                    try {
-                                        await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
-                                    } catch (error) {
-                                        console.error('Error aplicando ordenamiento:', error);
-                                        Alert.alert(
-                                            'Funcionalidad no disponible',
-                                            'El ordenamiento requiere actualizar el servidor. Mostrando pedidos con orden por defecto.',
-                                            [{ text: 'OK' }]
-                                        );
-                                        // Resetear a valores por defecto
-                                        updateState(actions.setEstadoFiltro('todos'));
-                                        updateState(actions.setOrdenPor('fecha_creacion'));
-                                        updateState(actions.setTipoOrden('DESC'));
-                                        // Cargar pedidos con valores por defecto
-                                        await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, 'todos', 'fecha_creacion', 'DESC'));
-                                    } finally {
-                                        setTimeout(() => {
-                                            updateState(actions.setShowSpin1(false));
-                                        }, 1000);
-                                    }
-                                }}
-                            >
-                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-                                    Aplicar
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+                onClose={() => updateState(actions.setModalOrdenamiento(false))}
+                ordenPor={ordenPor}
+                tipoOrden={tipoOrden}
+                onOrdenPorChange={(ordenPor) => updateState(actions.setOrdenPor(ordenPor))}
+                onTipoOrdenChange={(tipoOrden) => updateState(actions.setTipoOrden(tipoOrden))}
+                onApply={async () => {
+                    updateState(actions.setModalOrdenamiento(false));
+                    // El efecto de filtros se encargará de recargar automáticamente
+                    // No necesitamos lógica adicional aquí
+                }}
+            />
         </View>
     );
 };

@@ -6,8 +6,9 @@ frameworkVersion: '3.38.0'
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline
-  # - serverless-webpack
+  - serverless-webpack
   - serverless-iam-roles-per-function
+  - serverless-plugin-split-stacks
  
   
 provider:
@@ -50,13 +51,56 @@ custom:
     host: 0.0.0.0
   dotenv:
     path: .env
-  # # webpack:
-  # #   webpackConfig: 'webpack.config.js'   # Name of webpack configuration file
-  #   includeModules: false   # Node modules configuration for packaging
-  #   packager: 'npm'   # Packager that will be used to package your external modules
-  #   excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
+  # Variables de entorno temporales
+  emailUser: admin@codegascolombia.com
+  emailPass: yecn iasc womb wkri
+  webpack:
+    webpackConfig: 'webpack.config.js'
+    includeModules: true
+    packager: 'npm'
+    excludeFiles: src/**/*.test.js
   n: my-app:${self:provider.stage}:${self:provider.region}:api
   base: ${self:service}-${self:provider.stage}
+  splitStacks:
+    perFunction: false
+    perType: true
+    perGroupFunction: false
+    stackConcurrency: 10
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!node_modules/.bin/**'
+    - '!node_modules/.cache/**'
+    - '!node_modules/.yarn/**'
+    - '!**/*.md'
+    - '!**/*.txt'
+    - '!**/*.log'
+    - '!**/test/**'
+    - '!**/tests/**'
+    - '!**/__tests__/**'
+    - '!**/*.test.js'
+    - '!**/*.spec.js'
+    - '!**/coverage/**'
+    - '!**/.git/**'
+    - '!**/.gitignore'
+    - '!**/README.md'
+    - '!**/yarn.lock'
+    - '!**/package-lock.json'
+    - '!**/tsconfig.json'
+    - '!**/.eslintrc*'
+    - '!**/jest.config*'
+    - '!**/webpack.config.js'
+    - '!**/.env*'
+    - '!**/firebase-service-account*.json'
+    - '!**/error-templates/**'
+    - '!**/envs/**'
+    - '!**/assets/**'
+    - '!**/docs/**'
+    - '!**/examples/**'
+    - '!**/scripts/**'
+    - '!**/.*'
 
 functions: 
   - ${file(./services/users/serverless.yml)}
@@ -68,5 +112,5 @@ functions:
   - ${file(./services/revisiones/serverless.yml)}
   - ${file(./services/alerta-tanque/serverless.yml)}
   - ${file(./services/frecuencias/serverless.yml)}
-  - ${file(./services/informes/serverless.yml)}
+  - ${file(./services/informes/serverless.yml)}  
   - ${file(./services/reporte-emergencia/serverless.yml)}

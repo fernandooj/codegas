@@ -79,7 +79,6 @@ class Pedido extends Component {
             idUsuario = idUsuario ? idUsuario : "FAIL"
             this.setState({ idUsuario, acceso })
         } catch (error) {
-            console.log(error)
         }
         // this.socket = SocketIOClient(URL);
         // this.socket.on(`actualizaPedidos`, this.reciveMensanje.bind(this));
@@ -88,7 +87,6 @@ class Pedido extends Component {
     }
 
     componentWillReceiveProps(props) {
-        console.log(props)
         this.setState({ pedidos: props.pedidos, pedidosFiltro: props.pedidos, zonaPedidos: props.zonaPedidos })
     }
     componentWillUnmount() {
@@ -143,8 +141,6 @@ class Pedido extends Component {
         const { acceso, terminoBuscador, pedidos, inicio, final } = this.state
         let pedidosFiltro = pedidos.filter(createFilter(terminoBuscador, KEYS_TO_FILTERS))
         let newPedidos = pedidosFiltro.slice(inicio, final)
-        console.log("newPedidos")
-        console.log(newPedidos)
         return newPedidos.map((e, key) => {
             return (
                 <TouchableOpacity
@@ -299,7 +295,6 @@ class Pedido extends Component {
                         current={fechaEntrega ? fechaEntrega : diaActual}
                         //minDate={diaActual}
                         firstDay={1}
-                        onDayPress={(day) => { console.log('selected day', day); this.setState({ fechaEntrega: day.dateString }) }}
                         markedDates={{ [fechaEntrega]: { selected: true, marked: true } }}
                     />
                 </View>
@@ -342,7 +337,6 @@ class Pedido extends Component {
         imagenCerrar = `${imagenCerrar1[0]}Miniatura${imagenCerrar1[2]}`
         let valor_unitario = Number(valor_total) / parseNumber(kilos)
 
-        console.log({ forma })
         return (
             <View style={style.contenedorModal}>
                 {showNovedades ? this.modalNovedades() : null}
@@ -750,7 +744,6 @@ class Pedido extends Component {
                         <Calendar
                             current={fechaEntregaFiltro}
                             markedDates={this.state.dates}
-                            onDayPress={(day) => { console.log('selected day', day); this.actualizarFechaEntrega(day.dateString) }}
                             markedDates={{ [fechaEntregaFiltro]: { selected: true, marked: true } }}
                         // markingType={'period'}
                         // onDayPress={(date)=>this.onSelectDay(date.dateString)}
@@ -765,7 +758,6 @@ class Pedido extends Component {
                         <Calendar
                             current={fechaSolicitudFiltro}
                             markedDates={this.state.dates}
-                            onDayPress={(day) => { console.log('selected day', day); this.actualizarFechaSolicitud(day.dateString) }}
                             markedDates={{ [fechaSolicitudFiltro]: { selected: true, marked: true } }}
                         />
                     </View>
@@ -879,7 +871,6 @@ class Pedido extends Component {
                                     current={fechaEntrega ? fechaEntrega : diaActual}
                                     //minDate={diaActual}
                                     firstDay={1}
-                                    onDayPress={(day) => { console.log('selected day', day); this.setState({ fechaEntrega: day.dateString }) }}
                                     markedDates={{ [fechaEntrega]: { selected: true, marked: true } }}
                                 />
                                 <TouchableOpacity style={style.btnGuardar} onPress={() => this.asignarFecha()}>
@@ -1177,12 +1168,10 @@ class Pedido extends Component {
                         }, 1000);
                         this.props.getPedidos()
                     } else {
-                        console.log(res.data)
                         Toast.show("Tenemos un problema, intentelo mas tarde", Toast.LONG)
                     }
                 })
                 .catch(err => {
-                    console.log(err)
                 })
         }
     }
@@ -1196,14 +1185,12 @@ class Pedido extends Component {
             'sin exito en la entrega',
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
-                { text: 'Cancelar', onPress: () => console.log("cerrado") },
             ],
             { cancelable: false },
         );
         const confirmar = () => {
             axios.post('ped/pedido/novedad', { _id: id, fechaEntrega, novedad, perfil_novedad: perfil })
                 .then((res) => {
-                    console.log(res.data)
                     if (res.data.status) {
                         axios.post(`nov/novedad/`, { pedidoId: id, novedad })
                             .then((res2) => {
@@ -1232,7 +1219,6 @@ class Pedido extends Component {
             '',
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
-                { text: 'Cancelar', onPress: () => console.log("cerrado") },
             ],
             { cancelable: false },
         );
@@ -1248,7 +1234,6 @@ class Pedido extends Component {
                     'deseas continuar',
                     [
                         { text: 'Confirmar', onPress: () => confirmar1() },
-                        { text: 'Cancelar', onPress: () => console.log("cerrado") },
                     ],
                     { cancelable: false },
                 );
@@ -1329,7 +1314,6 @@ const mapState = state => {
     let vehiculos = state.vehiculo.vehiculos.filter(e => {
         return e.conductor != null
     })
-    console.log("state")
     return {
         pedidos: state.pedido.pedidos,
         vehiculos: vehiculos,

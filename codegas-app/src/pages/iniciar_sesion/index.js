@@ -7,6 +7,7 @@ import { DataContext } from '../../context/context';
 import { style } from './style'
 import Footer from '../components/footer'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const IniciarSesion = ({ navigation }) => {
 
@@ -15,6 +16,7 @@ const IniciarSesion = ({ navigation }) => {
   const [cargando, setCargando] = useState(false);
   const [data, setData] = useState({})
   const [email, setEmail] = useState('')
+  const [showPassword, setShowPassword] = useState(false);
 
   const updateData = (type, e) => {
     setData({ ...data, [type]: e })
@@ -45,7 +47,6 @@ const IniciarSesion = ({ navigation }) => {
   const enviaCodigoRegistro = () => {
     let acceso = "cliente";
     // Aquí deberías hacer la llamada a la API para enviar código de registro
-    console.log('Enviando código de registro para:', email);
     Toast.show({ type: 'info', text1: 'Funcionalidad de código de registro no implementada' });
   }
 
@@ -53,7 +54,6 @@ const IniciarSesion = ({ navigation }) => {
     let emailLower = email.toLowerCase();
     let acceso = "cliente";
     // Aquí deberías hacer la llamada a la API para enviar email de registro
-    console.log('Enviando email de registro para:', emailLower);
     Toast.show({ type: 'info', text1: 'Funcionalidad de email de registro no implementada' });
   }
 
@@ -101,14 +101,26 @@ const IniciarSesion = ({ navigation }) => {
             autoCapitalize="none"
             placeholderTextColor="#aaa"
           />
-          <TextInput
-            style={style.input}
-            placeholder="Contraseña"
-            onChangeText={(e) => updateData('password', e)}
-            secureTextEntry
-            value={data?.password}
-            placeholderTextColor="#aaa"
-          />
+          <View style={style.passwordContainer}>
+            <TextInput
+              style={style.passwordInput}
+              placeholder="Contraseña"
+              onChangeText={(e) => updateData('password', e)}
+              secureTextEntry={!showPassword}
+              value={data?.password}
+              placeholderTextColor="#aaa"
+            />
+            <TouchableOpacity
+              style={style.eyeButton}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <FontAwesome
+                name={showPassword ? "eye-slash" : "eye"}
+                size={20}
+                color="#666"
+              />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity style={style.btnGuardar} onPress={signIn}>
             {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
             <Text style={style.textGuardar}>{cargando ? "Cargando" : "Iniciar Sesión"}</Text>
@@ -160,7 +172,6 @@ const IniciarSesion = ({ navigation }) => {
   //       navigation.navigate("Home");
   //     })
   //     .catch(err => {
-  //       console.log(err);
   //       setErr(err);
   //     });
   // };

@@ -21,26 +21,17 @@ const Revision = (props) => {
   // const [revision_by_punto,, setRevision_by_punto]= useState([])
 
   useEffect(() => {
-    console.log("Revision component mounted");
-    console.log("Navigation object:", navigation);
-    console.log("Route object:", route);
-    console.log("Route params:", route?.params);
     loadRevisiones();
   }, []);
 
 
   const loadRevisiones = (last) => {
     const params = route?.params;
-    console.log("loadRevisiones - params:", params);
-    console.log("loadRevisiones - route:", route);
     if (params) {
       // getRevisionByPunto(params.puntoId)
       const url = `rev/revision/byPunto/${params.puntoId}`;
-      console.log("URL enviada (por punto):", url);
-      console.log("Parámetros:", { puntoId: params.puntoId });
       axios.get(url)
         .then(res => {
-          console.log(res)
           setData(res.data.revision || [])
         })
         .catch(error => {
@@ -52,8 +43,6 @@ const Revision = (props) => {
       const startParam = 0;
       const searchParam = terminoBuscador || 'undefined';
       const url = `rev/revision/${limitParam}/${startParam}/${searchParam}`;
-      console.log("URL enviada:", url);
-      console.log("Parámetros:", { limitParam, startParam, searchParam });
       axios.get(url)
         .then(res => {
           setData(res.data.revision || [])
@@ -209,7 +198,6 @@ const Revision = (props) => {
         }}
         onPress={() => {
           const params = route?.params;
-          console.log("Parámetros disponibles:", params);
           if (params) {
             navigation.navigate('nuevaRevision', {
               puntoId: params.puntoId,

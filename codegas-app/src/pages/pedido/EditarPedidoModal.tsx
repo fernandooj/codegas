@@ -154,7 +154,6 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
         }
         closeNavigationModal();
     };
-    console.log(pedidoData);
     return (
         <Modal
             transparent={true}
@@ -395,7 +394,6 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                         nombre: pedidoData.nombre
                                                     });
                                                 } else {
-                                                    console.log('Navigation no disponible');
                                                 }
                                             }}
                                         >

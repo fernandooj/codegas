@@ -95,7 +95,6 @@ const verPerfil = (props) => {
     // Function to load veos (administradores) con estructura jerárquica
     const loadVeos = async () => {
         try {
-            console.log('cargando veos jerárquicos');
             await props.getUsuariosAcceso(100, 0, 'administradores');
             // Los veos se cargarán automáticamente en el estado de Redux
             // y se pueden acceder desde props.usuariosAcceso
@@ -108,10 +107,7 @@ const verPerfil = (props) => {
     useEffect(() => {
         if (props.usuariosAcceso && props.usuariosAcceso.length > 0) {
             // Crear estructura jerárquica de usuarios
-            console.log('props.usuariosAcceso ')
-            console.log(props.usuariosAcceso)
             const estructuraJerarquica = crearEstructuraJerarquica(props.usuariosAcceso);
-            console.log({ estructuraJerarquica });
             updateState({ estructuraJerarquica });
 
             // Mantener la estructura plana para compatibilidad - incluir TODOS los usuarios
@@ -129,7 +125,6 @@ const verPerfil = (props) => {
             };
 
             let veos = crearArrayPlano(props.usuariosAcceso);
-            console.log({ veos });
             updateState({ veos });
         }
     }, [props.usuariosAcceso]);
@@ -180,7 +175,6 @@ const verPerfil = (props) => {
             });
 
             const { params } = route;
-            console.log({ params })
             if (params.tipoAcceso) {
                 updateState({ tipoAcceso: params.tipoAcceso });
                 params.tipoAcceso == "solucion" && updateState({ acceso: "cliente" });
@@ -587,7 +581,6 @@ const verPerfil = (props) => {
         let { valorUnitario, idUsuario } = state
         try {
             const res = await changeValorUnitario(valorUnitario, idUsuario);
-            console.log(res)
             if (res.status) {
                 Toast.show({
                     type: 'success',
@@ -602,10 +595,8 @@ const verPerfil = (props) => {
 
     const verificaEmail = async () => {
         const { email } = state;
-        console.log('Email del estado:', email);
         try {
             const res = await checkEmail(email);
-            console.log(res.data.status)
             if (res.data.status) {
                 Toast.show({
                     type: 'error',
@@ -651,7 +642,6 @@ const verPerfil = (props) => {
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
 
-                { text: 'Cancelar', onPress: () => console.log("cancelado") },
             ],
             { cancelable: false }
         )
@@ -681,7 +671,6 @@ const verPerfil = (props) => {
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
 
-                { text: 'Cancelar', onPress: () => console.log("cancelado") },
             ],
             { cancelable: false }
         )
@@ -804,7 +793,6 @@ const verPerfil = (props) => {
                                     <View>
                                         {
                                             ubicaciones.map((e, key) => {
-                                                console.log({ dir: e.direccion })
                                                 return (
                                                     <View key={key}>
                                                         <View>
@@ -975,7 +963,6 @@ const verPerfil = (props) => {
 
         try {
             const res = await uploadAvatar(data);
-            console.log(res)
             if (res.status) {
                 if (state.tipoAcceso) {
                     alert("Usuario guardado con exito")
@@ -992,14 +979,12 @@ const verPerfil = (props) => {
 
     const handleSubmit = (esEditar) => {
         const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = state
-        console.log({ razon_social, cedula, direccion_factura, nombre, email, tipo, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario })
         if (acceso == "cliente") {
             if (razon_social == "" || direccion_factura == "" || nombre == "" || email == "" || tipo == "" || acceso == "usuario" || ubicaciones.length < 1) {
                 Alert.alert(
                     'Todos los campos son obligatorios',
                     '',
                     [
-                        { text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
                     ],
                     { cancelable: false }
                 )
@@ -1025,7 +1010,6 @@ const verPerfil = (props) => {
                     'Todos los campos son obligatorios',
                     "",
                     [
-                        { text: 'Cerrar', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
                     ],
                     { cancelable: false }
                 )
@@ -1108,7 +1092,6 @@ const verPerfil = (props) => {
 
         try {
             const e = await signUpUser(datosUsuario);
-            console.log(e)
             if (e.status) {
                 // El backend devuelve el ID del usuario en e.code cuando es exitoso
                 const userId = parseInt(e.code);
@@ -1129,13 +1112,11 @@ const verPerfil = (props) => {
                                 visibilityTime: 3000,
                             })
                         } catch (err2) {
-                            console.log(err2)
                             updateState({ cargando: false })
                         }
                     } else {
                         try {
                             const res = await createMultiplePoints(puntos, userId);
-                            console.log(res)
                             navigation.navigate("Home")
                             Toast.show({
                                 type: 'success',
@@ -1143,7 +1124,6 @@ const verPerfil = (props) => {
                                 visibilityTime: 3000,
                             })
                         } catch (err2) {
-                            console.log(err2)
                             updateState({ cargando: false })
                         }
                     }
@@ -1168,7 +1148,6 @@ const verPerfil = (props) => {
                 })
             }
         } catch (err) {
-            console.log(err)
             updateState({ cargando: false })
         }
     }
@@ -1220,7 +1199,6 @@ const verPerfil = (props) => {
         puntos = puntos.filter(e => {
             return e._id
         })
-        console.log({ editado, puntos, puntosNuevos })
 
         // Preparar datos para enviar, incluyendo idPadre si se seleccionó un veo
         const datosUsuario = {
@@ -1248,7 +1226,6 @@ const verPerfil = (props) => {
 
         try {
             const e = await updateUser(idUsuario, datosUsuario);
-            console.log(e)
             if (acceso == "cliente") {
                 ////////////////////////////////////////////        EDITO LOS CLIENTES
                 if (clientes.length > 0) {
@@ -1262,7 +1239,6 @@ const verPerfil = (props) => {
                             visibilityTime: 3000,
                         })
                     } catch (err2) {
-                        console.log(err2)
                         updateState({ cargando: false })
                     }
                 }
@@ -1278,7 +1254,6 @@ const verPerfil = (props) => {
                             visibilityTime: 3000,
                         })
                     } catch (err2) {
-                        console.log(err2)
                         updateState({ cargando: false })
                     }
                 }
@@ -1313,7 +1288,6 @@ const verPerfil = (props) => {
                 }
             }
         } catch (err) {
-            console.log(err)
             updateState({ cargando: false })
         }
     }
@@ -1328,7 +1302,6 @@ const verPerfil = (props) => {
         } else {
             try {
                 const e = await changePassword(email, password);
-                console.log(e)
                 if (e.status) {
                     Toast.show({
                         type: 'success',
@@ -1344,7 +1317,6 @@ const verPerfil = (props) => {
                     })
                 }
             } catch (err) {
-                console.log(err)
             }
         }
     }
@@ -1360,7 +1332,6 @@ const verPerfil = (props) => {
     }
 
     const loginExitoso = async (user) => {
-        console.log(user)
         // AsyncStorage.setItem('nombre', user.nombre)
         // AsyncStorage.setItem('avatar', user.avatar)
         updateState({ cargando: false })

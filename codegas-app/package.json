@@ -1,5 +1,5 @@
 {
-  "name": "codegas",
+  "name": "codegas-co",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -52,6 +52,7 @@
     "react-native-spinkit": "^1.5.1",
     "react-native-svg": "^15.13.0",
     "react-native-toast-message": "^2.3.3",
+    "react-native-vector-icons": "^10.3.0",
     "react-redux": "^9.2.0",
     "react-search-input": "^0.11.3",
     "redux": "^5.0.1",

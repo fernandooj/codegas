@@ -66,10 +66,8 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
         };
 
         launchCamera(options, (response: ImagePickerResponse) => {
-            console.log('📷 Respuesta de cámara:', response);
 
             if (response.didCancel) {
-                console.log('📷 Usuario canceló la cámara');
                 return;
             }
 
@@ -81,7 +79,6 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
 
             if (response.assets && response.assets[0] && response.assets[0].uri) {
                 handleImageSelected(response.assets[0].uri);
-                console.log('📷 Foto tomada exitosamente:', response.assets[0].uri);
                 Alert.alert('Éxito', 'Foto tomada correctamente');
             }
         });
@@ -99,10 +96,8 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
         };
 
         launchImageLibrary(options, (response: ImagePickerResponse) => {
-            console.log('🖼️ Respuesta de galería:', response);
 
             if (response.didCancel) {
-                console.log('🖼️ Usuario canceló la galería');
                 return;
             }
 
@@ -264,7 +259,6 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             [
                 {
                     text: 'Cancelar',
-                    onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel'
                 },
                 { text: 'Eliminar', onPress: () => eliminar() }
@@ -273,8 +267,6 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
         );
         const eliminar = () => {
             let newImagenes = imagenesState.filter((e, key) => { return key != keyImagen })
-            console.log({ keyImagen })
-            console.log(newImagenes)
             setImagenesState(newImagenes)
             imagenes?.(newImagenes)
         }
@@ -344,7 +336,6 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                                     alignItems: 'center'
                                 }}
                                 onPress={() => {
-                                    console.log('📷 Botón tomar foto presionado');
                                     handleTomarFoto();
                                 }}
                                 activeOpacity={0.8}

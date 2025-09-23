@@ -202,7 +202,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
             codt: usuariocodt
         };
 
-        console.log('Sending data to backend:', data);
         dispatch(createReporteEmergencia(data));
     };
 
@@ -211,7 +210,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
         const idReporteParaUpload = nReporte || currentReporte?._id;
 
         if (!idReporteParaUpload) {
-            console.log('No se puede subir imagen: ID del reporte no disponible aún');
             return;
         }
 
@@ -223,7 +221,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
             name: imagen.name
         };
 
-        console.log('Uploading image with data:', data);
         dispatch(uploadImagenReporteEmergencia(data));
     };
 
@@ -232,7 +229,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
         if (!currentReporte?._id) return;
 
         setSubiendoImagenes(true);
-        console.log('Subiendo imágenes pendientes para reporte:', currentReporte._id);
 
         let totalImagenes = 0;
         let imagenesSubidas = 0;
@@ -303,7 +299,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
     };
 
     const rendercontenido = () => {
-        console.log(imgDocumento)
         return (
             <View style={{
                 width: Dimensions.get('window').width,
@@ -505,7 +500,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
                         tanque ? style.checkboxContainerActive : style.checkboxContainerInactive
                     ]}
                     onPress={() => {
-                        console.log('Tanque checkbox changed to:', !tanque);
                         setTanque(!tanque);
                     }}
                 >
@@ -531,7 +525,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
                         red ? style.checkboxContainerActive : style.checkboxContainerInactive
                     ]}
                     onPress={() => {
-                        console.log('Red checkbox changed to:', !red);
                         setRed(!red);
                     }}
                 >
@@ -557,7 +550,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
                         puntos ? style.checkboxContainerActive : style.checkboxContainerInactive
                     ]}
                     onPress={() => {
-                        console.log('Puntos checkbox changed to:', !puntos);
                         setPuntos(!puntos);
                     }}
                 >
@@ -583,7 +575,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
                         fuga ? style.checkboxContainerActive : style.checkboxContainerInactive
                     ]}
                     onPress={() => {
-                        console.log('Fuga checkbox changed to:', !fuga);
                         setFuga(!fuga);
                     }}
                 >
@@ -609,7 +600,6 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
                         pqr ? style.checkboxContainerActive : style.checkboxContainerInactive
                     ]}
                     onPress={() => {
-                        console.log('PQR checkbox changed to:', !pqr);
                         setPqr(!pqr);
                     }}
                 >

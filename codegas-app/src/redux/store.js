@@ -22,8 +22,6 @@ try {
 const middlewares = [thunk];
 
 // Debug middleware types
-console.log('Thunk middleware type:', typeof thunk);
-console.log('Thunk middleware:', thunk);
 
 // React Native compatible development tools
 let composeEnhancers = compose;
@@ -43,7 +41,6 @@ if (__DEV__) {
     // Ensure logger is also a function
     if (typeof logger === 'function') {
       middlewares.push(logger);
-      console.log('Logger middleware added');
     } else {
       console.warn('Logger is not a function:', typeof logger);
     }
@@ -53,7 +50,6 @@ if (__DEV__) {
 }
 
 // Debug all middlewares
-console.log('All middlewares:', middlewares.map(m => typeof m));
 
 export default function configureStore() {
   const store = createStore(

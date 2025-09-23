@@ -218,6 +218,31 @@ if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86_64/CMakeFiles/cmake.verify_globs")
 endif()
 
+# react_codegen_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/*.cpp")
+set(OLD_GLOB
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/RNImagePickerSpec-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86_64/CMakeFiles/cmake.verify_globs")
+endif()
+
+# react_codegen_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/react/renderer/components/RNImagePickerSpec/*.cpp")
+set(OLD_GLOB
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/react/renderer/components/RNImagePickerSpec/ComponentDescriptors.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/react/renderer/components/RNImagePickerSpec/EventEmitters.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/react/renderer/components/RNImagePickerSpec/Props.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/react/renderer/components/RNImagePickerSpec/RNImagePickerSpecJSI-generated.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/react/renderer/components/RNImagePickerSpec/ShadowNodes.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/react/renderer/components/RNImagePickerSpec/States.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86_64/CMakeFiles/cmake.verify_globs")
+endif()
+
 # react_codegen_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-pdf/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-pdf/android/build/generated/source/codegen/jni/*.cpp")
 set(OLD_GLOB

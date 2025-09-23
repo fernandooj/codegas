@@ -116,7 +116,6 @@ const Nuevo_pedido = ({ navigation }) => {
     const getPuntos = async (id) => {
         try {
             const response = await getPointsByClient(id);
-            console.log(response);
             if (response.status) {
                 if (response.puntos.length === 1) {
                     setState(prev => ({
@@ -787,7 +786,7 @@ const Nuevo_pedido = ({ navigation }) => {
                 />
 
                 <TouchableOpacity
-                    style={!forma ? style.btnGuardarDisable : style.btnGuardar}
+                    style={[!forma ? style.btnGuardarDisable : style.btnGuardar, { marginBottom: 100 }]}
                     onPress={() => {
                         // Solo validar cliente para usuarios que no son clientes
                         if ((acceso === "admin" || acceso === "solucion" || acceso === "veo" || acceso === "comercial" || acceso === "despacho") && !idCliente) {
@@ -878,12 +877,10 @@ const Nuevo_pedido = ({ navigation }) => {
         setState(prev => ({ ...prev, guardando: true }));
         const { idCliente, idUsuario, acceso, puntoId } = state;
         const id = acceso === "cliente" ? idUsuario : idCliente;
-        console.log(id, puntoId);
 
         try {
             const response = await verificarPedidoHoy(id, puntoId);
             const { status, pedido } = response;
-            console.log(status, pedido);
             if (status) {
                 if (pedido > 0) {
                     Alert.alert(
@@ -931,17 +928,31 @@ const Nuevo_pedido = ({ navigation }) => {
 
         try {
             const response = await crearPedido(data);
+
+            // Mostrar toast de éxito
             Toast.show({
                 type: 'success',
-                text1: 'Pedido creado con exito',
+                text1: '✅ Pedido creado con éxito',
+                text2: 'Tu pedido ha sido registrado correctamente',
+                position: 'bottom',
+                visibilityTime: 3000,
             });
+
             setState(prev => ({
                 ...prev,
                 guardando: false,
                 idCliente: null,
+                cliente: null,
+                emailCliente: '',
                 forma: null,
                 solicitud: false,
-                puntos: []
+                puntos: [],
+                cantidad: '',
+                frecuencia: null,
+                diaSeleccionado1: null,
+                diaSeleccionado2: null,
+                novedad: '',
+                fechaSolicitud: ''
             }));
         } catch (err) {
             console.error('Error creando pedido:', err);

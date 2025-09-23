@@ -28,14 +28,27 @@ module.exports.main = async (event) => {
         observacion, direccion, capacidad, punto, location, place_name, idZona, idCliente, idPadre
       } = point;
 
-      return client.query(SAVE_POINT, [direccion, capacidad, observacion, punto, location, place_name, idZona, idCliente, idPadre]);
+      // Convertir location a formato point de PostgreSQL
+      let coordenadas = null;
+      if (location && typeof location === 'string' && location.trim() !== '') {
+        // Si viene como string "(lng, lat)", usar directamente
+        coordenadas = location;
+      } else if (location && typeof location === 'object' && location.lat && location.lng) {
+        // Si viene como objeto {lat, lng}, convertir a formato point
+        coordenadas = `(${location.lng}, ${location.lat})`;
+      }
+
+      return client.query(SAVE_POINT, [direccion, capacidad, observacion, punto, coordenadas, place_name, idZona, idCliente, idPadre]);
     }));
 
     return {
       status: true
     }
   } catch (error) {
+    console.error('Error creating points:', error);
     throw JSON.stringify(error);
+  } finally {
+    client.release();
   }
 };
 

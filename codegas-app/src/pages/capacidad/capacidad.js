@@ -96,7 +96,6 @@ class Capacidad extends Component {
 
         axios.post(`cap/capacidad/`, { capacidad })
             .then(res => {
-                console.log(res.data)
                 if (res.data.status) {
                     Toast.show({ type: 'success', text1: 'capacidad Guardada' })
                     this.setState({ capacidad: "" })
@@ -118,14 +117,12 @@ class Capacidad extends Component {
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
 
-                { text: 'Cancelar', onPress: () => console.log() },
             ],
             { cancelable: false },
         );
         const confirmar = () => {
             axios.put(`cap/capacidad/eliminar/${id}`)
                 .then((res) => {
-                    console.log(res.data)
                     if (res.data.status) {
                         let text1 = `Capacidad ${capacidad} eliminada`;
                         text1 = text1.toString();

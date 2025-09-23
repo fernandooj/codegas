@@ -51,7 +51,8 @@ module.exports.main = async (event) => {
             codMagister,
             codt,
             valorUnitario,
-            editado
+            editado,
+            idpadre
         } = userData;
 
         // Call the update_user SQL function
@@ -74,7 +75,8 @@ module.exports.main = async (event) => {
         NULL,                       -- p_avatar
         $11,                        -- p_codt
         NULL,                       -- p_codigoRegistro
-        $12::INT                    -- p_valorUnitario
+        $12::INT,                   -- p_valorUnitario
+        $13::INT                    -- p_idpadre
       )
     `;
 
@@ -90,7 +92,8 @@ module.exports.main = async (event) => {
             acceso || null,
             codMagister || null,
             codt || null,
-            valorUnitario || null
+            valorUnitario || null,
+            idpadre || null
         ]);
 
         // Get the updated user data

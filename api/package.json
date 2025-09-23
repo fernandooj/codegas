@@ -4,10 +4,16 @@
   "description": "",
   "main": "index.js",
   "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/plugin-transform-runtime": "^7.28.3",
+    "@babel/preset-env": "^7.28.3",
+    "babel-loader": "^10.0.0",
     "eslint": "^7.9.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
-    "serverless-iam-roles-per-function": "^3.1.0"
+    "serverless-iam-roles-per-function": "^3.1.0",
+    "serverless-plugin-split-stacks": "^1.14.0",
+    "serverless-webpack": "^5.15.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/runtime": "^7.28.4",
     "@json2csv/plainjs": "^7.0.1",
     "aws-sdk": "^2.1403.0",
     "busboy": "^1.6.0",
@@ -24,7 +31,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^7.0.6",
     "parse-multipart": "^1.0.4",
-    "pg": "^8.10.0",
+    "pg": "^8.16.3",
     "serverless": "^3.38.0",
     "serverless-dotenv-plugin": "^6.0.0",
     "serverless-offline": "^8.8.1",

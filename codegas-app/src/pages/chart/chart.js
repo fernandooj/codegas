@@ -55,14 +55,11 @@ class Chart extends Component {
     componentWillMount = async () => {
         const value = this.context;
         const { acceso, userId } = value
-        console.log(acceso)
         try {
             let userId = acceso == "cliente" ? idUsuario : this.props.navigation.state.params.idUsuario
             // let userId = "5e3d805e4ceec44739a42f40"
-            console.log({ userId })
             this.props.getPedidosChart(userId)
         } catch (error) {
-            console.log(error)
         }
 
     }
@@ -93,7 +90,6 @@ class Chart extends Component {
             total.push(e.count)
         })
         this.setState({ fechas, total, pedidos })
-        console.log({ fechas, total, pedidos })
     }
     renderChat() {
         let { total, fechas } = this.state
@@ -167,8 +163,6 @@ class Chart extends Component {
 }
 
 const mapState = state => {
-    console.log("state.pedido")
-    console.log(state.pedido)
     return {
         pedidos: state.pedido.pedidosChart,
     };

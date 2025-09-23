@@ -16,7 +16,6 @@ const getVehiculo = vehiculoId => {
         });
       })
       .catch(err => {
-        console.log(err);
       });
   };
 };
@@ -33,7 +32,6 @@ const getVehiculos = data => {
         });
       })
       .catch(err => {
-        console.log(err);
       });
   };
 };  

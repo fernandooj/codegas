@@ -12,9 +12,9 @@ import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
 import SplashScreen from './src/components/SplashScreen';
 const store = configStore();
 
-// export const URL = 'https://216vhep1ye.execute-api.us-east-1.amazonaws.com';
+export const URL = 'https://2wea912yue.execute-api.us-east-1.amazonaws.com';
 // export const URL = 'https://appcodegas.com:3131'; //// URL WEB DEV
-export const URL = 'http://192.168.0.5:4000'; //// URL local para Android
+// export const URL = 'http://192.168.0.5:4000'; //// URL local para Android
 export const VERSION = '1.0.0';
 axios.defaults.baseURL = URL;
 
@@ -27,11 +27,8 @@ function App(): React.JSX.Element {
       try {
         // Initialize Firebase if not already initialized
         if (getApps().length === 0) {
-          console.log('⚠️ No Firebase apps found, initializing...');
           await initializeApp();
-          console.log('✅ Firebase initialized successfully');
         } else {
-          console.log('✅ Firebase already initialized');
         }
 
         // Wait to ensure Firebase is fully ready
@@ -41,9 +38,7 @@ function App(): React.JSX.Element {
         try {
           const app = getApp();
           const auth = app.auth();
-          console.log('✅ Firebase Auth module loaded successfully');
         } catch (authError) {
-          console.log('⚠️ Firebase Auth not ready yet, waiting more...');
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
@@ -52,7 +47,6 @@ function App(): React.JSX.Element {
 
         // Initialize push notification service after Firebase
         await pushNotificationService.initialize();
-        console.log('✅ Push notification service initialized');
 
         // Test Firebase installation (remove this in production)
         // setTimeout(() => {

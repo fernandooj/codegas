@@ -15,7 +15,7 @@ export interface Ubicacion {
     _id?: string;
     location?: any;
     place_name?: string;
-    is_active?: boolean;
+    activo?: boolean;
     lat?: string;
     lng?: string;
 }

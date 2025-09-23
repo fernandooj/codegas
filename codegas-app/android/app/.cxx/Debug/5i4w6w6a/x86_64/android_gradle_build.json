@@ -8,6 +8,7 @@
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/@react-native-vector-icons/fontawesome/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-blob-util/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-crop-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-pdf/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
@@ -56,6 +57,11 @@
       "toolchain": "toolchain",
       "abi": "x86_64",
       "artifactName": "react_codegen_RNDateTimePickerCGen"
+    },
+    "react_codegen_RNImagePickerSpec::@f66ee9a2efecfb28bee4": {
+      "toolchain": "toolchain",
+      "abi": "x86_64",
+      "artifactName": "react_codegen_RNImagePickerSpec"
     },
     "react_codegen_ReactNativeBlobUtilSpec::@7d3cc6108106e04bb830": {
       "toolchain": "toolchain",

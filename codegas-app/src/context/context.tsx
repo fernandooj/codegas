@@ -25,7 +25,6 @@ const DataProvider = ({ children }: any) => {
   const getUserInfo = async (uid: any) => {
     try {
       const userData = await getUserByUid(uid);
-      console.log('Datos recibidos de getUserByUid:', userData);
 
       const { _id, acceso, nombre, email: newEmail, avatar } = userData || {};
 
@@ -61,7 +60,6 @@ const DataProvider = ({ children }: any) => {
 
         if (validItems.length > 0) {
           await AsyncStorage.multiSet(validItems);
-          console.log('Datos guardados en AsyncStorage:', { _id, acceso, nombre, email: newEmail, avatar });
         }
       } catch (error) {
         console.error('Error guardando en AsyncStorage:', error);
@@ -95,7 +93,6 @@ const DataProvider = ({ children }: any) => {
         setNombre(nombre);
         setEmail(email);
         setAvatar(avatar);
-        console.log('Datos cargados desde AsyncStorage:', { userId, acceso, nombre, email, avatar });
       }
     } catch (error) {
       console.error('Error cargando desde AsyncStorage:', error);
@@ -117,7 +114,6 @@ const DataProvider = ({ children }: any) => {
           try {
             // Verificar que Firebase esté completamente inicializado
             if (getApps().length === 0) {
-              console.log(`⚠️ Firebase not ready in context, attempt ${attempts + 1}/${maxAttempts}`);
               await new Promise(resolve => setTimeout(resolve, 500));
               attempts++;
               continue;
@@ -126,16 +122,13 @@ const DataProvider = ({ children }: any) => {
             // Verificar que el módulo de auth esté disponible y funcional
             const authModule = auth();
             if (authModule && typeof authModule.onAuthStateChanged === 'function') {
-              console.log('✅ Firebase Auth ready in context');
               const subscriber = authModule.onAuthStateChanged(onAuthStateChanged);
               return subscriber;
             } else {
-              console.log(`⚠️ Auth module not ready, attempt ${attempts + 1}/${maxAttempts}`);
               await new Promise(resolve => setTimeout(resolve, 500));
               attempts++;
             }
           } catch (authError) {
-            console.log(`⚠️ Auth error, attempt ${attempts + 1}/${maxAttempts}:`, authError.message);
             await new Promise(resolve => setTimeout(resolve, 500));
             attempts++;
           }
@@ -172,17 +165,7 @@ const DataProvider = ({ children }: any) => {
         if (token) {
           setFcmToken(token);
           await AsyncStorage.setItem('fcmToken', token);
-          console.log('🎫 ===== FCM TOKEN EN CONTEXTO =====');
-          console.log('📱 Token FCM obtenido desde contexto:', token);
-          console.log('📏 Longitud del token:', token.length);
-          console.log('🔍 Primeros 20 caracteres:', token.substring(0, 20) + '...');
-          console.log('🔍 Últimos 20 caracteres:', '...' + token.substring(token.length - 20));
-          console.log('💾 Token guardado en AsyncStorage desde contexto');
-          console.log('🎫 ================================');
         } else {
-          console.log('❌ No se pudo obtener FCM token desde contexto');
-          console.log('💡 Esto es NORMAL si estás usando un emulador/simulador');
-          console.log('💡 Los tokens FCM solo funcionan en dispositivos físicos');
         }
       } catch (error) {
         console.error('Error getting FCM token in context:', error);
@@ -195,20 +178,16 @@ const DataProvider = ({ children }: any) => {
   // Función para actualizar los datos del usuario en el contexto
   const updateUserData = async (newUserData: any) => {
     try {
-      console.log('🔄 updateUserData llamada con:', newUserData);
       const { nombre, email, avatar } = newUserData;
 
       // Actualizar estado del contexto
       if (nombre !== undefined && nombre !== null) {
-        console.log('📝 Actualizando nombre en contexto:', nombre);
         setNombre(nombre);
       }
       if (email !== undefined && email !== null) {
-        console.log('📧 Actualizando email en contexto:', email);
         setEmail(email);
       }
       if (avatar !== undefined && avatar !== null) {
-        console.log('🖼️ Actualizando avatar en contexto:', avatar);
         setAvatar(avatar);
       }
 
@@ -220,7 +199,6 @@ const DataProvider = ({ children }: any) => {
 
       if (itemsToUpdate.length > 0) {
         await AsyncStorage.multiSet(itemsToUpdate);
-        console.log('✅ Datos del usuario actualizados en contexto y AsyncStorage:', { nombre, email, avatar });
       }
     } catch (error) {
       console.error('❌ Error actualizando datos del usuario:', error);
@@ -260,7 +238,6 @@ const DataProvider = ({ children }: any) => {
               console.error('Error al crear la cuenta:', createUserResult);
               return { response: false };
             } else {
-              console.log('Cuenta creada:', createUserResult);
               await sendNewPassword(email, generatedPassword);
               await updateUid(email, createUserResult.uid)
               return {
@@ -271,7 +248,6 @@ const DataProvider = ({ children }: any) => {
           }
         } else {
           // Otro tipo de error
-          console.log('Error al iniciar sesión:', error?.message);
         }
         return false;
       }
@@ -315,7 +291,6 @@ const DataProvider = ({ children }: any) => {
 
         // Cerrar sesión en Firebase
         await auth().signOut();
-        console.log('Sesión cerrada y datos limpiados');
       } catch (error) {
         console.error('Error al cerrar sesión:', error);
       }
