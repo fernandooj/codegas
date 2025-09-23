@@ -11,7 +11,6 @@ const getZonas = () => {
         return axios
             .get("zon/zona")
             .then(res => {
-                console.log("Zonas response:", res.data);
                 if (res.data.status) {
                     dispatch({
                         type: GET_ZONAS,
@@ -19,12 +18,10 @@ const getZonas = () => {
                     });
                     return { success: true, zonas: res.data.zona };
                 } else {
-                    console.log("Error in zonas response:", res.data);
                     return { success: false, error: "No status in response" };
                 }
             })
             .catch(err => {
-                console.log("Error getting zonas:", err);
                 return { success: false, error: err.message };
             });
     };
@@ -46,7 +43,6 @@ const createZona = (nombre) => {
                 }
             })
             .catch(err => {
-                console.log("Error creating zona:", err);
                 return { success: false, error: "Error creating zona" };
             });
     };
@@ -75,7 +71,6 @@ const updateZona = (id, nombre) => {
                 }
             })
             .catch(err => {
-                console.log("Error updating zona:", err);
                 return { success: false, error: "Error updating zona" };
             });
     };
@@ -104,7 +99,6 @@ const deleteZona = (id) => {
                 }
             })
             .catch(err => {
-                console.log("Error deleting zona:", err);
                 return { success: false, error: "Error deleting zona" };
             });
     };

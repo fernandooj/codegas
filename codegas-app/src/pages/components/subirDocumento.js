@@ -85,7 +85,6 @@ export default class subirDocumento extends Component {
 
                 {
                     text: 'Cancelar',
-                    onPress: () => console.log('Cancel Pressed'),
                     style: 'cancel'
                 },
                 { text: 'Eliminar', onPress: () => eliminar() }
@@ -98,7 +97,6 @@ export default class subirDocumento extends Component {
             let imagenes = this.state.imagenes.filter((e, key) => {
                 return key != keyImagen
             })
-            console.log({ imagenes2: imagenes })
             this.setState({ imagenes })
             this.props.imagenes(imagenes)
         }

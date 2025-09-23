@@ -17,17 +17,13 @@ export default class PDFExample extends React.Component {
                 <Pdf
                     source={source}
                     onLoadComplete={(numberOfPages, filePath) => {
-                        console.log(`number of pages: ${numberOfPages}`);
                     }}
                     onPageChanged={(page, numberOfPages) => {
-                        console.log(`current page: ${page}`);
                     }}
                     onError={(error) => {
                         alert("por el momento no podemos cargar este pdf")
-                        console.log(error);
                     }}
                     onPressLink={(uri) => {
-                        console.log(`Link presse: ${uri}`)
                     }}
                     style={styles.pdf} />
             </View>

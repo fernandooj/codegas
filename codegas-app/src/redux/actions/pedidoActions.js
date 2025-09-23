@@ -22,7 +22,6 @@ const getPedido = pedidoId => {
         });
       })
       .catch(err => {
-        console.log(err);
       });
   };
 };
@@ -38,7 +37,6 @@ const getPedidoByUser = userId => {
         });
       })
       .catch(err => {
-        console.log(err);
       });
   };
 };
@@ -57,12 +55,9 @@ const getPedidos = (idUser, start, limit, acceso, search, estado = 'todos', orde
       const validOrdenPor = ordenPor && ordenPor !== 'undefined' ? ordenPor : 'fecha_creacion';
       const validTipoOrden = tipoOrden && tipoOrden !== 'undefined' ? tipoOrden : 'DESC';
 
-      console.log('Parámetros validados:', { validIdUser, validStart, validLimit, validAcceso, validSearch, validEstado, validOrdenPor, validTipoOrden });
 
       // Construir URL y mostrarla para debug
       const newUrl = `/ped/pedido/todos/app/${validIdUser}/${validLimit}/${validStart}/${validAcceso}/${validSearch}/${validEstado}/${validOrdenPor}/${validTipoOrden}`;
-      console.log('🔍 URL generada:', newUrl);
-      console.log('🔍 URL esperada:', '/ped/pedido/todos/app/{usuarioId}/{limit}/{start}/{acceso}/{search}/{estado}/{ordenPor}/{tipoOrden}');
 
       // Usar la nueva ruta con todos los parámetros (backend debe estar actualizado)
       const response = await axios.get(newUrl);
@@ -96,7 +91,6 @@ const getVehiculosConPedidos = (data) => {
         });
       })
       .catch(err => {
-        console.log(err);
       });
   };
 };
@@ -112,7 +106,6 @@ const getZonasPedidos = (fechaEntrega) => {
         });
       })
       .catch(err => {
-        console.log(err);
       });
   };
 };
@@ -128,7 +121,6 @@ const getFrecuencia = () => {
         });
       })
       .catch(err => {
-        console.log(err);
       });
   };
 };
@@ -140,8 +132,6 @@ const getPedidosChart = (idUser) => {
       if (response.status !== 200) {
         throw new Error(`Ruquest failed with status ${response.status}`)
       }
-      console.log("response.data")
-      console.log(response.data)
       dispatch({
         type: GET_PEDIDOS_CHART,
         pedidosChart: response.data.pedido,
@@ -249,7 +239,6 @@ const guardarNovedadInactivo = async (pedidoId, novedad) => {
 // Acción para asignar conductor
 const asignarConductor = async (id, idVehiculo, fechaEntrega, usuarioAsigna) => {
   try {
-    console.log('🚛 asignarConductor API call:', { id, idVehiculo, fechaEntrega, usuarioAsigna });
     const response = await axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${usuarioAsigna}`);
     return response.data;
   } catch (error) {
@@ -352,9 +341,6 @@ const finalizarPedido = async (id, pedidoData) => {
       mime: mimeType       // Mime type extraído de la imagen
     };
 
-    console.log('ID del pedido:', id);
-    console.log('Datos del pedido:', pedidoData);
-    console.log('Enviando JSON al backend:', data);
 
     const response = await axios({
       method: 'post',

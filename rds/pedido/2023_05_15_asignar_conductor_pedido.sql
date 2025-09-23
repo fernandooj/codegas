@@ -1,3 +1,4 @@
+drop function if exists asignar_conductor_pedido;
 CREATE OR REPLACE FUNCTION asignar_conductor_pedido(
     _pedidoId INT,
     _carroId INT,
@@ -14,7 +15,8 @@ DECLARE
     newOrden integer;
     fechaEntregaTimestamp TIMESTAMP; -- Variable para almacenar la fecha como TIMESTAMP
 BEGIN
-    fechaEntregaTimestamp := TO_TIMESTAMP(_fechaEntrega, 'YYYY-MM-DD HH24:MI:SS'); -- Convierte la fecha a TIMESTAMP
+    -- Convertir la fecha desde formato ISO (2025-09-22T05:00:00.000Z) a TIMESTAMP
+    fechaEntregaTimestamp := TO_TIMESTAMP(_fechaEntrega, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"');
     SELECT conductor INTO idConductor FROM carros WHERE _id = _carroId;
     SELECT orden INTO newOrden FROM pedidos WHERE fechaEntrega = fechaEntregaTimestamp AND conductorId = idConductor;
     IF newOrden IS NULL THEN newOrden := 0+1; ELSE newOrden := newOrden + 1; END IF;

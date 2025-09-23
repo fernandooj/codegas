@@ -352,5 +352,36 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	scrollView: {
 		marginBottom: 85
-	}
+	},
+	// Floating button styles
+	floatingButton: {
+		position: 'absolute',
+		bottom: 100,
+		right: 20,
+		width: 60,
+		height: 60,
+		borderRadius: 30,
+		backgroundColor: '#00218b',
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 4,
+		},
+		shadowOpacity: 0.3,
+		shadowRadius: 4.65,
+		elevation: 8,
+	},
+	floatingButtonIcon: {
+		color: 'white',
+		fontSize: 24,
+		fontWeight: 'bold',
+	},
+}, {
+	"@media (min-device-height: 812)": {
+		floatingButton: {
+			bottom: 110,
+		},
+	},
 })

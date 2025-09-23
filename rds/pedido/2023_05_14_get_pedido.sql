@@ -1,9 +1,14 @@
+DROP FUNCTION IF EXISTS get_pedidos;
+
 CREATE OR REPLACE FUNCTION get_pedidos(
     _usuarioId INT,
     _limit INT,
     _start INT,
     _acceso VARCHAR(10),
-    _busqueda VARCHAR(255)
+    _busqueda VARCHAR(255),
+    _estado_filtro VARCHAR(20),
+    _orden_por VARCHAR(50),
+    _tipo_orden VARCHAR(4)
 )
 RETURNS TABLE (
     _id INT,
@@ -42,12 +47,16 @@ RETURNS TABLE (
     remision       character varying,
     forma_pago character varying,
     observacion_pedido VARCHAR(255),
+    coordenadas point,
+    lat double precision,
+    lng double precision,
     total INT
 )
 LANGUAGE plpgsql AS
 $func$
 DECLARE
     _total INT;
+    _query TEXT;
 BEGIN
     IF _acceso = 'admin' THEN
         SELECT COUNT(*) INTO _total 
@@ -59,10 +68,25 @@ BEGIN
         LEFT JOIN carros c ON p.carroId = c._id
         LEFT JOIN users u3 ON p.conductorId = u3._id
         WHERE p.eliminado = false
-        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.motivo_no_cierre, p.perfil_novedad, p.observacion) ILIKE '%' || _busqueda || '%');
+        AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.motivo_no_cierre, p.perfil_novedad, p.observacion) ILIKE '%' || _busqueda || '%')
+        AND (
+            _estado_filtro = 'todos' OR 
+            (_estado_filtro = 'espera' AND p.estado = 'espera') OR
+            (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
+            (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'otro' AND (
+                p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
+                NOT (p.estado = 'activo' AND p.entregado = false)
+            ))
+        );
 
         RETURN QUERY 
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, _total
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, pt.coordenadas,
+               CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[1] ELSE NULL END AS lat,
+               CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[0] ELSE NULL END AS lng,
+               _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -72,7 +96,46 @@ BEGIN
         LEFT JOIN users u3 ON p.conductorId = u3._id
         WHERE p.eliminado = false
         AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.motivo_no_cierre, p.perfil_novedad, p.observacion) ILIKE '%' || _busqueda || '%')
-        ORDER BY p._id DESC
+        AND (
+            _estado_filtro = 'todos' OR 
+            (_estado_filtro = 'espera' AND p.estado = 'espera') OR
+            (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
+            (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'otro' AND (
+                p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
+                NOT (p.estado = 'activo' AND p.entregado = false)
+            ))
+        )
+        ORDER BY 
+            CASE 
+                WHEN _orden_por = 'fecha_creacion' AND _tipo_orden = 'DESC' THEN p._id
+                WHEN _orden_por = 'precio' AND _tipo_orden = 'DESC' THEN p.cantidadPrecio
+                WHEN _orden_por = 'cantidad' AND _tipo_orden = 'DESC' THEN p.cantidadKl
+                ELSE NULL
+            END DESC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'fecha_creacion' AND _tipo_orden = 'ASC' THEN p._id
+                WHEN _orden_por = 'precio' AND _tipo_orden = 'ASC' THEN p.cantidadPrecio
+                WHEN _orden_por = 'cantidad' AND _tipo_orden = 'ASC' THEN p.cantidadKl
+                ELSE NULL
+            END ASC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'razon_social' AND _tipo_orden = 'DESC' THEN u.razon_social
+                WHEN _orden_por = 'nombre_cliente' AND _tipo_orden = 'DESC' THEN u.nombre
+                WHEN _orden_por = 'vehiculo' AND _tipo_orden = 'DESC' THEN c.placa
+                WHEN _orden_por = 'fecha_solicitud' AND _tipo_orden = 'DESC' THEN p.fechaSolicitud
+                ELSE NULL
+            END DESC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'razon_social' AND _tipo_orden = 'ASC' THEN u.razon_social
+                WHEN _orden_por = 'nombre_cliente' AND _tipo_orden = 'ASC' THEN u.nombre
+                WHEN _orden_por = 'vehiculo' AND _tipo_orden = 'ASC' THEN c.placa
+                WHEN _orden_por = 'fecha_solicitud' AND _tipo_orden = 'ASC' THEN p.fechaSolicitud
+                ELSE NULL
+            END ASC NULLS LAST,
+            p._id DESC
         LIMIT _limit OFFSET _start;
 
     ELSIF _acceso = 'conductor' THEN
@@ -86,10 +149,25 @@ BEGIN
         LEFT JOIN users u3 ON p.conductorId = u3._id
         WHERE p.fechaEntrega > (now() - interval '1 day')
         AND p.eliminado = false
-        AND p.conductorId = _usuarioId;
+        AND p.conductorId = _usuarioId
+        AND (
+            _estado_filtro = 'todos' OR 
+            (_estado_filtro = 'espera' AND p.estado = 'espera') OR
+            (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
+            (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'otro' AND (
+                p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
+                NOT (p.estado = 'activo' AND p.entregado = false)
+            ))
+        );
 
         RETURN QUERY 
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, _total
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, pt.coordenadas,
+               CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[1] ELSE NULL END AS lat,
+               CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[0] ELSE NULL END AS lng,
+               _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -100,12 +178,55 @@ BEGIN
         WHERE p.fechaEntrega > (now() - interval '1 day')
         AND p.eliminado = false
         AND p.conductorId = _usuarioId
+        AND (
+            _estado_filtro = 'todos' OR 
+            (_estado_filtro = 'espera' AND p.estado = 'espera') OR
+            (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
+            (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'otro' AND (
+                p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
+                NOT (p.estado = 'activo' AND p.entregado = false)
+            ))
+        )
+        ORDER BY 
+            CASE 
+                WHEN _orden_por = 'fecha_creacion' AND _tipo_orden = 'DESC' THEN p._id
+                WHEN _orden_por = 'precio' AND _tipo_orden = 'DESC' THEN p.cantidadPrecio
+                WHEN _orden_por = 'cantidad' AND _tipo_orden = 'DESC' THEN p.cantidadKl
+                ELSE NULL
+            END DESC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'fecha_creacion' AND _tipo_orden = 'ASC' THEN p._id
+                WHEN _orden_por = 'precio' AND _tipo_orden = 'ASC' THEN p.cantidadPrecio
+                WHEN _orden_por = 'cantidad' AND _tipo_orden = 'ASC' THEN p.cantidadKl
+                ELSE NULL
+            END ASC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'razon_social' AND _tipo_orden = 'DESC' THEN u.razon_social
+                WHEN _orden_por = 'nombre_cliente' AND _tipo_orden = 'DESC' THEN u.nombre
+                WHEN _orden_por = 'vehiculo' AND _tipo_orden = 'DESC' THEN c.placa
+                WHEN _orden_por = 'fecha_solicitud' AND _tipo_orden = 'DESC' THEN p.fechaSolicitud
+                ELSE NULL
+            END DESC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'razon_social' AND _tipo_orden = 'ASC' THEN u.razon_social
+                WHEN _orden_por = 'nombre_cliente' AND _tipo_orden = 'ASC' THEN u.nombre
+                WHEN _orden_por = 'vehiculo' AND _tipo_orden = 'ASC' THEN c.placa
+                WHEN _orden_por = 'fecha_solicitud' AND _tipo_orden = 'ASC' THEN p.fechaSolicitud
+                ELSE NULL
+            END ASC NULLS LAST,
+            p._id DESC
         LIMIT _limit
         OFFSET _start;
 
     ELSE
         RETURN QUERY
-        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario AS valorUnitarioUsuario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre AS zona, u2.nombre AS usuarioCrea, u3.nombre AS conductor, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, _total
+        SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario AS valorUnitarioUsuario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre AS zona, u2.nombre AS usuarioCrea, u3.nombre AS conductor, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, pt.coordenadas,
+               CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[1] ELSE NULL END AS lat,
+               CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[0] ELSE NULL END AS lng,
+               _total
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
         LEFT JOIN zonas z ON pt.idZona = z._id
@@ -127,7 +248,46 @@ BEGIN
         ) 
         AND p.eliminado = false
         AND (CONCAT(p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.imagenCerrar, p.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.motivo_no_cierre, p.perfil_novedad, p.observacion) ILIKE '%' || _busqueda || '%')
-        ORDER BY p._id DESC
+        AND (
+            _estado_filtro = 'todos' OR 
+            (_estado_filtro = 'espera' AND p.estado = 'espera') OR
+            (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
+            (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'otro' AND (
+                p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
+                NOT (p.estado = 'activo' AND p.entregado = false)
+            ))
+        )
+        ORDER BY 
+            CASE 
+                WHEN _orden_por = 'fecha_creacion' AND _tipo_orden = 'DESC' THEN p._id
+                WHEN _orden_por = 'precio' AND _tipo_orden = 'DESC' THEN p.cantidadPrecio
+                WHEN _orden_por = 'cantidad' AND _tipo_orden = 'DESC' THEN p.cantidadKl
+                ELSE NULL
+            END DESC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'fecha_creacion' AND _tipo_orden = 'ASC' THEN p._id
+                WHEN _orden_por = 'precio' AND _tipo_orden = 'ASC' THEN p.cantidadPrecio
+                WHEN _orden_por = 'cantidad' AND _tipo_orden = 'ASC' THEN p.cantidadKl
+                ELSE NULL
+            END ASC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'razon_social' AND _tipo_orden = 'DESC' THEN u.razon_social
+                WHEN _orden_por = 'nombre_cliente' AND _tipo_orden = 'DESC' THEN u.nombre
+                WHEN _orden_por = 'vehiculo' AND _tipo_orden = 'DESC' THEN c.placa
+                WHEN _orden_por = 'fecha_solicitud' AND _tipo_orden = 'DESC' THEN p.fechaSolicitud
+                ELSE NULL
+            END DESC NULLS LAST,
+            CASE 
+                WHEN _orden_por = 'razon_social' AND _tipo_orden = 'ASC' THEN u.razon_social
+                WHEN _orden_por = 'nombre_cliente' AND _tipo_orden = 'ASC' THEN u.nombre
+                WHEN _orden_por = 'vehiculo' AND _tipo_orden = 'ASC' THEN c.placa
+                WHEN _orden_por = 'fecha_solicitud' AND _tipo_orden = 'ASC' THEN p.fechaSolicitud
+                ELSE NULL
+            END ASC NULLS LAST,
+            p._id DESC
         LIMIT _limit
         OFFSET _start;
     END IF;

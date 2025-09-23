@@ -82,7 +82,7 @@ togglePuntoStatus:
   name: ${self:custom.base}-toggle-punto-status
   handler: services/puntos/src/toggle-punto-status.main
   events:
-    - httpApi: 'PUT /pun/punto/toggleStatus/{_id}/{is_active}'
+    - httpApi: 'PUT /pun/punto/toggle-status/{_id}/{activo}'
   package:
     include:
       - services/puntos/src/toggle-punto-status.js

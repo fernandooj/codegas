@@ -1,3 +1,4 @@
+drop function if exists update_user;
 CREATE OR REPLACE FUNCTION update_user(
     p_id INT,
     p_uid character varying DEFAULT NULL,
@@ -16,7 +17,8 @@ CREATE OR REPLACE FUNCTION update_user(
     p_avatar character varying DEFAULT NULL,
     p_codt character varying DEFAULT NULL,
     p_codigoRegistro character varying DEFAULT NULL,
-    p_valorUnitario INT DEFAULT NULL
+    p_valorUnitario INT DEFAULT NULL,
+    p_idpadre INT DEFAULT NULL
 )
 RETURNS VOID AS $$
 BEGIN
@@ -38,7 +40,8 @@ BEGIN
         avatar = COALESCE(p_avatar, avatar),
         codt = COALESCE(p_codt, codt),
         codigoRegistro = COALESCE(p_codigoRegistro, codigoRegistro),
-        valorUnitario = COALESCE(p_valorUnitario, valorUnitario)
+        valorUnitario = COALESCE(p_valorUnitario, valorUnitario),
+        idPadre = COALESCE(p_idpadre, idPadre)
     WHERE _id = p_id;
 END;
 $$ LANGUAGE plpgsql;

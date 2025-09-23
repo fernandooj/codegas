@@ -11,7 +11,11 @@ create table if not exists puntos(
     idCliente INT,
     idPadre INT,
     coordenadas POINT,
-    place_name character varying
+    place_name character varying,
+    activo boolean default true
 );
 
 COMMENT ON TABLE puntos IS 'Info data of PUNTOS';
+
+
+alter table puntos add column if not exists activo boolean default true;

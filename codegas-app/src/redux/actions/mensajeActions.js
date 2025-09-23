@@ -17,7 +17,6 @@ const getConversaciones = () => {
               });
           })
           .catch(err => {
-            console.log(err);
           });
       };
 }
@@ -33,7 +32,6 @@ const getConversacion = idConversacion => {
             });
         })
         .catch(err => {
-          console.log(err);
         });
     };
 };
@@ -50,7 +48,6 @@ const getMensajes = idConversacion => {
             });
         })
         .catch(err => {
-          console.log(err);
         });
     };
 };

@@ -12,8 +12,8 @@ export const style = MediaQueryStyleSheet.create({
         flex: 1,
     },
     cabezera: {
-        width: '90%',
-        height: 120,
+        width: '70%',
+        height: 130,
         alignSelf: 'center'
     },
     subContainerNuevo: {

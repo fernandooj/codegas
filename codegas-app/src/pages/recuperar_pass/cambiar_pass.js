@@ -92,7 +92,6 @@ class Home extends Component {
         } else {
             axios.post("user/CambiarPassword", { email, password })
                 .then(e => {
-                    console.log(e.data)
                     if (e.data.status) {
                         this.cambioExitoso(e.data.user)
                     } else {
@@ -100,13 +99,11 @@ class Home extends Component {
                     }
                 })
                 .catch(err => {
-                    console.log(err)
                 })
         }
 
     }
     async cambioExitoso(user) {
-        console.log(user)
         AsyncStorage.setItem('userId', user._id)
         AsyncStorage.setItem('nombre', user.nombre ? user.nombre : "")
         AsyncStorage.setItem('email', user.email)
@@ -119,10 +116,8 @@ class Home extends Component {
     }
     recuperar() {
         const { email } = this.state
-        console.log({ email })
         axios.post("user/recover", { email })
             .then(e => {
-                console.log(e.data)
                 if (e.data.status) {
 
                     this.setState({ showModulo: "code", code: e.data.token.toString() })
@@ -131,7 +126,6 @@ class Home extends Component {
                 }
             })
             .catch(err => {
-                console.log(err)
             })
     }
 }

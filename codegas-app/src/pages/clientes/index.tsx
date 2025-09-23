@@ -124,6 +124,10 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
     }
   }, [navigation, route, state.scrollPosition]);
 
+  const navigateToCreateClient = useCallback(() => {
+    navigation.navigate('editarPerfil', { tipoAcceso: 'crear' });
+  }, [navigation]);
+
   // Función para renderizar clientes jerárquicamente
   const renderClienteJerarquico = useCallback((usuario: Usuario, nivel: number = 0) => {
     const paddingLeft = nivel * 20;
@@ -389,6 +393,14 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
       </ScrollView>
 
       <Footer navigation={navigation} />
+
+      {/* Round + button with shadow */}
+      <TouchableOpacity
+        style={style.floatingButton}
+        onPress={navigateToCreateClient}
+      >
+        <FontAwesome name={'plus'} style={style.floatingButtonIcon} />
+      </TouchableOpacity>
     </View>
   );
 };

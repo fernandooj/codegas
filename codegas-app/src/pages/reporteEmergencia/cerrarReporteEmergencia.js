@@ -22,7 +22,6 @@ class cerrarReporte extends Component{
         let revisionId = this.props.navigation.state.params ?this.props.navigation.state.params.revisionId :null
         axios.get(`rev/revision/byId/${revisionId}`)
                 .then(res => {
-                    console.log(res.data)
                     const {revision} = res.data
                     let tanqueIdArray = []
                     revision.tanqueId.map(e=>{
@@ -157,7 +156,6 @@ class cerrarReporte extends Component{
     }
     handleSubmit(){
         const {distancias, extintores, imgDepTecnico, depTecnicoText, avisos, electricas, revisionId} = this.state
-        console.log({distancias, extintores, imgDepTecnico, depTecnicoText, avisos, revisionId})
         this.setState({cargando:true})
         let data = new FormData();
         imgDepTecnico.forEach(e=>{
@@ -175,13 +173,11 @@ class cerrarReporte extends Component{
             data: data,
         })
         .then((res)=>{
-            console.log(res.data)
             alert("Revisión Cerrada")
             const {navigation} = this.props
             navigation.navigate("Home")
         })
         .catch(err=>{
-            console.log({err})
             this.setState({cargando:false})
         })
     }

@@ -143,7 +143,6 @@ const Zona = ({ navigation }) => {
             ``,
             [
                 { text: 'Confirmar', onPress: () => confirmDelete(_id, zona) },
-                { text: 'Cancelar', onPress: () => console.log() },
             ],
             { cancelable: false },
         );

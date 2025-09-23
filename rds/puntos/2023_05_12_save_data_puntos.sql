@@ -1,3 +1,4 @@
+DROP FUNCTION IF EXISTS save_puntos;
 CREATE or replace FUNCTION save_puntos(
     _direccion character varying,
     _capacidad character varying,
@@ -14,10 +15,10 @@ LANGUAGE plpgsql
 AS $function$
  
 BEGIN
-    INSERT INTO puntos( direccion, capacidad, observacion, punto, place_name, coordenadas, idZona, idCliente, idPadre)
-    VALUES(_direccion, _capacidad, _observacion, _punto, _place_name,  _coordenadas, _idZona, _idCliente, _idPadre);
+    INSERT INTO puntos( direccion, capacidad, observacion, punto, place_name, coordenadas, activo, idZona, idCliente, idPadre)
+    VALUES(_direccion, _capacidad, _observacion, _punto, _place_name,  _coordenadas, true, _idZona, _idCliente, _idPadre);
     RETURN 'PUNTO creada exitosamente';
 END;
 $function$
 
--- select * from save_puntos('1', '2', '3','4', '4.6230545, -74.1910443', 5 ,6, 7);
+-- select * from save_puntos('1', '2', '3','4', '4.6230545, -74.1910443', 'Place Name', 5 ,6, 7);

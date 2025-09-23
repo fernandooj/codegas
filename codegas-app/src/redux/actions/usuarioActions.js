@@ -61,7 +61,6 @@ const getUsuarios = (limit, start, acceso, search, id) => {
       // Construir la URL correctamente basada en si search está vacío o no
       const searchParam = search && search.trim() !== '' ? search : 'undefined';
       const res = await axios.get(`/users/acceso/${limit}/${start}/${acceso}/${searchParam}/${id}`);
-      console.log(res)
       dispatch({
         type: GET_USUARIOS,
         usuarios: res.data.user || []
@@ -89,7 +88,6 @@ const getUsuariosAcceso = (limit, start, acceso) => {
     return axios
       .get(`/users/acceso/${limit}/${start}/${acceso}/undefined`)
       .then(res => {
-        console.log(res.data)
         dispatch({
           type: GET_USUARIOS_ACCESO,
           usuariosAcceso: res.data.user || []
@@ -244,7 +242,7 @@ const signUpUser = async (userData) => {
 
 const updateUser = async (userId, userData) => {
   try {
-    const response = await axios.put(`user/update/${userId}`, userData);
+    const response = await axios.put(`users/update/${userId}`, userData);
     return response.data;
   } catch (error) {
     console.error('Error en updateUser:', {
@@ -267,7 +265,6 @@ const checkEmail = async (email) => {
     const emailLower = email.toLowerCase();
     const response = await axios.get(`users/email/${emailLower}`);
     // Si la respuesta es exitosa, significa que el email existe
-    // console.log(response.data)
     return response
   } catch (error) {
     // Si hay error 404, significa que el email no existe
@@ -351,7 +348,7 @@ const updateMultipleUsers = async (clientes, idPadre, nombrePadre) => {
 
 const createMultiplePoints = async (puntos, idPadre) => {
   try {
-    const response = await axios.post("pun/punto/varios", { puntos, idPadre });
+    const response = await axios.post("pun/punto/create-varios", { puntos, idPadre });
     return response.data;
   } catch (error) {
     console.error('Error en createMultiplePoints:', {
@@ -370,7 +367,10 @@ const createMultiplePoints = async (puntos, idPadre) => {
 
 const assignCommercial = async (userId, veoId) => {
   try {
-    const response = await axios.put(`/users/asignarComercial/${userId}/${veoId}`);
+    // Usar la función update en lugar de la función específica de asignar comercial
+    const response = await axios.put(`/users/${userId}`, {
+      idpadre: veoId
+    });
     return response.data;
   } catch (error) {
     console.error('Error en assignCommercial:', {
@@ -538,7 +538,7 @@ const updatePoints = async (pointsData) => {
 
 const signUp = async (userData) => {
   try {
-    const response = await axios.post("user/sign_up", userData);
+    const response = await axios.post("users", userData);
     return response.data;
   } catch (error) {
     console.error('Error en signUp:', {
@@ -556,7 +556,7 @@ const signUp = async (userData) => {
 
 const updateUserProfile = async (userId, userData) => {
   try {
-    const response = await axios.put(`user/update/${userId}`, userData);
+    const response = await axios.put(`users/${userId}`, userData);
     return response.data;
   } catch (error) {
     console.error('Error en updateUserProfile:', {
@@ -619,10 +619,8 @@ const sendFCMToken = (userId, fcmToken) => {
       });
 
       if (response.data.code === 1) {
-        console.log('FCM token sent successfully');
         return { success: true, data: response.data };
       } else {
-        console.log('Error sending FCM token:', response.data.message);
         return { success: false, error: response.data.message };
       }
     } catch (error) {

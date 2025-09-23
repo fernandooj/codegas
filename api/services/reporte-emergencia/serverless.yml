@@ -3,10 +3,14 @@ createReporteEmergencia:
   handler: services/reporte-emergencia/src/create-reporte-emergencia.main
   events:
     - httpApi: 'POST /rep/reporte-emergencia'
+  environment:
+    EMAIL_USER: ${self:custom.emailUser}
+    EMAIL_PASS: ${self:custom.emailPass}
   package:
     include:
-      - services/puntos/src/create-punto.js
+      - services/reporte-emergencia/src/create-reporte-emergencia.js
       - lib/errors/database-error.js
+      - assets/img/logo.jpg
 
 getReporteEmergencia:
   name: ${self:custom.base}-get-reporte-emergencia

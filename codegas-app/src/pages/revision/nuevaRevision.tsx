@@ -258,7 +258,6 @@ const NuevaRevision = ({ navigation, route }: any) => {
                         lng = revision.coordenadas ? revision.coordenadas.coordinates[0] : lng;
                         updateState({ lat, lng })
                     },
-                        (error) => console.log('error'),
                         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 })
                     )
                 })
@@ -318,7 +317,6 @@ const NuevaRevision = ({ navigation, route }: any) => {
                 `Seguro desea agregar este tanque a este usuario?`,
                 [
                     { text: 'Confirmar', onPress: () => confirmar() },
-                    { text: 'Cancelar', onPress: () => console.log("e") },
                 ],
                 { cancelable: false },
             )
@@ -350,14 +348,12 @@ const NuevaRevision = ({ navigation, route }: any) => {
             `${placaText}`,
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
-                { text: 'Cancelar', onPress: () => console.log("e") },
             ],
             { cancelable: false },
         )
         const confirmar = () => {
             sendNotificationDesvincularUsuario(placaText, codt, razon_social)
                 .then((res: any) => {
-                    console.log(res)
                     if (res.status) {
                         Alert.alert("Éxito", "Notificacion enviada")
                     }
@@ -453,7 +449,6 @@ const NuevaRevision = ({ navigation, route }: any) => {
             type,
             name: imagen.name
         }
-        console.log(data)
         addImagesToRevision(data)
             .then((res: any) => {
                 if (res.status) {
@@ -554,7 +549,6 @@ const NuevaRevision = ({ navigation, route }: any) => {
                 // Handle success
             })
             .catch(err => {
-                console.log({ err })
                 updateState({ cargando: false })
             })
     }, [state.observaciones, state.avisos, state.extintores, state.distancias, state.electricas, state.accesorios, state.revisionId, updateState]);
@@ -563,11 +557,9 @@ const NuevaRevision = ({ navigation, route }: any) => {
         let { lat, lng, revisionId, poblado, ciudad, dpto } = state
         lat = lat ? lat : 4.597825;
         lng = lng ? lng : -74.0755723;
-        console.log({ lat, lng, poblado, ciudad, dpto })
 
         updateRevisionCoordenadas(revisionId, { lat, lng, poblado, ciudad, dpto })
             .then((res: any) => {
-                console.log(res)
                 if (res.status) {
                     Alert.alert("Éxito", "Revisión Guardada")
                     // navigation.navigate("Home")

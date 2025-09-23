@@ -19,16 +19,32 @@ module.exports.main = async (event) => {
     fechaEntrega,
     nPedido
   } = event.pathParameters;
-  
+
   const client = await poolConection.connect();
 
   try {
-    await client.query(ASIGNAR_CONDUCTOR_PEDIDO, [pedidoId, carroId, fechaEntrega, nPedido])
+    // Convertir la fecha ISO a formato que PostgreSQL pueda entender mejor
+    let fechaFormateada = fechaEntrega;
+    if (fechaEntrega && fechaEntrega.includes('T')) {
+      // Si viene en formato ISO (2025-09-22T05:00:00.000Z), convertir a formato estándar
+      fechaFormateada = fechaEntrega.replace('T', ' ').replace('Z', '');
+      // Remover los milisegundos si están presentes
+      fechaFormateada = fechaFormateada.replace(/\.\d{3}/, '');
+    }
+
+    console.log('Fecha original:', fechaEntrega);
+    console.log('Fecha formateada:', fechaFormateada);
+
+    await client.query(ASIGNAR_CONDUCTOR_PEDIDO, [pedidoId, carroId, fechaFormateada, nPedido])
+
+    client.release();
+
     return {
       status: true
-      }
+    }
   } catch (error) {
     console.log(error)
+    client.release();
     throw new DatabaseError(error);
   }
 };

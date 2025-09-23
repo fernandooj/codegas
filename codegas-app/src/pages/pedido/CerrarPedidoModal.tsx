@@ -61,18 +61,14 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     onGuardarNovedad
 }) => {
     // Debug para ver qué pedidoId recibe el modal
-    console.log('🔍 CerrarPedidoModal - pedidoId recibido:', pedidoId);
-    console.log('🔍 CerrarPedidoModal - visible:', visible);
 
     // Monitorear cambios en pedidoId
     useEffect(() => {
-        console.log('🔍 CerrarPedidoModal - useEffect pedidoId cambió a:', pedidoId);
     }, [pedidoId]);
 
     // Limpiar campos cuando el modal se abre
     useEffect(() => {
         if (visible) {
-            console.log('🔍 CerrarPedidoModal - Modal abierto, limpiando campos');
             setKilos('');
             setFactura('');
             setValorTotal('');
@@ -116,7 +112,6 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     };
 
     const handleCerrarPedido = async () => {
-        console.log('🔍 CerrarPedidoModal - Iniciando cierre con pedidoId:', pedidoId);
 
         if (!kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !novedad) {
             Alert.alert('Error', 'Por favor llene todos los campos');
@@ -137,10 +132,8 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
         let imagenBase64: string | null = null;
         if (imagen) {
             imagenBase64 = await convertImageToBase64(imagen);
-            console.log('📷 Imagen convertida a base64:', imagenBase64 ? 'Éxito' : 'Error');
         }
 
-        console.log('🔍 CerrarPedidoModal - pedidoId antes de enviar:', pedidoId);
 
         // Llamar a la función de cierre
         onCerrarPedido({
@@ -155,7 +148,6 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
 
         // Limpiar campos después de enviar (para la próxima vez)
         setTimeout(() => {
-            console.log('🔍 CerrarPedidoModal - Limpiando campos después del envío');
             setKilos('');
             setFactura('');
             setValorTotal('');
@@ -202,7 +194,6 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     const handleImageSelected = (imagenData: any) => {
         if (imagenData && imagenData.uri) {
             setImagen(imagenData.uri);
-            console.log('📷 Imagen seleccionada:', imagenData.uri);
         }
     };
 
@@ -573,17 +564,36 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                             }}>
                                                 <FontAwesome name="balance-scale" style={{ fontSize: 16, color: '#666', marginRight: 10 }} />
                                                 <TextInput
-                                                    placeholder="Ej: 120.5"
+                                                    placeholder="Ej: 120,5 o 120.5"
                                                     placeholderTextColor="#999"
                                                     value={kilos}
                                                     onChangeText={(text) => {
-                                                        // Solo permite números y un punto decimal
-                                                        const numericValue = text.replace(/[^0-9.]/g, '');
-                                                        // Evita múltiples puntos decimales
-                                                        const parts = numericValue.split('.');
-                                                        if (parts.length > 2) {
+                                                        // Permite números, puntos y comas
+                                                        const numericValue = text.replace(/[^0-9.,]/g, '');
+
+                                                        // Evita múltiples puntos decimales y múltiples comas
+                                                        const dotCount = (numericValue.match(/\./g) || []).length;
+                                                        const commaCount = (numericValue.match(/,/g) || []).length;
+
+                                                        if (dotCount > 1 || commaCount > 1) {
                                                             return;
                                                         }
+
+                                                        // Si hay tanto punto como coma, solo permitir el último
+                                                        if (dotCount > 0 && commaCount > 0) {
+                                                            const lastDot = numericValue.lastIndexOf('.');
+                                                            const lastComma = numericValue.lastIndexOf(',');
+
+                                                            if (lastDot > lastComma) {
+                                                                // Punto es más reciente, eliminar comas
+                                                                setKilos(numericValue.replace(/,/g, ''));
+                                                            } else {
+                                                                // Coma es más reciente, eliminar puntos
+                                                                setKilos(numericValue.replace(/\./g, ''));
+                                                            }
+                                                            return;
+                                                        }
+
                                                         setKilos(numericValue);
                                                     }}
                                                     keyboardType="numeric"
@@ -848,7 +858,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                     <View style={{ gap: 12, marginTop: 20 }}>
                                         <TouchableOpacity
                                             style={{
-                                                backgroundColor: !kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !novedad || !imagen
+                                                backgroundColor: !kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !imagen
                                                     ? '#ccc' : '#007bff',
                                                 borderRadius: 12,
                                                 paddingVertical: 16,
@@ -862,7 +872,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                 elevation: 3,
                                             }}
                                             onPress={handleCerrarPedido}
-                                            disabled={!kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !novedad || !imagen}
+                                            disabled={!kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !imagen}
                                             activeOpacity={0.8}
                                         >
                                             <FontAwesome name="check-circle" style={{

@@ -227,7 +227,6 @@ class Tanques extends Component {
                         lng = revision.coordenadas ? revision.coordenadas.coordinates[0] : lng;
                         this.setState({ lat, lng })
                     },
-                        (error) => console.log('error'),
                         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 })
                     )
                 })
@@ -251,8 +250,6 @@ class Tanques extends Component {
         let { tanqueArray, tanqueIdArray, usuarioId, puntoId, tanques } = this.state
         // axios.get(`tan/tanque/byId/${id.key}`)
         // .then(res=>{
-        //     console.log(id)
-        //     console.log(res.data)
         //     const {tanque} = res.data
         //     let infoTanque={
         //         _id:                tanque._id,
@@ -272,7 +269,6 @@ class Tanques extends Component {
                 `Seguro desea agregar este tanque a este usuario?`,
                 [
                     { text: 'Confirmar', onPress: () => confirmar() },
-                    { text: 'Cancelar', onPress: () => console.log("e") },
                 ],
                 { cancelable: false },
             )
@@ -301,14 +297,12 @@ class Tanques extends Component {
             `${placaText}`,
             [
                 { text: 'Confirmar', onPress: () => confirmar() },
-                { text: 'Cancelar', onPress: () => console.log("e") },
             ],
             { cancelable: false },
         )
         const confirmar = () => {
             axios.get(`tan/tanque/notificacionDesvincularUsuario/${placaText}/${codt}/${razon_social}`)
                 .then(res => {
-                    console.log(res.data)
                     if (res.data.status) {
                         alert("Notificacion enviada")
                     }
@@ -728,7 +722,6 @@ uploadImagen(imagen, type, mime) {
         type,
         name: imagen.name
     }
-    console.log(data)
     axios({
         method: 'PUT',
         url: `rev/revision/add-images`,
@@ -1053,7 +1046,6 @@ editarStep2() {
             if (res.data.status) {
                 // axios.put(`pun/punto/editaAlmacenamiento/${puntoId}/${capacidad}`)
                 // .then((res)=>{
-                //     console.log(res.data)
                 // })
             } else {
                 Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
@@ -1084,7 +1076,6 @@ editarStep3() {
 
         })
         .catch(err => {
-            console.log({ err })
             this.setState({ cargando: false })
         })
 }
@@ -1096,11 +1087,9 @@ editarStep5() {
     let { lat, lng, revisionId, poblado, ciudad, dpto } = this.state
     lat = lat ? lat : 4.597825;
     lng = lng ? lng : -74.0755723;
-    console.log({ lat, lng, poblado, ciudad, dpto })
 
     axios.put(`rev/revision/coordenadas/${revisionId}`, { lat, lng, poblado, ciudad, dpto })
         .then((res) => {
-            console.log(res.data)
             if (res.data.status) {
 
                 alert("Revisión Guardado")

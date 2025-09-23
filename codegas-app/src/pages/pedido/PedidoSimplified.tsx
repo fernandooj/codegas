@@ -254,10 +254,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     };
 
     const handleChangeStateModal = () => {
-        console.log('🔄 Abriendo modal de perfiles...');
-        console.log('📊 Estado actual modalPerfiles:', modalPerfiles);
         updateState(actions.setModalPerfiles(true));
-        console.log('✅ Acción enviada: setModalPerfiles(true)');
     };
 
     const handleEstadoChange = (nuevoEstado: EstadoPedido) => {
@@ -281,14 +278,12 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     // Business logic functions
     const loadPedidos = (type?: string): void => {
         if (!idUsuario || !acceso) {
-            console.log('⚠️ No se pueden cargar pedidos: idUsuario o acceso no disponibles');
             return;
         }
 
         let currentLimit = type === 'load' ? 20 : limit;
         let currentTerminoBuscador = type === 'load' ? undefined : terminoBuscador;
 
-        console.log('🔄 Cargando pedidos...', { idUsuario, acceso, currentLimit, currentTerminoBuscador });
         dispatch(getPedidos(idUsuario, 0, currentLimit, acceso, currentTerminoBuscador));
     };
 

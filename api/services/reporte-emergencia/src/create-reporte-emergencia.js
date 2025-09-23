@@ -1,49 +1,52 @@
 const { poolConection } = require('../../../lib/connection-pg.js')
 const nodemailer = require('nodemailer');
+const path = require('path');
 
 const CREATE_REPORT = 'select * from save_reporte_emergencia($1, $2, $3, $4, $5, $6, $7, $8, $9)'
 const GET_USER_BY_ID = 'SELECT * FROM users WHERE _id = $1';
 
 // Configuración de Nodemailer
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER || 'admin@codegascolombia.com',
-    pass: process.env.EMAIL_PASS || 'Soporte2019'
-  }
+    service: 'gmail',
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    }
 });
 
 // Función para generar el template HTML del email
 const generateEmailTemplate = (reporteData) => {
-  const {
-    reporteId,
-    tanque,
-    red,
-    puntos,
-    fuga,
-    pqr,
-    otrosText,
-    codtCliente,
-    razonSocial,
-    nombreCliente,
-    usuarioReporta,
-    fechaReporte
-  } = reporteData;
+    const {
+        reporteId,
+        tanque,
+        red,
+        puntos,
+        fuga,
+        pqr,
+        otrosText,
+        codtCliente,
+        razonSocial,
+        nombreCliente,
+        usuarioReporta,
+        fechaReporte
+    } = reporteData;
 
-  // Determinar el nivel de urgencia
-  const tieneEmergencia = tanque || red || puntos || fuga;
-  const urgenciaColor = tieneEmergencia ? '#dc2626' : pqr ? '#f59e0b' : '#16a34a';
-  const urgenciaTexto = tieneEmergencia ? '🚨 ALTA URGENCIA' : pqr ? '⚠️ URGENCIA MEDIA' : '✅ NORMAL';
+    // Determinar el nivel de urgencia
+    const tieneEmergencia = tanque || red || puntos || fuga;
+    const urgenciaColor = tieneEmergencia ? '#dc2626' : pqr ? '#f59e0b' : '#16a34a';
+    const urgenciaTexto = tieneEmergencia ? '🚨 ALTA URGENCIA' : pqr ? '⚠️ URGENCIA MEDIA' : '✅ NORMAL';
 
-  // Construir lista de problemas
-  const problemas = [];
-  if (tanque) problemas.push({ tipo: 'Tanque en mal estado', icono: '🛢️', color: '#dc2626' });
-  if (red) problemas.push({ tipo: 'Red en mal estado', icono: '🔧', color: '#dc2626' });
-  if (puntos) problemas.push({ tipo: 'Puntos de ignición cerca', icono: '🔥', color: '#dc2626' });
-  if (fuga) problemas.push({ tipo: 'Fuga detectada', icono: '💧', color: '#2563eb' });
-  if (pqr) problemas.push({ tipo: 'PQR', icono: '📋', color: '#16a34a' });
+    // Construir lista de problemas
+    const problemas = [];
+    if (tanque) problemas.push({ tipo: 'Tanque en mal estado', icono: '🛢️', color: '#dc2626' });
+    if (red) problemas.push({ tipo: 'Red en mal estado', icono: '🔧', color: '#dc2626' });
+    if (puntos) problemas.push({ tipo: 'Puntos de ignición cerca', icono: '🔥', color: '#dc2626' });
+    if (fuga) problemas.push({ tipo: 'Fuga detectada', icono: '💧', color: '#2563eb' });
+    if (pqr) problemas.push({ tipo: 'PQR', icono: '📋', color: '#16a34a' });
 
-  const problemasHtml = problemas.map(problema => `
+    const problemasHtml = problemas.map(problema => `
     <div style="background-color: ${problema.color}15; border-left: 4px solid ${problema.color}; padding: 12px; margin: 8px 0; border-radius: 6px;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 18px;">${problema.icono}</span>
@@ -52,7 +55,7 @@ const generateEmailTemplate = (reporteData) => {
     </div>
   `).join('');
 
-  return `
+    return `
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -68,11 +71,15 @@ const generateEmailTemplate = (reporteData) => {
                         
                         <!-- Header -->
                         <tr>
-                            <td style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
-                                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">
+                            <td style="background-color: #3b82f6; padding: 25px; text-align: center; border-radius: 12px 12px 0 0;">
+                                <!-- Logo -->
+                                <div style="margin-bottom: 15px;">
+                                    <img src="cid:logo" alt="CodeGas Colombia" style="max-width: 400px; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" />
+                                </div>
+                                <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">
                                     🚨 Reporte de Emergencia
                                 </h1>
-                                <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 16px;">
+                                <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 14px;">
                                     CodeGas Colombia - Sistema de Alertas
                                 </p>
                             </td>
@@ -139,7 +146,7 @@ const generateEmailTemplate = (reporteData) => {
                                 ` : ''}
 
                                 <!-- Call to Action -->
-                                <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 24px; border-radius: 10px; text-align: center; margin-top: 30px;">
+                                <div style="background-color: #dc2626; padding: 24px; border-radius: 10px; text-align: center; margin-top: 30px;">
                                     <h3 style="color: #ffffff; margin: 0 0 12px 0; font-size: 18px;">
                                         🚀 Acción Requerida
                                     </h3>
@@ -198,64 +205,71 @@ const generateEmailTemplate = (reporteData) => {
  * Inserts reporte emergencia into the database and sends styled notification email.
  */
 module.exports.main = async (event) => {
-  const body = JSON.parse(event.body);
-  let {
-    tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea, razonSocial, nombre: nombreCliente, codt: codtCliente
-  } = body;
+    const body = JSON.parse(event.body);
+    let {
+        tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea, razonSocial, nombre: nombreCliente, codt: codtCliente
+    } = body;
 
-  // Determinar asunto del email basado en el tipo de reporte
-  const tieneEmergencia = tanque || red || puntos || fuga;
-  let asunto = tieneEmergencia ?
-    "🚨 URGENTE: Nuevo reporte de emergencia - CodeGas Colombia" :
-    pqr ? "⚠️ Nuevo reporte (PQR) - CodeGas Colombia" :
-      "📋 Nuevo reporte - CodeGas Colombia";
+    // Determinar asunto del email basado en el tipo de reporte
+    const tieneEmergencia = tanque || red || puntos || fuga;
+    let asunto = tieneEmergencia ?
+        "🚨 URGENTE: Nuevo reporte de emergencia - CodeGas Colombia" :
+        pqr ? "⚠️ Nuevo reporte (PQR) - CodeGas Colombia" :
+            "📋 Nuevo reporte - CodeGas Colombia";
 
-  try {
-    const client = await poolConection.connect();
+    try {
+        const client = await poolConection.connect();
 
-    const { rows: user } = await client.query(CREATE_REPORT, [tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea]);
-    const _id = user[0].save_reporte_emergencia;
+        const { rows: user } = await client.query(CREATE_REPORT, [tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea]);
+        const _id = user[0].save_reporte_emergencia;
 
-    const { rows: userReporta } = await client.query(GET_USER_BY_ID, [usuarioCrea]);
-    const { nombre } = userReporta[0];
+        const { rows: userReporta } = await client.query(GET_USER_BY_ID, [usuarioCrea]);
+        const { nombre } = userReporta[0];
 
-    // Datos para el template
-    const reporteData = {
-      reporteId: _id,
-      tanque,
-      red,
-      puntos,
-      fuga,
-      pqr,
-      otrosText,
-      codtCliente,
-      razonSocial,
-      nombreCliente,
-      usuarioReporta: nombre,
-      fechaReporte: new Date().toLocaleString('es-CO', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    };
+        // Datos para el template
+        const reporteData = {
+            reporteId: _id,
+            tanque,
+            red,
+            puntos,
+            fuga,
+            pqr,
+            otrosText,
+            codtCliente,
+            razonSocial,
+            nombreCliente,
+            usuarioReporta: nombre,
+            fechaReporte: new Date().toLocaleString('es-CO', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        };
 
-    // Generar el HTML del email
-    const emailHtml = generateEmailTemplate(reporteData);
+        // Generar el HTML del email
+        const emailHtml = generateEmailTemplate(reporteData);
 
-    let email1 = "fernandooj@ymail.com";
-    let email2 = "dptotecnico@codegascolombia.com";
+        let email1 = "fernandooj@ymail.com";
+        let email2 = "dptotecnico@codegascolombia.com";
 
-    // Configuración del email con el nuevo template
-    const mailOptions = {
-      from: process.env.EMAIL_USER || 'app@codegascolombia.com',
-      to: [email1, email2],
-      subject: asunto,
-      html: emailHtml,
-      // Versión en texto plano como fallback
-      text: `
+        // Configuración del email con el nuevo template
+        const mailOptions = {
+            from: EMAIL_USER,
+            to: [email1, email2],
+            subject: asunto,
+            html: emailHtml,
+            attachments: [
+                {
+                    filename: 'logo.jpg',
+                    path: path.join(__dirname, '../../../assets/img/logo.jpg'),
+                    cid: 'logo'
+                }
+            ],
+            // Versión en texto plano como fallback
+            text: `
         Nuevo Reporte de Emergencia - CodeGas Colombia
         
         Número de Reporte: ${_id}
@@ -275,17 +289,17 @@ module.exports.main = async (event) => {
         
         Este reporte requiere atención inmediata.
       `
-    };
+        };
 
-    // Enviar email
-    await transporter.sendMail(mailOptions);
+        // Enviar email
+        await transporter.sendMail(mailOptions);
 
-    return {
-      status: true,
-      reporte: _id
-    };
-  } catch (error) {
-    console.error('Error al procesar reporte:', error);
-    throw JSON.stringify(error);
-  }
+        return {
+            status: true,
+            reporte: _id
+        };
+    } catch (error) {
+        console.error('Error al procesar reporte:', error);
+        throw JSON.stringify(error);
+    }
 };

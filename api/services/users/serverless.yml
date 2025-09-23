@@ -3,10 +3,14 @@ createUser:
   handler: services/users/src/save-user.main
   events:
     - httpApi: 'POST /users'
+  environment:
+    EMAIL_USER: ${self:custom.emailUser}
+    EMAIL_PASS: ${self:custom.emailPass}
   package:
     include:
       - services/users/src/save-user.js
       - lib/errors/database-error.js
+      - assets/img/logo.jpg
 
 getUsers:
   name: ${self:custom.base}-get-users
@@ -113,7 +117,7 @@ updateUser:
   name: ${self:custom.base}-update-user
   handler: services/users/src/update.main
   events:
-    - httpApi: 'PUT /user/update/{userId}'
+    - httpApi: 'PUT /users/{userId}'
   package:
     include:
       - services/users/src/update.js

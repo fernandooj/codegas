@@ -212,29 +212,24 @@ class Login extends Component {
 	onFinish(isValid, token) {
 		const { tokenEnviado, email } = this.state
 		const { navigation } = this.props
-		console.log({ isValid, token })
 		if (isValid) {
 			if (tokenEnviado) {
 				axios.post('user/CambiarPassword', { username: email, token })
 					.then(e => {
-						console.log(e.data)
 						e.data.code == 1
 							? navigation("verPerfil")
 							: this.setState({ showError: true })
 					})
 					.catch(err => {
-						console.log(err)
 					})
 			} else {
 				axios.post('user/verificaToken', { username: email, token })
 					.then(e => {
-						console.log(e.data)
 						e.data.code == 1
 							? navigation("verPerfil")
 							: this.setState({ showError: true })
 					})
 					.catch(err => {
-						console.log(err)
 					})
 			}
 		} else {
@@ -245,12 +240,10 @@ class Login extends Component {
 		let re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 		let emailVerify = re.test(String(email).toLowerCase());
 		this.setState({ email, emailVerify })
-		console.log(emailVerify)
 	}
 
 	render() {
 		const { showCrearCuenta, showInsertarCodigo, recuperarContrasena, keyboardOpen } = this.state
-		console.log(showInsertarCodigo)
 		return (
 			<View style={!showCrearCuenta ? style.contenedorLogin : style.contenedorRegistro}>
 				<KeyboardListener
@@ -296,7 +289,6 @@ class Login extends Component {
 		const { email, password } = this.state;
 		axios.post("user/recover/", { username: email })
 			.then(e => {
-				console.log(e.data)
 				e.data.code == 1 ? this.setState({ tokenEnviado: true, showInsertarCodigo: true, recuperarContrasena: false, showCrearCuenta: true, token: e.data.token.toString() }) : this.setState({ usuarioNoExiste: true })
 			})
 	}
@@ -310,7 +302,6 @@ class Login extends Component {
 					: this.setState({ correoExiste: true })
 			})
 			.catch(err => {
-				console.log(err)
 			})
 	}
 }
@@ -330,7 +321,6 @@ const mapDispatch = dispatch => {
 		},
 		sendFCMTokenToBackend: (userId) => {
 			// Esta función se implementará cuando se conecte con el contexto
-			console.log('Sending FCM token to backend for user:', userId);
 		}
 	};
 };

@@ -25,6 +25,9 @@
 /Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/RNCImageCropPickerSpec_autolinked_build/CMakeFiles/react_codegen_RNCImageCropPickerSpec.dir
 /Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/RNCImageCropPickerSpec_autolinked_build/CMakeFiles/edit_cache.dir
 /Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/RNCImageCropPickerSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
+/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/RNImagePickerSpec_autolinked_build/CMakeFiles/react_codegen_RNImagePickerSpec.dir
+/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/RNImagePickerSpec_autolinked_build/CMakeFiles/edit_cache.dir
+/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/RNImagePickerSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
 /Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/rnpdf_autolinked_build/CMakeFiles/react_codegen_rnpdf.dir
 /Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/rnpdf_autolinked_build/CMakeFiles/edit_cache.dir
 /Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/rnpdf_autolinked_build/CMakeFiles/rebuild_cache.dir

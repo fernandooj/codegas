@@ -30,11 +30,9 @@ const Perfil = ({
   // Efecto para sincronizar estados locales con el contexto
   useEffect(() => {
     if (nombre && nombre !== currentNombre) {
-      console.log('🔄 Sincronizando nombre del contexto:', nombre);
       setCurrentNombre(nombre);
     }
     if (email && email !== currentEmail) {
-      console.log('🔄 Sincronizando email del contexto:', email);
       setCurrentEmail(email);
     }
   }, [nombre, email, currentNombre, currentEmail]);
@@ -42,13 +40,10 @@ const Perfil = ({
   // Efecto que se ejecuta cada vez que la pantalla recibe el foco
   useFocusEffect(
     useCallback(() => {
-      console.log('Perfil screen focused - ejecutándose cada vez que navegas aquí');
-      console.log('Datos actuales:', { nombre, avatar, email, acceso });
 
       // Recargar datos desde AsyncStorage para asegurarse de que estén actualizados
       const reloadUserData = async () => {
         try {
-          console.log('🔄 Recargando datos del perfil...');
           const [storedNombre, storedEmail, storedAvatar] = await AsyncStorage.multiGet([
             'nombre', 'email', 'avatar'
           ]);
@@ -59,23 +54,17 @@ const Perfil = ({
             avatar: storedAvatar[1]
           };
 
-          console.log('📱 Datos en AsyncStorage:', newUserData);
-          console.log('🔍 Datos actuales del contexto:', { nombre, email, avatar });
-          console.log('🔧 updateUserData disponible:', !!updateUserData);
 
           // Actualizar estados locales inmediatamente
           if (newUserData.nombre && newUserData.nombre !== currentNombre) {
-            console.log('🔄 Actualizando nombre local:', newUserData.nombre);
             setCurrentNombre(newUserData.nombre);
           }
           if (newUserData.email && newUserData.email !== currentEmail) {
-            console.log('🔄 Actualizando email local:', newUserData.email);
             setCurrentEmail(newUserData.email);
           }
 
           // Actualizar siempre si hay datos en AsyncStorage y la función está disponible
           if (updateUserData && (newUserData.nombre || newUserData.email || newUserData.avatar)) {
-            console.log('✅ Actualizando datos del perfil desde AsyncStorage:', newUserData);
             await updateUserData(newUserData);
           }
         } catch (error) {
@@ -89,7 +78,6 @@ const Perfil = ({
   const searchUser = () => {
     axios.get(`users/by/asefsfxf323-dxc/${idUsuarioSearch}`)
       .then(res => {
-        console.log(res.data)
         if (res.data) {
           cambioPerfil(res.data.users);
         } else {
@@ -97,7 +85,6 @@ const Perfil = ({
         }
       })
       .catch(err => {
-        console.log(err);
         Toast.show("Tenemos un problema, intentelo mas tarde");
       });
   };
@@ -115,7 +102,6 @@ const Perfil = ({
     navigation.navigate("Home");
   };
   const RenderPerfil = () => {
-    console.log('🖼️ Avatar value:', avatar, typeof avatar);
     return (
 
       <ScrollView style={style.containerRegistro}>
