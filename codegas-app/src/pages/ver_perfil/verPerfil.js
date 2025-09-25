@@ -19,6 +19,8 @@ import { Picker } from '@react-native-picker/picker';
 import Footer from '../components/footer';
 import TomarFoto from '../components/tomarFoto';
 import Toast from 'react-native-toast-message';
+import ModalZonas from '../editar_perfil/ModalZonas';
+import ModalUbicacion from '../editar_perfil/ModalUbicacion';
 import { accesos } from '../../utils/users_info'
 import { DataContext } from "../../context/context"
 import { useRoute } from '@react-navigation/native';
@@ -29,7 +31,7 @@ import {
     getPerfil,
     cambiarContrasena,
     signUpUser,
-    updateUser,
+    updateUserProfile,
     checkEmail,
     changePassword,
     createMultipleUsers,
@@ -157,8 +159,10 @@ const verPerfil = (props) => {
         const loadData = async () => {
             // const accesoPerfil = await AsyncStorage.getItem('acceso');
             const { acceso: accesoPerfil, userId } = context;
+            console.log('accesoPerfil inicial del context:', accesoPerfil);
 
             let acceso = accesoPerfil == 'despacho' ? 'cliente' : 'usuario';
+            console.log('acceso calculado:', acceso);
             updateState({ accesoPerfil, acceso });
 
             // Si el acceso ya es comercial, cargar veos inmediatamente
@@ -183,8 +187,42 @@ const verPerfil = (props) => {
             if (!params.tipoAcceso) {
                 axios.get(`users/id/${userId}`).then((e) => {
                     const { user } = e.data;
-                    axios.get(`pun/punto/byCliente/${params.idUsuario}`).then(ubi => {
+                    axios.get(`pun/punto/byCliente/${userId}`).then(ubi => {
                         let ubicaciones = ubi.data.status ? ubi.data.puntos : []
+
+                        // Mapear las ubicaciones correctamente como en editarPerfil
+                        ubicaciones = ubicaciones.map(data => {
+                            let data1 = userId;
+                            let data2 = data.idCliente;
+                            if (data1 === data2) {
+                                return {
+                                    direccion: data.direccion,
+                                    email: undefined,
+                                    idCliente: undefined,
+                                    idZona: data.idzona,
+                                    nombre: undefined,
+                                    celular: undefined,
+                                    nombreZona: data.nombrezona,
+                                    observacion: data.observacion,
+                                    capacidad: data.capacidad,
+                                    _id: data._id
+                                }
+                            } else {
+                                return {
+                                    direccion: data.direccion,
+                                    email: data.email,
+                                    idCliente: data.idCliente,
+                                    idZona: data.idzona,
+                                    nombre: data.nombre,
+                                    celular: data.celular,
+                                    nombreZona: data.nombrezona,
+                                    observacion: data.observacion,
+                                    capacidad: data.capacidad,
+                                    _id: data._id
+                                }
+                            }
+                        });
+
                         updateState({
                             razon_social: user.razon_social ? user.razon_social : '',
                             cedula: user.cedula ? user.cedula : '',
@@ -194,20 +232,19 @@ const verPerfil = (props) => {
                             celular: user.celular ? user.celular : '',
                             tipo: user.tipo ? user.tipo : '',
                             acceso: user.acceso ? user.acceso : '',
-                            imagen: user.avatar ? user.avatar : [],
+                            imagen: user.avatar ? [{ uri: user.avatar }] : [],
                             codt: user.codt ? user.codt : '',
                             valorUnitario: user.valorunitario ? user.valorunitario : '',
                             idUsuario: user._id ? user._id : '',
                             codMagister: user.codMagister ? user.codMagister : '',
                             editado: user.editado ? user.editado : false,
                             ubicaciones: ubicaciones,
-                            accesoPerfil: 'cliente',
                             direccion_factura: user.direccion_factura ? user.direccion_factura : "",
                         });
                     });
                 });
             } else if (params.tipoAcceso == "editar") {
-                axios.get(`/users/id/${params.idUsuario}`).then(e => {
+                axios.get(`users/id/${params.idUsuario}`).then(e => {
                     const { user } = e.data
                     axios.get(`pun/punto/byCliente/${params.idUsuario}`).then(ubi => {
                         let ubicaciones = ubi.data.status ? ubi.data.puntos : []
@@ -252,12 +289,12 @@ const verPerfil = (props) => {
                             celular: user.celular ? user.celular : "",
                             tipo: user.tipo ? user.tipo : "",
                             acceso: user.acceso ? user.acceso : "",
-                            imagen: user.avatar ? user.avatar : [],
+                            imagen: user.avatar ? [{ uri: user.avatar }] : [],
                             codt: user.codt ? user.codt : "",
                             ubicaciones,
                             activo: user.activo && user.activo,
                             idUsuario: user._id ? user._id : "",
-                            veo: user.veos ? user.veos.nombre : "",
+                            veo: user.nombrepadre || "",
                             codMagister: user.codMagister ? user.codMagister : "",
                             valorUnitario: user.valorunitario,
                             direccion_factura: user.direccion_factura ? user.direccion_factura : "",
@@ -277,10 +314,11 @@ const verPerfil = (props) => {
         email = email ? email.toUpperCase() : email;
         direccion_factura = direccion_factura ? direccion_factura.toUpperCase() : direccion_factura;
         nombre = nombre ? nombre.toUpperCase() : nombre;
-
+        console.log('accesoPerfil', accesoPerfil);
+        console.log('tipo en verPerfil:', tipo);
         return (
             <ScrollView keyboardDismissMode="on-drag" style={style.contenedorPerfil}>
-                {tipoAcceso == "admin" ? <Text style={style.titulo}>Nuevo {acceso}</Text> : <Text style={style.titulo}>Editar perfil</Text>}
+                {tipoAcceso == "admin" ? <Text style={style.titulo}>Nuevo {acceso}</Text> : <Text style={style.titulo}>{nombre || 'Editar perfil'}</Text>}
                 {/* ACCESO */}
                 {
                     ((tipoAcceso == "admin" && accesoPerfil !== "despacho") || tipoAcceso == "editar")
@@ -307,8 +345,12 @@ const verPerfil = (props) => {
                     value={email}
                     onChangeText={email => updateState({ email })}
                     onBlur={email => verificaEmail(email)}
-                    style={email.length < 3 ? [style.input, style.inputRequired] : style.input}
+                    style={[
+                        email.length < 3 ? [style.input, style.inputRequired] : style.input,
+                        accesoPerfil === "veo" && style.inputDisabled
+                    ]}
                     autoCapitalize="characters"
+                    editable={accesoPerfil !== "veo"}
                 />
 
                 {/* RAZON SOCIAL */}
@@ -330,7 +372,7 @@ const verPerfil = (props) => {
                 }
 
                 {/* CEDULA */}
-                <Text style={style.textInfo}>Cedula/ Nit</Text>
+                <Text style={style.textInfo}>Cedula / Nit</Text>
                 <TextInput
                     type='outlined'
                     placeholder="Cedula / Nit"
@@ -338,7 +380,11 @@ const verPerfil = (props) => {
                     keyboardType='numeric'
                     value={cedula}
                     onChangeText={cedula => updateState({ cedula })}
-                    style={cedula.length < 5 ? [style.input, style.inputRequired] : style.input}
+                    style={[
+                        cedula.length < 5 ? [style.input, style.inputRequired] : style.input,
+                        accesoPerfil === "veo" && style.inputDisabled
+                    ]}
+                    editable={accesoPerfil !== "veo"}
                 />
                 {/* DIRECCION */}
                 {
@@ -415,9 +461,9 @@ const verPerfil = (props) => {
                     style={celular.length < 7 ? [style.input, style.inputRequired] : style.input}
                 />
 
-                {/* VEO */}
+                {/* VEO - Solo mostrar cuando se viene desde la página de clientes */}
                 {
-                    acceso == "veo"
+                    acceso == "veo" && tipoAcceso == "editar"
                     && <><Text style={style.textInfo}>Codigo Magister</Text>
                         <TextInput
                             type='outlined'
@@ -455,30 +501,33 @@ const verPerfil = (props) => {
                     acceso == "cliente"
                     && <View>
                         <Text style={style.textInfo}>Tipo</Text>
-                        <View style={style.tipo}>
-                            <Picker
-                                placeholder={{
-                                    label: 'Tipo',
-                                    value: null,
-                                    color: '#00218b',
-                                }}
-                                items={[
-                                    { label: 'Residencial', value: 'Residencial', key: 'Residencial' },
-                                    { label: 'Comercial', value: 'Comercial', key: 'Comercial' },
-                                    { label: 'Industrial', value: 'Industrial', key: 'Industrial' }
-                                ]}
-                                onValueChange={tipo => { updateState({ tipo }); }}
-
-                                mode="dropdown"
-                                style={{
-                                    placeholder: {
-                                        color: 'rgba(0,0,0,.2)',
-                                        fontSize: 15,
-                                    },
-                                }}
-                                value={tipo}
-                            />
-                        </View>
+                        <TouchableOpacity
+                            style={[
+                                style.tipo,
+                                tipo && { backgroundColor: '#e3f2fd', borderColor: '#2196f3' }
+                            ]}
+                            onPress={() => {
+                                Alert.alert(
+                                    'Seleccionar Tipo',
+                                    'Elija el tipo de cliente:',
+                                    [
+                                        { label: 'Residencial', value: 'Residencial' },
+                                        { label: 'Comercial', value: 'Comercial' },
+                                        { label: 'Industrial', value: 'Industrial' }
+                                    ].map(item => ({
+                                        text: item.label,
+                                        onPress: () => updateState({ tipo: item.value })
+                                    }))
+                                );
+                            }}
+                        >
+                            <Text style={[
+                                style.pickerText,
+                                tipo && { color: '#2196f3', fontWeight: '600' }
+                            ]}>
+                                {tipo || 'Seleccionar tipo'}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 }
 
@@ -552,12 +601,12 @@ const verPerfil = (props) => {
                     !tipoAcceso
                         ? <TouchableOpacity style={style.btnGuardar} onPress={() => handleSubmit("editar")}>
                             {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
-                            <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar"}</Text>
+                            <Text style={style.textGuardar}>{cargando ? "Editando" : "Editar"}</Text>
                         </TouchableOpacity>
                         : (tipoAcceso == "editar" && (accesoPerfil == "admin" || accesoPerfil == "despacho"))
                             ? <TouchableOpacity style={style.btnGuardar} onPress={() => editarUsuario("editar")}>
                                 {cargando && <ActivityIndicator style={{ marginRight: 5 }} />}
-                                <Text style={style.textGuardar}>{cargando ? "Guardando" : "Guardar Usuario"}</Text>
+                                <Text style={style.textGuardar}>{cargando ? "Editando" : "Editar Usuario"}</Text>
                             </TouchableOpacity>
                             : (accesoPerfil == "admin" || accesoPerfil == "despacho")
                             && <TouchableOpacity style={style.btnGuardar} onPress={() => handleSubmit()}>
@@ -731,43 +780,6 @@ const verPerfil = (props) => {
         updateState({ ubicaciones });
     }
 
-    const modalZonas = () => {
-        const { zonas, idZona, terminoBuscador } = state
-
-        return (
-            <View animationType="fade" >
-                <TouchableOpacity activeOpacity={1}  >
-                    <View style={style.modalZona}>
-                        <View style={style.subModalZona}>
-                            <TouchableOpacity activeOpacity={1} onPress={() => updateState({ modalZona: false })} style={style.btnModalClose}>
-                                <FontAwesome name={'times-circle'} style={style.iconCerrar} />
-                            </TouchableOpacity>
-                            <TextInput
-                                type='outlined'
-                                label='Buscar Zona'
-                                placeholder="Buscar Zona"
-
-                                onChangeText={terminoBuscador => updateState({ terminoBuscador })}
-                                style={style.inputZona}
-                            />
-                            <ScrollView>
-                                {
-                                    zonas.map((e, key) => {
-                                        return (
-                                            <TouchableOpacity style={style.btnZona} key={key} onPress={() => actualizaZona(e._id, e.nombre)}>
-                                                <Text style={style.textZona}>{e.nombre}</Text>
-                                                {idZona == e._id && <FontAwesome name={'check'} style={style.iconZona} />}
-                                            </TouchableOpacity>
-                                        )
-                                    })
-                                }
-                            </ScrollView>
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </View>
-        )
-    }
 
     const actualizaZona = (id, nombre) => {
         const { key, ubicaciones } = state
@@ -776,126 +788,6 @@ const verPerfil = (props) => {
         updateState({ ubicaciones, modalZona: false })
     }
 
-    const renderModalUbicacion = () => {
-        let { modalZona, ubicaciones, activeScroll } = state
-        return (
-            <View>
-                {modalZona ? modalZonas() : null}
-                <View>
-                    <TouchableOpacity activeOpacity={1}  >
-                        <View style={[style.modal, { top: activeScroll ? -150 : 0 }]}>
-                            <View style={style.subContenedorModal}>
-                                <TouchableOpacity activeOpacity={1} onPress={() => updateState({ modalUbicacion: false })} style={style.btnModalClose}>
-                                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
-                                </TouchableOpacity>
-                                <ScrollView keyboardDismissMode="on-drag" >
-                                    <Text style={style.tituloModal}>Si el pedido lo realizara el encargado del punto por favor inserta su informacion, de lo contrario solo inserta la dirección y zona</Text>
-                                    <View>
-                                        {
-                                            ubicaciones.map((e, key) => {
-                                                return (
-                                                    <View key={key}>
-                                                        <View>
-                                                            <TextInput
-                                                                type='outlined'
-                                                                label='Dirección'
-                                                                placeholder="Dirección"
-                                                                value={e.direccion ? e.direccion.toUpperCase() : e.direccion}
-                                                                onChangeText={direccion => actualizaArrayUbicacion("direccion", direccion, key)}
-                                                                style={style.input}
-                                                            />
-                                                            <Text style={style.asterisco}>*</Text>
-                                                        </View>
-                                                        <View>
-                                                            <TouchableOpacity style={style.btnUbicacion} onPress={() => updateState({ modalZona: true, key })}>
-                                                                <Text style={style.textZona}>{e.nombreZona ? e.nombreZona : "Zona"}</Text>
-                                                            </TouchableOpacity>
-                                                            <Text style={style.asterisco}>*</Text>
-                                                        </View>
-                                                        <TextInput
-                                                            type='outlined'
-                                                            label='capacidad'
-                                                            placeholder="Capacidad almacenamiento"
-                                                            value={e.capacidad}
-                                                            onChangeText={capacidad => actualizaArrayUbicacion("capacidad", capacidad, key)}
-                                                            style={style.input}
-                                                        />
-                                                        <TextInput
-                                                            type='outlined'
-                                                            label='observacion al momento de ingresar el vehiculo'
-                                                            placeholder="observaciones ingreso del vehiculo"
-                                                            // value={e.observacion.toUpperCase()}
-                                                            onChangeText={observacion => actualizaArrayUbicacion("observacion", observacion, key)}
-                                                            style={[style.input, { marginBottom: (e.nuevo || !e.idCliente) && key > 0 ? 40 : 10 }]}
-                                                        />
-                                                        {
-                                                            (e.nuevo || e.idCliente)
-                                                            && <TextInput
-                                                                type='outlined'
-                                                                label='Email'
-                                                                placeholder="Email"
-                                                                value={e.email}
-                                                                onFocus={() => updateState({ activeScroll: true })}
-                                                                onBlur={() => updateState({ activeScroll: false })}
-                                                                onChangeText={emailUbicacion => actualizaArrayUbicacion("emailUbicacion", emailUbicacion, key)}
-                                                                style={style.input}
-                                                            />
-                                                        }
-                                                        {
-                                                            (e.nuevo || e.idCliente)
-                                                            && <TextInput
-                                                                type='outlined'
-                                                                label='Celular'
-                                                                placeholder="Celular"
-                                                                value={e.celular}
-                                                                onFocus={() => updateState({ activeScroll: true })}
-                                                                onBlur={() => updateState({ activeScroll: false })}
-                                                                onChangeText={celularUbicacion => actualizaArrayUbicacion("celularUbicacion", celularUbicacion, key)}
-                                                                style={style.input}
-                                                            />
-                                                        }
-                                                        {
-                                                            (e.nuevo || e.idCliente)
-                                                            && <TextInput
-                                                                type='outlined'
-                                                                label='Nombre'
-                                                                placeholder="Nombre"
-                                                                value={e.nombre}
-                                                                onFocus={() => updateState({ activeScroll: true })}
-                                                                onBlur={() => updateState({ activeScroll: false })}
-                                                                onChangeText={nombreUbicacion => actualizaArrayUbicacion("nombreUbicacion", nombreUbicacion, key)}
-                                                                style={[style.input, { marginBottom: key > 0 ? 40 : 10 }]}
-                                                            />
-                                                        }
-                                                        {
-                                                            key > 0
-                                                            && <TouchableOpacity style={style.btnEliminar} onPress={() => eliminarUbicacion(key)}>
-                                                                <FontAwesome name={'trash'} style={style.iconEliminar} />
-                                                            </TouchableOpacity>
-                                                        }
-
-                                                        <Text style={style.separador}></Text>
-                                                    </View>
-                                                )
-                                            })
-                                        }
-                                    </View>
-                                    <View style={style.contenedorAdd}>
-                                        <TouchableOpacity onPress={() => actualizaUbicacion()} style={style.btnAdd}>
-                                            <FontAwesome name={'plus'} style={style.iconAdd} />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <TouchableOpacity style={style.btnGuardarUbicacion} onPress={() => guardarUbicacion()}>
-                                        <Text style={style.textGuardar}>Guardar</Text>
-                                    </TouchableOpacity>
-                                </ScrollView>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        )
-    }
 
     const renderFormPass = () => {
         const { password, confirmar, showLoading, cargando } = state
@@ -1152,6 +1044,27 @@ const verPerfil = (props) => {
         }
     }
 
+    // Función para convertir imagen a base64
+    const convertImageToBase64 = async (imageUri) => {
+        try {
+            const response = await fetch(imageUri);
+            const blob = await response.blob();
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64 = reader.result;
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (error) {
+            console.error('Error convirtiendo imagen a base64:', error);
+            return null;
+        }
+    };
+
     const editarUsuario = async (e) => {
         updateState({ cargando: true })
         const { razon_social, cedula, ubicaciones, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, editaAvatar, idUsuario, ubicacionesEliminadas, editado, codMagister, valorUnitario, idVeo } = state
@@ -1200,6 +1113,43 @@ const verPerfil = (props) => {
             return e._id
         })
 
+        // Convertir imagen a base64 si existe y se editó el avatar
+        let imagenBase64 = null;
+        console.log('Frontend - editaAvatar:', editaAvatar, 'imagen:', imagen ? 'EXISTE' : 'NO EXISTE', 'imagen.length:', imagen ? imagen.length : 0);
+        console.log('Frontend - Tipo de imagen:', typeof imagen, 'Es array:', Array.isArray(imagen), 'Imagen completa:', imagen);
+
+        // Verificar si hay imagen para convertir (puede ser array, string o objeto con uri)
+        const tieneImagen = editaAvatar && imagen && (
+            (Array.isArray(imagen) && imagen.length > 0) ||
+            (typeof imagen === 'string' && imagen.trim() !== '') ||
+            (typeof imagen === 'object' && imagen.uri && imagen.uri.trim() !== '')
+        );
+
+        if (tieneImagen) {
+            console.log('Frontend - Convirtiendo imagen a base64...');
+            // Obtener la URI según el tipo de dato
+            let imagenUri;
+            if (Array.isArray(imagen)) {
+                imagenUri = imagen[0].uri || imagen[0];
+            } else if (typeof imagen === 'string') {
+                imagenUri = imagen;
+            } else if (typeof imagen === 'object' && imagen.uri) {
+                imagenUri = imagen.uri;
+            }
+
+            console.log('Frontend - URI a convertir:', imagenUri);
+            imagenBase64 = await convertImageToBase64(imagenUri);
+            console.log('Frontend - Imagen convertida a base64:', imagenBase64 ? 'EXITOSO' : 'FALLÓ');
+        } else {
+            console.log('Frontend - No se convierte imagen:', {
+                editaAvatar,
+                tieneImagen: tieneImagen,
+                esArray: Array.isArray(imagen),
+                esString: typeof imagen === 'string',
+                imagenLength: imagen ? (Array.isArray(imagen) ? imagen.length : imagen.length || 'N/A') : 'N/A'
+            });
+        }
+
         // Preparar datos para enviar, incluyendo idPadre si se seleccionó un veo
         const datosUsuario = {
             editado,
@@ -1219,13 +1169,24 @@ const verPerfil = (props) => {
             valorUnitario: valorUnitario && valorUnitario !== "" ? parseInt(valorUnitario) : 0
         };
 
+        // Agregar imagen si se editó el avatar
+        if (imagenBase64) {
+            datosUsuario.imagen = imagenBase64;
+        }
+
         // Agregar idPadre si se seleccionó un veo
         if (idVeo) {
             datosUsuario.idPadre = idVeo;
         }
 
+        console.log('Frontend - Enviando datosUsuario:', {
+            tieneImagen: !!datosUsuario.imagen,
+            imagenLength: datosUsuario.imagen ? datosUsuario.imagen.length : 0,
+            editaAvatar
+        });
+
         try {
-            const e = await updateUser(idUsuario, datosUsuario);
+            const e = await updateUserProfile(idUsuario, datosUsuario);
             if (acceso == "cliente") {
                 ////////////////////////////////////////////        EDITO LOS CLIENTES
                 if (clientes.length > 0) {
@@ -1272,20 +1233,7 @@ const verPerfil = (props) => {
                 }
 
             } else {
-                if (editaAvatar) {
-                    if (imagen.length === 0) {
-                        navigation.navigate("Home")
-                        Toast.show({
-                            type: 'success',
-                            text1: 'Usuario eliminado con exito',
-                            visibilityTime: 3000,
-                        })
-                    } else {
-                        avatar(imagen, e.user._id)
-                    }
-                } else {
-                    edicionExitosa(nombre)
-                }
+                edicionExitosa(nombre, e.user.avatar)
             }
         } catch (err) {
             updateState({ cargando: false })
@@ -1321,8 +1269,25 @@ const verPerfil = (props) => {
         }
     }
 
-    const edicionExitosa = async (nombre) => {
+    const edicionExitosa = async (nombre, avatar = null) => {
         updateState({ cargando: false })
+
+        // Actualizar contexto y estado local si es edición de perfil propio
+        if (!state.tipoAcceso || state.tipoAcceso === "") {
+            // Actualizar contexto en tiempo real con el nuevo avatar
+            if (context.updateUserData && avatar) {
+                context.updateUserData({
+                    nombre: nombre,
+                    avatar: avatar
+                });
+            }
+
+            // Actualizar estado local con el nuevo avatar
+            if (avatar) {
+                updateState({ imagen: [{ uri: avatar }] });
+            }
+        }
+
         Toast.show({
             type: 'success',
             text1: 'Usuario editado',
@@ -1420,8 +1385,29 @@ const verPerfil = (props) => {
     return (
         <View style={[style.container, { paddingTop: insets.top }]}>
             <ImageBackground style={[style.container]} source={require('../../assets/img/pg1/fondo2.jpg')} >
-                {modalUbicacion ? renderModalUbicacion() : null}
                 {modalAcceso ? renderModalAcceso() : null}
+
+                {/* Modal de Ubicaciones */}
+                <ModalUbicacion
+                    visible={modalUbicacion}
+                    ubicaciones={state.ubicaciones}
+                    modalZona={state.modalZona}
+                    zonas={state.zonas}
+                    idZona={state.idZona}
+                    terminoBuscador={state.terminoBuscador}
+                    activeScroll={state.activeScroll}
+                    selectedUbicacionKey={state.key || 0}
+                    onClose={() => updateState({ modalUbicacion: false })}
+                    onSave={guardarUbicacion}
+                    onAddUbicacion={actualizaUbicacion}
+                    onDeleteUbicacion={eliminarUbicacion}
+                    onUpdateUbicacion={actualizaArrayUbicacion}
+                    onOpenZonas={(key) => updateState({ modalZona: true, key })}
+                    onCloseZonas={() => updateState({ modalZona: false })}
+                    onSelectZona={actualizaZona}
+                    onUpdateTermino={(termino) => updateState({ terminoBuscador: termino })}
+                    onUpdateActiveScroll={(active) => updateState({ activeScroll: active })}
+                />
                 {
                     showPass
                         ? renderFormPass()

@@ -19,7 +19,7 @@ export const style = MediaQueryStyleSheet.create({
 	// Header
 	header: {
 		alignItems: 'center',
-		paddingTop: 10,
+		paddingTop: 0,
 		paddingBottom: 10,
 		backgroundColor: '#fff',
 		marginBottom: 20,
@@ -44,7 +44,7 @@ export const style = MediaQueryStyleSheet.create({
 	// Botones modernos
 	botonesContainer: {
 		paddingHorizontal: 20,
-		marginBottom: 30
+		marginBottom: 10
 	},
 	btnModerno: {
 		backgroundColor: '#fff',

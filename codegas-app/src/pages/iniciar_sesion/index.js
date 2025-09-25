@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { DataContext } from '../../context/context';
 import { style } from './style'
 import Footer from '../components/footer'
+import HeaderLogo from '../../components/HeaderLogo'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
@@ -187,7 +188,7 @@ const IniciarSesion = ({ navigation }) => {
 
   return (
     <View style={style.container}>
-      <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />
+      <HeaderLogo variant="compact" />
       <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
         <KeyboardAwareScrollView style={style.containerRegistro}>
           {renderEmail()}

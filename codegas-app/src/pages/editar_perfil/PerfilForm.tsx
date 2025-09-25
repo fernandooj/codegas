@@ -9,6 +9,7 @@ import {
     Alert,
 } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+import Toast from 'react-native-toast-message';
 import { style } from './style';
 import { accesos } from '../../utils/constants';
 import TomarFoto from '../components/tomarFoto';
@@ -61,6 +62,9 @@ interface PerfilFormProps {
     idUsuario: string;
     veos: Veo[];
 
+    // Control de scroll
+    scrollEnabled?: boolean;
+
     // Funciones de actualización
     onUpdateState: (updates: any) => void;
     onVerificaEmail: () => void;
@@ -81,7 +85,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
     tipo,
     acceso,
     codt,
-    valorUnitario,
+    valorUnitario = '',
     codMagister,
     imagen,
     ubicaciones,
@@ -92,6 +96,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
     accesoPerfil,
     idUsuario,
     veos,
+    scrollEnabled = true,
     onUpdateState,
     onVerificaEmail,
     onEditarUsuario,
@@ -105,7 +110,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
     const emailUpper = email ? email.toUpperCase() : email;
     const direccionFacturaUpper = direccion_factura ? direccion_factura.toUpperCase() : direccion_factura;
     const nombreUpper = nombre ? nombre.toUpperCase() : nombre;
-
+    console.log('valorUnitario', valorUnitario);
     return (
         <View style={style.formContainer}>
             {/* Header moderno */}
@@ -124,6 +129,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                 keyboardDismissMode="on-drag"
                 style={style.scrollViewContainer}
                 contentContainerStyle={style.scrollViewContent}
+                scrollEnabled={scrollEnabled}
             >
                 {/* ACCESO */}
                 {
@@ -187,9 +193,11 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                         onBlur={email => onVerificaEmail()}
                         style={[
                             style.fieldInput,
-                            email.length < 3 && style.fieldInputError
+                            email.length < 3 && style.fieldInputError,
+                            accesoPerfil === "veo" && style.fieldInputDisabled
                         ]}
                         autoCapitalize="none"
+                        editable={accesoPerfil !== "veo"}
                     />
                 </View>
 
@@ -227,8 +235,10 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                         onChangeText={cedula => onUpdateState({ cedula })}
                         style={[
                             style.fieldInput,
-                            cedula.length < 5 && style.fieldInputError
+                            cedula.length < 5 && style.fieldInputError,
+                            accesoPerfil === "veo" && style.fieldInputDisabled
                         ]}
+                        editable={accesoPerfil !== "veo"}
                     />
                 </View>
 
@@ -268,12 +278,14 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                             ]}
                             onPress={() => {
                                 if (tipoAcceso === "crear") {
-                                    // Toast.show({
-                                    //     type: 'info',
-                                    //     text1: 'Primero crea el usuario',
-                                    //     text2: 'Las ubicaciones se agregarán después de crear el usuario'
-                                    // });
+                                    // En modo creación, mostrar mensaje informativo
+                                    Toast.show({
+                                        type: 'info',
+                                        text1: 'Primero crea el usuario',
+                                        text2: 'Las ubicaciones se agregarán después de crear el usuario'
+                                    });
                                 } else {
+                                    // En modo edición, abrir modal de ubicaciones
                                     onUpdateState({ modalUbicacion: true });
                                 }
                             }}
@@ -340,9 +352,9 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                     style={celular.length < 7 ? [style.input, style.inputRequired] : style.input}
                 />
 
-                {/* VEO */}
+                {/* VEO - Solo mostrar cuando se viene desde la página de clientes */}
                 {
-                    acceso === "veo"
+                    acceso === "veo" && tipoAcceso === "editar"
                     && <><Text style={style.textInfo}>Codigo Magister</Text>
                         <TextInput
                             placeholder="Codigo Magister"
@@ -357,19 +369,20 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
 
                 {/* VALOR UNITARIO */}
                 {
-                    acceso === "cliente"
-                    && <>
-                        <Text style={style.textInfo}>Valor Unitario</Text>
-                        <TextInput
-                            placeholder="Valor Unitario"
-                            autoCapitalize='none'
-                            placeholderTextColor="#aaa"
-                            value={valorUnitario}
-                            onChangeText={valorUnitario => onUpdateState({ valorUnitario })}
-                            style={valorUnitario.length < 3 ? [style.input, style.inputRequired] : style.input}
-                            editable={accesoPerfil == "cliente" ? false : true}
-                        />
-                    </>
+                    acceso === "cliente" && (
+                        <>
+                            <Text style={style.textInfo}>Valor Unitario</Text>
+                            <TextInput
+                                placeholder="Valor Unitario"
+                                autoCapitalize='none'
+                                placeholderTextColor="#aaa"
+                                value={valorUnitario ? String(valorUnitario) : ''}
+                                onChangeText={valorUnitario => onUpdateState({ valorUnitario })}
+                                style={valorUnitario && String(valorUnitario).length < 3 ? [style.input, style.inputRequired] : style.input}
+                                editable={accesoPerfil == "cliente" ? false : true}
+                            />
+                        </>
+                    )
                 }
 
                 {/* TIPO */}

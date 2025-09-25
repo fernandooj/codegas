@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 
 import Footer from '../components/footer';
+import HeaderLogo from '../../components/HeaderLogo';
 
 import { getVehiculos } from '../../redux/actions/vehiculoActions';
 import { getPedidos } from '../../redux/actions/pedidoActions';
@@ -41,22 +42,7 @@ const Home = ({ navigation }) => {
         onPress: () => navigation.navigate('chart'),
         show: acceso == 'cliente'
       },
-      {
-        title: 'CHAT',
-        subtitle: 'Conversaciones y soporte',
-        icon: '💬',
-        color: '#ffc107',
-        gradient: ['#ffc107', '#e0a800'],
-        onPress: () => {
-          if (acceso == 'admin' || acceso == 'solucion') {
-            navigation.navigate('conversacion', { tokenPhone, acceso });
-          } else {
-            // Manejar chat para otros usuarios
-            navigation.navigate('conversacion', { tokenPhone, acceso });
-          }
-        },
-        show: acceso != 'pedidos'
-      }
+
     ];
 
     return (
@@ -134,19 +120,17 @@ const Home = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Header con logo */}
-        <View style={style.header}>
-          <Image
-            source={require('../../assets/img/pg1/fondo1.jpg')}
-            style={style.logo}
-            resizeMode="contain"
-          />
-          <Text style={style.welcomeText}>
-            Bienvenido{nombre ? ` ${nombre}` : ''}
-          </Text>
-        </View>
+        <HeaderLogo
+          showWelcome={true}
+          welcomeText={`Bienvenido${nombre ? ` ${nombre}` : ''}`}
+          subtitle={`Acceso: ${acceso}`}
+          containerStyle={style.header}
+        />
 
         {/* Botones principales */}
-        {renderBotones()}
+        {acceso !== 'conductor' && (
+          renderBotones()
+        )}
 
         {/* Leyenda de estados */}
         {renderLeyendaEstados()}

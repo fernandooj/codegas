@@ -1,5 +1,6 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error.js');
+const { uploadImage } = require('../../../lib/image');
 
 /**
  * Updates a user in the database using the update_user SQL function.
@@ -52,8 +53,33 @@ module.exports.main = async (event) => {
             codt,
             valorUnitario,
             editado,
-            idpadre
+            idpadre,
+            imagen
         } = userData;
+
+        // Procesar imagen si existe
+        let avatar_url = null;
+        console.log('Datos recibidos:', { imagen: imagen ? 'EXISTE' : 'NO EXISTE', imagenLength: imagen ? imagen.length : 0 });
+
+        if (imagen) {
+            console.log('Procesando imagen...');
+            try {
+                // Crear un objeto con la imagen en base64 para el uploadImage
+                // uploadImage espera imagen y mime obligatoriamente
+                const imageData = {
+                    imagen: imagen,
+                    mime: 'image/jpeg' // Por defecto JPEG, ya que las fotos de la cámara suelen ser JPEG
+                };
+                console.log('Enviando a uploadImage...');
+                avatar_url = await uploadImage(imageData);
+                console.log('Avatar URL generada:', avatar_url);
+            } catch (error) {
+                console.error('Error procesando imagen:', error);
+                // Continuar sin imagen si hay error
+            }
+        } else {
+            console.log('No hay imagen para procesar');
+        }
 
         // Call the update_user SQL function
         const UPDATE_USER_FUNCTION = `
@@ -72,7 +98,7 @@ module.exports.main = async (event) => {
         NULL,                       -- p_tokenPhone
         NULL,                       -- p_token
         $10,                        -- p_codMagister
-        NULL,                       -- p_avatar
+        $14,                        -- p_avatar
         $11,                        -- p_codt
         NULL,                       -- p_codigoRegistro
         $12::INT,                   -- p_valorUnitario
@@ -93,7 +119,8 @@ module.exports.main = async (event) => {
             codMagister || null,
             codt || null,
             valorUnitario || null,
-            idpadre || null
+            idpadre || null,
+            avatar_url || null
         ]);
 
         // Get the updated user data

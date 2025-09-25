@@ -137,12 +137,12 @@ const Zona = ({ navigation }) => {
         }
     };
 
-    const handleDeleteZona = (zona, _id) => {
+    const handleDeleteZona = (zonaData) => {
         Alert.alert(
-            `Seguro deseas eliminar a: ${zona}`,
+            `Seguro deseas eliminar a: ${zonaData.nombre}`,
             ``,
             [
-                { text: 'Confirmar', onPress: () => confirmDelete(_id, zona) },
+                { text: 'Confirmar', onPress: () => confirmDelete(zonaData._id, zonaData.nombre) },
             ],
             { cancelable: false },
         );
@@ -255,7 +255,7 @@ const Zona = ({ navigation }) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={style.deleteButton}
-                        onPress={() => handleDeleteZona(zonaData.nombre, zonaData._id)}
+                        onPress={() => handleDeleteZona(zonaData)}
                     >
                         <FontAwesome name={'trash'} style={style.deleteButtonIcon} />
                     </TouchableOpacity>

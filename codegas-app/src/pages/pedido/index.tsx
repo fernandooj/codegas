@@ -135,7 +135,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             coordenadas,
             nombre,
             codt,
-            puntoId
+            puntoId,
+            valor_unitarioUsuario
         }
     } = state;
 
@@ -144,6 +145,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     const [idUsuario, setIdUsuario] = useState<string | undefined>();
     const [acceso, setAcceso] = useState<AccesoUsuario | undefined>();
     const [pedidoIdParaCerrar, setPedidoIdParaCerrar] = useState<string | undefined>(); // Estado para el ID del pedido
+    const [valorUnitarioParaCerrar, setValorUnitarioParaCerrar] = useState<string | undefined>(); // Estado para el valor unitario del pedido
     const [top] = useState(new Animated.Value(size.height));
     const [modalScale] = useState(new Animated.Value(0));
     const [modalMainScale] = useState(new Animated.Value(0));
@@ -326,9 +328,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
         // Si está activo y no entregado
         if (pedido.estado === "activo" && !pedido.entregado) {
-            // Si tiene fecha de entrega -> Color naranja (asignado)
-            if (pedido.fechaentrega && !!pedido.conductor) return colors.asignado;
-            // Si no tiene fecha de entrega -> Color amarillo (activo)
+            // Si tiene conductor Y fecha de entrega -> Color naranja (asignado)
+            if (pedido.conductor && pedido.fechaentrega) return colors.asignado;
+            // Si no tiene conductor o no tiene fecha -> Color amarillo (activo)
             return colors.activo;
         }
 
@@ -355,7 +357,14 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     };
 
     const handleEstadoChange = (nuevoEstado: EstadoPedido) => {
-        updateState(actions.setPedidoData({ estado: nuevoEstado }));
+        const updateData: any = { estado: nuevoEstado };
+
+        // Si el nuevo estado es "activo", establecer estadoEntrega según si tiene fecha
+        if (nuevoEstado === "activo") {
+            updateData.estadoEntrega = fechaEntrega ? "asignado" : "activo";
+        }
+
+        updateState(actions.setPedidoData(updateData));
     };
 
     const handleConfirmStateChange = () => {
@@ -404,10 +413,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 if (estado == "activo") {
                     if (estadoInicial == "innactivo") {
                         updateState(actions.setModalNovedad(true));
-                        updateState(actions.setPedidoData({ estadoEntrega: "asignado" }));
+                        updateState(actions.setPedidoData({ estadoEntrega: fechaEntrega ? "asignado" : "activo" }));
                     } else {
                         // Ya no se abre el modal de fecha al cambiar estado
-                        updateState(actions.setPedidoData({ estadoEntrega: "asignado" }));
+                        updateState(actions.setPedidoData({ estadoEntrega: fechaEntrega ? "asignado" : "activo" }));
                         Alert.alert('Éxito', 'Pedido actualizado correctamente');
                         loadPedidos();
                     }
@@ -448,13 +457,76 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
     };
 
-    const cancelarPedidoCliente = (): void => {
+    const cancelarPedidoCliente = async (): Promise<void> => {
         const { nombre: nombreUsuario, user } = context;
         const nombreFinal = nombreUsuario || user?.nombre || razon_social || 'Usuario';
         const ahora = moment().format('DD/MM/YYYY HH:mm:ss');
         const mensajeCancelacion = `El usuario ${nombreFinal} canceló su pedido el ${ahora}`;
 
-        Alert.alert('Información', 'Funcionalidad de cancelación en desarrollo');
+        // Mostrar confirmación antes de cancelar
+        Alert.alert(
+            'Confirmar cancelación',
+            '¿Está seguro de que desea cancelar este pedido? Esta acción no se puede revertir.',
+            [
+                {
+                    text: 'No',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Sí, cancelar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            // Preparar los datos para cambiar el estado
+                            const datosCancelacion = [{
+                                _id: id,
+                                estado: 'noentregado',
+                                motivo_no_cierre: 'cliente cancela pedido'
+                            }];
+
+                            // Llamar al API para cambiar el estado
+                            const response = await fetch('https://api.codegascolombia.com/pedidos/cambiar-estado-pedido', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    seleccionados: datosCancelacion
+                                })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.status) {
+                                // Mostrar mensaje de éxito
+                                Toast.show({
+                                    type: 'success',
+                                    text1: 'Pedido cancelado',
+                                    text2: 'El pedido ha sido cancelado exitosamente',
+                                    visibilityTime: 3000,
+                                });
+
+                                // Cerrar el modal y refrescar los datos
+                                closePedidoModal();
+                                setTimeout(() => {
+                                    getPedidos();
+                                }, 1000);
+                            } else {
+                                throw new Error('Error en la respuesta del servidor');
+                            }
+                        } catch (error) {
+                            console.error('Error cancelando pedido:', error);
+                            Toast.show({
+                                type: 'error',
+                                text1: 'Error al cancelar',
+                                text2: 'No se pudo cancelar el pedido. Inténtalo de nuevo.',
+                                visibilityTime: 3000,
+                            });
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const handleCerrarPedido = async (data: any, pedidoId?: string): Promise<void> => {
@@ -515,6 +587,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 updateState(actions.setModalCerrarPedido(false));
                 closePedidoModal();
                 setPedidoIdParaCerrar(undefined);
+                setValorUnitarioParaCerrar(undefined);
 
                 // Luego mostrar alert y limpiar campos
                 setTimeout(() => {
@@ -692,7 +765,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             fechaEntrega: e.fechaentrega,
                             id: e._id,
                             estado: e.estado,
-                            estadoEntrega: e.estado == "activo" ? "asignado" : undefined,
+                            estadoEntrega: e.estado == "activo" ? (e.fechaentrega ? "asignado" : "activo") : undefined,
                             usuarioId: e.usuarioid,
                             nombre: e.nombre,
                             razon_social: e.razon_social,
@@ -1345,8 +1418,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onAssignVehicle={() => updateState(actions.setModalConductor(true))}
                 onCancelOrder={cancelarPedidoCliente}
                 onClosePedido={() => {
-                    // Capturar el ID del pedido antes de cerrar el modal
+                    // Capturar el ID del pedido y valor unitario antes de cerrar el modal
                     setPedidoIdParaCerrar(id);
+                    setValorUnitarioParaCerrar(valor_unitarioUsuario?.toString());
 
                     // Primero cerrar el modal principal
                     closePedidoModal();
@@ -1397,6 +1471,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onClose={() => {
                     updateState(actions.setModalCerrarPedido(false));
                     setPedidoIdParaCerrar(undefined); // Limpiar el ID capturado
+                    setValorUnitarioParaCerrar(undefined); // Limpiar el valor unitario capturado
                     // Reabrir el modal principal después de un pequeño delay
                     setTimeout(() => {
                         openPedidoModal({
@@ -1405,7 +1480,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             cantidadKl, cantidadPrecio, fechaEntrega, creado, usuarioCrea,
                             capacidad, observacion, observacion_pedido, entregado,
                             placaPedido, conductorPedido, kilos, factura, valor_total,
-                            forma_pago, motivo_no_cierre, perfil_novedad, idVehiculo, placa
+                            forma_pago, motivo_no_cierre, perfil_novedad, idVehiculo, placa,
+                            valor_unitarioUsuario
                         });
                     }, 200);
                 }}
@@ -1416,7 +1492,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 valor_total={valor_total}
                 remision={undefined} // TODO: Agregar remision del estado
                 forma_pago={forma_pago}
-                valor_unitario={undefined} // TODO: Agregar valor_unitario del estado
+                valor_unitario={valorUnitarioParaCerrar || undefined}
                 onCerrarPedido={handleCerrarPedido}
                 onGuardarNovedad={handleGuardarNovedadCerrar}
             />
@@ -1429,6 +1505,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 bounces={bounces}
                 scrollEventThrottle={16}
                 ref={scrollViewRef}
+                scrollEnabled={!(modalConductor || modalFechaEntrega || modalNovedad || modalPerfiles || modalCerrarPedido || modalOrdenamiento)}
             >
                 {showSpin1 || !pedidos ? (
                     <View style={{
@@ -1472,9 +1549,28 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         </Text>
                     </View>
                 ) : pedidos.length == 0 ? (
-                    <Text style={style.sinPedidos}>
-                        No hay pedidos {estadoFiltro === 'todos' ? 'encontrados' : `en estado "${estadoFiltro}"`}
-                    </Text>
+                    <View style={style.emptyStateContainer}>
+                        <View style={style.emptyStateIconContainer}>
+                            <FontAwesome
+                                name="inbox"
+                                size={48}
+                                style={style.emptyStateIcon}
+                            />
+                        </View>
+                        <Text style={style.emptyStateTitle}>
+                            {estadoFiltro === 'todos' ? 'No hay pedidos' : `Sin pedidos ${estadoFiltro}`}
+                        </Text>
+                        <Text style={style.emptyStateSubtitle}>
+                            {estadoFiltro === 'todos'
+                                ? 'No se encontraron pedidos en el sistema'
+                                : `No hay pedidos en estado "${estadoFiltro}"`
+                            }
+                        </Text>
+                        <View style={style.emptyStateDivider} />
+                        <Text style={style.emptyStateHint}>
+                            Los nuevos pedidos aparecerán aquí automáticamente
+                        </Text>
+                    </View>
                 ) : (
                     renderPedidos()
                 )}
@@ -1581,8 +1677,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onTipoOrdenChange={(tipoOrden) => updateState(actions.setTipoOrden(tipoOrden))}
                 onApply={async () => {
                     updateState(actions.setModalOrdenamiento(false));
-                    // El efecto de filtros se encargará de recargar automáticamente
-                    // No necesitamos lógica adicional aquí
                 }}
             />
         </View>

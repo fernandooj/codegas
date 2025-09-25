@@ -15,6 +15,7 @@ import { DataContext } from "../../context/context"
 import { getUsuariosAcceso, getUsuarios, getPointsByClient } from '../../redux/actions/usuarioActions'
 import { verificarPedidoHoy, crearPedido } from '../../redux/actions/pedidoActions'
 import Footer from '../components/footer'
+import HeaderLogo from '../../components/HeaderLogo'
 import { style } from './style'
 
 import { frecuencias, dias, diasN, dia1, dia2 } from '../../utils/pedido_info'
@@ -516,32 +517,35 @@ const Nuevo_pedido = ({ navigation }) => {
                         onChangeText={(cantidad) => setState(prev => ({ ...prev, cantidad }))}
                     />
                 )}
-                {showFrecuencia ? (
-                    <TouchableOpacity
-                        style={style.eliminarFrecuencia}
-                        onPress={() => setState(prev => ({
-                            ...prev,
-                            showFrecuencia: false,
-                            frecuencia: null,
-                            diaSeleccionado1: null,
-                            diaSeleccionado2: null,
-                            franja: null
-                        }))}
-                    >
-                        <FontAwesome name="minus" style={style.iconFrecuencia} />
-                        <Text style={style.textGuardar}>Frecuencia pedido</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity
-                        style={style.nuevaFrecuencia}
-                        onPress={() => setState(prev => ({ ...prev, showFrecuencia: true }))}
-                    >
-                        <FontAwesome name="plus" style={style.iconFrecuencia} />
-                        <Text style={style.textGuardar}>Frecuencia pedido</Text>
-                    </TouchableOpacity>
+                {/* Solo mostrar frecuencia si el acceso NO es veo */}
+                {acceso !== "veo" && (
+                    showFrecuencia ? (
+                        <TouchableOpacity
+                            style={style.eliminarFrecuencia}
+                            onPress={() => setState(prev => ({
+                                ...prev,
+                                showFrecuencia: false,
+                                frecuencia: null,
+                                diaSeleccionado1: null,
+                                diaSeleccionado2: null,
+                                franja: null
+                            }))}
+                        >
+                            <FontAwesome name="minus" style={style.iconFrecuencia} />
+                            <Text style={style.textGuardar}>Frecuencia pedido</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity
+                            style={style.nuevaFrecuencia}
+                            onPress={() => setState(prev => ({ ...prev, showFrecuencia: true }))}
+                        >
+                            <FontAwesome name="plus" style={style.iconFrecuencia} />
+                            <Text style={style.textGuardar}>Frecuencia pedido</Text>
+                        </TouchableOpacity>
+                    )
                 )}
 
-                {showFrecuencia && (
+                {showFrecuencia && acceso !== "veo" && (
                     <View style={style.contenedorFrecuencia}>
                         <ModalSelector
                             style={style.btnFrecuencia}
@@ -965,7 +969,7 @@ const Nuevo_pedido = ({ navigation }) => {
 
     return (
         <View style={style.container} >
-            <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera} />
+            <HeaderLogo variant="compact" />
             <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
                 {showFechaEntrega && modalFechaEntrega()}
                 <KeyboardAwareScrollView style={style.containerNuevo}>

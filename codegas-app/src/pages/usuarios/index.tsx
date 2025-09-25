@@ -45,9 +45,16 @@ const Usuarios: React.FC<UsuarioProps> = ({ navigation }) => {
         setState(prevState => ({ ...prevState, ...updates }));
     }, []);
 
+    // Effect para carga inicial
     useEffect(() => {
-        searchUser();
-    }, []);
+        console.log('🔍 Usuarios - Carga inicial:', { userId, acceso, tieneUserId: !!userId, tieneAcceso: !!acceso });
+        if (userId && acceso) {
+            console.log('🚀 Usuarios - Ejecutando searchUser inicial');
+            searchUser();
+        } else {
+            console.log('❌ Usuarios - No se ejecuta searchUser inicial:', { userId, acceso });
+        }
+    }, [userId, acceso]);
 
     // Effect para búsqueda en tiempo real con debounce
     useEffect(() => {
@@ -91,7 +98,16 @@ const Usuarios: React.FC<UsuarioProps> = ({ navigation }) => {
 
     const searchUser = useCallback((clean: boolean = false) => {
         const { limit, inicio, terminoBuscador } = state;
-        dispatch(getUsuarios(limit, inicio, acceso, clean ? '' : terminoBuscador, userId) as any);
+        const searchTerm = clean ? '' : terminoBuscador;
+        console.log('📡 Usuarios - Enviando request:', {
+            limit,
+            inicio,
+            acceso,
+            terminoBuscador: searchTerm,
+            userId,
+            clean
+        });
+        dispatch(getUsuarios(limit, inicio, acceso, searchTerm, userId) as any);
     }, [state.limit, state.inicio, state.terminoBuscador, dispatch, acceso, userId]);
 
     const handleSearch = useCallback(() => {
@@ -286,8 +302,14 @@ const Usuarios: React.FC<UsuarioProps> = ({ navigation }) => {
 
     const renderContent = useCallback(() => {
         const { terminoBuscador } = state;
+        console.log('🎨 Usuarios - Renderizando contenido:', {
+            usuariosLength: usuarios.length,
+            terminoBuscador,
+            usuarios: usuarios
+        });
 
         if (usuarios.length === 0) {
+            console.log('⏳ Usuarios - Mostrando loading porque usuarios.length === 0');
             return <ActivityIndicator color="#00218b" />;
         }
 
@@ -473,13 +495,15 @@ const Usuarios: React.FC<UsuarioProps> = ({ navigation }) => {
 
             <Footer navigation={navigation} />
 
-            {/* Round + button with shadow */}
-            <TouchableOpacity
-                style={style.floatingButton}
-                onPress={navigateToCreateClient}
-            >
-                <FontAwesome name={'plus'} style={style.floatingButtonIcon} />
-            </TouchableOpacity>
+            {/* Round + button with shadow - Solo visible para usuarios que no sean 'veo' */}
+            {acceso !== 'veo' && (
+                <TouchableOpacity
+                    style={style.floatingButton}
+                    onPress={navigateToCreateClient}
+                >
+                    <FontAwesome name={'plus'} style={style.floatingButtonIcon} />
+                </TouchableOpacity>
+            )}
         </View>
     );
 };

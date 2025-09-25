@@ -1,19 +1,19 @@
 let express = require('express')
 let router = express.Router();
-let fs 		   = require('fs');
-let Jimp       = require("jimp");
-let {promisify} = require('util');
-let  moment = require('moment-timezone');
+let fs = require('fs');
+let Jimp = require("jimp");
+let { promisify } = require('util');
+let moment = require('moment-timezone');
 let fecha = moment().tz("America/Bogota").format('YYYY-MM-DD_h:mm:ss')
 let fechaImagen = moment().tz("America/Bogota").format('YYYY_MM_DD_h:mm:ss')
-let redis        	= require('redis')
-let cliente      	= redis.createClient()
-let pedidoServices     = require('../services/pedidoServices.js')
-let userServices       = require('./../services/userServices.js')
-let carroServices      = require('../services/carroServices.js')
-const htmlTemplate     = require('../notificaciones/template-email.js')
-const notificacionPush = require('../notificaciones/notificacionPush.js')
-let sizeOf    	   = promisify(require('image-size'));
+let redis = require('redis')
+let cliente = redis.createClient()
+let pedidoServices = require('../services/pedidoServices.js')
+let userServices = require('./../services/userServices.js')
+let carroServices = require('../services/carroServices.js')
+const htmlTemplate = require('../notificaciones/template-email.js')
+const { notificacionPush, notificacionPushFCM } = require('../notificaciones/notificacionPush.js')
+let sizeOf = promisify(require('image-size'));
 ////////////////////////////////////////////////////////////
 ////////////        OBTENGO TODOS LOS PEDIDOS SI ES CLIENTE, TRAE SUS RESPECTIVOS PEDIDOS
 ////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ let sizeOf    	   = promisify(require('image-size'));
 //                 })
 //                 pedido = pedido1.concat(pedido2)
 //                 console.log(pedido.length)
-                
+
 //                 pedido = pedido.filter(e=>{
 //                     return e.usuarioId.comercialAsignado==req.session.usuario._id
 //                 })
@@ -96,14 +96,14 @@ let sizeOf    	   = promisify(require('image-size'));
 // })
 
 /// search by term
-router.get('/by_term/web/:term/', (req,res)=>{
-    let limit = req.query.page ?(req.query.page*20) :40
-    const {term} = req.params
+router.get('/by_term/web/:term/', (req, res) => {
+    let limit = req.query.page ? (req.query.page * 20) : 40
+    const { term } = req.params
     console.log(term)
     if (!req.session.usuario) {
-        res.json({ status:false, message: 'No hay un usuario logueado' });
-    }else{
-        pedidoServices.getByTerm(req.params.term, 1000, (err, pedido)=>{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.getByTerm(req.params.term, 1000, (err, pedido) => {
             if (!err) {
                 const filterItems = (needle, heystack) => {
                     let query = needle.toLowerCase();
@@ -112,42 +112,42 @@ router.get('/by_term/web/:term/', (req,res)=>{
                     });
                 }
                 let data = filterItems(term, pedido)
-                res.json({ status:true, pedido:data });
-            }else{
-                res.json({ status:false, message: err, pedido:[] });
+                res.json({ status: true, pedido: data });
+            } else {
+                res.json({ status: false, message: err, pedido: [] });
             }
         })
     }
 })
 
 
-router.get('/todos/web/:fechaEntrega/', (req,res)=>{
-    let limit = req.query.page ?(req.query.page*20) :40
+router.get('/todos/web/:fechaEntrega/', (req, res) => {
+    let limit = req.query.page ? (req.query.page * 20) : 40
     if (!req.session.usuario) {
-        res.json({ status:false, message: 'No hay un usuario logueado' });
-    }else{
-        pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido)=>{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.getByFechaEntrega(req.params.fechaEntrega, limit, (err, pedido) => {
             if (!err) {
-                
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err, pedido:[] });
+
+                res.json({ status: true, pedido });
+            } else {
+                res.json({ status: false, message: err, pedido: [] });
             }
         })
     }
 })
 
-router.get('/todos/webSolicitud/:fechaEntrega/', (req,res)=>{
-    let limit = req.query.page ?(req.query.page*20) :40
+router.get('/todos/webSolicitud/:fechaEntrega/', (req, res) => {
+    let limit = req.query.page ? (req.query.page * 20) : 40
     if (!req.session.usuario) {
-        res.json({ status:false, message: 'No hay un usuario logueado' });
-    }else{
-        pedidoServices.getByFechaSolicitud(req.params.fechaEntrega, limit, (err, pedido)=>{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.getByFechaSolicitud(req.params.fechaEntrega, limit, (err, pedido) => {
             if (!err) {
-                
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err, pedido:[] });
+
+                res.json({ status: true, pedido });
+            } else {
+                res.json({ status: false, message: err, pedido: [] });
             }
         })
     }
@@ -157,22 +157,22 @@ router.get('/todos/webSolicitud/:fechaEntrega/', (req,res)=>{
 //////////////////////////////////////////////////////////////////////////
 ////////////        OBTENGO LOS PEDIDOS QUE TIENEN ASIGNADO UN USUARIO, PARA VERIFICAR QUE NO SE REPITAN EN EL MISMO DIA
 //////////////////////////////////////////////////////////////////////////
-router.get('/listadoDia/:usuarioId/:puntoId/', (req,res)=>{
-	pedidoServices.getByUserPuntoDate(req.params.usuarioId, req.params.puntoId, (err, pedidos)=>{
-		if (err) {
-			res.json({ status:false, message: err });
-		}else{
+router.get('/listadoDia/:usuarioId/:puntoId/', (req, res) => {
+    pedidoServices.getByUserPuntoDate(req.params.usuarioId, req.params.puntoId, (err, pedidos) => {
+        if (err) {
+            res.json({ status: false, message: err });
+        } else {
             let fechaHoy = moment().subtract(5, 'hours');
-            fechaHoy     = moment(fechaHoy).format('YYYY-MM-DD')
-            console.log({fechaHoy})
-            let pedido = pedidos.filter(e=>{
+            fechaHoy = moment(fechaHoy).format('YYYY-MM-DD')
+            console.log({ fechaHoy })
+            let pedido = pedidos.filter(e => {
                 e.creado = moment(e.creado).format("YYYY-MM-DD")
-                return e.creado==fechaHoy
+                return e.creado == fechaHoy
             })
 
-			res.json({ status:true,   pedido });
-		}
-	})
+            res.json({ status: true, pedido });
+        }
+    })
 })
 
 ////////////////////////////////////////////////////////////
@@ -208,21 +208,21 @@ router.get('/listadoDia/:usuarioId/:puntoId/', (req,res)=>{
 //////////////////////////////////////////////////////////////////
 ////////////      OBTENGO TODOS LOS VEHICULOS CON SUS PEDIDOS
 //////////////////////////////////////////////////////////////////
-router.get('/vehiculosConPedidos/:fecha', (req,res)=>{
+router.get('/vehiculosConPedidos/:fecha', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        pedidoServices.vehiculosConPedidos(req.params.fecha, (err, carro)=>{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.vehiculosConPedidos(req.params.fecha, (err, carro) => {
             if (!err) {
-                res.json({ status:true, carro });
-            }else{
-                res.json({ status:false, message: err });
+                res.json({ status: true, carro });
+            } else {
+                res.json({ status: false, message: err });
             }
         })
     }
 })
 
-const ubicacionJimp =  '../front/docs/public/uploads/pedido/'
+const ubicacionJimp = '../front/docs/public/uploads/pedido/'
 ///////////////////////////////////////////////////////////////
 ////////////       GUARDO UN PEDIDO
 //////////////////////////////////////////////////////////////
@@ -332,35 +332,35 @@ const ubicacionJimp =  '../front/docs/public/uploads/pedido/'
 ///////////////////////////////////////////////////////////////
 ////////////      ASIGNA UN VEHICULO
 //////////////////////////////////////////////////////////////
-router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega/:nPedido', (req,res)=>{
+router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega/:nPedido', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        carroServices.getByCarro(req.params.carroId, (err, conductor)=>{
-            if(!err){
-                pedidoServices.getLastRowConductor(conductor.conductor._id, req.params.fechaEntrega, (err2, pedido)=>{
-                    if(err2){
-                        res.json({ status:false, message: err });
-                    }else{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        carroServices.getByCarro(req.params.carroId, (err, conductor) => {
+            if (!err) {
+                pedidoServices.getLastRowConductor(conductor.conductor._id, req.params.fechaEntrega, (err2, pedido) => {
+                    if (err2) {
+                        res.json({ status: false, message: err });
+                    } else {
 
-                        orden = pedido ?pedido.orden+1 :1
-                        pedidoServices.asignarVehiculo(req.session.usuario._id, req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden,  (err3, pedido)=>{
+                        orden = pedido ? pedido.orden + 1 : 1
+                        pedidoServices.asignarVehiculo(req.session.usuario._id, req.params.pedidoId, req.params.carroId, conductor.conductor._id, orden, (err3, pedido) => {
                             if (!err3) {
                                 let fechaHoy = moment().subtract(1, 'hours');
-                                fechaHoy     = moment(fechaHoy).add(1, 'hours').format('YYYY-MM-DD');
-                                console.log({fechaHoy,fechaEntrega:req.params.fechaEntrega })
-                                fechaHoy===req.params.fechaEntrega
-                                ?notificacionPush(conductor.conductor.tokenPhone, "Nuevo pedido asignado", `el pedido ${req.params.nPedido} le ha sido asignado`)
-                                :null
-                                let mensajeJson={
-                                    badge:1,
-                                    idConductor:conductor.conductor._id
+                                fechaHoy = moment(fechaHoy).add(1, 'hours').format('YYYY-MM-DD');
+                                console.log({ fechaHoy, fechaEntrega: req.params.fechaEntrega })
+                                fechaHoy === req.params.fechaEntrega
+                                    ? notificacionPush(conductor.conductor.tokenPhone, "Nuevo pedido asignado", `el pedido ${req.params.nPedido} le ha sido asignado`)
+                                    : null
+                                let mensajeJson = {
+                                    badge: 1,
+                                    idConductor: conductor.conductor._id
                                 }
                                 cliente.publish('actualizaPedidos', true)
                                 cliente.publish('pedidoConductor', JSON.stringify(mensajeJson))
-                                res.json({ status:true, pedido });
-                            }else{
-                                res.json({ status:false, message: err });
+                                res.json({ status: true, pedido });
+                            } else {
+                                res.json({ status: false, message: err });
                             }
                         })
                     }
@@ -373,16 +373,16 @@ router.get('/asignarConductor/:pedidoId/:carroId/:fechaEntrega/:nPedido', (req,r
 ///////////////////////////////////////////////////////////////
 ////////////      ASIGNA UNA FECHA
 //////////////////////////////////////////////////////////////
-router.get('/asignarFechaEntrega/:idPedido/:fecha', (req,res)=>{
+router.get('/asignarFechaEntrega/:idPedido/:fecha', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        pedidoServices.asignarFechaEntrega(req.params.idPedido, req.params.fecha, (err, pedido)=>{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.asignarFechaEntrega(req.params.idPedido, req.params.fecha, (err, pedido) => {
             if (!err) {
                 cliente.publish('actualizaPedidos', true)
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err });
+                res.json({ status: true, pedido });
+            } else {
+                res.json({ status: false, message: err });
                 console.log(err)
             }
         })
@@ -393,19 +393,19 @@ router.get('/asignarFechaEntrega/:idPedido/:fecha', (req,res)=>{
 ///////////////////////////////////////////////////////////////
 ////////////       CAMBIAR ESTADO
 //////////////////////////////////////////////////////////////
-router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
+router.get('/cambiarEstado/:idPedido/:estado', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        pedidoServices.cambiarEstado(req.session.usuario._id, req.params.idPedido, req.params.estado, (err, pedido)=>{
-            console.log({estado:req.params.estado})
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.cambiarEstado(req.session.usuario._id, req.params.idPedido, req.params.estado, (err, pedido) => {
+            console.log({ estado: req.params.estado })
             if (!err) {
 
-                req.params.estado=="activo"
-                ?enviaNotificacion(res, "despacho", "Nuevo pedido activado", `${pedido.nPedido} se ha hactivado`)
-                :enviaNotificacion(res, "admin",    "Nuevo pedido Innactivo", `${pedido.nPedido} se desactivo`)
-            }else{
-                res.json({ status:false, message: err });
+                req.params.estado == "activo"
+                    ? enviaNotificacion(res, "despacho", "Nuevo pedido activado", `${pedido.nPedido} se ha hactivado`)
+                    : enviaNotificacion(res, "admin", "Nuevo pedido Innactivo", `${pedido.nPedido} se desactivo`)
+            } else {
+                res.json({ status: false, message: err });
             }
         })
     }
@@ -415,40 +415,40 @@ router.get('/cambiarEstado/:idPedido/:estado', (req,res)=>{
 ///////////////////////////////////////////////////////////////
 ////////////       FINALIZAR
 //////////////////////////////////////////////////////////////
-router.post('/finalizar/:estado', (req,res)=>{
+router.post('/finalizar/:estado', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
         let randonNumber = Math.floor(90000000 + Math.random() * 1000000)
 
         ////////////////////    ruta que se va a guardar en el folder
-        let fullUrl = '../front/docs/public/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
+        let fullUrl = '../front/docs/public/uploads/pedido/' + fecha + '_' + randonNumber + '.jpg'
         console.log(req.files)
         ////////////////////    ruta que se va a guardar en la base de datos
-        let ruta = req.protocol+'://'+req.get('Host') + '/public/uploads/pedido/'+fecha+'_'+randonNumber+'.jpg'
+        let ruta = req.protocol + '://' + req.get('Host') + '/public/uploads/pedido/' + fecha + '_' + randonNumber + '.jpg'
 
         ///////////////////     envio la imagen al nuevo path
-        fs.rename(req.files.imagen.path, fullUrl, (err)=>{console.log(err)})
+        fs.rename(req.files.imagen.path, fullUrl, (err) => { console.log(err) })
 
         /////////////////////////////////////////////       ANTES DE CERRAR SACO EL ULTIMO NUMERO DE ORDEN GUARDADO, ESTO PARA VERIFICAR SI ESTA CAMBIANDO O NO EL ORDEN DE GUARDADO
-        pedidoServices.getLastRowConductorEntregados(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
-            if(err){
-                res.json({ status:false, message: err });
-            }else{
-               let orden_cerrado = pedido ?pedido.orden_cerrado+1 :1
+        pedidoServices.getLastRowConductorEntregados(req.session.usuario._id, req.body.fechaEntrega, (err, pedido) => {
+            if (err) {
+                res.json({ status: false, message: err });
+            } else {
+                let orden_cerrado = pedido ? pedido.orden_cerrado + 1 : 1
 
-                pedidoServices.finalizar(req.body, req.params.estado, ruta, orden_cerrado, (err2, pedido)=>{
+                pedidoServices.finalizar(req.body, req.params.estado, ruta, orden_cerrado, (err2, pedido) => {
 
-                    const {kilos, factura, valor_unitario} = req.body
+                    const { kilos, factura, valor_unitario } = req.body
                     if (!err2) {
                         let titulo = `<font size="5">Pedido entregado</font>`
-                        let text1  = `Su pedido ha sido entregado con exito`
-                        let text2  = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/> SI QUIERES CONSULTAR TU FACTURA TE INVITAMOS A QUE LO CONSULTES EN LA APP`
+                        let text1 = `Su pedido ha sido entregado con exito`
+                        let text2 = `Kilos: ${kilos} <br/> factura: ${factura} <br/> Valor: ${valor_unitario} <br/> SI QUIERES CONSULTAR TU FACTURA TE INVITAMOS A QUE LO CONSULTES EN LA APP`
                         let asunto = "Estado pedido Codegas, entregado"
-                        htmlTemplate(req, req.body, titulo, text1, text2,  asunto)
+                        htmlTemplate(req, req.body, titulo, text1, text2, asunto)
                         enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado el pedido: ${pedido.nPedido}`)
-                    }else{
-                        res.json({ status:false, message: err2 });
+                    } else {
+                        res.json({ status: false, message: err2 });
                     }
                 })
             }
@@ -459,34 +459,34 @@ router.post('/finalizar/:estado', (req,res)=>{
 ////////////////////////////////////////////////////////////////////////////
 ////////////       GUARDAR NOVEDAD --> LO CIERRA PERO NO SE PUDO ENTREGAR
 ////////////////////////////////////////////////////////////////////////////
-router.post('/novedad/', (req,res)=>{
-    pedidoServices.getLastRowConductorEntregados(req.session.usuario._id, req.body.fechaEntrega, (err, pedido)=>{
-        if(err){
-            res.json({ status:false, message: err });
-        }else{
-            let orden_cerrado = pedido ?pedido.orden_cerrado+1 :1
+router.post('/novedad/', (req, res) => {
+    pedidoServices.getLastRowConductorEntregados(req.session.usuario._id, req.body.fechaEntrega, (err, pedido) => {
+        if (err) {
+            res.json({ status: false, message: err });
+        } else {
+            let orden_cerrado = pedido ? pedido.orden_cerrado + 1 : 1
 
-            pedidoServices.novedad(req.body._id, orden_cerrado, req.body.novedad, req.body.perfil_novedad, (err, pedido)=>{
+            pedidoServices.novedad(req.body._id, orden_cerrado, req.body.novedad, req.body.perfil_novedad, (err, pedido) => {
                 if (!err) {
                     enviaNotificacion(res, "despacho", req.session.usuario.nombre, `Ha cerrado el pedido ${pedido.nPedido} NO exitosamente, ${req.body.novedad}`)
-                }else{
-                    res.json({ status:false, message: err });
+                } else {
+                    res.json({ status: false, message: err });
                 }
             })
         }
     })
 })
 
-const enviaNotificacion=(res, acceso, titulo, body)=>{
-    userServices.getByAcceso(acceso, (err, usuarios)=>{
-        if(!err){
-            usuarios.map(e=>{
+const enviaNotificacion = (res, acceso, titulo, body) => {
+    userServices.getByAcceso(acceso, (err, usuarios) => {
+        if (!err) {
+            usuarios.map(e => {
                 notificacionPush(e.tokenPhone, titulo, body)
             })
             cliente.publish('actualizaPedidos', true)
-            res.json({status:true, usuarios})
-        }else{
-            res.json({ status:false, usuarios:[], err})
+            res.json({ status: true, usuarios })
+        } else {
+            res.json({ status: false, usuarios: [], err })
         }
     })
 }
@@ -494,15 +494,15 @@ const enviaNotificacion=(res, acceso, titulo, body)=>{
 ///////////////////////////////////////////////////////////////
 ////////////      ELIMINAR
 //////////////////////////////////////////////////////////////
-router.get('/eliminar/:idPedido/:estado', (req,res)=>{
+router.get('/eliminar/:idPedido/:estado', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        pedidoServices.eliminar(req.params.idPedido, req.params.estado, (err, pedido)=>{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.eliminar(req.params.idPedido, req.params.estado, (err, pedido) => {
             if (!err) {
-                res.json({ status:true, pedido });
-            }else{
-                res.json({ status:false, message: err });
+                res.json({ status: true, pedido });
+            } else {
+                res.json({ status: false, message: err });
             }
         })
     }
@@ -512,23 +512,23 @@ router.get('/eliminar/:idPedido/:estado', (req,res)=>{
 ///////////////////////////////////////////////////////////////
 ////////////      EDITAR ORDEN PEDIDOS
 //////////////////////////////////////////////////////////////
-router.put('/editarOrden/', (req,res)=>{
+router.put('/editarOrden/', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        req.body.pedidos.map((e, index)=>{
-            pedidoServices.editarOrden(e.info[0]._id, index+1, (err, pedido)=>{
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        req.body.pedidos.map((e, index) => {
+            pedidoServices.editarOrden(e.info[0]._id, index + 1, (err, pedido) => {
 
             })
         })
-        let mensajeJson={
-            badge:1,
-            idConductor:req.body.conductorId
+        let mensajeJson = {
+            badge: 1,
+            idConductor: req.body.conductorId
         }
 
         cliente.publish('pedidoConductor', JSON.stringify(mensajeJson))
         cliente.publish('actualizaPedidos', true)
-        res.json({ status:true });
+        res.json({ status: true });
     }
 })
 
@@ -536,13 +536,13 @@ router.put('/editarOrden/', (req,res)=>{
 ///////////////////////////////////////////////////////////////
 ////////////      EDITAR ORDEN PEDIDOS
 //////////////////////////////////////////////////////////////
-router.put('/eliminarFrecuencia/', (req,res)=>{
+router.put('/eliminarFrecuencia/', (req, res) => {
     if (!req.session.usuario) {
-		res.json({ status:false, message: 'No hay un usuario logueado' });
-	}else{
-        pedidoServices.eliminarFrecuencia(req.body.id, (err, pedido)=>{
-            if(!err){
-                res.json({ status:true, pedido });
+        res.json({ status: false, message: 'No hay un usuario logueado' });
+    } else {
+        pedidoServices.eliminarFrecuencia(req.body.id, (err, pedido) => {
+            if (!err) {
+                res.json({ status: true, pedido });
             }
         })
     }
@@ -554,132 +554,132 @@ router.put('/eliminarFrecuencia/', (req,res)=>{
 ///////////////////////////////////////////////////////////////////////////////////
 let fechaFrecuencia = moment.tz(moment(), 'America/Bogota|COT|50|0|').format('YYYY/MM/DD h:mm:ss a')
 fechaFrecuencia = fechaFrecuencia.valueOf()
-router.get('/crear_frecuencia/mensual', (req,res)=>{
-    pedidoServices.get((err, pedidos)=>{
+router.get('/crear_frecuencia/mensual', (req, res) => {
+    pedidoServices.get((err, pedidos) => {
         if (!err) {
             ////////////////////////////////////////////////////////////////////////
             ////////////////////////            INSERTA LAS FECHAS MENSUAL
             let fechaMensual = moment(fechaFrecuencia).format("D")
             fechaMensual = parseInt(fechaMensual)
-            let mensual = pedidos.filter(e=>{
-                return e.frecuencia=="mensual"
+            let mensual = pedidos.filter(e => {
+                return e.frecuencia == "mensual"
             })
-            mensual = mensual.filter(e=>{
-                if(parseInt(e.dia1)==(fechaMensual+1)) return e
+            mensual = mensual.filter(e => {
+                if (parseInt(e.dia1) == (fechaMensual + 1)) return e
             })
-            mensual.map((e, key)=>{
+            mensual.map((e, key) => {
                 let data = {
-                    forma:e.forma,
-                    cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
-                    puntoId:e.puntoId._id,
-                    pedidoPadre:e._id,
-                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+e.dia1),
-                    creado:        moment(fechaFrecuencia).format("YYYY-MM-"+e.dia1),
+                    forma: e.forma,
+                    cantidad: e.forma == "cantidad" ? e.cantidadKl : e.forma == "monto" ? e.cantidadPrecio : 0,
+                    puntoId: e.puntoId._id,
+                    pedidoPadre: e._id,
+                    fechaSolicitud: moment(fechaFrecuencia).format("YYYY-MM-" + e.dia1),
+                    creado: moment(fechaFrecuencia).format("YYYY-MM-" + e.dia1),
                 }
-                let letNpedido = pedidos.length+(key+1)
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido)=>{
+                let letNpedido = pedidos.length + (key + 1)
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido) => {
                     console.log("pedido ")
                     console.log(pedido)
                 })
             })
-            res.json({fechaMensual, total:mensual.length, status:true, mensual });
-        }else{
-            res.json({ status:false, messagess: err });
+            res.json({ fechaMensual, total: mensual.length, status: true, mensual });
+        } else {
+            res.json({ status: false, messagess: err });
         }
     })
 })
-router.get('/crear_frecuencia/quincenal', (req,res)=>{
-    pedidoServices.get((err, pedidos)=>{
+router.get('/crear_frecuencia/quincenal', (req, res) => {
+    pedidoServices.get((err, pedidos) => {
         if (!err) {
             ////////////////////////////////////////////////////////////////////////
             ////////////////////////            INSERTA LAS FECHAS QUINCENAL
             let fechaQuincenal = moment(fechaFrecuencia).format("D")
             fechaQuincenal = parseInt(fechaQuincenal)
-            let quincenal = pedidos.filter(e=>{
-                return e.frecuencia=="quincenal"
+            let quincenal = pedidos.filter(e => {
+                return e.frecuencia == "quincenal"
             })
-            quincenal = quincenal.filter(e=>{
-                if(parseInt(e.dia1)==(fechaQuincenal+1) || parseInt(e.dia2)==(fechaQuincenal+1) ) return e
+            quincenal = quincenal.filter(e => {
+                if (parseInt(e.dia1) == (fechaQuincenal + 1) || parseInt(e.dia2) == (fechaQuincenal + 1)) return e
             })
 
-            quincenal.map((e, key)=>{
+            quincenal.map((e, key) => {
                 let data = {
-                    forma:e.forma,
-                    cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
-                    puntoId:e.puntoId._id,
-                    pedidoPadre:e._id,
-                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal))),
-                    creado:        moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaQuincenal))),
+                    forma: e.forma,
+                    cantidad: e.forma == "cantidad" ? e.cantidadKl : e.forma == "monto" ? e.cantidadPrecio : 0,
+                    puntoId: e.puntoId._id,
+                    pedidoPadre: e._id,
+                    fechaSolicitud: moment(fechaFrecuencia).format("YYYY-MM-" + (parseInt(fechaQuincenal))),
+                    creado: moment(fechaFrecuencia).format("YYYY-MM-" + (parseInt(fechaQuincenal))),
                 }
-                let letNpedido = pedidos.length+(key+1)
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id,  letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido)=>{
+                let letNpedido = pedidos.length + (key + 1)
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido) => {
                 })
             })
-            res.json({fechaQuincenal, total:quincenal.length, status:true, quincenal });
-        }else{
-            res.json({ status:false, messagess: err });
+            res.json({ fechaQuincenal, total: quincenal.length, status: true, quincenal });
+        } else {
+            res.json({ status: false, messagess: err });
         }
     })
 })
-router.get('/crear_frecuencia/semanal', (req,res)=>{
-    pedidoServices.get((err, pedidos)=>{
+router.get('/crear_frecuencia/semanal', (req, res) => {
+    pedidoServices.get((err, pedidos) => {
         if (!err) {
             ////////////////////////////////////////////////////////////////////////
             ////////////////////////            INSERTALAS FECHAS SEMANALES
             let fechaSemanal = moment(fechaFrecuencia).lang("es").format("dddd")
-            fechaSemanal = fechaSemanal=="lunes"     ?1
-                        :fechaSemanal=="martes"   ?2
-                        :fechaSemanal=="miercoles"?3
-                        :fechaSemanal=="jueves"   ?4
-                        :fechaSemanal=="viernes"  ?5
-                        :fechaSemanal=="sabado"   ?6
-                        :7
-            let semanal = pedidos.filter(e=>{
-                return e.frecuencia=="semanal"
+            fechaSemanal = fechaSemanal == "lunes" ? 1
+                : fechaSemanal == "martes" ? 2
+                    : fechaSemanal == "miercoles" ? 3
+                        : fechaSemanal == "jueves" ? 4
+                            : fechaSemanal == "viernes" ? 5
+                                : fechaSemanal == "sabado" ? 6
+                                    : 7
+            let semanal = pedidos.filter(e => {
+                return e.frecuencia == "semanal"
             })
-            semanal = semanal.filter(e=>{
-                let dia = e.dia1=="lunes"   ?1
-                :e.dia1=="martes"   ?2
-                :e.dia1=="miercoles"?3
-                :e.dia1=="jueves"   ?4
-                :e.dia1=="viernes"  ?5
-                :e.dia1=="sabado"   ?6
-                :7
-                if(dia===(fechaSemanal+1)) return e
+            semanal = semanal.filter(e => {
+                let dia = e.dia1 == "lunes" ? 1
+                    : e.dia1 == "martes" ? 2
+                        : e.dia1 == "miercoles" ? 3
+                            : e.dia1 == "jueves" ? 4
+                                : e.dia1 == "viernes" ? 5
+                                    : e.dia1 == "sabado" ? 6
+                                        : 7
+                if (dia === (fechaSemanal + 1)) return e
             })
-            semanal.map((e, key)=>{
+            semanal.map((e, key) => {
                 let data = {
-                    forma:e.forma,
-                    cantidad:e.forma=="cantidad" ?e.cantidadKl :e.forma=="monto" ?e.cantidadPrecio :0,
-                    puntoId:e.puntoId._id,
-                    pedidoPadre:e._id,
-                    zonaId:e.zonaId._id,
-                    fechaSolicitud:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaSemanal))),
-                    creado:moment(fechaFrecuencia).format("YYYY-MM-"+(parseInt(fechaSemanal))),
+                    forma: e.forma,
+                    cantidad: e.forma == "cantidad" ? e.cantidadKl : e.forma == "monto" ? e.cantidadPrecio : 0,
+                    puntoId: e.puntoId._id,
+                    pedidoPadre: e._id,
+                    zonaId: e.zonaId._id,
+                    fechaSolicitud: moment(fechaFrecuencia).format("YYYY-MM-" + (parseInt(fechaSemanal))),
+                    creado: moment(fechaFrecuencia).format("YYYY-MM-" + (parseInt(fechaSemanal))),
                 }
-                let letNpedido = pedidos.length+(key+1) ///////////////// esta variable me permite crear el n0 pedido
-                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido)=>{
+                let letNpedido = pedidos.length + (key + 1) ///////////////// esta variable me permite crear el n0 pedido
+                pedidoServices.create(data, e.usuarioId._id, e.usuarioId._id, letNpedido, null, e.usuarioId.valorUnitario, (err2, pedido) => {
 
                 })
             })
-            res.json({fechaSemanal, total:semanal.length, status:true, semanal });
-        }else{
-            res.json({ status:false, messagess: err });
+            res.json({ fechaSemanal, total: semanal.length, status: true, semanal });
+        } else {
+            res.json({ status: false, messagess: err });
         }
     })
 })
-router.get('/crear_frecuencia/todos', (req,res)=>{
-    pedidoServices.get((err, pedidos)=>{
+router.get('/crear_frecuencia/todos', (req, res) => {
+    pedidoServices.get((err, pedidos) => {
         if (!err) {
             ////////////////////////////////////////////////////////////////////////
             ////////////////////////            INSERTA LAS FECHAS MENSUAL
             let fechaMensual = moment(fechaFrecuencia).format("D")
             fechaMensual = parseInt(fechaMensual)
-            let mensual = pedidos.filter(e=>{
-                return e.frecuencia=="mensual"
+            let mensual = pedidos.filter(e => {
+                return e.frecuencia == "mensual"
             })
-            mensual = mensual.filter(e=>{
-                if(parseInt(e.dia1)==(fechaMensual+1)) return e
+            mensual = mensual.filter(e => {
+                if (parseInt(e.dia1) == (fechaMensual + 1)) return e
             })
 
 
@@ -688,52 +688,52 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
             ////////////////////////            INSERTA LAS FECHAS QUINCENAL
             let fechaQuincenal = moment(fechaFrecuencia).format("D")
             fechaQuincenal = parseInt(fechaQuincenal)
-            let quincenal = pedidos.filter(e=>{
-                return e.frecuencia=="quincenal"
+            let quincenal = pedidos.filter(e => {
+                return e.frecuencia == "quincenal"
             })
-            quincenal = quincenal.filter(e=>{
-                if(parseInt(e.dia1)==(fechaQuincenal+1) || parseInt(e.dia2)==(fechaQuincenal+1) ) return e
+            quincenal = quincenal.filter(e => {
+                if (parseInt(e.dia1) == (fechaQuincenal + 1) || parseInt(e.dia2) == (fechaQuincenal + 1)) return e
             })
 
             ////////////////////////////////////////////////////////////////////////
             ////////////////////////            INSERTALAS FECHAS SEMANALES
             let fechaSemanal = moment(fechaFrecuencia).lang("es").format("dddd")
-            fechaSemanal = fechaSemanal=="lunes"     ?1
-                        :fechaSemanal=="martes"   ?2
-                        :fechaSemanal=="miercoles"?3
-                        :fechaSemanal=="jueves"   ?4
-                        :fechaSemanal=="viernes"  ?5
-                        :fechaSemanal=="sabado"   ?6
-                        :7
-            let semanal = pedidos.filter(e=>{
-                return e.frecuencia=="semanal"
+            fechaSemanal = fechaSemanal == "lunes" ? 1
+                : fechaSemanal == "martes" ? 2
+                    : fechaSemanal == "miercoles" ? 3
+                        : fechaSemanal == "jueves" ? 4
+                            : fechaSemanal == "viernes" ? 5
+                                : fechaSemanal == "sabado" ? 6
+                                    : 7
+            let semanal = pedidos.filter(e => {
+                return e.frecuencia == "semanal"
             })
-            semanal = semanal.filter(e=>{
-                let dia = e.dia1=="lunes"   ?1
-                :e.dia1=="martes"   ?2
-                :e.dia1=="miercoles"?3
-                :e.dia1=="jueves"   ?4
-                :e.dia1=="viernes"  ?5
-                :e.dia1=="sabado"   ?6
-                :7
-                if(dia===(fechaSemanal+1)) return e
+            semanal = semanal.filter(e => {
+                let dia = e.dia1 == "lunes" ? 1
+                    : e.dia1 == "martes" ? 2
+                        : e.dia1 == "miercoles" ? 3
+                            : e.dia1 == "jueves" ? 4
+                                : e.dia1 == "viernes" ? 5
+                                    : e.dia1 == "sabado" ? 6
+                                        : 7
+                if (dia === (fechaSemanal + 1)) return e
             })
 
 
-            let mensajeJson={
-                badge:mensual.length+quincenal.length+semanal.length
+            let mensajeJson = {
+                badge: mensual.length + quincenal.length + semanal.length
             }
             cliente.publish('pedido', JSON.stringify(mensajeJson))
 
             let titulo = `<font size="5">Hoy se han creado los siguientes pedidos</font>`
-            let text1  = `Frecuencia Mensual: ${mensual.length}<br/>Frecuencia Quincenal: ${quincenal.length}<br/>Frecuencia Semanal: ${semanal.length}<br/>`
-            let text2  = `Total pedidos Dia:  ${mensajeJson.badge}`
+            let text1 = `Frecuencia Mensual: ${mensual.length}<br/>Frecuencia Quincenal: ${quincenal.length}<br/>Frecuencia Semanal: ${semanal.length}<br/>`
+            let text2 = `Total pedidos Dia:  ${mensajeJson.badge}`
             let asunto = "Nuevos pedidos por frecuencia"
-            let user   = {email:"fernandooj@ymail.com"}
-            htmlTemplate(req, user, titulo, text1, text2,  asunto)
+            let user = { email: "fernandooj@ymail.com" }
+            htmlTemplate(req, user, titulo, text1, text2, asunto)
             enviaNotificacion(res, "admin", "Nuevos pedidos Frecuencia", `total ${mensajeJson.badge} `)
-        }else{
-            res.json({ status:false, messagess: err });
+        } else {
+            res.json({ status: false, messagess: err });
         }
     })
 })
@@ -743,10 +743,10 @@ router.get('/crear_frecuencia/todos', (req,res)=>{
 ///////////////////////////////////////////////////////////////////////////////////
 ////////////////////////            OBTIENE PEDIDOS CON FRECUENCIAS
 ///////////////////////////////////////////////////////////////////////////////////
-router.get('/ver_frecuencia/todos', (req,res)=>{
+router.get('/ver_frecuencia/todos', (req, res) => {
 
 
-    pedidoServices.get((err, pedidos)=>{
+    pedidoServices.get((err, pedidos) => {
         if (!err) {
             ////////////////////////////////////////////////////////////////////////
             ////////////////////////            OBTIENE LAS FECHAS MENSUAL
@@ -755,8 +755,8 @@ router.get('/ver_frecuencia/todos', (req,res)=>{
             //     return e.frecuencia=="mensual"
             // })
 
-            pedidos = pedidos.filter(e=>{
-                return e.frecuencia=="mensual" || e.frecuencia=="quincenal" || e.frecuencia=="semanal"
+            pedidos = pedidos.filter(e => {
+                return e.frecuencia == "mensual" || e.frecuencia == "quincenal" || e.frecuencia == "semanal"
             })
             ////////////////////////////////////////////////////////////////////////
             ////////////////////////            OBTIENE LAS FECHAS QUINCENAL
@@ -772,9 +772,9 @@ router.get('/ver_frecuencia/todos', (req,res)=>{
             // })
 
 
-            res.json({ status:true, pedidos });
-        }else{
-            res.json({ status:false, messagess: err });
+            res.json({ status: true, pedidos });
+        } else {
+            res.json({ status: false, messagess: err });
         }
     })
 })

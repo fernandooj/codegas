@@ -39,6 +39,7 @@ interface ModalUbicacionProps {
     idZona: string;
     terminoBuscador: string;
     activeScroll: boolean;
+    selectedUbicacionKey: number;
     onClose: () => void;
     onSave: () => void;
     onAddUbicacion: () => void;
@@ -59,6 +60,7 @@ const ModalUbicacion: React.FC<ModalUbicacionProps> = ({
     idZona,
     terminoBuscador,
     activeScroll,
+    selectedUbicacionKey,
     onClose,
     onSave,
     onAddUbicacion,
@@ -78,7 +80,7 @@ const ModalUbicacion: React.FC<ModalUbicacionProps> = ({
                 <ModalZonas
                     visible={modalZona}
                     zonas={zonas}
-                    idZona={idZona}
+                    idZona={ubicaciones[selectedUbicacionKey]?.idZona || ''}
                     terminoBuscador={terminoBuscador}
                     onClose={onCloseZonas}
                     onSelectZona={onSelectZona}
@@ -101,7 +103,13 @@ const ModalUbicacion: React.FC<ModalUbicacionProps> = ({
                 </View>
 
                 {/* Contenido del Modal */}
-                <ScrollView style={style.modalUbicacionScrollView} keyboardDismissMode="on-drag">
+                <ScrollView
+                    style={style.modalUbicacionScrollView}
+                    keyboardDismissMode="on-drag"
+                    showsVerticalScrollIndicator={true}
+                    nestedScrollEnabled={true}
+                    scrollEnabled={true}
+                >
                     <View style={style.modalContentPadding}>
                         <Text style={style.modalUbicacionDescription}>
                             Si el pedido lo realizará el encargado del punto por favor inserta su información, de lo contrario solo inserta la dirección y zona

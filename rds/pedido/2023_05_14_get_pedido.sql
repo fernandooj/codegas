@@ -58,7 +58,7 @@ DECLARE
     _total INT;
     _query TEXT;
 BEGIN
-    IF _acceso = 'admin' THEN
+    IF _acceso = 'admin' OR _acceso = 'despacho' OR _acceso = 'comercial' THEN
         SELECT COUNT(*) INTO _total 
         FROM pedidos p
         LEFT JOIN puntos pt ON p.puntoId = pt._id
@@ -74,8 +74,8 @@ BEGIN
             (_estado_filtro = 'espera' AND p.estado = 'espera') OR
             (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
             (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
-            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
-            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND (p.conductorId IS NULL OR p.fechaEntrega IS NULL)) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.conductorId IS NOT NULL AND p.fechaEntrega IS NOT NULL) OR
             (_estado_filtro = 'otro' AND (
                 p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
                 NOT (p.estado = 'activo' AND p.entregado = false)
@@ -101,8 +101,8 @@ BEGIN
             (_estado_filtro = 'espera' AND p.estado = 'espera') OR
             (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
             (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
-            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
-            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND (p.conductorId IS NULL OR p.fechaEntrega IS NULL)) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.conductorId IS NOT NULL AND p.fechaEntrega IS NOT NULL) OR
             (_estado_filtro = 'otro' AND (
                 p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
                 NOT (p.estado = 'activo' AND p.entregado = false)
@@ -155,8 +155,8 @@ BEGIN
             (_estado_filtro = 'espera' AND p.estado = 'espera') OR
             (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
             (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
-            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
-            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND (p.conductorId IS NULL OR p.fechaEntrega IS NULL)) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.conductorId IS NOT NULL AND p.fechaEntrega IS NOT NULL) OR
             (_estado_filtro = 'otro' AND (
                 p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
                 NOT (p.estado = 'activo' AND p.entregado = false)
@@ -183,8 +183,8 @@ BEGIN
             (_estado_filtro = 'espera' AND p.estado = 'espera') OR
             (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
             (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
-            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
-            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND (p.conductorId IS NULL OR p.fechaEntrega IS NULL)) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.conductorId IS NOT NULL AND p.fechaEntrega IS NOT NULL) OR
             (_estado_filtro = 'otro' AND (
                 p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
                 NOT (p.estado = 'activo' AND p.entregado = false)
@@ -253,8 +253,8 @@ BEGIN
             (_estado_filtro = 'espera' AND p.estado = 'espera') OR
             (_estado_filtro = 'noentregado' AND p.estado = 'noentregado') OR
             (_estado_filtro = 'innactivo' AND p.estado = 'innactivo') OR
-            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NULL) OR
-            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.fechaEntrega IS NOT NULL) OR
+            (_estado_filtro = 'activo' AND p.estado = 'activo' AND p.entregado = false AND (p.conductorId IS NULL OR p.fechaEntrega IS NULL)) OR
+            (_estado_filtro = 'asignado' AND p.estado = 'activo' AND p.entregado = false AND p.conductorId IS NOT NULL AND p.fechaEntrega IS NOT NULL) OR
             (_estado_filtro = 'otro' AND (
                 p.estado NOT IN ('espera', 'noentregado', 'innactivo') AND 
                 NOT (p.estado = 'activo' AND p.entregado = false)

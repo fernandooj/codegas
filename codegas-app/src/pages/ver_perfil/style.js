@@ -10,7 +10,7 @@ export const style = MediaQueryStyleSheet.create({
     titulo: {
         fontFamily: "Comfortaa-Bold",
         textAlign: "center",
-        fontSize: 20,
+        fontSize: 17,
         marginTop: 12,
         marginBottom: 5,
         marginLeft: "6%",
@@ -39,6 +39,12 @@ export const style = MediaQueryStyleSheet.create({
         borderColor: "rgba(255, 0, 0, 0.19)",
         borderWidth: 1,
         borderRadius: 7
+    },
+    inputDisabled: {
+        backgroundColor: '#f8f9fa',
+        borderColor: '#dee2e6',
+        color: '#6c757d',
+        opacity: 0.6
     },
     separador: {
         marginVertical: 10,

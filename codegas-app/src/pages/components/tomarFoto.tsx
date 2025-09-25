@@ -25,6 +25,11 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
     const [imagenesState, setImagenesState] = useState<any[]>(source);
     const [showModal, setShowModal] = useState(false);
     const [isAndroidShareOpen, setIsAndroidShareOpen] = useState(false);
+
+    // Sincronizar el estado interno con el prop source cuando cambie
+    useEffect(() => {
+        setImagenesState(source);
+    }, [source]);
     // Función para solicitar permisos de cámara
     const requestCameraPermission = async (): Promise<boolean> => {
         if (Platform.OS === 'android') {
@@ -129,7 +134,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
         if (!multiple) {
             const newImage = { uri: imageUri };
             setImagenesState([newImage]);
-            imagenes?.(newImage);
+            imagenes?.([newImage]);
         } else {
             // Si es múltiple, agregar a la lista
             if (imagenesState.length < limiteImagenes) {
@@ -237,7 +242,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
 
         return img.map((e: any, key: number) => {
             return (
-                    <View key={key}>
+                <View key={key}>
                     <TouchableOpacity onPress={() => {
                         // Mostrar imagen en modal o navegación
                         Alert.alert('Imagen', 'Imagen seleccionada');
@@ -247,7 +252,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                     {!soloLectura && (
                         <FontAwesome name={'trash'} style={style.iconTrash} onPress={() => eliminarImagen(key)} />
                     )}
-                    </View>
+                </View>
             )
         })
     }
@@ -300,16 +305,16 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
     /*
         TIPOMENSAJE == cuando la foto es para el chat, no muestra, la opcion de tomar foto, si no que muestra directamente el modal
     */
-        return (
-            <View style={style.contenedorPortada}>
-                {
-                    showModal
+    return (
+        <View style={style.contenedorPortada}>
+            {
+                showModal
                 && renderModal()
-                }
-                {
-                    tipoMensaje
+            }
+            {
+                tipoMensaje
                     ? renderModal()
-                    : permitirSubir && !soloLectura && !mostrarSoloConImagenes && (multiple ? imagenesState.length < limiteImagenes : imagenesState.length === 0)
+                    : permitirSubir && !soloLectura && !mostrarSoloConImagenes && (multiple ? imagenesState.length < limiteImagenes : true)
                     && <View style={{
                         backgroundColor: '#f8f9fa',
                         borderRadius: 12,
@@ -344,7 +349,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                                 <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
                                     {multiple ? 'Subir Foto' : (imagenesState.length > 0 ? 'Cambiar Foto' : 'Tomar Foto')}
                                 </Text>
-                        </TouchableOpacity>
+                            </TouchableOpacity>
                         )}
 
                         {imagenesState.length > 0 && !multiple && (
@@ -352,16 +357,36 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                                 marginTop: 12,
                                 alignItems: 'center'
                             }}>
-                                <Image
-                                    source={{ uri: imagenesState[0].uri }}
-                                    style={{
-                                        width: 150,
-                                        height: 150,
-                                        borderRadius: 10,
-                                        marginBottom: 8
-                                    }}
-                                    resizeMode="cover"
-                                />
+                                <View style={{ position: 'relative' }}>
+                                    <Image
+                                        source={{ uri: imagenesState[0].uri }}
+                                        style={{
+                                            width: 150,
+                                            height: 150,
+                                            borderRadius: 10,
+                                            marginBottom: 8
+                                        }}
+                                        resizeMode="cover"
+                                    />
+                                    {!soloLectura && (
+                                        <TouchableOpacity
+                                            style={{
+                                                position: 'absolute',
+                                                top: 5,
+                                                right: 5,
+                                                backgroundColor: 'rgba(0,0,0,0.7)',
+                                                borderRadius: 15,
+                                                width: 30,
+                                                height: 30,
+                                                justifyContent: 'center',
+                                                alignItems: 'center'
+                                            }}
+                                            onPress={() => eliminarImagen(0)}
+                                        >
+                                            <FontAwesome name="trash" style={{ fontSize: 14, color: '#fff' }} />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                                 <View style={{
                                     backgroundColor: '#d4edda',
                                     borderRadius: 8,
@@ -377,12 +402,6 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                             </View>
                         )}
                     </View>
-                }
-            {
-                !tipoMensaje && imagenesState.length > 0
-                && <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                    {renderImagenes()}
-            </View>
             }
             {
                 !tipoMensaje && mostrarSoloConImagenes && imagenesState.length === 0

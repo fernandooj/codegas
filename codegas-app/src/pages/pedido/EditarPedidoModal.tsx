@@ -122,35 +122,78 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     };
 
     const openInWaze = () => {
+        console.log('🔍 Debug coordenadas pedidoData:', pedidoData);
+        console.log('🔍 Debug coordenadas específicas:', pedidoData.coordenadas);
+
         const { lat, lng } = pedidoData.coordenadas || {};
-        if (lat && lng) {
-            const url = `waze://?ll=${lat},${lng}&navigate=yes`;
+        console.log('🔍 Debug lat, lng extraídas (originales):', { lat, lng });
+
+        // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
+        const realLat = lng; // La latitud real está en el campo lng
+        const realLng = lat; // La longitud real está en el campo lat
+
+        console.log('🔍 Debug coordenadas corregidas:', { realLat, realLng });
+
+        if (realLat && realLng) {
+            const url = `waze://?ll=${realLat},${realLng}&navigate=yes`;
+            console.log('🔍 Debug URL Waze:', url);
+
             Linking.canOpenURL(url).then(supported => {
+                console.log('🔍 Debug Waze soportado:', supported);
                 if (supported) {
                     Linking.openURL(url);
                 } else {
                     // Si Waze no está instalado, abrir en el navegador
-                    Linking.openURL(`https://waze.com/ul?ll=${lat},${lng}&navigate=yes`);
+                    const webUrl = `https://waze.com/ul?ll=${realLat},${realLng}&navigate=yes`;
+                    console.log('🔍 Debug URL Web Waze:', webUrl);
+                    Linking.openURL(webUrl);
                 }
             });
+        } else {
+            console.log('❌ Error: Coordenadas no válidas', { realLat, realLng });
+            Alert.alert('Error', 'No se encontraron coordenadas válidas para este pedido');
         }
         closeNavigationModal();
     };
 
     const openInGoogleMaps = () => {
         const { lat, lng } = pedidoData.coordenadas || {};
-        if (lat && lng) {
-            const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        console.log('🔍 Debug Google Maps coordenadas originales:', { lat, lng });
+
+        // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
+        const realLat = lng; // La latitud real está en el campo lng
+        const realLng = lat; // La longitud real está en el campo lat
+
+        console.log('🔍 Debug Google Maps coordenadas corregidas:', { realLat, realLng });
+
+        if (realLat && realLng) {
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${realLat},${realLng}`;
+            console.log('🔍 Debug URL Google Maps:', url);
             Linking.openURL(url);
+        } else {
+            console.log('❌ Error Google Maps: Coordenadas no válidas', { realLat, realLng });
+            Alert.alert('Error', 'No se encontraron coordenadas válidas para este pedido');
         }
         closeNavigationModal();
     };
 
     const openInAppleMaps = () => {
         const { lat, lng } = pedidoData.coordenadas || {};
-        if (lat && lng) {
-            const url = `http://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+        console.log('🔍 Debug Apple Maps coordenadas originales:', { lat, lng });
+
+        // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
+        const realLat = lng; // La latitud real está en el campo lng
+        const realLng = lat; // La longitud real está en el campo lat
+
+        console.log('🔍 Debug Apple Maps coordenadas corregidas:', { realLat, realLng });
+
+        if (realLat && realLng) {
+            const url = `http://maps.apple.com/?daddr=${realLat},${realLng}&dirflg=d`;
+            console.log('🔍 Debug URL Apple Maps:', url);
             Linking.openURL(url);
+        } else {
+            console.log('❌ Error Apple Maps: Coordenadas no válidas', { realLat, realLng });
+            Alert.alert('Error', 'No se encontraron coordenadas válidas para este pedido');
         }
         closeNavigationModal();
     };
@@ -520,7 +563,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
 
                         {/* Asignar Vehículo y fecha - Mejorado con mejor diseño */}
                         {
-                            (acceso == "admin" || acceso == "despacho") && estadoEntrega == "asignado"
+                            (acceso == "admin" || acceso == "despacho") && (estado == "activo" || estadoEntrega == "asignado")
                                 ? <View style={style.contenedorEspera}>
                                     <View style={style.separador}></View>
                                     <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 18, fontWeight: '600' }]}>Asignación de Vehículo</Text>
@@ -943,52 +986,6 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                             </View>
                         )}
 
-                        {/* Botón cancelar pedido para clientes */}
-                        {acceso === "cliente" && (
-                            <View style={{
-                                backgroundColor: '#fff3cd',
-                                borderRadius: 10,
-                                padding: 16,
-                                marginTop: 20,
-                                borderLeftWidth: 4,
-                                borderLeftColor: '#dc3545'
-                            }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                                    <FontAwesome name="exclamation-triangle" style={{ fontSize: 18, color: '#dc3545', marginRight: 10 }} />
-                                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#333' }}>
-                                        Cancelación de Pedido
-                                    </Text>
-                                </View>
-
-                                <Text style={{ fontSize: 14, color: '#666', marginBottom: 16, lineHeight: 20 }}>
-                                    ¿Necesita cancelar este pedido? Esta acción no se puede deshacer.
-                                </Text>
-
-                                <TouchableOpacity
-                                    style={{
-                                        backgroundColor: '#dc3545',
-                                        paddingVertical: 14,
-                                        paddingHorizontal: 20,
-                                        borderRadius: 8,
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        shadowColor: '#000',
-                                        shadowOffset: { width: 0, height: 2 },
-                                        shadowOpacity: 0.1,
-                                        shadowRadius: 4,
-                                        elevation: 3,
-                                    }}
-                                    onPress={onCancelOrder}
-                                    activeOpacity={0.8}
-                                >
-                                    <FontAwesome name="times-circle" style={{ fontSize: 16, color: 'white', marginRight: 10 }} />
-                                    <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-                                        Cancelar Pedido
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
                     </ScrollView>
                 </Animated.View>
 
@@ -1081,7 +1078,10 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 }}>
                                     <Text style={{ fontSize: 13, color: '#666', textAlign: 'center' }}>
                                         <FontAwesome name="map-pin" style={{ marginRight: 6 }} />
-                                        Lat: {pedidoData.coordenadas.lat}, Lng: {pedidoData.coordenadas.lng}
+                                        Lat: {pedidoData.coordenadas.lng}, Lng: {pedidoData.coordenadas.lat}
+                                        <Text style={{ fontSize: 11, color: '#999', fontStyle: 'italic' }}>
+                                            {'\n'}(coordenadas corregidas)
+                                        </Text>
                                     </Text>
                                 </View>
                             )}

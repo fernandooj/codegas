@@ -132,6 +132,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         activeScroll: false,
         idZona: '',
         key: 0,
+        selectedUbicacionKey: 0,
         idVeo: '',
         tipoAcceso: '',
         accesoPerfil: '',
@@ -213,6 +214,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 try {
                     const e = await getUserById(userId);
                     const { user } = e;
+                    console.log('user', user);
                     // Usar userId del contexto cuando se edita perfil propio, no params.idUsuario
                     let ubicaciones = [];
                     if (userId && userId !== null && userId !== undefined && userId !== 'undefined' && userId !== 'null' && userId.toString().trim() !== '') {
@@ -270,7 +272,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         acceso: user.acceso ? user.acceso : '',
                         imagen: user.avatar ? user.avatar : [],
                         codt: user.codt ? user.codt : '',
-                        valorUnitario: user.valorunitario ? user.valorunitario : '',
+                        valorUnitario: user.valorUnitario ? user.valorUnitario : '',
                         idUsuario: user._id ? user._id : '',
                         codMagister: user.codMagister ? user.codMagister : '',
                         editado: user.editado ? user.editado : false,
@@ -286,6 +288,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 try {
                     const e = await getUserById(params.idUsuario);
                     const { user } = e;
+
                     // Validar que params.idUsuario existe antes de hacer la llamada
                     let ubicaciones = [];
                     if (params.idUsuario && params.idUsuario !== null && params.idUsuario !== undefined && params.idUsuario !== 'undefined' && params.idUsuario !== 'null' && params.idUsuario.toString().trim() !== '') {
@@ -295,6 +298,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     }
 
                     ubicaciones = ubicaciones.map((data: any) => {
+                        console.log('ubicaciones22', data);
                         let data1 = params.idUsuario;
                         let data2 = data.idCliente;
                         if (data1 === data2) {
@@ -302,10 +306,10 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 direccion: data.direccion,
                                 email: undefined,
                                 idCliente: undefined,
-                                idZona: data.idZona,
+                                idZona: data.idzona,
                                 nombre: undefined,
                                 celular: undefined,
-                                nombreZona: data.nombreZona,
+                                nombreZona: data.nombrezona,
                                 observacion: data.observacion,
                                 capacidad: data.capacidad,
                                 lat: data.lat?.toString() || '',
@@ -318,10 +322,10 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                                 direccion: data.direccion,
                                 email: data.email,
                                 idCliente: data.idCliente,
-                                idZona: data.idZona,
+                                idZona: data.idzona,
                                 nombre: data.nombre,
                                 celular: data.celular,
-                                nombreZona: data.nombreZona,
+                                nombreZona: data.nombrezona,
                                 observacion: data.observacion,
                                 capacidad: data.capacidad,
                                 lat: data.lat?.toString() || '',
@@ -332,6 +336,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         }
                     });
 
+                    console.log('ubicaciones11', ubicaciones);
                     updateState({
                         razon_social: user.razon_social ? user.razon_social : "",
                         cedula: user.cedula ? user.cedula : "",
@@ -348,7 +353,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         idUsuario: user._id ? user._id : "",
                         veo: user.nombrepadre || "",
                         codMagister: user.codMagister ? user.codMagister : "",
-                        valorUnitario: user.valorunitario,
+                        valorUnitario: user.valorunitario ? user.valorunitario : '',
                         direccion_factura: user.direccion_factura ? user.direccion_factura : "",
                     });
                 } catch (error) {
@@ -538,13 +543,45 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     }, [state.email]);
     const asignarVeo: AsignarVeoFunction = useCallback((idVeo: string) => {
         const { veos } = state;
-        let veo = veos.filter(e => {
-            return e.key == idVeo
-        });
+        console.log('🔍 asignarVeo - idVeo recibido:', idVeo);
+        console.log('🔍 asignarVeo - veos disponibles:', veos);
 
-        // Solo actualizar el estado local
-        // La asignación real se hace cuando se presiona "Actualizar Usuario"
-        updateState({ veo: veo[0].label, modalCliente: false, idVeo });
+        // Función recursiva para buscar VEO en todos los niveles
+        const buscarVeoRecursivamente = (veosArray: any[], targetKey: string): any => {
+            for (let veo of veosArray) {
+                // Comparar keys como strings
+                if (String(veo.key) === String(targetKey)) {
+                    return veo;
+                }
+                // Buscar recursivamente en children
+                if (veo.children && veo.children.length > 0) {
+                    const encontrado = buscarVeoRecursivamente(veo.children, targetKey);
+                    if (encontrado) {
+                        return encontrado;
+                    }
+                }
+            }
+            return null;
+        };
+
+        const veoEncontrado = buscarVeoRecursivamente(veos, idVeo);
+
+        console.log('🔍 asignarVeo - veo encontrado:', veoEncontrado);
+
+        if (veoEncontrado) {
+            console.log('🔍 asignarVeo - VEO encontrado:', veoEncontrado);
+            console.log('🔍 asignarVeo - label del VEO:', veoEncontrado.label);
+
+            // Solo actualizar el estado local
+            // La asignación real se hace cuando se presiona "Actualizar Usuario"
+            updateState({ veo: veoEncontrado.label, modalCliente: false, idVeo });
+        } else {
+            console.log('❌ asignarVeo - VEO no encontrado con idVeo:', idVeo);
+            console.log('❌ asignarVeo - Keys disponibles:', veos.map(v => v.key));
+
+            // Mostrar error al usuario
+            Alert.alert('Error', 'No se pudo encontrar el VEO seleccionado. Inténtalo de nuevo.');
+        }
     }, [state.veos, updateState]);
     const eliminarUsuario: EliminarUsuarioFunction = useCallback(() => {
         const { nombre, idUsuario } = state;
@@ -1106,7 +1143,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
     const renderPerfil = useCallback(() => {
         const { razon_social, cedula, direccion_factura, email, nombre, celular, tipo, acceso, codt, valorUnitario, codMagister, imagen, ubicaciones, veo, activo, cargando, tipoAcceso, accesoPerfil, idUsuario, veos } = state;
-
+        console.log('valorUnitario11', valorUnitario);
         return (
             <PerfilForm
                 razon_social={razon_social}
@@ -1129,6 +1166,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 accesoPerfil={accesoPerfil}
                 idUsuario={idUsuario}
                 veos={veos as any}
+                scrollEnabled={!(state.modalUbicacion || state.modalZona || state.modalCliente)}
                 onUpdateState={updateState}
                 onVerificaEmail={verificaEmail}
                 onEditarUsuario={() => editarUsuario("editar")}
@@ -1140,7 +1178,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         );
     }, [state, updateState, verificaEmail, editarUsuario, cambiarEstadoUsuario, eliminarUsuario, handleSubmit, navigation]);
 
-    const { modalUbicacion: showModalUbicacion, modalCliente, modalZona, showPass, terminoBuscador, idZona, activeScroll } = state;
+    const { modalUbicacion: showModalUbicacion, modalCliente, modalZona, showPass, terminoBuscador, idZona, activeScroll, selectedUbicacionKey } = state;
 
     return (
         <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
@@ -1164,12 +1202,13 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 idZona={idZona}
                 terminoBuscador={terminoBuscador}
                 activeScroll={activeScroll}
+                selectedUbicacionKey={selectedUbicacionKey}
                 onClose={() => updateState({ modalUbicacion: false })}
                 onSave={guardarUbicacion}
                 onAddUbicacion={actualizaUbicacion}
                 onDeleteUbicacion={eliminarUbicacion}
                 onUpdateUbicacion={actualizaArrayUbicacion}
-                onOpenZonas={(key) => updateState({ modalZona: true, key })}
+                onOpenZonas={(key) => updateState({ modalZona: true, key, selectedUbicacionKey: key })}
                 onCloseZonas={() => updateState({ modalZona: false })}
                 onSelectZona={actualizaZona}
                 onUpdateTermino={(termino) => updateState({ terminoBuscador: termino })}

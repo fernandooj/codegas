@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import axios from 'axios';
+import HeaderLogo from '../../components/HeaderLogo';
 import { DataContext } from '../../context/context';
 import Footer from '../components/footer'
 
@@ -179,7 +180,7 @@ const Perfil = ({
               />
             </TouchableOpacity>
           )}
-          {(acceso === 'admin' || acceso === 'despacho') && (
+          {(acceso === 'admin') && (
             <TouchableOpacity
               style={style.btnLista}
               onPress={() =>
@@ -302,7 +303,7 @@ const Perfil = ({
   }
   return (
     <View style={style.container} >
-      <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera} />
+      <HeaderLogo variant="compact" />
       <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
         {RenderPerfil()}
         <View style={style.footer}>

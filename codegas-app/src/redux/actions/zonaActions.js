@@ -52,7 +52,7 @@ const updateZona = (id, nombre) => {
     return dispatch => {
         const data = { _id: id, nombre };
         return axios({
-            method: 'put',
+            method: 'patch',
             url: "zon/zona",
             data: JSON.stringify(data),
             headers: {
@@ -67,7 +67,7 @@ const updateZona = (id, nombre) => {
                     });
                     return { success: true };
                 } else {
-                    return { success: false, error: "Error updating zona" };
+                    return { success: false, error: res.data.message || "Error updating zona" };
                 }
             })
             .catch(err => {

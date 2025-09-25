@@ -5,6 +5,7 @@ import {connect}         from 'react-redux'
 import axios             from 'axios';
 import TomarFoto         from "../components/tomarFoto";
 import Footer            from '../components/footer'
+import HeaderLogo        from '../../components/HeaderLogo'
  
  
 class cerrarReporte extends Component{
@@ -145,7 +146,7 @@ class cerrarReporte extends Component{
         
         return (
             <View style={[style.containerTanque, {paddingTop:0}]}>
-                  <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />
+                  <HeaderLogo variant="compact" />
 
                 <ScrollView style={{ marginBottom:85}}>
                     {this.rendercontenido()}

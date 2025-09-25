@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 import SubirDocumento from "../components/subirDocumento";
 import TomarFoto from "../components/tomarFoto";
 import Footer from '../components/footer'
+import HeaderLogo from '../../components/HeaderLogo'
 import { DataContext } from "../../context/context"
 import {
     getReporteEmergenciaById,
@@ -873,7 +874,7 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
             width: '100%',
             flex: 1
         }]}>
-            <Image source={require('../../assets/img/pg1/fondo1.jpg')} style={style.cabezera1} />
+            <HeaderLogo variant="compact" />
             <ScrollView
                 style={{ marginBottom: 85, flex: 1, width: '100%' }}
                 contentContainerStyle={{

@@ -27,7 +27,7 @@ import {
 } from './types';
 
 const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
-  const { userId } = useContext(DataContext) as DataContextType;
+  const { userId, acceso } = useContext(DataContext) as DataContextType;
   const dispatch = useDispatch();
   const usuarios = useSelector((state: RootState) => state.usuario.usuarios || []);
   const usuariosFiltro = useSelector((state: RootState) => state.usuario.usuarios || []);
@@ -46,9 +46,16 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
     setState(prevState => ({ ...prevState, ...updates }));
   }, []);
 
+  // Effect para carga inicial
   useEffect(() => {
-    searchUser();
-  }, []);
+    console.log('🔍 Clientes - Carga inicial:', { userId, acceso, tieneUserId: !!userId, tieneAcceso: !!acceso });
+    if (userId && acceso) {
+      console.log('🚀 Clientes - Ejecutando searchUser inicial');
+      searchUser();
+    } else {
+      console.log('❌ Clientes - No se ejecuta searchUser inicial:', { userId, acceso });
+    }
+  }, [userId, acceso]);
 
   // Efecto para restaurar la posición de scroll cuando se regrese de editarPerfil
   useEffect(() => {
@@ -86,7 +93,16 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
 
   const searchUser = useCallback((clean = false) => {
     const { limit, inicio, terminoBuscador } = state;
-    dispatch(getUsuarios(limit, inicio, CLIENTE_CONSTANTS.ACCESO, clean ? '' : terminoBuscador, userId) as any);
+    const searchTerm = clean ? '' : terminoBuscador;
+    console.log('📡 Clientes - Enviando request:', {
+      limit,
+      inicio,
+      acceso: CLIENTE_CONSTANTS.ACCESO,
+      terminoBuscador: searchTerm,
+      userId,
+      clean
+    });
+    dispatch(getUsuarios(limit, inicio, CLIENTE_CONSTANTS.ACCESO, searchTerm, userId) as any);
   }, [state.limit, state.inicio, state.terminoBuscador, dispatch, userId]);
 
   const handleSearch = useCallback(() => {
@@ -253,7 +269,7 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
               {tieneHijos && (
                 <View testID="children-badge" style={style.childrenBadge}>
                   <Text style={style.childrenBadgeText}>
-                    {usuario.children.length}
+                    {usuario.children?.length || 0}
                   </Text>
                 </View>
               )}
@@ -285,8 +301,15 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
   const renderContent = useCallback(() => {
     const { terminoBuscador } = state;
     const params = route?.params as ClienteNavigationParams;
+    console.log('🎨 Clientes - Renderizando contenido:', {
+      usuariosLength: usuarios.length,
+      terminoBuscador,
+      usuarios: usuarios,
+      params: params
+    });
 
     if (usuarios.length === 0) {
+      console.log('⏳ Clientes - Mostrando loading porque usuarios.length === 0');
       return (
         <View style={style.loadingContainer}>
           <ActivityIndicator testID="activity-indicator" color="#00218b" />
@@ -394,13 +417,15 @@ const VerPerfil: React.FC<ClienteProps> = ({ navigation, route }) => {
 
       <Footer navigation={navigation} />
 
-      {/* Round + button with shadow */}
-      <TouchableOpacity
-        style={style.floatingButton}
-        onPress={navigateToCreateClient}
-      >
-        <FontAwesome name={'plus'} style={style.floatingButtonIcon} />
-      </TouchableOpacity>
+      {/* Round + button with shadow - Solo mostrar si no es veo */}
+      {acceso !== "veo" && (
+        <TouchableOpacity
+          style={style.floatingButton}
+          onPress={navigateToCreateClient}
+        >
+          <FontAwesome name={'plus'} style={style.floatingButtonIcon} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

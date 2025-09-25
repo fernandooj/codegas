@@ -11,7 +11,7 @@ export const style = MediaQueryStyleSheet.create({
         fontFamily: "Comfortaa-Bold",
         textAlign: "center",
         fontSize: 20,
-        marginTop: 12,
+        marginTop: Platform.OS === 'android' ? 2 : 12,
         marginBottom: 5,
         marginLeft: "6%",
     },
@@ -336,8 +336,8 @@ export const style = MediaQueryStyleSheet.create({
     /////////////////////////////////////////////////////////////////
     headerContainer: {
         backgroundColor: '#fff',
-        paddingTop: 50,
-        paddingBottom: 20,
+        paddingTop: Platform.OS === 'ios' ? 60 : 10,
+        paddingBottom: 10,
         paddingHorizontal: 20,
         borderBottomWidth: 1,
         borderBottomColor: '#e9ecef',
@@ -404,6 +404,12 @@ export const style = MediaQueryStyleSheet.create({
     },
     fieldInputRequired: {
         borderColor: '#dc3545'
+    },
+    fieldInputDisabled: {
+        backgroundColor: '#f8f9fa',
+        borderColor: '#dee2e6',
+        color: '#6c757d',
+        opacity: 0.6
     },
 
     /////////////////////////////////////////////////////////////////

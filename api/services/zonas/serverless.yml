@@ -8,6 +8,16 @@ createZona:
       - services/zonas/src/create-zona.js
       - lib/errors/database-error.js
 
+updateZona:
+  name: ${self:custom.base}-update-zona
+  handler: services/zonas/src/update-zona.main
+  events:
+    - httpApi: 'PATCH /zon/zona'
+  package:
+    include:
+      - services/zonas/src/update-zona.js
+      - lib/errors/database-error.js
+
 deleteZona:
   name: ${self:custom.base}-delete-zonas
   handler: services/zonas/src/delete-zonas.main

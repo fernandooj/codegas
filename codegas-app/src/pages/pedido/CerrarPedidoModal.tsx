@@ -106,15 +106,13 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                 reader.readAsDataURL(blob);
             });
         } catch (error) {
-            console.error('Error convirtiendo imagen a base64:', error);
             return null;
         }
     };
-
     const handleCerrarPedido = async () => {
 
-        if (!kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !novedad) {
-            Alert.alert('Error', 'Por favor llene todos los campos');
+        if (!kilos || !factura || !valorTotalRaw || !remision || !formaPago || formaPago === '' || !imagen) {
+            Alert.alert('Error', 'Por favor llene todos los campos obligatorios');
             return;
         }
 
@@ -128,12 +126,50 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             return;
         }
 
+        // Validación de cálculo: kilos × valor unitario vs valor total factura
+        if (valor_unitario && kilos) {
+            const kilosNumericos = parseFloat(kilos.replace(',', '.')) || 0;
+            const valorUnitarioNumerico = parseFloat(valor_unitario) || 0;
+            const valorTotalFacturaNumerico = parseFloat(valorTotalRaw) || 0;
+
+            const calculoEsperado = kilosNumericos * valorUnitarioNumerico;
+            const diferencia = Math.abs(calculoEsperado - valorTotalFacturaNumerico);
+
+            // Si la diferencia es mayor a 100 pesos, mostrar alerta de validación
+            if (diferencia > 100) {
+                Alert.alert(
+                    '⚠️ Validación de Valores',
+                    `¡Oye! Este valor es diferente:\n\n` +
+                    `• Cálculo esperado: ${kilosNumericos} kg × $${valorUnitarioNumerico.toLocaleString()} = $${calculoEsperado.toLocaleString()}\n` +
+                    `• Valor factura: $${valorTotalFacturaNumerico.toLocaleString()}\n` +
+                    `• Diferencia: $${diferencia.toLocaleString()}\n\n` +
+                    `¿Seguro que quieres cerrar el pedido?`,
+                    [
+                        {
+                            text: 'No, revisar',
+                            style: 'cancel'
+                        },
+                        {
+                            text: 'Sí, cerrar',
+                            style: 'destructive',
+                            onPress: () => procederConCierre()
+                        }
+                    ]
+                );
+                return;
+            }
+        }
+
+        // Si no hay diferencia significativa, proceder directamente
+        procederConCierre();
+    };
+
+    const procederConCierre = async () => {
         // Convertir imagen a base64 antes de enviar
         let imagenBase64: string | null = null;
         if (imagen) {
             imagenBase64 = await convertImageToBase64(imagen);
         }
-
 
         // Llamar a la función de cierre
         onCerrarPedido({
@@ -146,17 +182,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             imagen: imagenBase64 || undefined // Enviar imagen en base64
         }, pedidoId); // Pasar el pedidoId como segundo parámetro
 
-        // Limpiar campos después de enviar (para la próxima vez)
-        setTimeout(() => {
-            setKilos('');
-            setFactura('');
-            setValorTotal('');
-            setValorTotalRaw('');
-            setRemision('');
-            setFormaPago('');
-            setNovedad('');
-            setImagen(undefined);
-        }, 1000);
+        // NO limpiar campos aquí - se limpiarán solo cuando el modal se cierre exitosamente
     };
 
     const handleGuardarNovedad = () => {
@@ -192,7 +218,14 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
 
     // Función para manejar cuando se selecciona una imagen
     const handleImageSelected = (imagenData: any) => {
-        if (imagenData && imagenData.uri) {
+
+        // Manejar si es un array o un string base64
+        if (Array.isArray(imagenData) && imagenData.length > 0 && imagenData[0] && imagenData[0].uri) {
+            setImagen(imagenData[0].uri);
+        } else if (typeof imagenData === 'string' && imagenData.startsWith('data:')) {
+            // Si es base64, necesitamos convertirlo a URI local
+            setImagen(imagenData);
+        } else if (imagenData && imagenData.uri) {
             setImagen(imagenData.uri);
         }
     };
@@ -533,7 +566,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                 <View>
                                     {/* Sección de foto */}
                                     <TomarFoto
-                                        source={imagen ? [imagen] : []}
+                                        source={imagen ? [{ uri: imagen }] : []}
                                         titulo="Foto de Factura"
                                         descripcion="Tome una foto clara de la factura para completar el pedido"
                                         multiple={false}
@@ -608,7 +641,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                             </View>
                                         </View>
 
-                                        {/* Número de factura */}
+                                        {/* Consecutivo */}
                                         <View>
                                             <Text style={{
                                                 fontSize: 14,
@@ -616,7 +649,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                 color: '#333',
                                                 marginBottom: 8
                                             }}>
-                                                Número de Factura *
+                                                Consecutivo *
                                             </Text>
                                             <View style={{
                                                 flexDirection: 'row',

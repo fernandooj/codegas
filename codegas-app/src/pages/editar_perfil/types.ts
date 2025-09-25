@@ -95,6 +95,7 @@ export interface EditarPerfilState {
     editado: boolean;
     idZona: string;
     key: number;
+    selectedUbicacionKey: number;
     idVeo: string;
     tipoAcceso: string;
     accesoPerfil: string;

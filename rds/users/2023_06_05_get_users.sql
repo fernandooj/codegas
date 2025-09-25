@@ -282,9 +282,96 @@ BEGIN
         END IF;
         
     ELSE
-        -- _acceso != 'cliente' - Implementar estructura jerárquica padre-hijo
+        -- _acceso != 'cliente' - Implementar estructura jerárquica padre-hijo RECURSIVA
         IF is_admin_or_higher THEN
-            -- Admin/veo/comercial/solucion pueden ver TODOS los usuarios no-clientes con jerarquía
+            -- Admin/veo/comercial/solucion pueden ver TODOS los usuarios no-clientes con jerarquía RECURSIVA
+            
+            -- Función recursiva para construir el árbol completo
+            CREATE OR REPLACE FUNCTION build_user_tree(_parent_id INT, _acceso VARCHAR, _search VARCHAR)
+            RETURNS JSON
+            LANGUAGE plpgsql
+            AS $build_tree$
+            DECLARE
+                child_record RECORD;
+                child_obj JSON;
+                children_array JSON := '[]'::JSON;
+                child_children JSON;
+            BEGIN
+                -- Obtener todos los hijos directos del padre
+                FOR child_record IN
+                    SELECT 
+                        c._id, c.uid, c.created, c.razon_social, c.cedula, c.direccion_factura,
+                        c.email, c.nombre, c.celular, c.tipo, c.descuento, c.acceso,
+                        c.tokenPhone, c.token, c.codMagister, c.avatar, c.codt, c.codigoRegistro,
+                        c.valorUnitario, c.editado, c.activo, c.eliminado, c.idPadre
+                    FROM users c
+                    WHERE c.idPadre = _parent_id
+                    AND c.eliminado = false
+                    AND c.acceso != 'cliente'
+                    AND (
+                        CASE _acceso
+                            WHEN 'All' THEN true
+                            WHEN 'admin' THEN c.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'solucion')
+                            WHEN 'administradores' THEN c.acceso IN ('admin', 'veo', 'comercial', 'solucion')
+                            WHEN 'veo' THEN c.acceso = 'veo'
+                            WHEN 'comercial' THEN c.acceso = 'comercial'
+                            WHEN 'conductor' THEN c.acceso = 'conductor'
+                            WHEN 'solucion' THEN c.acceso = 'solucion'
+                            ELSE c.acceso = _acceso
+                        END
+                    )
+                    AND (
+                        _search IS NULL OR _search = '' OR
+                        (CONCAT(c._id::text, COALESCE(c.uid,''), c.created::text, COALESCE(c.razon_social,''), 
+                               COALESCE(c.cedula,''), COALESCE(c.direccion_factura,''), COALESCE(c.email,''), 
+                               COALESCE(c.nombre,''), COALESCE(c.celular,''), COALESCE(c.tipo,''), 
+                               COALESCE(c.descuento,''), COALESCE(c.acceso,''), COALESCE(c.tokenPhone,''), 
+                               c.token::text, COALESCE(c.codMagister,''), COALESCE(c.avatar,''), 
+                               COALESCE(c.codt,''), COALESCE(c.codigoRegistro,''), 
+                               c.valorUnitario::text) ILIKE '%' || _search || '%')
+                    )
+                    ORDER BY c.nombre
+                LOOP
+                    -- RECURSIVAMENTE obtener los hijos de este hijo
+                    child_children := build_user_tree(child_record._id, _acceso, _search);
+                    
+                    -- Construir objeto hijo con sus hijos recursivos
+                    child_obj := json_build_object(
+                        '_id', child_record._id,
+                        'uid', child_record.uid,
+                        'created', child_record.created,
+                        'razon_social', child_record.razon_social,
+                        'cedula', child_record.cedula,
+                        'direccion_factura', child_record.direccion_factura,
+                        'email', child_record.email,
+                        'nombre', child_record.nombre,
+                        'celular', child_record.celular,
+                        'tipo', child_record.tipo,
+                        'descuento', child_record.descuento,
+                        'acceso', child_record.acceso,
+                        'tokenPhone', child_record.tokenPhone,
+                        'token', child_record.token,
+                        'codMagister', child_record.codMagister,
+                        'avatar', child_record.avatar,
+                        'codt', child_record.codt,
+                        'codigoRegistro', child_record.codigoRegistro,
+                        'valorUnitario', child_record.valorUnitario,
+                        'editado', child_record.editado,
+                        'activo', child_record.activo,
+                        'eliminado', child_record.eliminado,
+                        'idPadre', child_record.idPadre,
+                        'children', child_children
+                    );
+                    
+                    -- Agregar hijo al array de children
+                    children_array := children_array::jsonb || child_obj::jsonb;
+                END LOOP;
+                
+                RETURN children_array;
+            END;
+            $build_tree$;
+            
+            -- Obtener solo los padres principales (usuarios sin padre)
             FOR record_item IN
                 SELECT 
                     u._id, u.uid, u.created, u.razon_social, u.cedula, u.direccion_factura,
@@ -294,7 +381,7 @@ BEGIN
                 FROM users u
                 WHERE u.acceso != 'cliente'
                 AND u.eliminado = false
-                AND u.idPadre IS NULL  -- Solo padres (usuarios sin padre)
+                AND u.idPadre IS NULL  -- Solo padres principales (sin padre)
                 AND (
                     CASE _acceso
                         WHEN 'All' THEN true
@@ -320,65 +407,10 @@ BEGIN
                 ORDER BY u.nombre
                 LIMIT _limit OFFSET _start
             LOOP
-                -- Obtener los children de este padre
-                children_array := '[]'::JSON;
-                FOR child_record IN
-                    SELECT 
-                        c._id, c.uid, c.created, c.razon_social, c.cedula, c.direccion_factura,
-                        c.email, c.nombre, c.celular, c.tipo, c.descuento, c.acceso,
-                        c.tokenPhone, c.token, c.codMagister, c.avatar, c.codt, c.codigoRegistro,
-                        c.valorUnitario, c.editado, c.activo, c.eliminado, c.idPadre
-                    FROM users c
-                    WHERE c.idPadre = record_item._id
-                    AND c.eliminado = false
-                    AND c.acceso != 'cliente'
-                    AND (
-                        CASE _acceso
-                            WHEN 'All' THEN true
-                            WHEN 'admin' THEN c.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'solucion')
-                            WHEN 'administradores' THEN c.acceso IN ('admin', 'veo', 'comercial', 'solucion')
-                            WHEN 'veo' THEN c.acceso = 'veo'
-                            WHEN 'comercial' THEN c.acceso = 'comercial'
-                            WHEN 'conductor' THEN c.acceso = 'conductor'
-                            WHEN 'solucion' THEN c.acceso = 'solucion'
-                            ELSE c.acceso = _acceso
-                        END
-                    )
-                    ORDER BY c.nombre
-                LOOP
-                    -- Construir objeto hijo
-                    child_obj := json_build_object(
-                        '_id', child_record._id,
-                        'uid', child_record.uid,
-                        'created', child_record.created,
-                        'razon_social', child_record.razon_social,
-                        'cedula', child_record.cedula,
-                        'direccion_factura', child_record.direccion_factura,
-                        'email', child_record.email,
-                        'nombre', child_record.nombre,
-                        'celular', child_record.celular,
-                        'tipo', child_record.tipo,
-                        'descuento', child_record.descuento,
-                        'acceso', child_record.acceso,
-                        'tokenPhone', child_record.tokenPhone,
-                        'token', child_record.token,
-                        'codMagister', child_record.codMagister,
-                        'avatar', child_record.avatar,
-                        'codt', child_record.codt,
-                        'codigoRegistro', child_record.codigoRegistro,
-                        'valorUnitario', child_record.valorUnitario,
-                        'editado', child_record.editado,
-                        'activo', child_record.activo,
-                        'eliminado', child_record.eliminado,
-                        'idPadre', child_record.idPadre,
-                        'children', '[]'::JSON
-                    );
-                    
-                    -- Agregar hijo al array de children
-                    children_array := children_array::jsonb || child_obj::jsonb;
-                END LOOP;
+                -- Usar la función recursiva para obtener TODOS los descendientes
+                children_array := build_user_tree(record_item._id, _acceso, _search);
                 
-                -- Construir objeto padre con sus children
+                -- Construir objeto padre con sus children recursivos
                 user_obj := json_build_object(
                     '_id', record_item._id,
                     'uid', record_item.uid,
@@ -409,6 +441,9 @@ BEGIN
                 -- Agregar al array resultado
                 result_array := result_array::jsonb || user_obj::jsonb;
             END LOOP;
+            
+            -- Limpiar la función auxiliar
+            DROP FUNCTION IF EXISTS build_user_tree(INT, VARCHAR, VARCHAR);
         ELSIF requester_user_type = 'veo' THEN
             -- Usuarios tipo 'veo' pueden ver estructura jerárquica de usuarios por debajo de ellos
             FOR record_item IN
@@ -615,3 +650,5 @@ BEGIN
     RETURN COALESCE(final_result, '{"users": []}');
 END;
 $function$;
+
+ 

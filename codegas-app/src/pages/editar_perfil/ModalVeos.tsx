@@ -42,6 +42,28 @@ const ModalVeos: React.FC<ModalVeosProps> = ({
     const [modalAnimation] = useState(new Animated.Value(0));
     const [overlayAnimation] = useState(new Animated.Value(0));
 
+    // Effect para debug: mostrar VEOs cuando se abre el modal
+    useEffect(() => {
+        if (visible) {
+            console.log('🔍 ModalVeos - Modal abierto, VEOs recibidos del backend:');
+            console.log('🔍 ModalVeos - Cantidad de VEOs:', veos.length);
+            console.log('🔍 ModalVeos - VEOs completos:', JSON.stringify(veos, null, 2));
+            console.log('🔍 ModalVeos - Primer VEO (ejemplo):', veos[0]);
+            if (veos.length > 0) {
+                console.log('🔍 ModalVeos - Estructura del primer VEO:');
+                console.log('  - key:', veos[0].key);
+                console.log('  - _id:', veos[0]._id);
+                console.log('  - label:', veos[0].label);
+                console.log('  - idPadre:', veos[0].idPadre);
+                console.log('  - email:', veos[0].email);
+                console.log('  - children count:', veos[0].children?.length || 0);
+                if (veos[0].children && veos[0].children.length > 0) {
+                    console.log('  - primer child:', veos[0].children[0]);
+                }
+            }
+        }
+    }, [visible, veos]);
+
     // Effect para animaciones del modal
     useEffect(() => {
         if (visible) {
@@ -84,9 +106,43 @@ const ModalVeos: React.FC<ModalVeosProps> = ({
     }, [onClose]);
 
     const handleSelectVeo = useCallback((veoKey: string) => {
+        console.log('🔍 ModalVeos - VEO seleccionado:');
+        console.log('🔍 ModalVeos - veoKey recibido:', veoKey);
+
+        // Función recursiva para buscar VEO en todos los niveles
+        const buscarVeoRecursivamente = (veosArray: Veo[], targetKey: string): Veo | null => {
+            for (let veo of veosArray) {
+                // Comparar keys como strings
+                if (String(veo.key) === String(targetKey)) {
+                    return veo;
+                }
+                // Buscar recursivamente en children
+                if (veo.children && veo.children.length > 0) {
+                    const encontrado = buscarVeoRecursivamente(veo.children, targetKey);
+                    if (encontrado) {
+                        return encontrado;
+                    }
+                }
+            }
+            return null;
+        };
+
+        // Buscar el VEO completo para mostrar más información
+        const veoSeleccionado = buscarVeoRecursivamente(veos, veoKey);
+        if (veoSeleccionado) {
+            console.log('🔍 ModalVeos - VEO encontrado:', veoSeleccionado);
+            console.log('🔍 ModalVeos - Datos del VEO seleccionado:');
+            console.log('  - ID:', veoSeleccionado._id);
+            console.log('  - Nombre:', veoSeleccionado.label);
+            console.log('  - Email:', veoSeleccionado.email);
+            console.log('  - ID Padre:', veoSeleccionado.idPadre);
+        } else {
+            console.log('❌ ModalVeos - VEO no encontrado con key:', veoKey);
+        }
+
         onSelectVeo(veoKey);
         closeModal();
-    }, [onSelectVeo, closeModal]);
+    }, [onSelectVeo, closeModal, veos]);
 
     // Función para renderizar el árbol completo de VEOs usando los children del backend
     const renderVeoTree = useCallback(() => {

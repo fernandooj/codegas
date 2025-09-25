@@ -341,219 +341,222 @@ const NuevaRevision = ({ navigation, route }) => {
 
         return (
             <View>
-                {/* PLACAS */}
-                <ModalFilterPicker
-                    placeholderText="Placas ..."
-                    visible={modalPlacas}
-                    onSelect={(e) => buscarTanque(e)}
-                    onCancel={() => updateState({ modalPlacas: false })}
-                    crearTanque={(e) => { navigation.navigate("nuevoTanque", { placaText: e, puntoId, usuarioId }), updateState({ modalPlacas: false }) }}
-                    options={placas}
-                    revision
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Placa</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={() => updateState({ modalPlacas: true })}>
-                        <Text style={placaText ? style.textBtnActive : style.textBtn}>{placaText ? placaText : "Placas"}</Text>
+            {/* PLACAS */ }
+            < ModalFilterPicker
+                    placeholderText = "Placas ..."
+        visible = { modalPlacas }
+        onSelect = {(e) => buscarTanque(e)}
+onCancel = {() => updateState({ modalPlacas: false })}
+crearTanque = {(e) => { navigation.navigate("nuevoTanque", { placaText: e, puntoId, usuarioId }), updateState({ modalPlacas: false }) }}
+options = { placas }
+revision
+cancelButtonText = "CANCELAR"
+optionTextStyle = { style.filterText }
+    />
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step2 }> Placa </Text>
+            < TouchableOpacity style = { style.btnMultiple } onPress = {() => updateState({ modalPlacas: true })}>
+                <Text style={ placaText ? style.textBtnActive : style.textBtn }> { placaText? placaText: "Placas" } </Text>
                     </TouchableOpacity>
-                </View>
+                    </View>
 
-                {
-                    tanqueArray.map((e, key) => {
-                        return (
-                            <View style={style.contenedorUsuario} key={key}>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <TouchableOpacity style={{ width: "90%", alignItems: "center" }} onPress={() => navigation.navigate("nuevoTanque", { tanqueId: e._id })}>
-                                        <View style={style.subContenedorUsuario}>
-                                            <Text style={style.row1}>Placa:</Text>
-                                            <Text style={style.row2}>{e.placaText}</Text>
-                                        </View>
-                                        <View style={style.subContenedorUsuario}>
-                                            <Text style={style.row1}>Capacidad:</Text>
-                                            <Text style={style.row2}>{e.capacidad}</Text>
-                                        </View>
-                                        <View style={style.subContenedorUsuario}>
-                                            <Text style={style.row1}>Propiedad:</Text>
-                                            <Text style={style.row2}>{e.propiedad}</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => e.usuarioId ? alertaEliminarTanque(e._id, e.placaText, e.usuarioId.codt, e.usuarioId.razon_social) : null}>
-                                        <FontAwesome name="trash" style={style.iconTrash} />
-                                    </TouchableOpacity>
+{
+    tanqueArray.map((e, key) => {
+        return (
+            <View style= { style.contenedorUsuario } key = { key } >
+                <View style={ { flexDirection: "row", alignItems: "center" } }>
+                    <TouchableOpacity style={ { width: "90%", alignItems: "center" } } onPress = {() => navigation.navigate("nuevoTanque", { tanqueId: e._id })
+    }>
+    <View style={ style.subContenedorUsuario } >
+    <Text style={ style.row1 } > Placa: </Text>
+    < Text style = { style.row2 } > { e.placaText } </Text>
+    </View>
+    < View style = { style.subContenedorUsuario } >
+    <Text style={ style.row1 } > Capacidad: </Text>
+    < Text style = { style.row2 } > { e.capacidad } </Text>
+    </View>
+    < View style = { style.subContenedorUsuario } >
+    <Text style={ style.row1 } > Propiedad: </Text>
+    < Text style = { style.row2 } > { e.propiedad } </Text>
+    </View>
+    </TouchableOpacity>
+    < TouchableOpacity onPress = {() => e.usuarioId ? alertaEliminarTanque(e._id, e.placaText, e.usuarioId.codt, e.usuarioId.razon_social) : null}>
+        <FontAwesome name="trash" style = { style.iconTrash } />
+            </TouchableOpacity>
 
-                                </View>
-                            </View>
+            </View>
+            </View>
                         )
                     })
                 }
-            </View>
+</View>
         )
     }
 
-    step2() {
-        const { modalSectores, sector, barrio, usuariosAtendidos, modalM3, m3, usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, modalPropiedad, propiedad, nComodatoText, nMedidorText, ubicacion, modalUbicacion, capacidad, direccion, observacion } = this.state
+step2() {
+    const { modalSectores, sector, barrio, usuariosAtendidos, modalM3, m3, usuarioId, modalCliente, clientes, codtCliente, cedulaCliente, razon_socialCliente, celularCliente, emailCliente, nombreCliente, direccion_facturaCliente, puntos, puntoId, modalPropiedad, propiedad, nComodatoText, nMedidorText, ubicacion, modalUbicacion, capacidad, direccion, observacion } = this.state
 
-        return(
-            <View>
-    {/* SECTORES */ }
-    < ModalFilterPicker
+    return (
+        <View>
+        {/* SECTORES */ }
+        < ModalFilterPicker
                     placeholderText = "Sectores ..."
-                    visible = { modalSectores }
-                    onSelect = {(e) => this.setState({ sector: e.key, modalSectores: false })}
+    visible = { modalSectores }
+    onSelect = {(e) => this.setState({ sector: e.key, modalSectores: false })
+}
 onCancel = {() => this.setState({ modalSectores: false })}
 options = { sectores }
 cancelButtonText = "CANCELAR"
 optionTextStyle = { style.filterText }
     />
-    <View style={style.contenedorSetp2}>
-        <Text style={style.row1Step2}>Sector</Text>
-        <TouchableOpacity style={style.btnMultiple} onPress={() => this.setState({ modalSectores: true })}>
-            <Text style={sector ? style.textBtnActive : style.textBtn}>{sector ? sector : "Sector"}</Text>
-        </TouchableOpacity>
-    </View>
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step2 }> Sector </Text>
+            < TouchableOpacity style = { style.btnMultiple } onPress = {() => this.setState({ modalSectores: true })}>
+                <Text style={ sector ? style.textBtnActive : style.textBtn }> { sector? sector: "Sector" } </Text>
+                    </TouchableOpacity>
+                    </View>
 
 {/* BARRIO */ }
-<View style={style.contenedorSetp2}>
-    <Text style={style.row1Step2}>Barrio</Text>
-    <TextInput
-        placeholder="Barrio"
-        value={barrio}
-        style={style.inputStep2}
-        onChangeText={(barrio) => this.setState({ barrio })}
+<View style={ style.contenedorSetp2 }>
+    <Text style={ style.row1Step2 }> Barrio </Text>
+        < TextInput
+placeholder = "Barrio"
+value = { barrio }
+style = { style.inputStep2 }
+onChangeText = {(barrio) => this.setState({ barrio })}
     />
-</View>
+    </View>
 
 
 {/* USUARIOS ATENDIDOS */ }
-<View style={style.contenedorSetp2}>
-    <Text style={style.row1Step2}>Usuarios Atendidos</Text>
-    <TextInput
-        keyboardType="numeric"
-        placeholder="Usuarios Atendidos"
-        style={style.inputStep2}
-        value={usuariosAtendidos}
-        onChangeText={(usuariosAtendidos) => this.setState({ usuariosAtendidos })}
+<View style={ style.contenedorSetp2 }>
+    <Text style={ style.row1Step2 }> Usuarios Atendidos </Text>
+        < TextInput
+keyboardType = "numeric"
+placeholder = "Usuarios Atendidos"
+style = { style.inputStep2 }
+value = { usuariosAtendidos }
+onChangeText = {(usuariosAtendidos) => this.setState({ usuariosAtendidos })}
     />
-</View>
+    </View>
 
 {/* M3 */ }
-                <ModalFilterPicker
+<ModalFilterPicker
                     placeholderText="M3 ..."
-                    visible={modalM3}
-                    onSelect={(e) => this.setState({ m3: e.key, modalM3: false })}
-                    onCancel={() => this.setState({ modalM3: false })}
-                    options={m3s}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>M3</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={() => this.setState({ modalM3: true })}>
-                        <Text style={m3 ? style.textBtnActive : style.textBtn}>{m3 ? m3 : "M3"}</Text>
+visible = { modalM3 }
+onSelect = {(e) => this.setState({ m3: e.key, modalM3: false })}
+onCancel = {() => this.setState({ modalM3: false })}
+options = { m3s }
+cancelButtonText = "CANCELAR"
+optionTextStyle = { style.filterText }
+    />
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step2 }> M3 </Text>
+            < TouchableOpacity style = { style.btnMultiple } onPress = {() => this.setState({ modalM3: true })}>
+                <Text style={ m3 ? style.textBtnActive : style.textBtn }> { m3? m3: "M3" } </Text>
                     </TouchableOpacity>
-                </View>
+                    </View>
 
 {/* NO MEDIDOR TEXTO */ }
 {
     m3 == "Si"
-        && <View style={style.contenedorSetp2}>
-            <Text style={style.row1Step2}>N° Medidor</Text>
-            <TextInput
-                placeholder="N° Medidor"
-                value={nMedidorText}
-                style={style.inputStep2}
-                onChangeText={(nMedidorText) => this.setState({ nMedidorText })}
+        && <View style={ style.contenedorSetp2 }>
+            <Text style={ style.row1Step2 }> N° Medidor </Text>
+                < TextInput
+    placeholder = "N° Medidor"
+    value = { nMedidorText }
+    style = { style.inputStep2 }
+    onChangeText = {(nMedidorText) => this.setState({ nMedidorText })
+}
             />
-        </View>
+    </View>
 }
 
 
 {/* UBICACIONES */ }
-                <ModalFilterPicker
+<ModalFilterPicker
                     placeholderText="ubicaciones ..."
-                    visible={modalUbicacion}
-                    onSelect={(e) => this.setState({ ubicacion: e.key, modalUbicacion: false })}
-                    onCancel={() => this.setState({ modalUbicacion: false })}
-                    options={ubicaciones}
-                    cancelButtonText="CANCELAR"
-                    optionTextStyle={style.filterText}
-                />
-                <View style={style.contenedorSetp2}>
-                    <Text style={style.row1Step2}>Ubicación</Text>
-                    <TouchableOpacity style={style.btnMultiple} onPress={() => this.setState({ modalUbicacion: true })}>
-                        <Text style={ubicacion ? style.textBtnActive : style.textBtn}>{ubicacion ? ubicacion : "Ubicación"}</Text>
+visible = { modalUbicacion }
+onSelect = {(e) => this.setState({ ubicacion: e.key, modalUbicacion: false })}
+onCancel = {() => this.setState({ modalUbicacion: false })}
+options = { ubicaciones }
+cancelButtonText = "CANCELAR"
+optionTextStyle = { style.filterText }
+    />
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step2 }> Ubicación </Text>
+            < TouchableOpacity style = { style.btnMultiple } onPress = {() => this.setState({ modalUbicacion: true })}>
+                <Text style={ ubicacion ? style.textBtnActive : style.textBtn }> { ubicacion? ubicacion: "Ubicación" } </Text>
                     </TouchableOpacity>
-                </View>
+                    </View>
 
 {/* NUMERO DE COMODATO */ }
-<View style={style.contenedorSetp2}>
-    <Text style={style.row1Step2}>N Comodato</Text>
-    <TextInput
-        placeholder="N Comodato"
-        value={nComodatoText}
-        style={style.inputStep2}
-        onChangeText={(nComodatoText) => this.setState({ nComodatoText })}
+<View style={ style.contenedorSetp2 }>
+    <Text style={ style.row1Step2 }> N Comodato </Text>
+        < TextInput
+placeholder = "N Comodato"
+value = { nComodatoText }
+style = { style.inputStep2 }
+onChangeText = {(nComodatoText) => this.setState({ nComodatoText })}
     />
-</View>
+    </View>
 
 
 {/* USUARIO */ }
 
 <ModalFilterPicker
     placeholderText="Filtrar ..."
-    visible={modalCliente}
-    onSelect={(e) => this.filtroClientes(e)}
-    onCancel={() => this.setState({ modalCliente: false })}
-    options={clientes}
-    cancelButtonText="CANCELAR"
-    optionTextStyle={style.filterText}
-/>
+visible = { modalCliente }
+onSelect = {(e) => this.filtroClientes(e)}
+onCancel = {() => this.setState({ modalCliente: false })}
+options = { clientes }
+cancelButtonText = "CANCELAR"
+optionTextStyle = { style.filterText }
+    />
 
 {
     usuarioId
-        && <View style={style.contenedorUsuario}>
-            <View style={style.subContenedorUsuario}>
-                <Text style={style.row1}>Identificación:</Text>
-                <Text style={style.row2}>{cedulaCliente}</Text>
-            </View>
-            <View style={style.subContenedorUsuario}>
-                <Text style={style.row1}>CODT:</Text>
-                <Text style={style.row2}>{codtCliente}</Text>
-            </View>
-            <View style={style.subContenedorUsuario}>
-                <Text style={style.row1}>Razón Social:</Text>
-                <Text style={style.row2}>{razon_socialCliente}</Text>
-            </View>
-            <View style={style.subContenedorUsuario}>
-                <Text style={style.row1}>Dirección:</Text>
-                <Text style={style.row2}>{direccion_facturaCliente}</Text>
-            </View>
-            <View style={style.subContenedorUsuario}>
-                <Text style={style.row1}>Nombre:</Text>
-                <Text style={style.row2}>{nombreCliente}</Text>
-            </View>
-            <View style={style.subContenedorUsuario}>
-                <Text style={style.row1}>Celular:</Text>
-                <Text style={style.row2}>{celularCliente}</Text>
-            </View>
-            <View style={style.subContenedorUsuario}>
-                <Text style={style.row1}>Email:</Text>
-                <Text style={style.row2}>{emailCliente}</Text>
-            </View>
-        </View>
+        && <View style={ style.contenedorUsuario }>
+    <View style={ style.subContenedorUsuario }>
+        <Text style={ style.row1 }> Identificación: </Text>
+            < Text style = { style.row2 } > { cedulaCliente } </Text>
+                </View>
+                < View style = { style.subContenedorUsuario } >
+                    <Text style={ style.row1 }> CODT: </Text>
+                        < Text style = { style.row2 } > { codtCliente } </Text>
+                            </View>
+                            < View style = { style.subContenedorUsuario } >
+                                <Text style={ style.row1 }> Razón Social: </Text>
+                                    < Text style = { style.row2 } > { razon_socialCliente } </Text>
+                                        </View>
+                                        < View style = { style.subContenedorUsuario } >
+                                            <Text style={ style.row1 }> Dirección: </Text>
+                                                < Text style = { style.row2 } > { direccion_facturaCliente } </Text>
+                                                    </View>
+                                                    < View style = { style.subContenedorUsuario } >
+                                                        <Text style={ style.row1 }> Nombre: </Text>
+                                                            < Text style = { style.row2 } > { nombreCliente } </Text>
+                                                                </View>
+                                                                < View style = { style.subContenedorUsuario } >
+                                                                    <Text style={ style.row1 }> Celular: </Text>
+                                                                        < Text style = { style.row2 } > { celularCliente } </Text>
+                                                                            </View>
+                                                                            < View style = { style.subContenedorUsuario } >
+                                                                                <Text style={ style.row1 }> Email: </Text>
+                                                                                    < Text style = { style.row2 } > { emailCliente } </Text>
+                                                                                        </View>
+                                                                                        </View>
 }
-<View style={style.btnZonaActiva} >
-    <Image source={require('../../assets/img/pg3/btn1.png')} style={style.icon} resizeMode={'contain'} />
-    <View>
-        <Text style={style.textZona}>{direccion}</Text>
-        <Text style={style.textZona}>Almacenamiento: {capacidad}</Text>
-        <Text style={style.textZona}>Observacion: {observacion}</Text>
-    </View>
-</View>
+<View style={ style.btnZonaActiva } >
+    <Image source={ require('../../assets/img/pg3/btn1.png') } style = { style.icon } resizeMode = { 'contain'} />
+        <View>
+        <Text style={ style.textZona }> { direccion } </Text>
+            < Text style = { style.textZona } > Almacenamiento: { capacidad } </Text>
+                < Text style = { style.textZona } > Observacion: { observacion } </Text>
+                    </View>
+                    </View>
 
-            </View >
+                    </View >
         )
     }
 
@@ -562,129 +565,132 @@ step3() {
     const { observaciones, avisos, extintores, distancias, electricas, accesorios, estado, solicitudServicio, imgAlerta, alertaText, alertaFecha, nActa, depTecnicoEstado, imgDepTecnico, depTecnicoText } = this.state
     return (
         <View>
-            {/* OBSERVACIONES */}
-            <View style={style.contenedorSetp2}>
-                <Text style={style.row1Step2}>Observaciones</Text>
-                <TextInput
-                    placeholder="Observaciones"
-                    style={style.inputStep4}
-                    value={observaciones}
-                    onChangeText={(observaciones) => this.setState({ observaciones })}
+        {/* OBSERVACIONES */ }
+        < View style = { style.contenedorSetp2 } >
+            <Text style={ style.row1Step2 }> Observaciones </Text>
+                < TextInput
+    placeholder = "Observaciones"
+    style = { style.inputStep4 }
+    value = { observaciones }
+    onChangeText = {(observaciones) => this.setState({ observaciones })
+}
                 />
-            </View>
-            <View style={style.separador}></View>
-            {
-                estado == 2
-                    ? <View style={style.contenedorSetp2}>
-                        <Text style={style.row1Step2}>Solicitud</Text>
-                        <Text style={style.row1Step2}>{solicitudServicio}</Text>
+    </View>
+    < View style = { style.separador } > </View>
+{
+    estado == 2
+        ? <View style={ style.contenedorSetp2 }>
+            <Text style={ style.row1Step2 }> Solicitud </Text>
+                < Text style = { style.row1Step2 } > { solicitudServicio } </Text>
                     </View>
                     : estado == 3
-                        ? <>
-                            <View style={style.contenedorSetp2}>
-                                <Text style={style.row1Step2}>Solicitud</Text>
-                                <Text style={style.row1Step2}>{solicitudServicio}</Text>
-                            </View>
-                            <View style={style.contenedorSetp2}>
-                                <Text style={style.row1Step2}>Comentario</Text>
-                                <Text style={style.row1Step2}>{alertaText}</Text>
-                            </View>
-                            <View style={style.contenedorSetp2}>
-                                <Text style={style.row1Step2}>Fecha</Text>
-                                <Text style={style.row1Step2}>{alertaFecha}</Text>
-                            </View>
-                            <View style={style.contenedorSetp2}>
-                                <Text style={style.row1Step2}>N Acta</Text>
-                                <Text style={style.row1Step2}>{nActa}</Text>
-                            </View>
-                            <TomarFoto
-                                source={imgAlerta}
-                                width={180}
-                                titulo="Retiro de tanques"
-                                limiteImagenes={1}
-                                imagenes={(imgAlerta) => { this.setState({ imgAlerta }) }}
+        ? <>
+        <View style={ style.contenedorSetp2 }>
+            <Text style={ style.row1Step2 }> Solicitud </Text>
+                < Text style = { style.row1Step2 } > { solicitudServicio } </Text>
+                    </View>
+                    < View style = { style.contenedorSetp2 } >
+                        <Text style={ style.row1Step2 }> Comentario </Text>
+                            < Text style = { style.row1Step2 } > { alertaText } </Text>
+                                </View>
+                                < View style = { style.contenedorSetp2 } >
+                                    <Text style={ style.row1Step2 }> Fecha </Text>
+                                        < Text style = { style.row1Step2 } > { alertaFecha } </Text>
+                                            </View>
+                                            < View style = { style.contenedorSetp2 } >
+                                                <Text style={ style.row1Step2 }> N Acta </Text>
+                                                    < Text style = { style.row1Step2 } > { nActa } </Text>
+                                                        </View>
+                                                        < TomarFoto
+    source = { imgAlerta }
+    width = { 180}
+    titulo = "Retiro de tanques"
+    limiteImagenes = { 1}
+    imagenes = {(imgAlerta) => { this.setState({ imgAlerta }) }
+}
                             />
-                        </>
-                        : <TouchableOpacity style={style.nuevaFrecuencia} onPress={() => this.setState({ modalAlerta: true })}>
-                            <Text style={style.textGuardar}>Nueva Alerta</Text>
-                        </TouchableOpacity>
+    </>
+                        : <TouchableOpacity style={ style.nuevaFrecuencia } onPress = {() => this.setState({ modalAlerta: true })}>
+    <Text style={ style.textGuardar }> Nueva Alerta </Text>
+        </TouchableOpacity>
             }
-            <View style={style.separador}></View>
-            {
-                depTecnicoEstado
-                    ? <>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step2}>Observacion</Text>
-                            <Text style={style.row1Step2}>{depTecnicoText}</Text>
-                        </View>
-                        <TomarFoto
-                            source={imgDepTecnico}
-                            width={180}
-                            titulo="Retiro de tanques"
-                            limiteImagenes={1}
-                            imagenes={(imgDepTecnico) => { this.setState({ imgDepTecnico }) }}
+<View style={ style.separador }> </View>
+{
+    depTecnicoEstado
+        ? <>
+        <View style={ style.contenedorSetp2 }>
+            <Text style={ style.row1Step2 }> Observacion </Text>
+                < Text style = { style.row1Step2 } > { depTecnicoText } </Text>
+                    </View>
+                    < TomarFoto
+    source = { imgDepTecnico }
+    width = { 180}
+    titulo = "Retiro de tanques"
+    limiteImagenes = { 1}
+    imagenes = {(imgDepTecnico) => { this.setState({ imgDepTecnico }) }
+}
                         />
-                    </>
+    </>
                     : <>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step3}>Falta de Avisos reglamentarios</Text>
-                            <Switch
-                                trackColor={{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
-                                thumbColor={[Platform.OS == 'ios' ? '#FFFFFF' : (avisos ? '#d60606' : '#ffffff')]}
-                                ios_backgroundColor="#fbfbfb"
-                                style={[avisos ? style.switchEnableBorder : style.switchDisableBorder]}
-                                value={avisos}
-                                onValueChange={(avisos) => this.setState({ avisos })}
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step3 }> Falta de Avisos reglamentarios </Text>
+            < Switch
+trackColor = {{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
+thumbColor = { [Platform.OS == 'ios' ? '#FFFFFF' : (avisos ? '#d60606' : '#ffffff')]}
+ios_backgroundColor = "#fbfbfb"
+style = { [avisos ? style.switchEnableBorder : style.switchDisableBorder]}
+value = { avisos }
+onValueChange = {(avisos) => this.setState({ avisos })}
                             />
 
-                        </View>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step3}>Falta extintores</Text>
-                            <Switch
-                                trackColor={{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
-                                thumbColor={[Platform.OS == 'ios' ? '#FFFFFF' : (extintores ? '#d60606' : '#ffffff')]}
-                                ios_backgroundColor="#fbfbfb"
-                                style={[extintores ? style.switchEnableBorder : style.switchDisableBorder]}
-                                onValueChange={(extintores) => this.setState({ extintores })}
-                                value={extintores}
-                            />
-                        </View>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step3}>No cumple distancias</Text>
-                            <Switch
-                                trackColor={{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
-                                thumbColor={[Platform.OS == 'ios' ? '#FFFFFF' : (distancias ? '#d60606' : '#ffffff')]}
-                                ios_backgroundColor="#fbfbfb"
-                                style={[distancias ? style.switchEnableBorder : style.switchDisableBorder]}
-                                onValueChange={(distancias) => this.setState({ distancias })}
-                                value={distancias}
-                            />
-                        </View>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step3}>Fuentes ignición cerca</Text>
-                            <Switch
-                                trackColor={{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
-                                thumbColor={[Platform.OS == 'ios' ? '#FFFFFF' : (electricas ? '#d60606' : '#ffffff')]}
-                                ios_backgroundColor="#fbfbfb"
-                                style={[electricas ? style.switchEnableBorder : style.switchDisableBorder]}
-                                onValueChange={(electricas) => this.setState({ electricas })}
-                                value={electricas}
-                            />
-                        </View>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step3}>Cumple accesorios y materiales</Text>
-                            <Switch
-                                trackColor={{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
-                                thumbColor={[Platform.OS == 'ios' ? '#FFFFFF' : (accesorios ? '#d60606' : '#ffffff')]}
-                                ios_backgroundColor="#fbfbfb"
-                                style={[accesorios ? style.switchEnableBorder : style.switchDisableBorder]}
-                                onValueChange={(accesorios) => this.setState({ accesorios })}
-                                value={accesorios}
-                            />
-                        </View>
-                    </>
+    </View>
+    < View style = { style.contenedorSetp2 } >
+        <Text style={ style.row1Step3 }> Falta extintores </Text>
+            < Switch
+trackColor = {{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
+thumbColor = { [Platform.OS == 'ios' ? '#FFFFFF' : (extintores ? '#d60606' : '#ffffff')]}
+ios_backgroundColor = "#fbfbfb"
+style = { [extintores ? style.switchEnableBorder : style.switchDisableBorder]}
+onValueChange = {(extintores) => this.setState({ extintores })}
+value = { extintores }
+    />
+    </View>
+    < View style = { style.contenedorSetp2 } >
+        <Text style={ style.row1Step3 }> No cumple distancias </Text>
+            < Switch
+trackColor = {{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
+thumbColor = { [Platform.OS == 'ios' ? '#FFFFFF' : (distancias ? '#d60606' : '#ffffff')]}
+ios_backgroundColor = "#fbfbfb"
+style = { [distancias ? style.switchEnableBorder : style.switchDisableBorder]}
+onValueChange = {(distancias) => this.setState({ distancias })}
+value = { distancias }
+    />
+    </View>
+    < View style = { style.contenedorSetp2 } >
+        <Text style={ style.row1Step3 }> Fuentes ignición cerca </Text>
+            < Switch
+trackColor = {{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
+thumbColor = { [Platform.OS == 'ios' ? '#FFFFFF' : (electricas ? '#d60606' : '#ffffff')]}
+ios_backgroundColor = "#fbfbfb"
+style = { [electricas ? style.switchEnableBorder : style.switchDisableBorder]}
+onValueChange = {(electricas) => this.setState({ electricas })}
+value = { electricas }
+    />
+    </View>
+    < View style = { style.contenedorSetp2 } >
+        <Text style={ style.row1Step3 }> Cumple accesorios y materiales </Text>
+            < Switch
+trackColor = {{ true: '#d60606', false: Platform.OS == 'android' ? '#d3d3d3' : '#fbfbfb' }}
+thumbColor = { [Platform.OS == 'ios' ? '#FFFFFF' : (accesorios ? '#d60606' : '#ffffff')]}
+ios_backgroundColor = "#fbfbfb"
+style = { [accesorios ? style.switchEnableBorder : style.switchDisableBorder]}
+onValueChange = {(accesorios) => this.setState({ accesorios })}
+value = { accesorios }
+    />
+    </View>
+    </>
             }
-        </View>
+</View>
     )
 }
 
@@ -692,36 +698,38 @@ step4() {
     let { navigate } = this.props.navigation
     return (
         <View>
-            {
-                images.map(({ title, type, mime, source }) => {
+        {
+            images.map(({ title, type, mime, source }) => {
 
-                    if (mime === 'image/jpeg') {
-                        return <>
-                            <TomarFoto
-                                source={this.state[source]}
-                                width={180}
-                                titulo={title}
-                                limiteImagenes={4}
-                                imagenes={(e) => { this.uploadImagen(e, type, mime) }}
+                if (mime === 'image/jpeg') {
+                    return <>
+                        <TomarFoto
+                                source={ this.state[source] }
+                    width = { 180}
+                    titulo = { title }
+                    limiteImagenes = { 4}
+                    imagenes = {(e) => { this.uploadImagen(e, type, mime) }
+                }
                             />
-                            <View style={style.separador}></View>
+                    < View style = { style.separador } > </View>
                         </>
-                    } else {
-                        return <>
-                            <SubirDocumento
-                                navigate={navigate}
-                                source={this.state[source]}
-                                width={180}
-                                titulo={title}
-                                limiteImagenes={4}
-                                imagenes={(e) => { this.uploadImagen(e, type, mime) }}
+            } else {
+                return<>
+                            < SubirDocumento
+                                navigate={ navigate }
+                                source={ this.state[source] }
+                                width={ 180}
+                                titulo={ title }
+                                limiteImagenes={ 4}
+                                imagenes={(e) => { this.uploadImagen(e, type, mime) }
+}
                             />
-                            <View style={style.separador}></View>
-                        </>
+    < View style = { style.separador } > </View>
+        </>
                     }
                 })
             }
-        </View>
+</View>
     )
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -820,81 +828,82 @@ step5() {
         <View>
             {
                 (accesoPerfil == "admin" || accesoPerfil == "adminTanque")
-                    ? <>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step2}>Latitud</Text>
-                            <TextInput
-                                placeholder="Latitud"
-                                style={style.inputStep2}
-                                value={lat ? lat.toString() : ""}
-                                onChangeText={(lat) => this.setState({ lat })}
+            ? <>
+            <View style= { style.contenedorSetp2 } >
+        <Text style={ style.row1Step2 }> Latitud </Text>
+            < TextInput
+    placeholder = "Latitud"
+    style = { style.inputStep2 }
+    value = { lat? lat.toString() : ""}
+    onChangeText = {(lat) => this.setState({ lat })
+}
                             />
-                        </View>
-                        <View style={style.contenedorSetp2}>
-                            <Text style={style.row1Step2}>Longitud</Text>
-                            <TextInput
-                                placeholder="Longitud"
-                                style={style.inputStep2}
-                                value={lng ? lng.toString() : ""}
-                                onChangeText={(lng) => this.setState({ lng })}
+    </View>
+    < View style = { style.contenedorSetp2 } >
+        <Text style={ style.row1Step2 }> Longitud </Text>
+            < TextInput
+placeholder = "Longitud"
+style = { style.inputStep2 }
+value = { lng? lng.toString() : ""}
+onChangeText = {(lng) => this.setState({ lng })}
                             />
-                        </View>
-                    </>
-                    : <><Text>Lat: {lat}</Text>
-                        <Text>Lng: {lng}</Text></>
+    </View>
+    </>
+                    : <><Text>Lat: { lat } </Text>
+    < Text > Lng: { lng } </Text></ >
             }
-            {/* DEPARTAMENTOS */}
-            <ModalFilterPicker
+{/* DEPARTAMENTOS */ }
+<ModalFilterPicker
                 placeholderText="Dpto ..."
-                visible={modalDpto}
-                onSelect={(e) => this.buscarCiudad(e.key)}
-                onCancel={() => this.setState({ modalDpto: false })}
-                options={dptos}
-                cancelButtonText="CANCELAR"
-                optionTextStyle={style.filterText}
-            />
-            <View style={style.contenedorSetp2}>
-                <Text style={style.row1Step2}>Dpto</Text>
-                <TouchableOpacity style={style.btnMultiple} onPress={() => this.setState({ modalDpto: true })}>
-                    <Text style={dpto ? style.textBtnActive : style.textBtn}>{dpto ? dpto : "Dpto"}</Text>
-                </TouchableOpacity>
-            </View>
+visible = { modalDpto }
+onSelect = {(e) => this.buscarCiudad(e.key)}
+onCancel = {() => this.setState({ modalDpto: false })}
+options = { dptos }
+cancelButtonText = "CANCELAR"
+optionTextStyle = { style.filterText }
+    />
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step2 }> Dpto </Text>
+            < TouchableOpacity style = { style.btnMultiple } onPress = {() => this.setState({ modalDpto: true })}>
+                <Text style={ dpto ? style.textBtnActive : style.textBtn }> { dpto? dpto: "Dpto" } </Text>
+                    </TouchableOpacity>
+                    </View>
 
-            {/* CIUDADES */}
-            <ModalFilterPicker
+{/* CIUDADES */ }
+<ModalFilterPicker
                 placeholderText="ciudad ..."
-                visible={modalCiudad}
-                onSelect={(e) => this.buscarPoblado(e.key)}
-                onCancel={() => this.setState({ modalCiudad: false })}
-                options={ciudades}
-                cancelButtonText="CANCELAR"
-                optionTextStyle={style.filterText}
-            />
-            <View style={style.contenedorSetp2}>
-                <Text style={style.row1Step2}>ciudad</Text>
-                <TouchableOpacity style={style.btnMultiple} onPress={() => this.setState({ modalCiudad: true })}>
-                    <Text style={ciudad ? style.textBtnActive : style.textBtn}>{ciudad ? ciudad : "ciudad"}</Text>
-                </TouchableOpacity>
-            </View>
+visible = { modalCiudad }
+onSelect = {(e) => this.buscarPoblado(e.key)}
+onCancel = {() => this.setState({ modalCiudad: false })}
+options = { ciudades }
+cancelButtonText = "CANCELAR"
+optionTextStyle = { style.filterText }
+    />
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step2 }> ciudad </Text>
+            < TouchableOpacity style = { style.btnMultiple } onPress = {() => this.setState({ modalCiudad: true })}>
+                <Text style={ ciudad ? style.textBtnActive : style.textBtn }> { ciudad? ciudad: "ciudad" } </Text>
+                    </TouchableOpacity>
+                    </View>
 
-            {/* POBLADOS */}
-            <ModalFilterPicker
+{/* POBLADOS */ }
+<ModalFilterPicker
                 placeholderText="Poblado ..."
-                visible={modalPoblado}
-                onSelect={(e) => this.setState({ poblado: e.key, modalPoblado: false })}
-                onCancel={() => this.setState({ modalPoblado: false })}
-                options={poblados}
-                cancelButtonText="CANCELAR"
-                optionTextStyle={style.filterText}
-            />
-            <View style={style.contenedorSetp2}>
-                <Text style={style.row1Step2}>Poblado</Text>
-                <TouchableOpacity style={style.btnMultiple} onPress={() => this.setState({ modalPoblado: true })}>
-                    <Text style={poblado ? style.textBtnActive : style.textBtn}>{poblado ? poblado : "Poblado"}</Text>
-                </TouchableOpacity>
-            </View>
+visible = { modalPoblado }
+onSelect = {(e) => this.setState({ poblado: e.key, modalPoblado: false })}
+onCancel = {() => this.setState({ modalPoblado: false })}
+options = { poblados }
+cancelButtonText = "CANCELAR"
+optionTextStyle = { style.filterText }
+    />
+    <View style={ style.contenedorSetp2 }>
+        <Text style={ style.row1Step2 }> Poblado </Text>
+            < TouchableOpacity style = { style.btnMultiple } onPress = {() => this.setState({ modalPoblado: true })}>
+                <Text style={ poblado ? style.textBtnActive : style.textBtn }> { poblado? poblado: "Poblado" } </Text>
+                    </TouchableOpacity>
+                    </View>
 
-        </View>
+                    </View>
     )
 }
 
@@ -904,22 +913,23 @@ step5() {
 modalAlerta() {
     const { solicitudServicio } = this.state
     return (
-        <View style={style.modal}>
-            <View style={style.subContenedorModal}>
-                <TouchableOpacity activeOpacity={1} onPress={() => this.setState({ modalAlerta: false })} style={style.btnModalClose}>
-                    <FontAwesome name={'times-circle'} style={style.iconCerrar} />
-                </TouchableOpacity>
-                <TextInput
-                    placeholder="Solicitud Servicio"
-                    style={style.inputAlerta}
-                    value={solicitudServicio}
-                    onChangeText={(solicitudServicio) => this.setState({ solicitudServicio })}
+        <View style= { style.modal } >
+        <View style={ style.subContenedorModal }>
+            <TouchableOpacity activeOpacity={ 1 } onPress = {() => this.setState({ modalAlerta: false })
+} style = { style.btnModalClose } >
+    <FontAwesome name={ 'times-circle' } style = { style.iconCerrar } />
+        </TouchableOpacity>
+        < TextInput
+placeholder = "Solicitud Servicio"
+style = { style.inputAlerta }
+value = { solicitudServicio }
+onChangeText = {(solicitudServicio) => this.setState({ solicitudServicio })}
                 />
-                <TouchableOpacity style={style.nuevaAlerta} onPress={() => this.solicitudServicio()}>
-                    <Text style={style.textGuardar}>Enviar Alerta</Text>
-                </TouchableOpacity>
+    < TouchableOpacity style = { style.nuevaAlerta } onPress = {() => this.solicitudServicio()}>
+        <Text style={ style.textGuardar }> Enviar Alerta </Text>
+            </TouchableOpacity>
             </View>
-        </View>
+            </View>
     )
 }
 solicitudServicio() {
@@ -945,35 +955,36 @@ renderSteps() {
     let { tanqueArray, revisionId, modalAlerta } = this.state
 
     return (
-        <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" >
-            <ProgressStep label="Datos" nextBtnDisabled={tanqueArray.length == 0 ? true : false} nextBtnText="Siguiente" onNext={() => revisionId ? this.editarStep1() : this.crearStep1()}>
-                <View style={{ alignItems: 'center' }}>
-                    {this.step1()}
+        <ProgressSteps activeStepIconBorderColor= "#002587" progressBarColor = "#002587" activeLabelColor = "#002587" >
+            <ProgressStep label="Datos" nextBtnDisabled = { tanqueArray.length == 0 ? true : false } nextBtnText = "Siguiente" onNext = {() => revisionId ? this.editarStep1() : this.crearStep1()
+}>
+    <View style={ { alignItems: 'center' } }>
+        { this.step1() }
+        </View>
+        </ProgressStep>
+        < ProgressStep label = "Información" nextBtnText = "Siguiente" previousBtnText = "Anterior" onNext = {() => this.editarStep2()}>
+            <View style={ { alignItems: 'center' } }>
+                { this.step2() }
                 </View>
+                </ProgressStep>
+                < ProgressStep label = "Instalación" nextBtnText = "Siguiente" previousBtnText = "Anterior" onNext = {() => this.editarStep3()}>
+                    <View style={ { alignItems: 'center' } }>
+                        { modalAlerta && this.modalAlerta()}
+{ this.step3() }
+</View>
+    </ProgressStep>
+    < ProgressStep label = "Doc. adicionales" nextBtnText = "Siguiente" previousBtnText = "Anterior" >
+        <View style={ { alignItems: 'center' } }>
+            { this.step4() }
+            </View>
             </ProgressStep>
-            <ProgressStep label="Información" nextBtnText="Siguiente" previousBtnText="Anterior" onNext={() => this.editarStep2()}>
-                <View style={{ alignItems: 'center' }}>
-                    {this.step2()}
-                </View>
-            </ProgressStep>
-            <ProgressStep label="Instalación" nextBtnText="Siguiente" previousBtnText="Anterior" onNext={() => this.editarStep3()}>
-                <View style={{ alignItems: 'center' }}>
-                    {modalAlerta && this.modalAlerta()}
-                    {this.step3()}
-                </View>
-            </ProgressStep>
-            <ProgressStep label="Doc. adicionales" nextBtnText="Siguiente" previousBtnText="Anterior">
-                <View style={{ alignItems: 'center' }}>
-                    {this.step4()}
-                </View>
-            </ProgressStep>
-            <ProgressStep label="Coordenadas" finishBtnText="Guardar" previousBtnText="Anterior" onSubmit={() => this.editarStep5()}>
-                <View style={{ alignItems: 'center' }}>
-                    {this.step5()}
-                </View>
-            </ProgressStep>
+            < ProgressStep label = "Coordenadas" finishBtnText = "Guardar" previousBtnText = "Anterior" onSubmit = {() => this.editarStep5()}>
+                <View style={ { alignItems: 'center' } }>
+                    { this.step5() }
+                    </View>
+                    </ProgressStep>
 
-        </ProgressSteps>
+                    </ProgressSteps>
     )
 }
 
@@ -981,18 +992,18 @@ render() {
     const { navigation } = this.props
     return (
         <>
-            <View style={style.container}>
-                {this.renderSteps()}
-                {
-                    this.state.loading
-                    && <View style={style.loadingContain}>
-                        <ActivityIndicator color="#00218b" size={'large'} />
+        <View style= { style.container } >
+        { this.renderSteps() }
+    {
+        this.state.loading
+            && <View style={ style.loadingContain }>
+                <ActivityIndicator color="#00218b" size = { 'large'} />
                     </View>
-                }
-            </View>
-            <Footer navigation={navigation} />
+    }
+    </View>
+        < Footer navigation = { navigation } />
             <Toast />
-        </>
+            </>
     )
 }
 
