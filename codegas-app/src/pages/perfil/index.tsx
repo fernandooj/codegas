@@ -116,7 +116,7 @@ const Perfil = ({
           </View>
           <View style={style.columna2}>
             <Text style={style.nombre}>{currentNombre || nombre}</Text>
-            <Text style={style.nombre}>{currentEmail || email}</Text>
+            <Text style={style.email}>{currentEmail || email}</Text>
           </View>
         </View>
         <View>
@@ -124,10 +124,9 @@ const Perfil = ({
             style={style.btnLista}
             onPress={() => navigation.navigate('verPerfil', { tipoAcceso: null })}>
             <Text style={style.txtLista}>Editar perfil</Text>
-            <Image
-              source={require('../../assets/img/pg1/icon2.png')}
-              style={style.icon}
-            />
+            <View style={style.icon}>
+              <FontAwesome name="user" style={{ fontSize: 18, color: '#ffffff' }} />
+            </View>
           </TouchableOpacity>
 
           {/* {(acceso === 'admin' || acceso === 'despacho') && (
@@ -152,10 +151,9 @@ const Perfil = ({
                 style={style.btnLista}
                 onPress={() => navigation.navigate('clientes')}>
                 <Text style={style.txtLista}>Clientes</Text>
-                <Image
-                  source={require('../../assets/img/pg1/icon3.png')}
-                  style={style.icon}
-                />
+                <View style={style.icon}>
+                  <FontAwesome name="users" style={{ fontSize: 18, color: '#ffffff' }} />
+                </View>
               </TouchableOpacity>
             )}
           {(acceso === 'admin' || acceso === 'solucion') && (
@@ -163,10 +161,9 @@ const Perfil = ({
               style={style.btnLista}
               onPress={() => navigation.navigate('frecuencia')}>
               <Text style={style.txtLista}>Frecuencias</Text>
-              <Image
-                source={require('../../assets/img/pg1/icon6.png')}
-                style={style.icon}
-              />
+              <View style={style.icon}>
+                <FontAwesome name="clock-o" style={{ fontSize: 18, color: '#ffffff' }} />
+              </View>
             </TouchableOpacity>
           )}
           {(acceso === 'solucion' || acceso === 'admin' || acceso === 'veo') && (
@@ -174,10 +171,9 @@ const Perfil = ({
               style={style.btnLista}
               onPress={() => navigation.navigate('usuarios')}>
               <Text style={style.txtLista}>Usuarios</Text>
-              <Image
-                source={require('../../assets/img/pg1/icon1.png')}
-                style={style.icon}
-              />
+              <View style={style.icon}>
+                <FontAwesome name="user-plus" style={{ fontSize: 18, color: '#ffffff' }} />
+              </View>
             </TouchableOpacity>
           )}
           {(acceso === 'admin') && (
@@ -187,10 +183,9 @@ const Perfil = ({
                 navigation.navigate('vehiculo', { tipoAcceso: 'admin' })
               }>
               <Text style={style.txtLista}>Vehiculos</Text>
-              <Image
-                source={require('../../assets/img/pg1/icon4.png')}
-                style={style.icon}
-              />
+              <View style={style.icon}>
+                <FontAwesome name="truck" style={{ fontSize: 18, color: '#ffffff' }} />
+              </View>
             </TouchableOpacity>
           )}
           {(acceso === 'admin' || acceso === 'despacho') && (
@@ -198,10 +193,9 @@ const Perfil = ({
               style={style.btnLista}
               onPress={() => navigation.navigate('zona')}>
               <Text style={style.txtLista}>Zonas</Text>
-              <Image
-                source={require('../../assets/img/pg1/icon5.png')}
-                style={style.icon}
-              />
+              <View style={style.icon}>
+                <FontAwesome name="map-marker" style={{ fontSize: 30, color: '#ffffff' }} />
+              </View>
             </TouchableOpacity>
           )}
 
@@ -227,11 +221,10 @@ const Perfil = ({
               <TouchableOpacity
                 style={style.btnLista}
                 onPress={() => navigation.navigate('revision', { revision: true })}>
-                <Text style={style.txtLista}>Revision y control tanques</Text>
-                <Image
-                  source={require('../../assets/img/pg1/icon6.png')}
-                  style={style.icon}
-                />
+                <Text style={style.txtLista}>Revisión y control tanques</Text>
+                <View style={style.icon}>
+                  <FontAwesome name="clipboard" style={{ fontSize: 18, color: '#ffffff' }} />
+                </View>
               </TouchableOpacity>
             )}
           {(acceso === 'admin' ||
@@ -246,10 +239,9 @@ const Perfil = ({
                   navigation.navigate('reporteEmergencia', { revision: true })
                 }>
                 <Text style={style.txtLista}>Reporte de emergencia</Text>
-                <Image
-                  source={require('../../assets/img/pg1/icon6.png')}
-                  style={style.icon}
-                />
+                <View style={style.icon}>
+                  <FontAwesome name="exclamation-triangle" style={{ fontSize: 18, color: '#ffffff' }} />
+                </View>
               </TouchableOpacity>
             )}
           {acceso === 'admin' && (
@@ -257,44 +249,47 @@ const Perfil = ({
               style={style.btnLista}
               onPress={() => navigation.navigate('capacidad')}>
               <Text style={style.txtLista}>Capacidades</Text>
-              <Image
-                source={require('../../assets/img/pg1/icon6.png')}
-                style={style.icon}
-              />
+              <View style={style.icon}>
+                <FontAwesome name="database" style={{ fontSize: 18, color: '#ffffff' }} />
+              </View>
             </TouchableOpacity>
           )}
 
           {acceso === 'admin' && email === 'fernandooj@ymail.com' && (
-            <View style={style.btnLista}>
+            <View style={[style.btnLista, { backgroundColor: '#3498db' }]}>
               <TextInput
-                style={style.txtLista}
+                style={[style.txtLista, { color: '#ffffff', flex: 1 }]}
                 onChangeText={idUsuarioSearch => setIdUsuarioSearch(idUsuarioSearch)}
-                placeholder="id"
+                placeholder="ID de usuario"
+                placeholderTextColor="rgba(255,255,255,0.7)"
               />
               <TouchableOpacity
-                style={style.btnLista}
                 onPress={() => {
                   searchUser();
                 }}>
-                <FontAwesome name={'star'} style={style.icon} />
+                <View style={[style.icon, { backgroundColor: '#ffffff' }]}>
+                  <FontAwesome name={'search'} style={{ fontSize: 18, color: '#3498db' }} />
+                </View>
               </TouchableOpacity>
             </View>
           )}
           <TouchableOpacity
-            style={style.btnLista}
+            style={[style.btnLista, style.btnCerrarSesion]}
             onPress={() => {
               cerrarSesion();
               navigation.navigate('Home')
 
             }}>
-            <Text style={style.txtLista}>Cerrar Sesion</Text>
-            <Image
-              source={require('../../assets/img/pg1/icon7.png')}
-              style={style.icon}
-            />
+            <Text style={[style.txtLista, style.txtCerrarSesion]}>Cerrar Sesión</Text>
+            <View style={[style.icon, { backgroundColor: '#ffffff' }]}>
+              <FontAwesome name="sign-out" style={{ fontSize: 18, color: '#e74c3c' }} />
+            </View>
           </TouchableOpacity>
-          <TouchableOpacity style={style.btnLista}>
-            <Text style={[style.txtLista, { fontSize: 11 }]}>Ver 11.5.3-1</Text>
+          <TouchableOpacity style={[style.btnLista, style.btnVersion]}>
+            <Text style={[style.txtLista, style.txtVersion]}>Ver 11.5.3-1</Text>
+            <View style={[style.icon, { backgroundColor: '#ffffff' }]}>
+              <FontAwesome name="info-circle" style={{ fontSize: 18, color: '#95a5a6' }} />
+            </View>
           </TouchableOpacity>
           {/* {err && <Text>{err}</Text>} */}
         </View>
@@ -303,7 +298,7 @@ const Perfil = ({
   }
   return (
     <View style={style.container} >
-      <HeaderLogo variant="compact" />
+      <HeaderLogo variant="compact" style={{}} />
       <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
         {RenderPerfil()}
         <View style={style.footer}>

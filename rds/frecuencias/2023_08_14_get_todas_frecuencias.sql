@@ -1,3 +1,4 @@
+drop function get_todas_frecuencias;
 CREATE OR REPLACE FUNCTION get_todas_frecuencias()
 RETURNS TABLE (
     dia INT,
@@ -31,11 +32,9 @@ BEGIN
         JOIN users u ON u._id = p.usuarioId
         WHERE p.frecuencia = 'semanal'
         OR p.frecuencia = 'quincenal'
-        OR p.frecuencia = 'mensual';
+        OR p.frecuencia = 'mensual'
+        ORDER BY p._id DESC;
 
     RETURN;
 END
 $func$;
-
-
--- DROP FUNCTION get_todas_frecuencias

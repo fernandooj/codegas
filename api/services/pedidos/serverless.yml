@@ -117,3 +117,13 @@ finalizarPedido:
       - lib/errors/database-error.js
       - lib/image.js
       - lib/responses.js
+
+resetPedido:
+  name: ${self:custom.base}-reset-pedido
+  handler: services/pedidos/src/reset-pedido.main
+  events:
+    - httpApi: 'POST /ped/pedido/reset/{pedidoId}'
+  package:
+    include:
+      - services/pedidos/src/reset-pedido.js
+      - lib/errors/database-error.js

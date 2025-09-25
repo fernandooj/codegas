@@ -117,10 +117,15 @@ const getFrecuencia = () => {
       .then(res => {
         dispatch({
           type: GET_PEDIDOS_FRECUENCIA,
-          pedidosFrecuencia: res.data.frecuencias
+          pedidosFrecuencia: res.data.frecuencias || []
         });
       })
       .catch(err => {
+        console.error('Error loading frecuencias:', err);
+        dispatch({
+          type: GET_PEDIDOS_FRECUENCIA,
+          pedidosFrecuencia: []
+        });
       });
   };
 };
@@ -393,6 +398,32 @@ const cambiarEstadoPedido = async (seleccionados) => {
   }
 };
 
+const resetPedido = async (pedidoId) => {
+  try {
+    console.log('🔍 resetPedido action - pedidoId:', pedidoId);
+    console.log('🔍 URL endpoint:', `/ped/pedido/reset/${pedidoId}`);
+
+    const response = await axios.post(`/ped/pedido/reset/${pedidoId}`);
+    console.log('🔍 Respuesta del servidor:', response.data);
+
+    if (response.data.status) {
+      return {
+        status: true,
+        message: response.data.message,
+        data: response.data.data
+      };
+    } else {
+      throw new Error(response.data.message || 'Error al resetear el pedido');
+    }
+  } catch (error) {
+    console.error('Error reseteando pedido:', error);
+    console.error('Error response:', error.response);
+    return {
+      status: false,
+      message: error.response?.data?.message || 'Error al resetear el pedido'
+    };
+  }
+};
 
 export {
   getPedido,
@@ -410,5 +441,6 @@ export {
   asignarFechaEntrega,
   guardarNovedadCerrarPedido,
   finalizarPedido,
-  cambiarEstadoPedido
+  cambiarEstadoPedido,
+  resetPedido
 };

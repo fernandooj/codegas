@@ -52,6 +52,16 @@ getTodasFrecuencias:
       - services/frecuencias/src/get-todas-frecuencias.js
       - lib/errors/database-error.js
 
+editarFrecuencia:
+  name: ${self:custom.base}-editar-frecuencia
+  handler: services/frecuencias/src/editar-frecuencia.main
+  events:
+    - httpApi: 'PUT /fre/frecuencia/{id}'
+  package:
+    include:
+      - services/frecuencias/src/editar-frecuencia.js
+      - lib/errors/database-error.js
+
 eliminarFrecuencias:
   name: ${self:custom.base}-eliminar-frecuencias
   handler: services/frecuencias/src/eliminar-frecuencias.main

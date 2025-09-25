@@ -122,8 +122,8 @@ const Home = ({ navigation }) => {
         {/* Header con logo */}
         <HeaderLogo
           showWelcome={true}
-          welcomeText={`Bienvenido${nombre ? ` ${nombre}` : ''}`}
-          subtitle={`Acceso: ${acceso}`}
+          welcomeText={acceso  ? `Bienvenido${nombre ? ` ${nombre}` : ''}` : ''}
+          subtitle={acceso ? `Acceso: ${acceso}` : ''}
           containerStyle={style.header}
         />
 

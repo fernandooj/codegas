@@ -14,19 +14,6 @@ export interface PedidoFrecuencia {
     fecha_creacion?: string;
 }
 
-export interface FrecuenciaState {
-    terminoBuscador: string;
-    pedidos: PedidoFrecuencia[];
-    pedidosFiltrados: PedidoFrecuencia[];
-    inicio: number;
-    final: number;
-    showSpin: boolean;
-    loading: boolean;
-    showEditModal: boolean;
-    editingFrecuencia: PedidoFrecuencia | null;
-    initialLoading: boolean;
-}
-
 export interface FrecuenciaEditData {
     forma: 'cantidad' | 'monto' | 'lleno';
     cantidadKl?: number;
@@ -34,6 +21,13 @@ export interface FrecuenciaEditData {
     frecuencia: 'semanal' | 'quincenal' | 'mensual';
     dia1?: string | number;
     dia2?: string | number;
+}
+
+export interface EditarFrecuenciaModalProps {
+    visible: boolean;
+    onClose: () => void;
+    frecuencia: PedidoFrecuencia | null;
+    onSuccess: (updatedData?: PedidoFrecuencia) => void;
 }
 
 export interface FrecuenciaResponse {
@@ -50,11 +44,4 @@ export interface EditFrecuenciaRequest {
     frecuencia: 'semanal' | 'quincenal' | 'mensual';
     dia1?: string;
     dia2?: string;
-}
-
-export interface EditarFrecuenciaModalProps {
-    visible: boolean;
-    onClose: () => void;
-    frecuencia: PedidoFrecuencia | null;
-    onSuccess: (updatedData?: PedidoFrecuencia) => void;
 }

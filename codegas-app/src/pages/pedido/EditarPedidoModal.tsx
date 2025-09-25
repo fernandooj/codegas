@@ -22,6 +22,7 @@ interface EditarPedidoModalProps {
     onAssignVehicle: () => void;
     onCancelOrder: () => void;
     onClosePedido: () => void;
+    onResetPedido: () => void; // Nueva prop para resetear pedido
     navigation?: any; // Para navegación
     // Props para CambiarEstadoModal
     modalPerfiles: boolean;
@@ -59,6 +60,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     onAssignVehicle,
     onCancelOrder,
     onClosePedido,
+    onResetPedido,
     navigation,
     modalPerfiles,
     onEstadoChange,
@@ -253,6 +255,28 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                     </Text>
                                 </View>
                             </View>
+
+                            {/* Botón de resetear */}
+                            <TouchableOpacity
+                                onPress={onResetPedido}
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 18,
+                                    backgroundColor: '#ffc107',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    marginRight: 12,
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 1 },
+                                    shadowOpacity: 0.2,
+                                    shadowRadius: 2,
+                                    elevation: 2,
+                                }}
+                                activeOpacity={0.7}
+                            >
+                                <FontAwesome name="undo" style={{ fontSize: 16, color: '#fff' }} />
+                            </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={onClose}

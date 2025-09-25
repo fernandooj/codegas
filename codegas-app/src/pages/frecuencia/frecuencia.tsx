@@ -19,6 +19,7 @@ import { style } from './style';
 import { getFrecuencia } from '../../redux/actions/pedidoActions';
 import Footer from '../components/footer';
 import { FrecuenciaState, PedidoFrecuencia } from './types';
+import EditarFrecuenciaModal from './EditarFrecuenciaModal';
 
 const Frecuencia: React.FC = ({ navigation }: any) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -31,18 +32,34 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         inicio: 0,
         final: 10,
         showSpin: false,
-        loading: false
+        loading: false,
+        showEditModal: false,
+        editingFrecuencia: null,
+        initialLoading: true
     });
 
     useEffect(() => {
-        dispatch(getFrecuencia());
+        const loadFrecuencias = async () => {
+            try {
+                await dispatch(getFrecuencia());
+            } catch (error) {
+                console.error('Error loading frecuencias:', error);
+                setState(prev => ({
+                    ...prev,
+                    initialLoading: false
+                }));
+            }
+        };
+
+        loadFrecuencias();
     }, [dispatch]);
 
     useEffect(() => {
         setState(prev => ({
             ...prev,
             pedidos,
-            pedidosFiltrados: pedidos
+            pedidosFiltrados: pedidos,
+            initialLoading: false
         }));
     }, [pedidos]);
 
@@ -151,14 +168,127 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         dispatch(getFrecuencia());
     }, [dispatch]);
 
-    const { terminoBuscador, pedidosFiltrados, showSpin, loading } = state;
+    const handleEditFrecuencia = (pedido: PedidoFrecuencia) => {
+        setState(prev => ({
+            ...prev,
+            showEditModal: true,
+            editingFrecuencia: pedido
+        }));
+    };
+
+    const handleCloseEditModal = () => {
+        setState(prev => ({
+            ...prev,
+            showEditModal: false,
+            editingFrecuencia: null
+        }));
+    };
+
+    // Función para formatear el día (número + nombre)
+    const formatDay = (dayValue: string | number, frecuencia: string = 'semanal'): string => {
+        const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+        if (frecuencia === 'mensual') {
+            // Para mensual, solo mostrar el número del día
+            return String(dayValue);
+        }
+
+        if (typeof dayValue === 'number') {
+            return `${dayValue} ${dayNames[dayValue - 1] || ''}`;
+        } else if (typeof dayValue === 'string' && !isNaN(Number(dayValue))) {
+            const num = Number(dayValue);
+            return `${num} ${dayNames[num - 1] || ''}`;
+        } else if (typeof dayValue === 'string') {
+            // Si ya es un nombre, encontrar su número
+            const index = dayNames.indexOf(dayValue);
+            if (index !== -1) {
+                return `${index + 1} ${dayValue}`;
+            }
+            return dayValue;
+        }
+        return String(dayValue);
+    };
+
+    const handleEditSuccess = (updatedData?: PedidoFrecuencia) => {
+        if (updatedData) {
+            // Actualizar el listado localmente sin llamar al backend
+            setState(prev => ({
+                ...prev,
+                pedidos: prev.pedidos.map(pedido =>
+                    pedido.pedido_id === updatedData.pedido_id ? updatedData : pedido
+                ),
+                pedidosFiltrados: prev.pedidosFiltrados.map(pedido =>
+                    pedido.pedido_id === updatedData.pedido_id ? updatedData : pedido
+                ),
+                showEditModal: false,
+                editingFrecuencia: null
+            }));
+        } else {
+            // Fallback: llamar al backend si no hay datos actualizados
+            dispatch(getFrecuencia());
+            setState(prev => ({
+                ...prev,
+                showEditModal: false,
+                editingFrecuencia: null
+            }));
+        }
+    };
+
+    const { terminoBuscador, pedidosFiltrados, showSpin, loading, showEditModal, editingFrecuencia, initialLoading } = state;
+
+    // Mostrar preloading inicial
+    if (initialLoading) {
+        return (
+            <View style={style.container}>
+                <View style={style.header}>
+                    <View style={style.headerContent}>
+                        <View style={style.headerTextContainer}>
+                            <Text style={style.titulo}>Pedidos Frecuentes</Text>
+                            <Text style={style.subtitulo}>Cargando...</Text>
+                        </View>
+                    </View>
+                </View>
+                <View style={style.preloadingContainer}>
+                    <ActivityIndicator size="large" color="#002587" />
+                    <Text style={style.preloadingText}>Cargando pedidos frecuentes...</Text>
+                    <Text style={style.preloadingSubtext}>Esto puede tomar unos momentos</Text>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={style.container}>
             {/* Header mejorado */}
             <View style={style.header}>
-                <Text style={style.titulo}>Pedidos Frecuentes</Text>
-                <Text style={style.subtitulo}>{pedidosFiltrados.length} pedidos encontrados</Text>
+                <View style={style.headerContent}>
+                    <View style={style.headerTextContainer}>
+                        <Text style={style.titulo}>Pedidos Frecuentes</Text>
+                        <Text style={style.subtitulo}>
+                            {initialLoading ? 'Cargando...' : `${pedidosFiltrados.length} pedidos encontrados`}
+                        </Text>
+                    </View>
+                    <View style={style.headerStats}>
+                        <View style={style.statItem}>
+                            <Text style={style.statNumber}>
+                                {initialLoading ? '...' : pedidosFiltrados.filter(p => p.frecuencia === 'semanal').length}
+                            </Text>
+                            <Text style={style.statLabel}>Semanal</Text>
+                        </View>
+                        <View style={style.statItem}>
+                            <Text style={style.statNumber}>
+                                {initialLoading ? '...' : pedidosFiltrados.filter(p => p.frecuencia === 'quincenal').length}
+                            </Text>
+                            <Text style={style.statLabel}>Quincenal</Text>
+                        </View>
+                        <View style={style.statItem}>
+                            <Text style={style.statNumber}>
+                                {initialLoading ? '...' : pedidosFiltrados.filter(p => p.frecuencia === 'mensual').length}
+                            </Text>
+                            <Text style={style.statLabel}>Mensual</Text>
+                        </View>
+                    </View>
+                </View>
             </View>
 
             {/* Buscador mejorado */}
@@ -255,16 +385,23 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                     {pedido.frecuencia === "semanal" && pedido.dia1 && (
                                         <View style={style.detailRow}>
                                             <FontAwesome name="calendar" style={style.detailIcon} />
-                                            <Text style={style.detailText}>Día: {pedido.dia1}</Text>
+                                            <Text style={style.detailText}>Día: {formatDay(pedido.dia1, 'semanal')}</Text>
                                         </View>
                                     )}
 
-                                    {pedido.frecuencia === "quincenal" && (
+                                    {pedido.frecuencia === "quincenal" && pedido.dia1 && pedido.dia2 && (
                                         <View style={style.detailRow}>
                                             <FontAwesome name="calendar" style={style.detailIcon} />
                                             <Text style={style.detailText}>
-                                                Días: {pedido.dia1} - {pedido.dia2}
+                                                Días: {formatDay(pedido.dia1, 'quincenal')} - {formatDay(pedido.dia2, 'quincenal')}
                                             </Text>
+                                        </View>
+                                    )}
+
+                                    {pedido.frecuencia === "mensual" && pedido.dia1 && (
+                                        <View style={style.detailRow}>
+                                            <FontAwesome name="calendar" style={style.detailIcon} />
+                                            <Text style={style.detailText}>Día del mes: {formatDay(pedido.dia1, 'mensual')}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -272,10 +409,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
 
                             <View style={style.cardActions}>
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("verPerfil", {
-                                        tipoAcceso: "editar",
-                                        idUsuario: pedido.usuarioid
-                                    })}
+                                    onPress={() => handleEditFrecuencia(pedido)}
                                     style={style.actionButton}
                                 >
                                     <FontAwesome name="edit" style={style.actionIcon} />
@@ -302,6 +436,14 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
 
             <Footer navigation={navigation} />
             <Toast />
+
+            {/* Modal de edición */}
+            <EditarFrecuenciaModal
+                visible={showEditModal}
+                onClose={handleCloseEditModal}
+                frecuencia={editingFrecuencia}
+                onSuccess={handleEditSuccess}
+            />
         </View>
     );
 };

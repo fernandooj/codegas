@@ -12,6 +12,7 @@ export const style = MediaQueryStyleSheet.create({
 		flex: 1,
 		marginBottom: 80,
 		width: "100%",
+		backgroundColor: '#f8f9fa',
 	},
 	subContainerRegistro: {
 		flex: 1,
@@ -26,7 +27,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	iconAvatar: {
 		fontSize: 60,
-		color: "#00218b"
+		color: "#002587"
 	},
 	containerRegistro2: {
 		flex: 1,
@@ -46,9 +47,17 @@ export const style = MediaQueryStyleSheet.create({
 	//////////////////////////////////////////////////////////////////
 	perfilContenedor: {
 		flexDirection: "row",
-		borderBottomColor: "rgba(0,0,0,.2)",
-		borderBottomWidth: 1,
-		paddingVertical: 15,
+		backgroundColor: '#ffffff',
+		marginHorizontal: 20,
+		marginTop: 15,
+		padding: 16,
+		borderRadius: 12,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 6,
+		borderBottomWidth: 0,
 	},
 	columna1: {
 		alignItems: "center",
@@ -57,7 +66,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	columna2: {
 		justifyContent: "center",
-		paddingLeft: 15,
+		paddingLeft: 20,
 		width: "75%"
 	},
 	columna4: {
@@ -67,30 +76,52 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	btnLista: {
 		flexDirection: "row",
-		justifyContent: "center",
+		justifyContent: "space-between",
 		alignItems: "center",
-		borderBottomColor: "rgba(0,0,0,.2)",
-		borderBottomWidth: 1,
-		padding: 0
+		backgroundColor: '#ffffff',
+		marginHorizontal: 20,
+		marginVertical: 6,
+		paddingVertical: 6,
+		paddingHorizontal: 10,
+		borderRadius: 10,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.08,
+		shadowRadius: 4,
+		elevation: 3,
+		borderBottomWidth: 0,
 	},
 	txtLista: {
-		fontFamily: "Comfortaa-Light",
-		width: "80%",
-		fontSize: 20,
-		left: 20
+		fontFamily: "Comfortaa-Regular",
+		fontSize: 12,
+		color: '#2c3e50',
 	},
 	avatar: {
 		width: 60,
 		height: 60,
-		borderRadius: 30
+		borderRadius: 30,
+		borderWidth: 2,
+		borderColor: '#002587'
 	},
 	nombre: {
+		fontFamily: "Comfortaa-Bold",
+		fontSize: 16,
+		color: '#2c3e50',
+		marginBottom: 3
+	},
+	email: {
 		fontFamily: "Comfortaa-Light",
-		fontSize: 17
+		fontSize: 13,
+		color: '#7f8c8d',
+		marginBottom: 0
 	},
 	icon: {
-		width: 80,
-		height: 80
+		width: 12,
+		height: 12,
+		backgroundColor: '#007bff',
+		borderRadius: 9,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
 	footer: {
 		position: "absolute",
@@ -158,6 +189,29 @@ export const style = MediaQueryStyleSheet.create({
 		textAlign: "center",
 		fontSize: 22,
 		marginTop: 30,
+	},
+	btnCerrarSesion: {
+		backgroundColor: '#e74c3c',
+		marginTop: 6,
+		paddingVertical: 10,
+		paddingHorizontal: 14,
+	},
+	txtCerrarSesion: {
+		color: '#ffffff',
+		fontWeight: '600',
+		fontSize: 14,
+	},
+	btnVersion: {
+		backgroundColor: '#95a5a6',
+		marginTop: 3,
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+	},
+	txtVersion: {
+		color: '#ffffff',
+		fontSize: 10,
+		textAlign: 'center',
+		fontWeight: '500',
 	}
 }, {
 	"@media (max-device-width: 410)": {
@@ -166,11 +220,11 @@ export const style = MediaQueryStyleSheet.create({
 		},
 		txtLista: {
 			fontSize: 18,
-			left: 20
+			left: 15
 		},
 		icon: {
-			width: 80,
-			height: 80
+			width: 55,
+			height: 55
 		},
 	}
 })

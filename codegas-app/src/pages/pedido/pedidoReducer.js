@@ -11,6 +11,7 @@ export const PEDIDO_ACTIONS = {
     SET_MODAL_ZONAS: 'SET_MODAL_ZONAS',
     SET_MODAL_CERRAR_PEDIDO: 'SET_MODAL_CERRAR_PEDIDO',
     SET_MODAL_ORDENAMIENTO: 'SET_MODAL_ORDENAMIENTO',
+    SET_MODAL_RESET_PEDIDO: 'SET_MODAL_RESET_PEDIDO',
 
     // Search and filter states
     SET_TERMINO_BUSCADOR: 'SET_TERMINO_BUSCADOR',
@@ -73,6 +74,7 @@ export const initialState = {
     modalZonas: false,
     modalCerrarPedido: false,
     modalOrdenamiento: false,
+    modalResetPedido: false,
 
     // Search and filter states
     terminoBuscador: undefined,
@@ -186,6 +188,8 @@ export const pedidoReducer = (state, action) => {
             return { ...state, modalCerrarPedido: action.payload };
         case PEDIDO_ACTIONS.SET_MODAL_ORDENAMIENTO:
             return { ...state, modalOrdenamiento: action.payload };
+        case PEDIDO_ACTIONS.SET_MODAL_RESET_PEDIDO:
+            return { ...state, modalResetPedido: action.payload };
 
         // Search and filter states
         case PEDIDO_ACTIONS.SET_TERMINO_BUSCADOR:
@@ -297,6 +301,7 @@ export const pedidoActions = {
     setModalZonas: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_ZONAS, payload: value }),
     setModalCerrarPedido: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_CERRAR_PEDIDO, payload: value }),
     setModalOrdenamiento: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_ORDENAMIENTO, payload: value }),
+    setModalResetPedido: (value) => ({ type: PEDIDO_ACTIONS.SET_MODAL_RESET_PEDIDO, payload: value }),
 
     // Search and filter actions
     setTerminoBuscador: (value) => ({ type: PEDIDO_ACTIONS.SET_TERMINO_BUSCADOR, payload: value }),

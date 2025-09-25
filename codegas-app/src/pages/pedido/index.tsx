@@ -26,7 +26,8 @@ import {
     asignarFechaEntrega,
     guardarNovedadCerrarPedido,
     cambiarEstadoPedido,
-    finalizarPedido
+    finalizarPedido,
+    resetPedido
 } from '../../redux/actions/pedidoActions';
 import { getVehiculos } from '../../redux/actions/vehiculoActions';
 
@@ -90,6 +91,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         modalPerfiles,
         modalCerrarPedido,
         modalOrdenamiento,
+        modalResetPedido,
         terminoBuscador,
         showSearch,
         final,
@@ -733,6 +735,40 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
     };
 
+    const handleResetPedido = async (): Promise<void> => {
+        try {
+            if (!id) {
+                Alert.alert('Error', 'No se pudo obtener el ID del pedido');
+                return;
+            }
+
+            console.log('🔍 Llamando al endpoint de reset para pedido:', id);
+            const response = await resetPedido(id);
+            console.log('🔍 Respuesta del endpoint:', response);
+
+            if (response.status) {
+                // Mostrar mensaje de éxito
+                Toast.show({
+                    type: 'success',
+                    text1: 'Pedido reseteado',
+                    text2: 'El pedido ha sido reseteado exitosamente',
+                    visibilityTime: 3000,
+                });
+
+                // Cerrar el modal principal y recargar pedidos
+                closePedidoModal();
+                setTimeout(() => {
+                    loadPedidos('load');
+                }, 1000);
+            } else {
+                Alert.alert('Error', response.message || 'Error al resetear el pedido');
+            }
+        } catch (error) {
+            console.error('Error reseteando pedido:', error);
+            Alert.alert('Error', 'Error al resetear el pedido');
+        }
+    };
+
     // Render functions
     const renderPedidos = (): React.JSX.Element[] => {
         return pedidos.map((e: PedidoType, key: number) => {
@@ -1019,24 +1055,27 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     marginBottom: 10, // Reducido de 15 a 10
                     paddingHorizontal: 20 // Padding interno para el contenido
                 }}>
-                    <View>
-                        <Text style={{
-                            fontSize: 24,
-                            fontWeight: 'bold',
-                            color: '#333',
-                            marginBottom: 4
-                        }}>
-                            Pedidos
-                        </Text>
-                        {pedidos && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                        <View style={{ flex: 1 }}>
                             <Text style={{
-                                fontSize: 16,
-                                color: '#666',
-                                fontWeight: '500'
+                                fontSize: 24,
+                                fontWeight: 'bold',
+                                color: '#333',
+                                marginBottom: 4
                             }}>
-                                {pedidos.length} pedidos {estadoFiltro !== 'todos' ? `(${estadoFiltro})` : 'encontrados'}
+                                Pedidos
                             </Text>
-                        )}
+                            {pedidos && (
+                                <Text style={{
+                                    fontSize: 16,
+                                    color: '#666',
+                                    fontWeight: '500'
+                                }}>
+                                    {pedidos.length} pedidos {estadoFiltro !== 'todos' ? `(${estadoFiltro})` : 'encontrados'}
+                                </Text>
+                            )}
+                        </View>
+
                     </View>
 
                     <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -1417,6 +1456,28 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onChangeState={handleChangeStateModal}
                 onAssignVehicle={() => updateState(actions.setModalConductor(true))}
                 onCancelOrder={cancelarPedidoCliente}
+                onResetPedido={() => {
+                    // Primero cerrar el modal de editar pedido
+                    closePedidoModal();
+                    // Mostrar directamente el Alert de confirmación
+                    setTimeout(() => {
+                        Alert.alert(
+                            'Resetear Pedido',
+                            `¿Está seguro de que desea resetear este pedido?\n\nPedido: ${id || 'Sin ID'}\nCliente: ${razon_social || 'Sin cliente'}\n\nEsta acción eliminará todos los datos del pedido excepto la información básica y lo volverá al estado "Espera".`,
+                            [
+                                {
+                                    text: 'Cancelar',
+                                    style: 'cancel'
+                                },
+                                {
+                                    text: 'Sí, Resetear',
+                                    style: 'destructive',
+                                    onPress: handleResetPedido
+                                }
+                            ]
+                        );
+                    }, 300);
+                }}
                 onClosePedido={() => {
                     // Capturar el ID del pedido y valor unitario antes de cerrar el modal
                     setPedidoIdParaCerrar(id);
@@ -1505,7 +1566,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 bounces={bounces}
                 scrollEventThrottle={16}
                 ref={scrollViewRef}
-                scrollEnabled={!(modalConductor || modalFechaEntrega || modalNovedad || modalPerfiles || modalCerrarPedido || modalOrdenamiento)}
+                scrollEnabled={!(modalConductor || modalFechaEntrega || modalNovedad || modalPerfiles || modalCerrarPedido || modalOrdenamiento || modalResetPedido)}
             >
                 {showSpin1 || !pedidos ? (
                     <View style={{
@@ -1679,6 +1740,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     updateState(actions.setModalOrdenamiento(false));
                 }}
             />
+
         </View>
     );
 };
