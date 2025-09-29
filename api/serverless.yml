@@ -35,6 +35,14 @@ provider:
             - 's3:PutObject'
           Resource:
             - 'arn:aws:s3:::codegas/*'
+        # Allow functions to read/write objects in emergencias folder in codegas bucket
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:PutObjectAcl'
+          Resource:
+            - 'arn:aws:s3:::codegas/emergencias/*'
         - Effect: Allow
           Action:
             - 'ses:SendEmail'
@@ -114,3 +122,4 @@ functions:
   - ${file(./services/frecuencias/serverless.yml)}
   - ${file(./services/informes/serverless.yml)}  
   - ${file(./services/reporte-emergencia/serverless.yml)}
+  - ${file(./services/upload/serverless.yml)}

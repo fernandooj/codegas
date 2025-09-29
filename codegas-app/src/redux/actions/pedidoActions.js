@@ -216,14 +216,14 @@ const getNovedadesByPedido = async (pedidoId) => {
 };
 
 // Acción para guardar novedad inactivo
-const guardarNovedadInactivo = async (pedidoId, novedad) => {
+const guardarNovedadInactivo = async (pedidoId, novedad, conductorId = null) => {
   try {
     const response = await axios.post(`ped/pedido/novedad`, {
       _id: pedidoId,
       novedad,
       perfil_novedad: 'inactivo',
       fechaEntrega: moment().format('YYYY-MM-DD HH:mm:ss'),
-      conductorId: null
+      conductorId: conductorId
     });
     return response.data;
   } catch (error) {
@@ -231,6 +231,7 @@ const guardarNovedadInactivo = async (pedidoId, novedad) => {
       function: 'guardarNovedadInactivo',
       pedidoId: pedidoId,
       novedad: novedad,
+      conductorId: conductorId,
       error: error,
       message: error.message,
       response: error.response?.data,

@@ -12,6 +12,7 @@ export interface TomarFotoProps {
     soloLectura?: boolean;
     mostrarSoloConImagenes?: boolean;
     permitirSubir?: boolean;
+    onUploadComplete?: (urls: string[]) => void; // Callback para cuando se complete la subida a S3
 }
 
 export interface ImagenData {

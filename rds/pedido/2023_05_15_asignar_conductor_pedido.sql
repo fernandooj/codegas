@@ -15,14 +15,14 @@ DECLARE
     newOrden integer;
     fechaEntregaTimestamp TIMESTAMP; -- Variable para almacenar la fecha como TIMESTAMP
 BEGIN
-    -- Convertir la fecha desde formato ISO (2025-09-22T05:00:00.000Z) a TIMESTAMP
-    fechaEntregaTimestamp := TO_TIMESTAMP(_fechaEntrega, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"');
+    -- Convertir la fecha desde formato estándar (2025-09-22 05:00:00) a TIMESTAMP
+    fechaEntregaTimestamp := TO_TIMESTAMP(_fechaEntrega, 'YYYY-MM-DD HH24:MI:SS');
     SELECT conductor INTO idConductor FROM carros WHERE _id = _carroId;
     SELECT orden INTO newOrden FROM pedidos WHERE fechaEntrega = fechaEntregaTimestamp AND conductorId = idConductor;
     IF newOrden IS NULL THEN newOrden := 0+1; ELSE newOrden := newOrden + 1; END IF;
 
     UPDATE pedidos 
-    SET carroId = _carroId, conductorId = idConductor, usuarioAsignaVehiculo = _usuarioAsigna, orden =  newOrden
+    SET carroId = _carroId, conductorId = idConductor, usuarioAsignaVehiculo = _usuarioAsigna, orden = newOrden, fechaEntrega = fechaEntregaTimestamp
     WHERE _id = _pedidoId
     RETURNING _id INTO new_id;
 

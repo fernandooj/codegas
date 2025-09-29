@@ -30,7 +30,7 @@ interface CerrarPedidoModalProps {
     forma_pago?: string;
     valor_unitario?: string;
     onCerrarPedido: (data: CerrarPedidoData, pedidoId?: string) => void;
-    onGuardarNovedad: (novedad: string) => void;
+    onGuardarNovedad: (novedad: string, pedidoId?: string) => void;
 }
 
 interface CerrarPedidoData {
@@ -190,7 +190,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             Alert.alert('Error', 'Inserte alguna novedad (mínimo 4 caracteres)');
             return;
         }
-        onGuardarNovedad(novedad);
+        onGuardarNovedad(novedad, pedidoId);
     };
 
     const formatCurrency = (value: string) => {

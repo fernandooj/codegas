@@ -11,6 +11,12 @@ export interface ReporteEmergenciaItem {
     cerradoText?: string;
     solicitudServicio?: string;
     documento: string[];
+    usuariocierranombre?: string; // Nombre del usuario que cerró el reporte
+    usuarioid?: number; // ID del usuario del reporte
+    usuarionombre?: string; // Nombre del usuario del reporte
+    usuariocodt?: string; // CODT del usuario del reporte
+    usuariorazonsocial?: string; // Razón social del usuario del reporte
+    puntodireccion?: string; // Dirección del punto
 }
 
 export interface ReporteEmergenciaProps {

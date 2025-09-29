@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, Text, Dimensions, Platform, StyleSheet } from 'react-native';
 
-const HeaderLogo = ({ 
-  style, 
-  showWelcome = false, 
-  welcomeText = '', 
+const HeaderLogo = ({
+  style,
+  showWelcome = false,
+  welcomeText = '',
   subtitle = '',
   logoSource = require('../assets/img/pg1/fondo1.jpg'),
   containerStyle = {},
@@ -27,7 +27,7 @@ const HeaderLogo = ({
   const getLogoDimensions = () => {
     const baseWidth = screenWidth * 0.7;
     const baseHeight = 90;
-    
+
     // Ajustes por variante
     let widthMultiplier = 0.7;
     let heightMultiplier = 1;
@@ -42,10 +42,10 @@ const HeaderLogo = ({
       case 'large':
         widthMultiplier = 0.8;
         heightMultiplier = 1.2;
-        marginTop = 15;
+        marginTop = 0;
         break;
       default:
-        // Configuración por defecto
+        marginTop = 0;
         break;
     }
 
@@ -54,12 +54,12 @@ const HeaderLogo = ({
       // Pantallas muy pequeñas
       widthMultiplier = Math.min(widthMultiplier + 0.1, 0.85);
       heightMultiplier *= 0.9;
-      marginTop = Math.max(marginTop - 5, 0);
+      marginTop = 0;
     } else if (screenWidth > 414) {
       // Pantallas grandes
       widthMultiplier = Math.max(widthMultiplier - 0.05, 0.6);
       heightMultiplier *= 1.1;
-      marginTop += 5;
+      marginTop = 0;
     }
 
     // Ajustes por orientación
@@ -80,8 +80,8 @@ const HeaderLogo = ({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      <Image 
-        source={logoSource} 
+      <Image
+        source={logoSource}
         style={[
           styles.logo,
           {
@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#ffffff',
     paddingHorizontal: 10,
+    paddingTop: Platform.OS === 'ios' ? 10 : 5,
     paddingVertical: 5,
     width: '100%',
     // Sombra sutil para mejor apariencia

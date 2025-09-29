@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TouchableOpacity, Modal, Alert } from 'react-native'
-import DocumentPicker from '@react-native-documents/picker';
+import { View, Text, TouchableOpacity, Modal, Alert, Dimensions, Platform } from 'react-native'
+import { pick, types } from '@react-native-documents/picker';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 
 import { style } from './style'
@@ -22,41 +22,90 @@ const getBase64FromUri = async (uri) => {
     }
 };
 
-
 export default class subirDocumento extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            imagenes: props.source.length >= 1 ? props.source.map(item => JSON.parse(item)) : []
+            imagenes: props.source && props.source.length >= 1 ? props.source.map(item => {
+                try {
+                    return typeof item === 'string' ? JSON.parse(item) : item;
+                } catch (e) {
+                    return item;
+                }
+            }) : []
         }
+    }
 
+    componentDidUpdate(prevProps) {
+        // Sincronizar con props cuando cambien
+        if (prevProps.source !== this.props.source) {
+            this.setState({
+                imagenes: this.props.source && this.props.source.length >= 1 ? this.props.source.map(item => {
+                    try {
+                        return typeof item === 'string' ? JSON.parse(item) : item;
+                    } catch (e) {
+                        return item;
+                    }
+                }) : []
+            });
+        }
     }
 
 
     async subirDocumento() {
         let { imagenes } = this.state
+        const { limiteImagenes, soloLectura } = this.props;
+
+        // Verificar si está en modo solo lectura
+        if (soloLectura) {
+            Alert.alert('Modo solo lectura', 'No se pueden agregar documentos en modo solo lectura');
+            return;
+        }
+
+        // Verificar límite de documentos
+        if (imagenes.length >= limiteImagenes) {
+            Alert.alert('Límite alcanzado', `Solo se permiten ${limiteImagenes} documentos`);
+            return;
+        }
+
         try {
-            const response = await DocumentPicker.pick({
-                type: [DocumentPicker.types.pdf],
+            const [result] = await pick({
+                mode: 'open',
+                type: [types.pdf],
+                allowMultiSelection: false,
             });
 
-            const base64 = await getBase64FromUri(response[0].uri);
+            if (!result) {
+                return;
+            }
 
+            const base64 = await getBase64FromUri(result.uri);
 
-            let imagen = {
+            if (!base64) {
+                Alert.alert('Error', 'No se pudo procesar el documento');
+                return;
+            }
+
+            let documento = {
                 imagen: base64,
-                name: response[0].name,
-                uri: response[0].uri
+                name: result.name || `documento_${Date.now()}.pdf`,
+                uri: result.uri
             };
 
-            imagenes.push(imagen)
-            this.setState({ imagenes, showModal: false, isAndroidShareOpen: false });
-            this.props.imagenes(imagen)
+            const nuevasImagenes = [...imagenes, documento];
+            this.setState({ imagenes: nuevasImagenes });
+            this.props.imagenes(nuevasImagenes);
+
+            // Llamar al callback onUploadComplete si existe (ahora con la URL de S3)
+            if (this.props.onUploadComplete) {
+                // La URL de S3 se pasará cuando se complete la subida
+                this.props.onUploadComplete([documento.uri]);
+            }
         } catch (err) {
-            if (DocumentPicker.isCancel(err)) {
-                // User cancelled the picker, exit any dialogs or menus and move on
-            } else {
-                throw err;
+            console.error('Error al seleccionar documento:', err);
+            // No mostrar alerta si el usuario canceló
+            if (err.message && !err.message.includes('cancelled')) {
+                Alert.alert('Error', 'No se pudo seleccionar el documento');
             }
         }
     }
@@ -64,44 +113,134 @@ export default class subirDocumento extends Component {
 
     renderDocumentos() {
         let { imagenes } = this.state
+        const { soloLectura } = this.props;
 
-        return imagenes.map((e, key) => {
+        if (imagenes.length === 0) {
             return (
-                <View key={key} style={style.contenedorPdf}>
-                    <TouchableOpacity onPress={() => this.props.navigate("pdf", { uri: e.uri })}>
-                        <Text style={style.textPdf}>{e.name}</Text>
-                    </TouchableOpacity>
-                    <FontAwesome name={'close'} style={style.iconTrashPdf} onPress={() => this.eliminarPdf(key)} />
+                <View style={{
+                    backgroundColor: '#f8f9fa',
+                    padding: 20,
+                    borderRadius: 12,
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: '#e9ecef',
+                    borderStyle: 'dashed'
+                }}>
+                    <FontAwesome
+                        name="file-pdf-o"
+                        size={32}
+                        color="#6c757d"
+                        style={{ marginBottom: 8 }}
+                    />
+                    <Text style={{
+                        color: '#6c757d',
+                        fontSize: 14,
+                        textAlign: 'center'
+                    }}>
+                        No hay documentos adjuntos
+                    </Text>
                 </View>
-            )
-        })
+            );
+        }
+
+        return (
+            <View style={{ marginTop: 12 }}>
+                <Text style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: '#495057',
+                    marginBottom: 8
+                }}>
+                    Documentos adjuntos ({imagenes.length})
+                </Text>
+                {imagenes.map((doc, key) => {
+                    return (
+                        <View key={key} style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 8,
+                            padding: 12,
+                            marginBottom: 8,
+                            borderWidth: 1,
+                            borderColor: '#e9ecef',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 1 },
+                            shadowOpacity: 0.05,
+                            shadowRadius: 2,
+                            elevation: 1,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <TouchableOpacity
+                                style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
+                                onPress={() => this.props.navigate && this.props.navigate("pdf", { uri: doc.uri })}
+                                activeOpacity={0.7}
+                            >
+                                <FontAwesome
+                                    name="file-pdf-o"
+                                    size={20}
+                                    color="#dc3545"
+                                    style={{ marginRight: 12 }}
+                                />
+                                <Text style={{
+                                    fontSize: 14,
+                                    color: '#495057',
+                                    flex: 1,
+                                    fontWeight: '500'
+                                }} numberOfLines={1}>
+                                    {doc.name}
+                                </Text>
+                            </TouchableOpacity>
+                            {!soloLectura && (
+                                <TouchableOpacity
+                                    onPress={() => this.eliminarPdf(key)}
+                                    style={{
+                                        padding: 8,
+                                        borderRadius: 20,
+                                        backgroundColor: '#f8f9fa'
+                                    }}
+                                    activeOpacity={0.7}
+                                >
+                                    <FontAwesome name="trash-o" size={16} color="#dc3545" />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    );
+                })}
+            </View>
+        );
     }
 
     eliminarPdf(keyImagen) {
-        Alert.alert(
-            'Eliminar Pdf',
-            'seguro desea eliminar este pdf',
-            [
+        const { soloLectura } = this.props;
 
+        if (soloLectura) {
+            Alert.alert('Modo solo lectura', 'No se pueden eliminar documentos en modo solo lectura');
+            return;
+        }
+
+        Alert.alert(
+            'Eliminar Documento',
+            '¿Estás seguro de que deseas eliminar este documento?',
+            [
                 {
                     text: 'Cancelar',
                     style: 'cancel'
                 },
-                { text: 'Eliminar', onPress: () => eliminar() }
+                {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: () => {
+                        const imagenes = this.state.imagenes.filter((e, key) => {
+                            return key !== keyImagen;
+                        });
+                        this.setState({ imagenes });
+                        this.props.imagenes(imagenes);
+                    }
+                }
             ],
             { cancelable: false }
         );
-
-        const eliminar = () => {
-
-            let imagenes = this.state.imagenes.filter((e, key) => {
-                return key != keyImagen
-            })
-            this.setState({ imagenes })
-            this.props.imagenes(imagenes)
-        }
-
-
     }
     renderModal() {
         const { tipoMensaje, cerrar } = this.props
@@ -115,13 +254,53 @@ export default class subirDocumento extends Component {
                 <TouchableOpacity
                     activeOpacity={1}
                     onPress={() => { tipoMensaje ? cerrar() : this.setState({ isAndroidShareOpen: false }); }}
-                    style={style.btnModal}
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
                 >
-                    <View style={style.contenedorModal}>
-                        <TouchableOpacity style={style.btnOpcionModal} onPress={() => { this.subirDocumento() }}>
-                            <Text style={style.textModal}>Subir Documento</Text>
+                    <View style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 12,
+                        padding: 20,
+                        width: '80%',
+                        maxWidth: 300
+                    }}>
+                        <Text style={{
+                            fontSize: 18,
+                            fontWeight: '600',
+                            marginBottom: 20,
+                            textAlign: 'center',
+                            color: '#333'
+                        }}>
+                            Subir Documento
+                        </Text>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#007bff',
+                                padding: 15,
+                                borderRadius: 8,
+                                alignItems: 'center'
+                            }}
+                            onPress={() => {
+                                this.setState({ isAndroidShareOpen: false, showModal: false });
+                                setTimeout(() => {
+                                    this.subirDocumento();
+                                }, 100);
+                            }}
+                            activeOpacity={0.8}
+                        >
+                            <FontAwesome name="file-pdf-o" size={20} color="#fff" style={{ marginBottom: 8 }} />
+                            <Text style={{
+                                color: '#fff',
+                                fontSize: 16,
+                                fontWeight: '600'
+                            }}>
+                                Seleccionar Documento
+                            </Text>
                         </TouchableOpacity>
-
                     </View>
                 </TouchableOpacity>
             </Modal>
@@ -131,30 +310,58 @@ export default class subirDocumento extends Component {
 
     render() {
         const { imagenes, showModal } = this.state
-        const { width, avatar, limiteImagenes, tipoMensaje, titulo } = this.props
+        const { width, avatar, limiteImagenes, tipoMensaje, titulo, soloLectura } = this.props
 
         return (
-            <View style={style.contenedorPortada}>
-                {
-                    showModal
-                    && this.renderModal()
-                }
-                {
-                    tipoMensaje
-                        ? this.renderModal()
-                        : imagenes.length < limiteImagenes
-                        && <TouchableOpacity style={[style.contenedorUploadPortada, { width }]} onPress={() => this.setState({ showModal: true, isAndroidShareOpen: true })}>
-                            <FontAwesome name={'camera'} style={style.iconPortada} />
-                            {/* <Text style={style.textPortada}> {!avatar ?"Imagen" :"Avatar"}</Text> */}
-                            {!avatar && <Text style={style.textPortada2}>{titulo}</Text>}
-                        </TouchableOpacity>
-                }
-                {
-                    !tipoMensaje
-                    && <View>
-                        {this.renderDocumentos()}
-                    </View>
-                }
+            <View style={{
+                width: width || '100%',
+                marginVertical: 8
+            }}>
+                {/* Modal para selección de documentos */}
+                {(showModal || tipoMensaje) && this.renderModal()}
+
+                {/* Botón para subir documento */}
+                {!tipoMensaje && imagenes.length < limiteImagenes && !soloLectura && (
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 12,
+                            padding: 20,
+                            borderWidth: 2,
+                            borderColor: '#007bff',
+                            borderStyle: 'dashed',
+                            alignItems: 'center',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 4,
+                            elevation: 3,
+                        }}
+                        onPress={() => this.setState({ showModal: true, isAndroidShareOpen: true })}
+                        activeOpacity={0.8}
+                    >
+                        <FontAwesome name="plus-circle" size={32} color="#007bff" style={{ marginBottom: 8 }} />
+                        <Text style={{
+                            color: '#007bff',
+                            fontSize: 16,
+                            fontWeight: '600',
+                            textAlign: 'center'
+                        }}>
+                            {titulo || 'Agregar Documento'}
+                        </Text>
+                        <Text style={{
+                            color: '#6c757d',
+                            fontSize: 12,
+                            textAlign: 'center',
+                            marginTop: 4
+                        }}>
+                            Imagen/PDF • Máximo {limiteImagenes} documento(s)
+                        </Text>
+                    </TouchableOpacity>
+                )}
+
+                {/* Lista de documentos */}
+                {!tipoMensaje && this.renderDocumentos()}
             </View>
         )
     }

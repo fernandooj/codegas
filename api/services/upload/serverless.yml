@@ -1,0 +1,12 @@
+uploadS3:
+  name: ${self:custom.base}-upload-s3
+  handler: services/upload/src/upload-s3.main
+  events:
+    - httpApi: 'POST /upload/s3'
+  environment:
+    BUCKET: codegas
+  package:
+    include:
+      - services/upload/src/upload-s3.js
+      - lib/image.js
+      - lib/responses.js

@@ -25,10 +25,10 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent: "center",
 		flexDirection: "row",
 		width: "100%",
-		height: Platform.OS === 'ios' ? 75 : 70,
+		height: Platform.OS === 'ios' ? 65 : 60,
 		paddingHorizontal: 15,
 		paddingTop: 15,
-		paddingBottom: Platform.OS === 'ios' ? 35 : 25, // Extra padding for safe area
+		paddingBottom: Platform.OS === 'ios' ? 15 : 10, // Extra padding for safe area
 		shadowColor: "#000000",
 		shadowOffset: { width: 0, height: -8 },
 		shadowOpacity: 0.1,
@@ -135,14 +135,14 @@ export const style = MediaQueryStyleSheet.create({
 
 	// Estilos de íconos
 	icon: {
-		width: 24,
-		height: 24,
+		width: 34,
+		height: 34,
 		tintColor: "#002587",
 	},
 
 	// Iconos FontAwesome
 	iconFont: {
-		fontSize: 24,
+		fontSize: 34,
 		color: "#002587",
 		fontWeight: "400",
 	},
@@ -345,11 +345,11 @@ export const style = MediaQueryStyleSheet.create({
 			borderRadius: 37.5,
 		},
 		icon: {
-			width: 26,
-			height: 26,
+			width: 36,
+			height: 36,
 		},
 		iconFont: {
-			fontSize: 26,
+			fontSize: 36,
 		},
 		activeIcon: {
 			width: 34,

@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const slsw = require('serverless-webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: 'production',
@@ -31,6 +32,15 @@ module.exports = {
         }),
         new webpack.IgnorePlugin({
             resourceRegExp: /^pg-native$/
+
+        }),
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: 'assets/img',
+                    to: 'assets/img'
+                }
+            ]
         })
     ],
     resolve: {

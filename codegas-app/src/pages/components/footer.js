@@ -15,7 +15,6 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
   const [badgeSocketCuenta, setBadgeSocketCuenta] = useState(0);
   const [badgeSocketPedido, setBadgeSocketPedido] = useState(0);
   const [badgeSocketConversacion, setBadgeSocketConversacion] = useState(0);
-  console.log('🔍 Footer - acceso from context:', acceso);
 
   const reciveMensanje = (messages) => {
     setBadgeSocketMessage(badgeSocketMessage + 1);
@@ -86,20 +85,16 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
         </TouchableOpacity>
 
         {/* Tab Nuevo Pedido - Solo si no es conductor */}
-        {(() => {
-          console.log('🔍 Footer - acceso from context:', acceso);
-          console.log('🔍 Footer - acceso !== "conductor":', acceso !== 'conductor');
-          return acceso !== 'conductor';
-        })() && (
-            <TouchableOpacity
-              style={style.tabContainer}
-              onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'IniciarSesion')}
-            >
-              <View style={style.iconContainer}>
-                <FontAwesome name="plus" style={style.iconFont} />
-              </View>
-            </TouchableOpacity>
-          )}
+        {acceso !== 'conductor' && (
+          <TouchableOpacity
+            style={style.tabContainer}
+            onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'IniciarSesion')}
+          >
+            <View style={style.iconContainer}>
+              <FontAwesome name="plus" style={style.iconFont} />
+            </View>
+          </TouchableOpacity>
+        )}
 
         {/* Tab Pedidos */}
         <TouchableOpacity

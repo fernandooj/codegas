@@ -2,7 +2,7 @@ const { poolConection } = require('../../../lib/connection-pg.js')
 const nodemailer = require('nodemailer');
 const path = require('path');
 
-const CREATE_REPORT = 'select * from save_reporte_emergencia($1, $2, $3, $4, $5, $6, $7, $8, $9)'
+const CREATE_REPORT = 'select * from save_reporte_emergencia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)'
 const GET_USER_BY_ID = 'SELECT * FROM users WHERE _id = $1';
 
 // Configuración de Nodemailer
@@ -30,7 +30,8 @@ const generateEmailTemplate = (reporteData) => {
         razonSocial,
         nombreCliente,
         usuarioReporta,
-        fechaReporte
+        fechaReporte,
+        imgUrlsS3
     } = reporteData;
 
     // Determinar el nivel de urgencia
@@ -145,6 +146,25 @@ const generateEmailTemplate = (reporteData) => {
                                 </div>
                                 ` : ''}
 
+                                <!-- Imágenes adjuntas -->
+                                ${imgUrlsS3 && imgUrlsS3.length > 0 ? `
+                                <div style="background-color: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+                                    <h3 style="color: #0c4a6e; margin: 0 0 16px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                        📸 Imágenes Adjuntas
+                                    </h3>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                                        ${imgUrlsS3.map((url, index) => `
+                                            <div style="text-align: center;">
+                                                <img src="${url}" alt="Imagen ${index + 1}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" />
+                                                <p style="color: #0c4a6e; margin: 8px 0 0 0; font-size: 12px; font-weight: 500;">
+                                                    Imagen ${index + 1}
+                                                </p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+
                                 <!-- Call to Action -->
                                 <div style="background-color: #dc2626; padding: 24px; border-radius: 10px; text-align: center; margin-top: 30px;">
                                     <h3 style="color: #ffffff; margin: 0 0 12px 0; font-size: 18px;">
@@ -182,7 +202,7 @@ const generateEmailTemplate = (reporteData) => {
                                             <p style="color: #64748b; margin: 0; font-size: 14px;">
                                                 <strong>CodeGas Colombia</strong><br>
                                                 Sistema de Gestión de Emergencias<br>
-                                                📧 app@codegascolombia.com | 📞 +57 (1) 234-5678
+                                                📧 app@codegascolombia.com | 📞 +57 311 5192038
                                             </p>
                                             <p style="color: #94a3b8; margin: 12px 0 0 0; font-size: 12px;">
                                                 Este es un mensaje automático generado por el sistema. No responda a este correo.
@@ -207,7 +227,7 @@ const generateEmailTemplate = (reporteData) => {
 module.exports.main = async (event) => {
     const body = JSON.parse(event.body);
     let {
-        tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea, razonSocial, nombre: nombreCliente, codt: codtCliente
+        tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea, razonSocial, nombre: nombreCliente, codt: codtCliente, imgUrlsS3
     } = body;
 
     // Determinar asunto del email basado en el tipo de reporte
@@ -220,7 +240,7 @@ module.exports.main = async (event) => {
     try {
         const client = await poolConection.connect();
 
-        const { rows: user } = await client.query(CREATE_REPORT, [tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea]);
+        const { rows: user } = await client.query(CREATE_REPORT, [tanque, red, puntos, fuga, pqr, otrosText, usuarioId, puntoId, usuarioCrea, imgUrlsS3 || []]);
         const _id = user[0].save_reporte_emergencia;
 
         const { rows: userReporta } = await client.query(GET_USER_BY_ID, [usuarioCrea]);
@@ -246,7 +266,8 @@ module.exports.main = async (event) => {
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
-            })
+            }),
+            imgUrlsS3: imgUrlsS3 || [] // Incluir las URLs de S3
         };
 
         // Generar el HTML del email
@@ -286,6 +307,8 @@ module.exports.main = async (event) => {
         ${pqr ? '- PQR\n' : ''}
         
         ${otrosText ? `Observaciones adicionales: ${otrosText}` : ''}
+        
+        ${imgUrlsS3 && imgUrlsS3.length > 0 ? `Imágenes adjuntas:\n${imgUrlsS3.map((url, index) => `${index + 1}. ${url}`).join('\n')}\n` : ''}
         
         Este reporte requiere atención inmediata.
       `

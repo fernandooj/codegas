@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Image, TouchableOpacity, Modal, Alert, Platform, PermissionsAndroid } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Modal, Alert, Platform, PermissionsAndroid, Dimensions } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import Lightbox from 'react-native-lightbox-v2';
 import { launchCamera, launchImageLibrary, MediaType, ImagePickerResponse } from 'react-native-image-picker';
+import { useDispatch } from 'react-redux';
 import { style } from './style'
 import { TomarFotoProps, ImagenData } from './tomarFoto.types'
+import { uploadMultipleImagesToS3 } from '../../redux/actions/reporteActions'
 
 const TomarFoto: React.FC<TomarFotoProps> = ({
     source = [],
@@ -20,16 +22,116 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
     cerrar,
     soloLectura = false,
     mostrarSoloConImagenes = false,
-    permitirSubir = true
+    permitirSubir = true,
+    onUploadComplete
 }) => {
+    const dispatch = useDispatch();
+
     const [imagenesState, setImagenesState] = useState<any[]>(source);
     const [showModal, setShowModal] = useState(false);
     const [isAndroidShareOpen, setIsAndroidShareOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [pendingUpdates, setPendingUpdates] = useState<{ imageData: any[], urls: string[] } | null>(null);
+    const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
 
     // Sincronizar el estado interno con el prop source cuando cambie
+    // Solo sincronizar si no estamos en modo múltiple O si estamos en modo solo lectura
     useEffect(() => {
-        setImagenesState(source);
-    }, [source]);
+        if (!multiple || soloLectura) {
+            setImagenesState(source);
+        } else {
+        }
+    }, [source, multiple, soloLectura]);
+
+    // Effect para limpiar imágenes cuando source está vacío en modo múltiple
+    useEffect(() => {
+        if (multiple && !soloLectura && source.length === 0 && imagenesState.length > 0) {
+            setImagenesState([]);
+        }
+    }, [source, multiple, soloLectura, imagenesState.length]);
+
+    // Manejar actualizaciones pendientes de S3
+    useEffect(() => {
+        if (pendingUpdates) {
+            const { imageData, urls } = pendingUpdates;
+
+            if (multiple) {
+                // En modo múltiple, actualizar solo las URLs de S3 de las imágenes subidas
+                setImagenesState(prevImages => {
+                    const updatedImages = [...prevImages];
+
+                    // Para cada imagen que se subió, actualizar su URL de S3
+                    imageData.forEach((img, index) => {
+                        const existingIndex = updatedImages.findIndex(existingImg =>
+                            existingImg.uri === img.uri || existingImg.base64 === img.base64
+                        );
+
+                        if (existingIndex !== -1) {
+                            // Solo actualizar la URL de S3, mantener todo lo demás
+                            updatedImages[existingIndex] = {
+                                ...updatedImages[existingIndex],
+                                uri: urls[index] || updatedImages[existingIndex].uri, // Usar URL de S3 si está disponible
+                                s3Url: urls[index] // Guardar la URL de S3
+                            };
+                        } else {
+                            // Si no se encuentra la imagen, agregarla (por si acaso)
+                            updatedImages.push({
+                                ...img,
+                                uri: urls[index] || img.uri,
+                                s3Url: urls[index]
+                            });
+                        }
+                    });
+
+                    // Notificar al componente padre con el estado actualizado
+                    setTimeout(() => {
+                        imagenes?.(updatedImages);
+                    }, 0);
+
+                    return updatedImages;
+                });
+            } else {
+                // En modo single, reemplazar todo el estado
+                const updatedImages = imageData.map((img, index) => ({
+                    ...img,
+                    uri: urls[index] || img.uri,
+                    s3Url: urls[index]
+                }));
+                setImagenesState(updatedImages);
+                imagenes?.(updatedImages);
+            }
+
+            setPendingUpdates(null);
+        }
+    }, [pendingUpdates, multiple, imagenes]);
+
+    // Función para subir imágenes a S3
+    const uploadImagesToS3 = async (images: any[]) => {
+        if (!onUploadComplete || images.length === 0) {
+            return;
+        }
+
+        try {
+            setIsUploading(true);
+            const imageData = images.map(img => ({
+                uri: img.uri || img,
+                base64: img.base64
+            }));
+
+            const result = await dispatch(uploadMultipleImagesToS3(imageData) as any);
+            const urls = Array.isArray(result) ? result : [];
+
+            // Establecer actualizaciones pendientes para que el useEffect las procese
+            setPendingUpdates({ imageData, urls });
+
+            onUploadComplete(urls);
+        } catch (error) {
+            console.error('Error uploading images to S3:', error);
+            Alert.alert('Error', 'No se pudieron subir las imágenes. Inténtalo de nuevo.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
     // Función para solicitar permisos de cámara
     const requestCameraPermission = async (): Promise<boolean> => {
         if (Platform.OS === 'android') {
@@ -66,7 +168,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             quality: 0.8 as any,
             maxWidth: 800,
             maxHeight: 600,
-            includeBase64: false,
+            includeBase64: true,
             saveToPhotos: false,
         };
 
@@ -77,13 +179,14 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             }
 
             if (response.errorMessage) {
-                console.error('📷 Error de cámara:', response.errorMessage);
+                console.error('Error de cámara:', response.errorMessage);
                 Alert.alert('Error', `Error al abrir cámara: ${response.errorMessage}`);
                 return;
             }
 
             if (response.assets && response.assets[0] && response.assets[0].uri) {
-                handleImageSelected(response.assets[0].uri);
+                const asset = response.assets[0];
+                handleImageSelected(asset.uri!, asset.base64);
                 Alert.alert('Éxito', 'Foto tomada correctamente');
             }
         });
@@ -96,7 +199,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             quality: 0.8 as any,
             maxWidth: 800,
             maxHeight: 600,
-            includeBase64: false,
+            includeBase64: true,
             selectionLimit: multiple ? 4 : 1,
         };
 
@@ -107,7 +210,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             }
 
             if (response.errorMessage) {
-                console.error('🖼️ Error de galería:', response.errorMessage);
+                console.error('Error de galería:', response.errorMessage);
                 Alert.alert('Error', `Error al abrir galería: ${response.errorMessage}`);
                 return;
             }
@@ -116,12 +219,12 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                 if (multiple) {
                     response.assets.forEach(asset => {
                         if (asset.uri) {
-                            handleImageSelected(asset.uri);
+                            handleImageSelected(asset.uri!, asset.base64);
                         }
                     });
                 } else {
                     if (response.assets[0].uri) {
-                        handleImageSelected(response.assets[0].uri);
+                        handleImageSelected(response.assets[0].uri!, response.assets[0].base64);
                     }
                 }
             }
@@ -129,19 +232,29 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
     }
 
     // Función para manejar la imagen seleccionada
-    const handleImageSelected = (imageUri: string) => {
+    const handleImageSelected = (imageUri: string, base64Data: string | undefined = '') => {
+        const base64String = base64Data || '';
+
         // Si no es múltiple, limpiar imágenes anteriores
         if (!multiple) {
-            const newImage = { uri: imageUri };
+            const newImage = { uri: imageUri, base64: base64String };
             setImagenesState([newImage]);
             imagenes?.([newImage]);
+            // Subir a S3 si está habilitado
+            if (permitirSubir && onUploadComplete) {
+                uploadImagesToS3([newImage]);
+            }
         } else {
             // Si es múltiple, agregar a la lista
             if (imagenesState.length < limiteImagenes) {
-                const newImage = { uri: imageUri };
+                const newImage = { uri: imageUri, base64: base64String };
                 const newImagenes = [...imagenesState, newImage];
                 setImagenesState(newImagenes);
                 imagenes?.(newImagenes);
+                // Subir a S3 si está habilitado - solo la nueva imagen
+                if (permitirSubir && onUploadComplete) {
+                    uploadImagesToS3([newImage]);
+                }
             } else {
                 Alert.alert('Límite alcanzado', `Solo se pueden subir ${limiteImagenes} imágenes`);
             }
@@ -242,13 +355,33 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
 
         return img.map((e: any, key: number) => {
             return (
-                <View key={key}>
+                <View key={key} style={{ position: 'relative' }}>
                     <TouchableOpacity onPress={() => {
-                        // Mostrar imagen en modal o navegación
-                        Alert.alert('Imagen', 'Imagen seleccionada');
+                        setExpandedImageIndex(key);
                     }}>
                         <Image source={{ uri: e.uri }} style={style.imagenesFotos} resizeMode="cover" />
                     </TouchableOpacity>
+
+                    {/* Icono del ojo para expandir */}
+                    <TouchableOpacity
+                        style={{
+                            position: 'absolute',
+                            top: 5,
+                            left: 5,
+                            backgroundColor: 'rgba(0,0,0,0.7)',
+                            borderRadius: 15,
+                            width: 30,
+                            height: 30,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}
+                        onPress={() => {
+                            setExpandedImageIndex(key);
+                        }}
+                    >
+                        <FontAwesome name="eye" style={{ fontSize: 14, color: '#fff' }} />
+                    </TouchableOpacity>
+
                     {!soloLectura && (
                         <FontAwesome name={'trash'} style={style.iconTrash} onPress={() => eliminarImagen(key)} />
                     )}
@@ -305,6 +438,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
     /*
         TIPOMENSAJE == cuando la foto es para el chat, no muestra, la opcion de tomar foto, si no que muestra directamente el modal
     */
+
     return (
         <View style={style.contenedorPortada}>
             {
@@ -333,60 +467,117 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                         {!soloLectura && (
                             <TouchableOpacity
                                 style={{
-                                    backgroundColor: '#007bff',
+                                    backgroundColor: isUploading ? '#6c757d' : '#007bff',
                                     borderRadius: 10,
                                     paddingHorizontal: 20,
                                     paddingVertical: 12,
                                     flexDirection: 'row',
-                                    alignItems: 'center'
+                                    alignItems: 'center',
+                                    opacity: isUploading ? 0.7 : 1
                                 }}
                                 onPress={() => {
-                                    handleTomarFoto();
+                                    if (!isUploading) {
+                                        handleTomarFoto();
+                                    }
                                 }}
                                 activeOpacity={0.8}
+                                disabled={isUploading}
                             >
-                                <FontAwesome name="camera" style={{ fontSize: 16, color: '#fff', marginRight: 8 }} />
+                                <FontAwesome
+                                    name={isUploading ? "spinner" : "camera"}
+                                    style={{
+                                        fontSize: 16,
+                                        color: '#fff',
+                                        marginRight: 8,
+                                        ...(isUploading && { transform: [{ rotate: '0deg' }] })
+                                    }}
+                                />
                                 <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-                                    {multiple ? 'Subir Foto' : (imagenesState.length > 0 ? 'Cambiar Foto' : 'Tomar Foto')}
+                                    {isUploading ? 'Subiendo...' : (multiple ? 'Subir Foto' : (imagenesState.length > 0 ? 'Cambiar Foto' : 'Tomar Foto'))}
                                 </Text>
                             </TouchableOpacity>
                         )}
 
-                        {imagenesState.length > 0 && !multiple && (
+                        {imagenesState.length > 0 && (
                             <View style={{
                                 marginTop: 12,
                                 alignItems: 'center'
                             }}>
-                                <View style={{ position: 'relative' }}>
-                                    <Image
-                                        source={{ uri: imagenesState[0].uri }}
-                                        style={{
-                                            width: 150,
-                                            height: 150,
-                                            borderRadius: 10,
-                                            marginBottom: 8
-                                        }}
-                                        resizeMode="cover"
-                                    />
-                                    {!soloLectura && (
-                                        <TouchableOpacity
-                                            style={{
-                                                position: 'absolute',
-                                                top: 5,
-                                                right: 5,
-                                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                                borderRadius: 15,
-                                                width: 30,
-                                                height: 30,
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}
-                                            onPress={() => eliminarImagen(0)}
-                                        >
-                                            <FontAwesome name="trash" style={{ fontSize: 14, color: '#fff' }} />
-                                        </TouchableOpacity>
-                                    )}
+                                <View style={{
+                                    flexDirection: multiple ? 'row' : 'column',
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'center',
+                                    gap: 8
+                                }}>
+                                    {imagenesState.map((imagen, index) => {
+                                        return (
+                                            <View key={`${imagen.uri || imagen}-${index}`} style={{ position: 'relative' }}>
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        // Mostrar imagen en modal o navegación
+                                                        Alert.alert('Imagen', 'Imagen seleccionada');
+                                                    }}
+                                                >
+                                                    <Image
+                                                        key={imagen.uri || imagen} // Forzar re-renderizado cuando cambie la URI
+                                                        source={{ uri: imagen.uri || imagen }}
+                                                        style={{
+                                                            width: multiple ? 100 : 150,
+                                                            height: multiple ? 100 : 150,
+                                                            borderRadius: 10,
+                                                            marginBottom: 8
+                                                        }}
+                                                        resizeMode="cover"
+                                                        onLoad={() => { }}
+                                                        onError={(error) => console.error(`Error cargando imagen ${index}:`, error)}
+                                                    />
+                                                </TouchableOpacity>
+
+                                                {/* Botón de eliminar */}
+                                                {!soloLectura && (
+                                                    <TouchableOpacity
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: 5,
+                                                            right: 5,
+                                                            backgroundColor: 'rgba(0,0,0,0.7)',
+                                                            borderRadius: 15,
+                                                            width: 30,
+                                                            height: 30,
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center'
+                                                        }}
+                                                        onPress={() => eliminarImagen(index)}
+                                                    >
+                                                        <FontAwesome name="trash" style={{ fontSize: 14, color: '#fff' }} />
+                                                    </TouchableOpacity>
+                                                )}
+
+                                                {/* Botón de expandir (ojo) */}
+                                                {/* <TouchableOpacity
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: 5,
+                                                        left: 5,
+                                                        backgroundColor: 'rgba(0,0,0,0.7)',
+                                                        borderRadius: 15,
+                                                        width: 30,
+                                                        height: 30,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center'
+                                                    }}
+                                                    onPress={() => {
+                                                        // El Lightbox se activa automáticamente al tocar la imagen
+                                                        console.log(`👁️ [TomarFoto] Expandir imagen ${index}`);
+                                                    }}
+                                                >
+                                                    <FontAwesome name="eye" style={{ fontSize: 14, color: '#fff' }} />
+                                                </TouchableOpacity> */}
+                                            </View>
+                                        );
+                                    })}
                                 </View>
+
                                 <View style={{
                                     backgroundColor: '#d4edda',
                                     borderRadius: 8,
@@ -396,7 +587,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                                 }}>
                                     <FontAwesome name="check" style={{ fontSize: 14, color: '#28a745', marginRight: 8 }} />
                                     <Text style={{ color: '#28a745', fontSize: 14, fontWeight: '500' }}>
-                                        Foto agregada correctamente
+                                        {imagenesState.length === 1 ? 'Foto agregada correctamente' : `${imagenesState.length} fotos agregadas correctamente`}
                                     </Text>
                                 </View>
                             </View>
@@ -421,6 +612,91 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                     </Text>
                 </View>
             }
+            {
+                !tipoMensaje && soloLectura && imagenesState.length > 0 && (
+                    <View style={{
+                        marginTop: 12,
+                        alignItems: 'center'
+                    }}>
+                        <View style={{
+                            flexDirection: multiple ? 'row' : 'column',
+                            flexWrap: 'wrap',
+                            justifyContent: 'center',
+                            gap: 8
+                        }}>
+                            {imagenesState.map((imagen, index) => {
+                                return (
+                                    <View key={`${imagen.uri || imagen}-${index}`} style={{ position: 'relative' }}>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                // Mostrar imagen en modal o navegación
+                                                Alert.alert('Imagen', 'Imagen seleccionada');
+                                            }}
+                                        >
+                                            <Image
+                                                key={imagen.uri || imagen}
+                                                source={{ uri: imagen.uri || imagen }}
+                                                style={{
+                                                    width: multiple ? 100 : 150,
+                                                    height: multiple ? 100 : 150,
+                                                    borderRadius: 10,
+                                                    marginBottom: 8
+                                                }}
+                                                resizeMode="cover"
+                                                onLoad={() => { }}
+                                                onError={(error) => console.error(`Error cargando imagen ${index}:`, error)}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )
+            }
+
+            {/* Modal para expandir imagen */}
+            <Modal
+                visible={expandedImageIndex !== null}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setExpandedImageIndex(null)}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.9)',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <TouchableOpacity
+                        style={{
+                            position: 'absolute',
+                            top: 50,
+                            right: 20,
+                            backgroundColor: 'rgba(255,255,255,0.2)',
+                            borderRadius: 20,
+                            width: 40,
+                            height: 40,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}
+                        onPress={() => setExpandedImageIndex(null)}
+                    >
+                        <FontAwesome name="times" style={{ fontSize: 20, color: '#fff' }} />
+                    </TouchableOpacity>
+
+                    {expandedImageIndex !== null && imagenesState[expandedImageIndex] && (
+                        <Image
+                            source={{ uri: imagenesState[expandedImageIndex].uri }}
+                            style={{
+                                width: Dimensions.get('window').width * 0.9,
+                                height: Dimensions.get('window').height * 0.7,
+                                resizeMode: 'contain'
+                            }}
+                        />
+                    )}
+                </View>
+            </Modal>
         </View>
     );
 };

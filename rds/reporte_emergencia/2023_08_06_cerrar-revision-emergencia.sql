@@ -1,3 +1,4 @@
+drop function if exists cerrar_reporte_emergencia;
 CREATE OR REPLACE FUNCTION cerrar_reporte_emergencia(
     _tanque BOOLEAN,
     _red BOOLEAN,
@@ -6,7 +7,9 @@ CREATE OR REPLACE FUNCTION cerrar_reporte_emergencia(
     _pqr BOOLEAN,
     _cerradoText CHARACTER VARYING,
     _usuarioCierra INT,
-    _idReporte INT
+    _idReporte INT,
+    _rutaCerrar CHARACTER VARYING[],
+    _documentosUrlsS3 CHARACTER VARYING[]
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -20,7 +23,9 @@ BEGIN
         fuga = _fuga,
         pqr = _pqr,
         cerradoText = _cerradoText,
-        usuarioCierra = _usuarioCierra
+        usuarioCierra = _usuarioCierra,
+        rutaCerrar = _rutaCerrar,
+        documento = COALESCE(_documentosUrlsS3, documento)
     WHERE _id = _idReporte;
 
     RETURN true; 

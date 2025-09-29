@@ -1,18 +1,26 @@
-import { StyleSheet, Dimensions, Platform } from 'react-native';
+import { StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
-
-let size = Dimensions.get('window').width;
+import {
+	getResponsiveValue,
+	getResponsivePadding,
+	getResponsiveFontSize,
+	getResponsiveAvatarSize
+} from './responsiveStyles';
 
 export const style = MediaQueryStyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: '#ffffff',
+		backgroundColor: 'transparent',
+		paddingTop: Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0,
+	},
+	contentBackground: {
+		flex: 1,
+		backgroundColor: 'transparent',
 	},
 	containerRegistro: {
 		flex: 1,
-		marginBottom: 80,
 		width: "100%",
-		backgroundColor: '#f8f9fa',
+		backgroundColor: 'transparent',
 	},
 	subContainerRegistro: {
 		flex: 1,
@@ -26,7 +34,7 @@ export const style = MediaQueryStyleSheet.create({
 		backgroundColor: "rgba(0,0,0,.1)"
 	},
 	iconAvatar: {
-		fontSize: 60,
+		fontSize: getResponsiveValue(60, 70, 80),
 		color: "#002587"
 	},
 	containerRegistro2: {
@@ -48,9 +56,9 @@ export const style = MediaQueryStyleSheet.create({
 	perfilContenedor: {
 		flexDirection: "row",
 		backgroundColor: '#ffffff',
-		marginHorizontal: 20,
+		marginHorizontal: getResponsivePadding(),
 		marginTop: 15,
-		padding: 16,
+		padding: getResponsiveValue(16, 20, 24),
 		borderRadius: 12,
 		shadowColor: '#000',
 		shadowOffset: { width: 0, height: 2 },
@@ -66,7 +74,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	columna2: {
 		justifyContent: "center",
-		paddingLeft: 20,
+		paddingLeft: getResponsiveValue(20, 25, 30),
 		width: "75%"
 	},
 	columna4: {
@@ -79,10 +87,10 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent: "space-between",
 		alignItems: "center",
 		backgroundColor: '#ffffff',
-		marginHorizontal: 20,
-		marginVertical: 6,
-		paddingVertical: 6,
-		paddingHorizontal: 10,
+		marginHorizontal: getResponsivePadding(),
+		marginVertical: 3,
+		paddingVertical: getResponsiveValue(6, 12, 14),
+		paddingHorizontal: getResponsiveValue(10, 16, 18),
 		borderRadius: 10,
 		shadowColor: '#000',
 		shadowOffset: { width: 0, height: 1 },
@@ -93,40 +101,35 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	txtLista: {
 		fontFamily: "Comfortaa-Regular",
-		fontSize: 12,
+		fontSize: getResponsiveFontSize(12),
 		color: '#2c3e50',
 	},
 	avatar: {
-		width: 60,
-		height: 60,
-		borderRadius: 30,
+		width: getResponsiveAvatarSize(),
+		height: getResponsiveAvatarSize(),
+		borderRadius: getResponsiveAvatarSize() / 2,
 		borderWidth: 2,
 		borderColor: '#002587'
 	},
 	nombre: {
 		fontFamily: "Comfortaa-Bold",
-		fontSize: 16,
+		fontSize: getResponsiveFontSize(16),
 		color: '#2c3e50',
 		marginBottom: 3
 	},
 	email: {
 		fontFamily: "Comfortaa-Light",
-		fontSize: 13,
+		fontSize: getResponsiveFontSize(13),
 		color: '#7f8c8d',
 		marginBottom: 0
 	},
 	icon: {
-		width: 12,
-		height: 12,
+		width: getResponsiveValue(32, 36, 40),
+		height: getResponsiveValue(32, 36, 40),
 		backgroundColor: '#007bff',
-		borderRadius: 9,
+		borderRadius: getResponsiveValue(16, 18, 20),
 		justifyContent: 'center',
 		alignItems: 'center',
-	},
-	footer: {
-		position: "absolute",
-		bottom: 0,
-		width: "100%"
 	},
 	//////////////////////////////////////////////////////////////////
 	//////////////////////      INPUTS
@@ -202,13 +205,13 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize: 14,
 	},
 	btnVersion: {
-		backgroundColor: '#95a5a6',
+		backgroundColor: 'transparent',
 		marginTop: 3,
 		paddingVertical: 8,
 		paddingHorizontal: 12,
 	},
 	txtVersion: {
-		color: '#ffffff',
+		color: '#95a5a6',
 		fontSize: 10,
 		textAlign: 'center',
 		fontWeight: '500',
@@ -225,6 +228,70 @@ export const style = MediaQueryStyleSheet.create({
 		icon: {
 			width: 55,
 			height: 55
+		},
+	},
+	"@media (min-device-width: 414)": {
+		perfilContenedor: {
+			marginHorizontal: 30,
+			padding: 20,
+		},
+		columna2: {
+			paddingLeft: 25,
+		},
+		btnLista: {
+			marginHorizontal: 30,
+			marginVertical: 8,
+			paddingVertical: 12,
+			paddingHorizontal: 16,
+		},
+		txtLista: {
+			fontSize: 14,
+		},
+		avatar: {
+			width: 70,
+			height: 70,
+			borderRadius: 35,
+		},
+		nombre: {
+			fontSize: 18,
+		},
+		email: {
+			fontSize: 15,
+		},
+		containerRegistro: {
+			marginBottom: 100,
+		},
+	},
+	"@media (min-device-width: 428)": {
+		perfilContenedor: {
+			marginHorizontal: 35,
+			padding: 24,
+		},
+		columna2: {
+			paddingLeft: 30,
+		},
+		btnLista: {
+			marginHorizontal: 35,
+			marginVertical: 10,
+			paddingVertical: 14,
+			paddingHorizontal: 18,
+		},
+		txtLista: {
+			fontSize: 15,
+		},
+		avatar: {
+			width: 75,
+			height: 75,
+			borderRadius: 37.5,
+		},
+		nombre: {
+			fontSize: 19,
+		},
+		email: {
+			fontSize: 16,
+		},
+		containerRegistro: {
+			marginBottom: 110,
 		},
 	}
 })

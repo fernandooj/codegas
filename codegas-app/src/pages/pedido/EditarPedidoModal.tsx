@@ -257,26 +257,28 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                             </View>
 
                             {/* Botón de resetear */}
-                            <TouchableOpacity
-                                onPress={onResetPedido}
-                                style={{
-                                    width: 36,
-                                    height: 36,
-                                    borderRadius: 18,
-                                    backgroundColor: '#ffc107',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    marginRight: 12,
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.2,
-                                    shadowRadius: 2,
-                                    elevation: 2,
-                                }}
-                                activeOpacity={0.7}
-                            >
-                                <FontAwesome name="undo" style={{ fontSize: 16, color: '#fff' }} />
-                            </TouchableOpacity>
+                            {acceso === 'admin' && (
+                                <TouchableOpacity
+                                    onPress={onResetPedido}
+                                    style={{
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: 18,
+                                        backgroundColor: '#ffc107',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        marginRight: 12,
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 1 },
+                                        shadowOpacity: 0.2,
+                                        shadowRadius: 2,
+                                        elevation: 2,
+                                    }}
+                                    activeOpacity={0.7}
+                                >
+                                    <FontAwesome name="undo" style={{ fontSize: 16, color: '#fff' }} />
+                                </TouchableOpacity>
+                            )}
 
                             <TouchableOpacity
                                 onPress={onClose}
@@ -341,6 +343,17 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             {forma == "cantidad" ? cantidadKl : forma == "monto" ? cantidadPrecio : "N/A"}
                                         </Text>
                                     </View>
+
+                                    {/* Motivo de no cierre */}
+                                    {pedidoData.motivo_no_cierre && (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <FontAwesome name="exclamation-triangle" style={{ fontSize: 14, color: '#dc3545', marginRight: 8, width: 20 }} />
+                                            <Text style={{ fontSize: 14, color: '#333' }}>
+                                                <Text style={{ fontWeight: '600' }}>Motivo: </Text>
+                                                {pedidoData.motivo_no_cierre}
+                                            </Text>
+                                        </View>
+                                    )}
 
                                     {fechaEntrega && (
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

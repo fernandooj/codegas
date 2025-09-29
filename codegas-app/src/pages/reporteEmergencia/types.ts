@@ -12,6 +12,7 @@ export interface ReporteEmergencia {
     usuarioId: string;
     puntoId: string;
     usuarioCrea: string;
+    usuarioCierranombre?: string; // Nombre del usuario que cerró el reporte
     creado: string;
     activo: boolean;
     estado: number;
@@ -40,6 +41,8 @@ export interface ReporteEmergenciaFormData {
     razonSocial?: string;
     nombre?: string;
     codt?: string;
+    imgUrlsS3?: string[]; // URLs de las imágenes subidas a S3
+    documentosUrlsS3?: string[]; // URLs de los documentos subidos a S3
 }
 
 export interface ReporteEmergenciaCerrarData {
@@ -51,6 +54,8 @@ export interface ReporteEmergenciaCerrarData {
     fuga: boolean;
     pqr: boolean;
     usuarioCierra: string;
+    rutaCerrar?: string[]; // URLs de las imágenes de solución subidas a S3
+    documentosUrlsS3?: string[]; // URLs de los documentos subidos a S3
 }
 
 export interface ReporteEmergenciaImagenData {

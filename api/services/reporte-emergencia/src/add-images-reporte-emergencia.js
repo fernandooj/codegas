@@ -18,18 +18,20 @@ module.exports.main = async (event) => {
     const client = await poolConection.connect();
     const uploadedUrls = [];
 
+    let uploadedUri = null;
     if (body.mime == "application/pdf") {
-      const uri = await uploadPDF(body);
-      uploadedUrls.push({ uri, name });
+      uploadedUri = await uploadPDF(body);
+      uploadedUrls.push({ uri: uploadedUri, name });
     } else {
-      const uri = await uploadImage(body);
-      uploadedUrls.push({ uri, name });
+      uploadedUri = await uploadImage(body);
+      uploadedUrls.push({ uri: uploadedUri, name });
     }
 
     await client.query(ADD_IMAGES_REPORTE_EMERGENCIA, [uploadedUrls, type, idReporte]);
 
     return {
       status: true,
+      url: uploadedUri // Devolver la URL para uso inmediato
     };
   } catch (error) {
     console.error(error);

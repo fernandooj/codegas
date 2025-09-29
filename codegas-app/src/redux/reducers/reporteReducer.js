@@ -153,6 +153,14 @@ const reporteReducer = (state = initialState, action) => {
                 searchTerm: action.payload
             };
 
+        case 'CLEAR_REPORTE_STATE':
+            return {
+                ...initialState,
+                searchTerm: state.searchTerm, // Mantener el término de búsqueda
+                start: state.start,
+                limit: state.limit
+            };
+
         default:
             return state;
     }

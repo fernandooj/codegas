@@ -171,7 +171,7 @@ const generateWelcomeEmailTemplate = (userData) => {
                                     <p style="color: #64748b; margin: 0; font-size: 14px;">
                                         <strong>CodeGas Colombia</strong><br>
                                         Sistema de Gestión Integral<br>
-                                        📧 app@codegascolombia.com | 📞 +57 (1) 234-5678
+                                        📧 app@codegascolombia.com | 📞 +57 311 5192038
                                     </p>
                                 </div>
                             </td>
@@ -290,7 +290,7 @@ Puedes acceder a la aplicación móvil o web con estas credenciales.
 
 CodeGas Colombia
 Sistema de Gestión Integral
-📧 app@codegascolombia.com | 📞 +57 (1) 234-5678
+📧 app@codegascolombia.com | 📞 +57 311 5192038
         `
       };
 

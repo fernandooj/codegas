@@ -445,7 +445,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 return;
             }
 
-            const res2 = await guardarNovedadInactivo(id, novedad);
+            // Obtener el ID del usuario logueado desde el contexto
+            const { userId: usuarioId } = context;
+
+            const res2 = await guardarNovedadInactivo(id, novedad, usuarioId as any);
             updateState(actions.setModalNovedad(false));
             updateState(actions.setPedidoData({ estadoEntrega: "noentregado" }));
             updateState(actions.setNovedad(""));
@@ -482,22 +485,12 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             // Preparar los datos para cambiar el estado
                             const datosCancelacion = [{
                                 _id: id,
-                                estado: 'noentregado',
-                                motivo_no_cierre: 'cliente cancela pedido'
+                                estado: 'innactivo',
+                                motivo_no_cierre: 'cliente cerro el pedido'
                             }];
 
-                            // Llamar al API para cambiar el estado
-                            const response = await fetch('https://api.codegascolombia.com/pedidos/cambiar-estado-pedido', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    seleccionados: datosCancelacion
-                                })
-                            });
-
-                            const result = await response.json();
+                            // Llamar al API para cambiar el estado usando Redux
+                            const result = await cambiarEstadoPedido(datosCancelacion);
 
                             if (result.status) {
                                 // Mostrar mensaje de éxito
@@ -511,7 +504,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 // Cerrar el modal y refrescar los datos
                                 closePedidoModal();
                                 setTimeout(() => {
-                                    getPedidos();
+                                    dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
                                 }, 1000);
                             } else {
                                 throw new Error('Error en la respuesta del servidor');
@@ -622,7 +615,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     };
 
 
-    const handleGuardarNovedadCerrar = async (novedad: string): Promise<void> => {
+    const handleGuardarNovedadCerrar = async (novedad: string, pedidoId?: string): Promise<void> => {
         try {
 
             if (!novedad || novedad.trim() === '') {
@@ -630,13 +623,31 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 return;
             }
 
-            // Usar la función correcta para guardar novedad al cerrar pedido
-            const response = await guardarNovedadCerrarPedido(
-                id,
-                fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss'),
+            // Obtener el ID del usuario logueado desde el contexto
+            const { userId: usuarioId } = context;
+
+            // Debug: Verificar qué IDs están disponibles
+            console.log('🔍 [handleGuardarNovedadCerrar] IDs disponibles:');
+            console.log('📋 id (selectedPedido):', id);
+            console.log('📋 pedidoIdParaCerrar:', pedidoIdParaCerrar);
+            console.log('📋 pedidoId (parámetro):', pedidoId);
+            console.log('👤 usuarioId:', usuarioId);
+
+            // Usar el ID del pedido disponible (prioridad: pedidoId > id > pedidoIdParaCerrar)
+            const pedidoIdFinal = pedidoId || id || pedidoIdParaCerrar;
+
+            if (!pedidoIdFinal || pedidoIdFinal === 'undefined') {
+                Alert.alert('Error', 'No se pudo obtener el ID del pedido');
+                return;
+            }
+
+            console.log('✅ [handleGuardarNovedadCerrar] Usando pedidoId:', pedidoIdFinal);
+
+            // Usar la función correcta para guardar novedad inactivo
+            const response = await guardarNovedadInactivo(
+                pedidoIdFinal, // pedidoId
                 novedad,
-                'logistica', // perfil por defecto
-                null // conductorId
+                usuarioId as any // conductorId (ID del usuario logueado)
             );
 
             if (response.status) {
@@ -673,11 +684,11 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             const response = await asignarConductor(id, finalIdVehiculo, fechaParaAsignar, idUsuario); // Usar idUsuario como usuarioAsigna
 
             if (response.status) {
-                Alert.alert('Éxito', `Vehículo ${finalPlaca} asignado correctamente`);
-
-                // Cerrar modal y resetear datos
+                // Cerrar modal de vehículos
                 updateState(actions.setModalConductor(false));
-                updateState(actions.setPedidoData({ placa: null, idVehiculo: null }));
+
+                // Abrir modal de fecha para seleccionar fecha de entrega
+                updateState(actions.setModalFechaEntrega(true));
 
                 // Recargar pedidos
                 dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
@@ -700,27 +711,45 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 return;
             }
 
-            // Formatear la fecha como espera el backend
-            const fechaFormatted = moment(fechaAUsar).format('YYYY-MM-DD HH:mm:ss');
-            const seleccionados = [{
-                _id: id,
-                fechaentrega: fechaFormatted
-            }];
+            // Si hay un vehículo asignado, actualizar la asignación con la nueva fecha
+            if (idVehiculo && placa) {
+                const fechaFormatted = moment(fechaAUsar).format('YYYY-MM-DD HH:mm:ss');
 
+                // Llamar al endpoint de asignar conductor con la nueva fecha
+                const response = await asignarConductor(id, idVehiculo, fechaFormatted, idUsuario);
 
-            const response = await asignarFechaEntrega(seleccionados);
+                if (response.status) {
+                    Alert.alert('Éxito', `Vehículo ${placa} asignado para el ${moment(fechaAUsar).format('DD/MM/YYYY')}`);
 
-            if (response.status) {
-                // No mostrar Alert aquí porque ya se muestra en el modal
+                    // Cerrar modal
+                    updateState(actions.setModalFechaEntrega(false));
+                    updateState(actions.setShowCalendar(false));
 
-                // Cerrar modal
-                updateState(actions.setModalFechaEntrega(false));
-                updateState(actions.setShowCalendar(false));
-
-                // Recargar pedidos - CORREGIR EL PARÁMETRO 'load'
-                dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+                    // Recargar pedidos
+                    dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+                } else {
+                    Alert.alert('Error', 'No se pudo actualizar la asignación del vehículo');
+                }
             } else {
-                Alert.alert('Error', 'No se pudo asignar la fecha');
+                // Si no hay vehículo asignado, solo asignar la fecha
+                const fechaFormatted = moment(fechaAUsar).format('YYYY-MM-DD HH:mm:ss');
+                const seleccionados = [{
+                    _id: id,
+                    fechaentrega: fechaFormatted
+                }];
+
+                const response = await asignarFechaEntrega(seleccionados);
+
+                if (response.status) {
+                    // Cerrar modal
+                    updateState(actions.setModalFechaEntrega(false));
+                    updateState(actions.setShowCalendar(false));
+
+                    // Recargar pedidos
+                    dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+                } else {
+                    Alert.alert('Error', 'No se pudo asignar la fecha');
+                }
             }
         } catch (error) {
             console.error('Error asignando fecha:', error);

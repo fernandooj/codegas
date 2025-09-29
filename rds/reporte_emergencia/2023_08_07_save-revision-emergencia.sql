@@ -1,3 +1,5 @@
+drop FUNCTION if exists save_reporte_emergencia;
+
 CREATE OR REPLACE FUNCTION save_reporte_emergencia(
     _tanque BOOLEAN,
     _red BOOLEAN,
@@ -7,7 +9,8 @@ CREATE OR REPLACE FUNCTION save_reporte_emergencia(
     _otrosText VARCHAR,
     _usuarioId INT,
     _puntoId INT,
-    _usuarioCrea INT
+    _usuarioCrea INT,
+    _imgUrlsS3 TEXT[] DEFAULT NULL
 )
 RETURNS INT AS $$
 DECLARE
@@ -22,7 +25,8 @@ BEGIN
         otrosText,
         usuarioId,
         puntoId,
-        usuarioCrea
+        usuarioCrea,
+        ruta
     ) VALUES (
         _tanque,
         _red,
@@ -32,7 +36,8 @@ BEGIN
         _otrosText,
         _usuarioId,
         _puntoId,
-        _usuarioCrea
+        _usuarioCrea,
+        COALESCE(_imgUrlsS3, ARRAY[]::TEXT[])
     )
     RETURNING _id INTO inserted_id;
 

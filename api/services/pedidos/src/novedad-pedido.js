@@ -22,12 +22,31 @@ const NOVEDAD_PEDIDO = 'SELECT * FROM novedad_pedidos($1, $2, $3, $4, $5)';
 // Configuración de Nodemailer
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
-const transporter = nodemailer.createTransporter({
-  service: 'gmail',
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS
-  }
+
+console.log('🔧 [NovedadPedido] Configuración de email:');
+console.log('📧 EMAIL_USER:', EMAIL_USER ? '✅ Configurado' : '❌ No configurado');
+console.log('🔑 EMAIL_PASS:', EMAIL_PASS ? '✅ Configurado' : '❌ No configurado');
+
+// Verificar que las credenciales estén disponibles
+if (!EMAIL_USER || !EMAIL_PASS) {
+    console.error('❌ [NovedadPedido] Error: Credenciales de email no configuradas');
+    throw new Error('Credenciales de email no configuradas');
+}
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    },
+    // Configuración adicional para mejorar la compatibilidad
+    tls: {
+        rejectUnauthorized: false
+    },
+    // Configuración de timeout
+    connectionTimeout: 60000,
+    greetingTimeout: 30000,
+    socketTimeout: 60000
 });
 
 // Destinatarios del email
@@ -38,20 +57,20 @@ const email4 = 'atencionalcliente2@codegascolombia.com'
 
 // Función para generar el template HTML del email
 const generateEmailTemplate = (pedidoData) => {
-  const {
-    pedidoId,
-    novedad,
-    perfilNovedad,
-    fechaEntrega,
-    conductorId,
-    fechaReporte
-  } = pedidoData;
+    const {
+        pedidoId,
+        novedad,
+        perfilNovedad,
+        fechaEntrega,
+        conductorId,
+        fechaReporte
+    } = pedidoData;
 
-  // Determinar el nivel de urgencia basado en el tipo de novedad
-  const urgenciaColor = '#dc2626'; // Rojo para pedidos no entregados
-  const urgenciaTexto = '🚨 PEDIDO NO ENTREGADO';
+    // Determinar el nivel de urgencia basado en el tipo de novedad
+    const urgenciaColor = '#dc2626'; // Rojo para pedidos no entregados
+    const urgenciaTexto = '🚨 PEDIDO NO ENTREGADO';
 
-  return `
+    return `
     <!DOCTYPE html>
     <html lang="es">
     <head>
@@ -180,7 +199,7 @@ const generateEmailTemplate = (pedidoData) => {
                                             <p style="color: #64748b; margin: 0; font-size: 14px;">
                                                 <strong>CodeGas Colombia</strong><br>
                                                 Sistema de Gestión de Pedidos<br>
-                                                📧 app@codegascolombia.com | 📞 +57 (1) 234-5678
+                                                📧 app@codegascolombia.com | 📞 +57 311 5192038
                                             </p>
                                             <p style="color: #94a3b8; margin: 12px 0 0 0; font-size: 12px;">
                                                 Este es un mensaje automático generado por el sistema. No responda a este correo.
@@ -199,57 +218,57 @@ const generateEmailTemplate = (pedidoData) => {
   `;
 };
 module.exports.main = async (event) => {
-  const body = JSON.parse(event.body);
-  const {
-    _id, novedad, perfil_novedad, fechaEntrega, conductorId
-  } = body;
+    const body = JSON.parse(event.body);
+    const {
+        _id, novedad, perfil_novedad, fechaEntrega, conductorId
+    } = body;
+    console.log({ _id, novedad, perfil_novedad, fechaEntrega, conductorId });
+    // Determinar asunto del email
+    const asunto = "🚨 URGENTE: Pedido cerrado sin entregar - CodeGas Colombia";
 
-  // Determinar asunto del email
-  const asunto = "🚨 URGENTE: Pedido cerrado sin entregar - CodeGas Colombia";
+    try {
+        const client = await poolConection.connect();
 
-  try {
-    const client = await poolConection.connect();
+        // Ejecutar la consulta a la base de datos
+        await client.query(NOVEDAD_PEDIDO, [
+            _id, novedad, perfil_novedad, fechaEntrega, conductorId
+        ]);
 
-    // Ejecutar la consulta a la base de datos
-    await client.query(NOVEDAD_PEDIDO, [
-      _id, novedad, perfil_novedad, fechaEntrega, conductorId
-    ]);
+        // Datos para el template del email
+        const pedidoData = {
+            pedidoId: _id,
+            novedad,
+            perfilNovedad: perfil_novedad,
+            fechaEntrega,
+            conductorId,
+            fechaReporte: new Date().toLocaleString('es-CO', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        };
 
-    // Datos para el template del email
-    const pedidoData = {
-      pedidoId: _id,
-      novedad,
-      perfilNovedad: perfil_novedad,
-      fechaEntrega,
-      conductorId,
-      fechaReporte: new Date().toLocaleString('es-CO', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    };
+        // Generar el HTML del email
+        const emailHtml = generateEmailTemplate(pedidoData);
 
-    // Generar el HTML del email
-    const emailHtml = generateEmailTemplate(pedidoData);
-
-    // Configuración del email con el nuevo template
-    const mailOptions = {
-      from: EMAIL_USER,
-      to: [email1, email2, email3, email4],
-      subject: asunto,
-      html: emailHtml,
-      attachments: [
-        {
-          filename: 'logo.jpg',
-          path: path.join(__dirname, '../../../assets/img/logo.jpg'),
-          cid: 'logo'
-        }
-      ],
-      // Versión en texto plano como fallback
-      text: `
+        // Configuración del email con el nuevo template
+        const mailOptions = {
+            from: EMAIL_USER,
+            to: [email1, email2, email3, email4],
+            subject: asunto,
+            html: emailHtml,
+            attachments: [
+                {
+                    filename: 'logo.jpg',
+                    path: path.join(__dirname, '../../../assets/img/logo.jpg'),
+                    cid: 'logo'
+                }
+            ],
+            // Versión en texto plano como fallback
+            text: `
         Novedad de Pedido - CodeGas Colombia
         
         Número de Pedido: ${_id}
@@ -269,17 +288,37 @@ module.exports.main = async (event) => {
         - Coordinar nueva fecha de entrega
         - Informar al departamento de logística
       `
-    };
+        };
 
-    // Enviar email
-    await transporter.sendMail(mailOptions);
+        // Enviar email con manejo de errores mejorado
+        try {
+            console.log('📧 [NovedadPedido] Enviando email...');
+            await transporter.sendMail(mailOptions);
+            console.log('✅ [NovedadPedido] Email enviado exitosamente');
+        } catch (emailError) {
+            console.error('❌ [NovedadPedido] Error enviando email:', emailError);
 
-    return {
-      status: true,
-      pedido: _id
-    };
-  } catch (error) {
-    console.error('Error al procesar novedad de pedido:', error);
-    throw new DatabaseError(error);
-  }
+            // Si el email falla, pero la BD se actualizó correctamente, 
+            // no fallar completamente la operación
+            if (emailError.code === 'EAUTH') {
+                console.error('🔑 [NovedadPedido] Error de autenticación de email - verificar credenciales');
+                return {
+                    status: true,
+                    pedido: _id,
+                    warning: 'Email no enviado - error de autenticación'
+                };
+            }
+
+            // Para otros errores de email, continuar pero registrar el error
+            console.error('📧 [NovedadPedido] Error de email, pero continuando con la operación');
+        }
+
+        return {
+            status: true,
+            pedido: _id
+        };
+    } catch (error) {
+        console.error('❌ [NovedadPedido] Error al procesar novedad de pedido:', error);
+        throw new DatabaseError(error);
+    }
 };

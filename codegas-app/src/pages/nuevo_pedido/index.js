@@ -888,11 +888,19 @@ const Nuevo_pedido = ({ navigation }) => {
             if (status) {
                 if (pedido > 0) {
                     Alert.alert(
-                        `hay ${pedido} pedidos creados hoy para este cliente`,
-                        `desea crearlo`,
+                        '⚠️ Pedido ya creado hoy',
+                        `Ya se ha creado ${pedido} pedido${pedido > 1 ? 's' : ''} para este cliente en este punto de entrega hoy. ¿Desea crear otro pedido?`,
                         [
-                            { text: 'Confirmar', onPress: () => handleSubmit() },
-                            { text: 'Cancelar', onPress: () => setState(prev => ({ ...prev, guardando: false })) },
+                            {
+                                text: 'No crear',
+                                style: 'cancel',
+                                onPress: () => setState(prev => ({ ...prev, guardando: false }))
+                            },
+                            {
+                                text: 'Sí, crear',
+                                style: 'default',
+                                onPress: () => handleSubmit()
+                            },
                         ],
                         { cancelable: false },
                     );

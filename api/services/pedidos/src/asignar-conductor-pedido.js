@@ -32,10 +32,16 @@ module.exports.main = async (event) => {
       fechaFormateada = fechaFormateada.replace(/\.\d{3}/, '');
     }
 
-    console.log('Fecha original:', fechaEntrega);
-    console.log('Fecha formateada:', fechaFormateada);
+    console.log('🔧 [AsignarConductor] Parámetros recibidos:');
+    console.log('📋 pedidoId:', pedidoId);
+    console.log('🚗 carroId:', carroId);
+    console.log('📅 fechaEntrega original:', fechaEntrega);
+    console.log('📅 fechaEntrega formateada:', fechaFormateada);
+    console.log('👤 nPedido (usuarioAsigna):', nPedido);
 
-    await client.query(ASIGNAR_CONDUCTOR_PEDIDO, [pedidoId, carroId, fechaFormateada, nPedido])
+    const result = await client.query(ASIGNAR_CONDUCTOR_PEDIDO, [pedidoId, carroId, fechaFormateada, nPedido]);
+
+    console.log('✅ [AsignarConductor] Resultado de la función SQL:', result.rows[0]);
 
     client.release();
 

@@ -27,7 +27,10 @@ const Revision = (props) => {
 
   const loadRevisiones = (last) => {
     const params = route?.params;
-    if (params) {
+    console.log('🔍 [Revision] Parámetros recibidos:', params);
+
+    if (params && params.puntoId) {
+      console.log('✅ [Revision] Cargando revisiones por punto:', params.puntoId);
       // getRevisionByPunto(params.puntoId)
       const url = `rev/revision/byPunto/${params.puntoId}`;
       axios.get(url)
@@ -39,6 +42,7 @@ const Revision = (props) => {
           setData([]);
         })
     } else {
+      console.log('📋 [Revision] Cargando todas las revisiones (sin filtro por punto)');
       const limitParam = last || 10;
       const startParam = 0;
       const searchParam = terminoBuscador || 'undefined';

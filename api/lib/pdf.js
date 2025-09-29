@@ -6,7 +6,7 @@ const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
 const allowedMimes = ['application/pdf'];
-const { BUCKET_PDF } = process.env;
+const { BUCKET } = process.env;
 
 const uploadPDF = async body => {
   try {
@@ -41,12 +41,12 @@ const uploadPDF = async body => {
         Body: buffer,
         Key: key,
         ContentType: body.mime,
-        Bucket: BUCKET_PDF,
+        Bucket: BUCKET,
         ACL: 'public-read',
       })
       .promise();
 
-    const url = `https://${BUCKET_PDF}.s3.amazonaws.com/${key}`;
+    const url = `https://${BUCKET}.s3.amazonaws.com/${key}`;
     return url;
   } catch (error) {
     console.log('error', error);

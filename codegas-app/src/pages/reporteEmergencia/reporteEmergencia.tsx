@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
+import { useFocusEffect } from '@react-navigation/native'
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Linking, ActivityIndicator, Dimensions, Modal } from 'react-native'
 import { style } from './style'
 import { useDispatch, useSelector } from 'react-redux'
@@ -23,6 +24,14 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
         dispatch(getReportesEmergencia(start, limit, 'all'));
     }, [dispatch, start, limit]);
 
+    // Effect para recargar datos cuando se regresa a esta pantalla
+    useFocusEffect(
+        React.useCallback(() => {
+            // Siempre recargar cuando se enfoca la pantalla para asegurar datos frescos
+            dispatch(getReportesEmergencia(start, limit, searchTerm || 'all'));
+        }, [dispatch, start, limit, searchTerm])
+    );
+
     const handleSearch = (text: string) => {
         setSearchTerm(text);
         dispatch(searchReportesEmergencia(text));
@@ -35,16 +44,20 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
 
     const getReporteStatusColor = (reporte: ReporteEmergenciaItem) => {
         if (!reporte.activo) return '#dc3545'; // Rojo para inactivo
-        if (reporte.estado === 3 || reporte.usuariocierra) return '#28a745'; // Verde para cerrado
+        if (reporte.usuariocierranombre) return '#28a745'; // Verde para cerrado
         if (reporte.tanque || reporte.red || reporte.puntos || reporte.fuga) return '#ffc107'; // Amarillo para emergencia
         return '#17a2b8'; // Azul para normal
     };
 
     const getReporteStatusText = (reporte: ReporteEmergenciaItem) => {
         if (!reporte.activo) return 'Inactivo';
-        if (reporte.estado === 3 || reporte.usuariocierra) return 'Cerrado';
+        if (reporte.usuariocierranombre) return 'Cerrado';
         if (reporte.tanque || reporte.red || reporte.puntos || reporte.fuga) return 'Emergencia';
         return 'Activo';
+    };
+
+    const isReporteCerrado = (reporte: ReporteEmergenciaItem) => {
+        return !!reporte.usuariocierranombre;
     };
 
     const renderReportes = () => {
@@ -70,12 +83,13 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
         return reportes.map((reporte: ReporteEmergenciaItem, key: number) => {
             const statusColor = getReporteStatusColor(reporte);
             const statusText = getReporteStatusText(reporte);
+            const reporteCerrado = isReporteCerrado(reporte);
 
             return (
                 <View key={key} style={{
                     marginHorizontal: 16,
                     marginVertical: 8,
-                    backgroundColor: '#fff',
+                    backgroundColor: reporteCerrado ? '#f8f9fa' : '#fff',
                     borderRadius: 12,
                     borderLeftWidth: 4,
                     borderLeftColor: statusColor,
@@ -85,6 +99,7 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
                     shadowRadius: 2,
                     elevation: 1,
                     width: Dimensions.get('window').width - 32,
+                    opacity: reporteCerrado ? 0.8 : 1,
                 }}>
                     <TouchableOpacity
                         style={{ padding: 20 }}
@@ -109,6 +124,42 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
                                 }}>
                                     {reporte.creado}
                                 </Text>
+
+                                {/* Información del usuario del reporte */}
+                                {reporte.usuarionombre && (
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginBottom: 8
+                                    }}>
+                                        <FontAwesome name="user" size={12} color="#666" style={{ marginRight: 6 }} />
+                                        <Text style={{
+                                            fontSize: 12,
+                                            color: '#666',
+                                            fontWeight: '500'
+                                        }}>
+                                            Cliente: {reporte.usuarionombre}
+                                        </Text>
+                                    </View>
+                                )}
+
+                                {/* Información del punto */}
+                                {reporte.puntodireccion && (
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginBottom: 8
+                                    }}>
+                                        <FontAwesome name="map-marker" size={12} color="#666" style={{ marginRight: 6 }} />
+                                        <Text style={{
+                                            fontSize: 12,
+                                            color: '#666',
+                                            fontWeight: '500'
+                                        }} numberOfLines={2}>
+                                            {reporte.puntodireccion}
+                                        </Text>
+                                    </View>
+                                )}
 
                                 {/* Status badge */}
                                 <View style={{
@@ -159,16 +210,33 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
                                     </View>
                                 )}
 
-                                {/* Estado de solicitud */}
+                                {/* Estado de solicitud y cierre */}
                                 {reporte.estado === 2 && (
                                     <Text style={{ fontSize: 13, color: '#1976d2', marginTop: 8, fontStyle: 'italic' }}>
                                         Solicitud: {reporte.solicitudServicio}
                                     </Text>
                                 )}
-                                {reporte.estado === 3 && (
-                                    <Text style={{ fontSize: 13, color: '#388e3c', marginTop: 8, fontWeight: '600' }}>
-                                        Solicitud cerrada
-                                    </Text>
+                                {reporteCerrado && (
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginTop: 8,
+                                        backgroundColor: '#e8f5e8',
+                                        padding: 8,
+                                        borderRadius: 6
+                                    }}>
+                                        <FontAwesome name="check-circle" size={14} color="#28a745" style={{ marginRight: 6 }} />
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 13, color: '#28a745', fontWeight: '600' }}>
+                                                Reporte cerrado
+                                            </Text>
+                                            {reporte.usuariocierranombre && (
+                                                <Text style={{ fontSize: 12, color: '#28a745', fontStyle: 'italic' }}>
+                                                    Por: {reporte.usuariocierranombre}
+                                                </Text>
+                                            )}
+                                        </View>
+                                    </View>
                                 )}
                             </View>
 
@@ -194,7 +262,21 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
                                 Documentos:
                             </Text>
                             {reporte.documento.map((doc: string, docKey: number) => {
-                                const document = doc.split("--");
+                                // Extraer el nombre del archivo de la URL
+                                const getFileName = (url: string) => {
+                                    try {
+                                        const urlParts = url.split('/');
+                                        const fileName = urlParts[urlParts.length - 1];
+                                        // Si el nombre incluye un UUID, usar un nombre más amigable
+                                        if (fileName.includes('.pdf')) {
+                                            return `Documento_${docKey + 1}.pdf`;
+                                        }
+                                        return fileName || `Documento_${docKey + 1}`;
+                                    } catch (error) {
+                                        return `Documento_${docKey + 1}`;
+                                    }
+                                };
+
                                 return (
                                     <TouchableOpacity
                                         key={docKey}
@@ -213,7 +295,7 @@ const ReporteEmergencia: React.FC<ReporteEmergenciaProps> = ({ navigation }) => 
                                             color: '#1976d2',
                                             flex: 1
                                         }}>
-                                            {document[1] || 'Documento'}
+                                            {getFileName(doc)}
                                         </Text>
                                     </TouchableOpacity>
                                 );

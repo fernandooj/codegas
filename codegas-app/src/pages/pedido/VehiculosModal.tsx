@@ -73,10 +73,8 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                 onPress={() => {
                     // Seleccionar el vehículo
                     onVehicleSelect(e);
-                    // Cambiar automáticamente al tab de fecha
-                    setTimeout(() => {
-                        onToggleCalendar(true);
-                    }, 100);
+                    // Asignar vehículo inmediatamente sin fecha
+                    onAssignVehicle(e);
                 }}
                 activeOpacity={0.8}
             >
@@ -343,24 +341,9 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                 onDayPress={(day: CalendarDay) => {
                                     setFechaSeleccionadaLocal(day.dateString);
                                     onDateSelect(day.dateString);
-                                    // Después de seleccionar fecha, asignar vehículo y cerrar modal
+                                    // Solo llamar onSaveDate, que ahora maneja la asignación completa
                                     setTimeout(() => {
-                                        // Llamar onSaveDate
                                         onSaveDate();
-
-                                        // Asignar vehículo con la fecha seleccionada
-                                        const vehiculoSeleccionado = vehiculos.find(v => v._id === idVehiculo);
-                                        if (vehiculoSeleccionado) {
-                                            setTimeout(() => {
-                                                onAssignVehicle(vehiculoSeleccionado);
-                                            }, 500);
-                                        }
-
-                                        Alert.alert(
-                                            'Vehículo y fecha asignados',
-                                            `Vehículo: ${placa}\nFecha: ${moment(day.dateString).format('DD/MM/YYYY')}`,
-                                            [{ text: 'OK' }]
-                                        );
                                     }, 300);
                                 }}
                             />
@@ -380,7 +363,7 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                     color: '#666',
                                     flex: 1
                                 }}>
-                                    El vehículo y fecha se asignarán automáticamente al seleccionar la fecha
+                                    Selecciona la fecha de entrega para completar la asignación
                                 </Text>
                             </View>
                         </View>

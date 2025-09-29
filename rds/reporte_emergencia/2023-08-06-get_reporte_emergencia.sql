@@ -1,3 +1,5 @@
+estas function no estas devolviendo bien los datos
+drop function if exists get_reporte_emergencia;
 CREATE OR REPLACE FUNCTION get_reporte_emergencia(
     _start INT,
     _limit INT,
@@ -22,8 +24,12 @@ RETURNS TABLE (
     puntoDireccion VARCHAR,
     usuarioId INT,
     usuarioNombre VARCHAR,
+    usuarioCodt VARCHAR,
+    usuarioRazonSocial VARCHAR,
     usuarioCreaId INT,
     usuarioCreaNombre VARCHAR,
+    usuarioCreaCodt VARCHAR,
+    usuarioCreaRazonSocial VARCHAR,
     usuarioCierraId INT,
     usuarioCierraNombre VARCHAR
 ) AS $$
@@ -48,8 +54,12 @@ BEGIN
         p.direccion, 
         rp.usuarioId, 
         u1.nombre as usuarioNombre, 
+        u1.codt as usuarioCodt, 
+        u1.razon_social as usuarioRazonSocial, 
         rp.usuarioCrea, 
         u2.nombre as usuarioCreaNombre, 
+        u2.codt as usuarioCreaCodt, 
+        u2.razon_social as usuarioCreaRazonSocial, 
         rp.usuarioCierra, 
         u3.nombre as usuarioCierraNombre
     FROM reporte_emergencia rp
@@ -57,15 +67,16 @@ BEGIN
     LEFT JOIN users u1 ON rp.usuarioId = u1._id
     LEFT JOIN users u2 ON rp.usuarioCrea = u2._id
     LEFT JOIN users u3 ON rp.usuarioCierra = u3._id 
-    WHERE p.activo = true
+    WHERE (p.activo = true OR p.activo IS NULL)
+    AND rp.eliminado = false
     AND (
         rp._id::text LIKE '%' || _busqueda || '%' OR
         rp.otrosText LIKE '%' || _busqueda || '%' OR
         rp.cerradoText LIKE '%' || _busqueda || '%' OR
-        p.direccion LIKE '%' || _busqueda || '%' OR
-        u1.nombre LIKE '%' || _busqueda || '%' OR
-        u2.nombre LIKE '%' || _busqueda || '%' OR
-        u3.nombre LIKE '%' || _busqueda || '%'
+        COALESCE(p.direccion, '') LIKE '%' || _busqueda || '%' OR
+        COALESCE(u1.nombre, '') LIKE '%' || _busqueda || '%' OR
+        COALESCE(u2.nombre, '') LIKE '%' || _busqueda || '%' OR
+        COALESCE(u3.nombre, '') LIKE '%' || _busqueda || '%'
     )
     ORDER BY rp._id DESC
     LIMIT _limit
