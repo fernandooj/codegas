@@ -63,13 +63,13 @@ BEGIN
     WHERE _id = _user_id AND eliminado = false;
     
     -- Verificar si el usuario puede ver todos los usuarios
-    is_admin_or_higher := (requester_user_type IN ('admin', 'comercial', 'solucion'));
+    is_admin_or_higher := (requester_user_type IN ('admin', 'comercial', 'despacho'));
     
     -- Lógica principal basada en el tipo de usuario y el parámetro _acceso
     IF _acceso = 'cliente' THEN
         -- Buscar solo usuarios con acceso = 'cliente' (sin jerarquía padre-hijo)
         IF is_admin_or_higher THEN
-            -- Admin/comercial/solucion pueden ver TODOS los clientes
+            -- Admin/comercial/despacho pueden ver TODOS los clientes
             FOR record_item IN
                 SELECT 
                     u._id, u.uid, u.created, u.razon_social, u.cedula, u.direccion_factura,
@@ -284,7 +284,7 @@ BEGIN
     ELSE
         -- _acceso != 'cliente' - Implementar estructura jerárquica padre-hijo RECURSIVA
         IF is_admin_or_higher THEN
-            -- Admin/veo/comercial/solucion pueden ver TODOS los usuarios no-clientes con jerarquía RECURSIVA
+            -- Admin/veo/comercial/despacho pueden ver TODOS los usuarios no-clientes con jerarquía RECURSIVA
             
             -- Función recursiva para construir el árbol completo
             CREATE OR REPLACE FUNCTION build_user_tree(_parent_id INT, _acceso VARCHAR, _search VARCHAR)
@@ -311,12 +311,12 @@ BEGIN
                     AND (
                         CASE _acceso
                             WHEN 'All' THEN true
-                            WHEN 'admin' THEN c.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'solucion')
-                            WHEN 'administradores' THEN c.acceso IN ('admin', 'veo', 'comercial', 'solucion')
+                            WHEN 'admin' THEN c.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'despacho')
+                            WHEN 'administradores' THEN c.acceso IN ('admin', 'veo', 'comercial', 'despacho')
                             WHEN 'veo' THEN c.acceso = 'veo'
                             WHEN 'comercial' THEN c.acceso = 'comercial'
                             WHEN 'conductor' THEN c.acceso = 'conductor'
-                            WHEN 'solucion' THEN c.acceso = 'solucion'
+                            WHEN 'despacho' THEN c.acceso = 'despacho'
                             ELSE c.acceso = _acceso
                         END
                     )
@@ -385,12 +385,12 @@ BEGIN
                 AND (
                     CASE _acceso
                         WHEN 'All' THEN true
-                        WHEN 'admin' THEN u.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'solucion')
-                        WHEN 'administradores' THEN u.acceso IN ('admin', 'veo', 'comercial', 'solucion')
+                        WHEN 'admin' THEN u.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'despacho')
+                        WHEN 'administradores' THEN u.acceso IN ('admin', 'veo', 'comercial', 'despacho')
                         WHEN 'veo' THEN u.acceso = 'veo'
                         WHEN 'comercial' THEN u.acceso = 'comercial'
                         WHEN 'conductor' THEN u.acceso = 'conductor'
-                        WHEN 'solucion' THEN u.acceso = 'solucion'
+                        WHEN 'despacho' THEN u.acceso = 'despacho'
                         ELSE u.acceso = _acceso
                     END
                 )
@@ -459,12 +459,12 @@ BEGIN
                 AND (
                     CASE _acceso
                         WHEN 'All' THEN true
-                        WHEN 'admin' THEN u.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'solucion')
-                        WHEN 'administradores' THEN u.acceso IN ('admin', 'veo', 'comercial', 'solucion')
+                        WHEN 'admin' THEN u.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'despacho')
+                        WHEN 'administradores' THEN u.acceso IN ('admin', 'veo', 'comercial', 'despacho')
                         WHEN 'veo' THEN u.acceso = 'veo'
                         WHEN 'comercial' THEN u.acceso = 'comercial'
                         WHEN 'conductor' THEN u.acceso = 'conductor'
-                        WHEN 'solucion' THEN u.acceso = 'solucion'
+                        WHEN 'despacho' THEN u.acceso = 'despacho'
                         ELSE u.acceso = _acceso
                     END
                 )
@@ -496,12 +496,12 @@ BEGIN
                     AND (
                         CASE _acceso
                             WHEN 'All' THEN true
-                            WHEN 'admin' THEN c.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'solucion')
-                            WHEN 'administradores' THEN c.acceso IN ('admin', 'veo', 'comercial', 'solucion')
+                            WHEN 'admin' THEN c.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'despacho')
+                            WHEN 'administradores' THEN c.acceso IN ('admin', 'veo', 'comercial', 'despacho')
                             WHEN 'veo' THEN c.acceso = 'veo'
                             WHEN 'comercial' THEN c.acceso = 'comercial'
                             WHEN 'conductor' THEN c.acceso = 'conductor'
-                            WHEN 'solucion' THEN c.acceso = 'solucion'
+                            WHEN 'despacho' THEN c.acceso = 'despacho'
                             ELSE c.acceso = _acceso
                         END
                     )
@@ -588,12 +588,12 @@ BEGIN
                 AND (
                     CASE _acceso
                         WHEN 'All' THEN true
-                        WHEN 'admin' THEN u.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'solucion')
-                        WHEN 'administradores' THEN u.acceso IN ('admin', 'veo', 'comercial', 'solucion')
+                        WHEN 'admin' THEN u.acceso IN ('admin', 'veo', 'comercial', 'conductor', 'despacho')
+                        WHEN 'administradores' THEN u.acceso IN ('admin', 'veo', 'comercial', 'despacho')
                         WHEN 'veo' THEN u.acceso = 'veo'
                         WHEN 'comercial' THEN u.acceso = 'comercial'
                         WHEN 'conductor' THEN u.acceso = 'conductor'
-                        WHEN 'solucion' THEN u.acceso = 'solucion'
+                        WHEN 'despacho' THEN u.acceso = 'despacho'
                         ELSE u.acceso = _acceso
                     END
                 )
