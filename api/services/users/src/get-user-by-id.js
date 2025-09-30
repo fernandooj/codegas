@@ -1,6 +1,6 @@
-const {poolConection} = require('../../../lib/connection-pg.js')
-const DatabaseError  = require('../../../lib/errors/database-error')
- 
+const { poolConection } = require('../../../lib/connection-pg.js')
+const DatabaseError = require('../../../lib/errors/database-error')
+
 const GET_USER_BY_ID = 'SELECT * FROM get_user_by_id($1)';
 
 
@@ -14,16 +14,27 @@ module.exports.main = async (event) => {
   const {
     _id
   } = event.pathParameters;
-  
+
+  // Validar que el ID no sea null, undefined o string vacío
+  if (!_id || _id === 'null' || _id === 'undefined' || _id === '') {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        status: false,
+        message: 'User ID is required and cannot be null'
+      })
+    };
+  }
+
   try {
-    const client  = await poolConection.connect();
-    const {rows} = await client.query(GET_USER_BY_ID, [_id])
+    const client = await poolConection.connect();
+    const { rows } = await client.query(GET_USER_BY_ID, [_id])
 
     return {
       status: true,
       user: rows[0]
     }
-  } catch (error) { 
+  } catch (error) {
     throw new DatabaseError(error);
   }
 }; 

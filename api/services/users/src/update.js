@@ -98,11 +98,11 @@ module.exports.main = async (event) => {
         NULL,                       -- p_tokenPhone
         NULL,                       -- p_token
         $10,                        -- p_codMagister
-        $14,                        -- p_avatar
-        $11,                        -- p_codt
+        $11,                        -- p_avatar
+        $12,                        -- p_codt
         NULL,                       -- p_codigoRegistro
-        $12::INT,                   -- p_valorUnitario
-        $13::INT                    -- p_idpadre
+        $13::INT,                   -- p_valorUnitario
+        $14::INT                    -- p_idpadre
       )
     `;
 
@@ -117,10 +117,10 @@ module.exports.main = async (event) => {
             tipo || null,
             acceso || null,
             codMagister || null,
+            avatar_url || null,
             codt || null,
             valorUnitario || null,
-            idpadre || null,
-            avatar_url || null
+            idpadre || null
         ]);
 
         // Get the updated user data

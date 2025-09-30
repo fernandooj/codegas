@@ -136,10 +136,12 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                     // Mostrar campo solo si:
                     // 1. Es admin y no es despacho
                     // 2. Es modo editar y NO es cliente
-                    // 3. Es modo crear Y NO es cliente
+                    // 3. Es modo crear Y el usuario tiene acceso admin (desde página usuarios)
+                    // 4. Es modo editar Y el usuario tiene acceso admin (desde página usuarios)
                     ((tipoAcceso === "admin" && accesoPerfil !== "despacho") ||
                         (tipoAcceso === "editar" && acceso !== "cliente") ||
-                        (tipoAcceso === "crear" && acceso !== "cliente"))
+                        (tipoAcceso === "editar" && accesoPerfil === "admin") ||
+                        (tipoAcceso === "crear" && accesoPerfil === "admin"))
                     && <View style={style.fieldContainer}>
                         <Text style={style.fieldLabel}>
                             Tipo de Acceso
@@ -150,8 +152,12 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                                 // Filtrar opciones según el contexto
                                 let opcionesAcceso = accesos;
 
+                                // Si viene desde la página usuarios (accesoPerfil === "admin"), quitar opción "cliente"
+                                if (accesoPerfil === "admin") {
+                                    opcionesAcceso = accesos.filter(item => item.value !== "cliente");
+                                }
                                 // Si es edición y el usuario no es cliente, quitar opción "cliente"
-                                if (tipoAcceso === "editar" && acceso !== "cliente") {
+                                else if (tipoAcceso === "editar" && acceso !== "cliente") {
                                     opcionesAcceso = accesos.filter(item => item.value !== "cliente");
                                 }
 
@@ -444,7 +450,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
 
                 {/* VEO SELECTOR */}
                 {
-                    (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "comercial") || acceso === "cliente")
+                    (acceso === "veo" || acceso === "comercial" || acceso === "cliente")
                     && <View style={style.veoContainer}>
                         <Text style={style.veoLabel}>
                             Comercial VEO

@@ -1,7 +1,7 @@
 -- CREATE TABLE PEDIDO
 create table if not exists pedidos(
     _id SERIAL PRIMARY KEY, --
-    creado TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'), --
+    creado TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'America/Bogota'), --
 	forma          character varying, --
 	cantidadKl    INT, --
 	cantidadPrecio INT,  --

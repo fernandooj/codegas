@@ -19,6 +19,7 @@ export const PEDIDO_ACTIONS = {
     SET_FECHA_ENTREGA_FILTRO: 'SET_FECHA_ENTREGA_FILTRO',
     SET_FECHA_SOLICITUD_FILTRO: 'SET_FECHA_SOLICITUD_FILTRO',
     SET_SHOW_SEARCH: 'SET_SHOW_SEARCH',
+    SET_SEARCH_LOADING: 'SET_SEARCH_LOADING',
     SET_ESTADO_FILTRO: 'SET_ESTADO_FILTRO',
     SET_ORDEN_POR: 'SET_ORDEN_POR',
     SET_TIPO_ORDEN: 'SET_TIPO_ORDEN',
@@ -82,14 +83,15 @@ export const initialState = {
     fechaEntregaFiltro: new Date().toISOString().split('T')[0], // YYYY-MM-DD
     fechaSolicitudFiltro: undefined,
     showSearch: false,
-    estadoFiltro: 'todos', // Estado para filtrar pedidos
+    searchLoading: false,
+    estadoFiltro: 'todos', // Estado para filtrar pedidos (se cambiará dinámicamente según el acceso)
     ordenPor: 'fecha_creacion', // Campo por el cual ordenar
     tipoOrden: 'DESC', // ASC o DESC
 
     // Pagination states
     inicio: 0,
     final: false,
-    limit: 20,
+    limit: 10,
 
     // Data states
     pedidosFiltro: [],
@@ -202,6 +204,8 @@ export const pedidoReducer = (state, action) => {
             return { ...state, fechaSolicitudFiltro: action.payload };
         case PEDIDO_ACTIONS.SET_SHOW_SEARCH:
             return { ...state, showSearch: action.payload };
+        case PEDIDO_ACTIONS.SET_SEARCH_LOADING:
+            return { ...state, searchLoading: action.payload };
         case PEDIDO_ACTIONS.SET_ESTADO_FILTRO:
             return { ...state, estadoFiltro: action.payload };
         case PEDIDO_ACTIONS.SET_ORDEN_POR:
@@ -309,6 +313,7 @@ export const pedidoActions = {
     setFechaEntregaFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_FECHA_ENTREGA_FILTRO, payload: value }),
     setFechaSolicitudFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_FECHA_SOLICITUD_FILTRO, payload: value }),
     setShowSearch: (value) => ({ type: PEDIDO_ACTIONS.SET_SHOW_SEARCH, payload: value }),
+    setSearchLoading: (value) => ({ type: PEDIDO_ACTIONS.SET_SEARCH_LOADING, payload: value }),
     setEstadoFiltro: (value) => ({ type: PEDIDO_ACTIONS.SET_ESTADO_FILTRO, payload: value }),
     setOrdenPor: (value) => ({ type: PEDIDO_ACTIONS.SET_ORDEN_POR, payload: value }),
     setTipoOrden: (value) => ({ type: PEDIDO_ACTIONS.SET_TIPO_ORDEN, payload: value }),

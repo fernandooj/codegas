@@ -33,7 +33,8 @@ import {
     createMultiplePoints,
     updateMultipleUsers,
     changePassword,
-    uploadAvatar
+    uploadAvatar,
+    updateUid
 } from '../../redux/actions/usuarioActions';
 import {
     EditarPerfilProps,
@@ -152,7 +153,27 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     useEffect(() => {
         const initializeData = async () => {
             const { acceso: accesoPerfil, userId } = context;
-            let acceso = accesoPerfil == 'despacho' ? 'cliente' : 'usuario';
+            const { accesoDefault } = route?.params || {};
+
+            console.log('🔧 DEBUG - Inicializando datos:', {
+                accesoPerfil,
+                accesoDefault,
+                routeParams: route?.params
+            });
+
+            let acceso;
+            if (accesoDefault) {
+                // Si se pasa un valor por defecto desde la navegación, usarlo
+                acceso = accesoDefault;
+                console.log('🔧 DEBUG - Usando accesoDefault:', acceso);
+            } else {
+                // Lógica original
+                acceso = accesoPerfil == 'despacho' ? 'cliente' :
+                    accesoPerfil == 'admin' ? 'admin' : 'usuario';
+                console.log('🔧 DEBUG - Usando lógica original:', acceso);
+            }
+
+            console.log('🔧 DEBUG - Valor final de acceso:', acceso);
             updateState({ accesoPerfil, acceso, userId });
 
             // Cargar zonas
@@ -205,13 +226,20 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     updateState({ acceso: "cliente" });
                 }
                 // Si es crear desde clientes, establecer como cliente
-                if (params.tipoAcceso == "crear") {
+                // PERO solo si no se especificó un accesoDefault
+                if (params.tipoAcceso == "crear" && !(params as any).accesoDefault) {
                     updateState({ acceso: "cliente" });
                 }
             }
 
             if (!params?.tipoAcceso) {
                 try {
+                    // Validar que userId no sea null antes de hacer la llamada
+                    if (!userId || userId === null || userId === undefined || userId === 'undefined' || userId === 'null' || userId.toString().trim() === '') {
+                        console.log('userId is null or invalid, skipping getUserById call');
+                        return;
+                    }
+
                     const e = await getUserById(userId);
                     const { user } = e;
                     console.log('user', user);
@@ -915,6 +943,15 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 displayName: displayName,
             });
 
+            // Actualizar el UID en la base de datos
+            try {
+                await updateUid(email, userCredential.user.uid);
+                console.log('✅ UID actualizado en la base de datos:', userCredential.user.uid);
+            } catch (uidError) {
+                console.error('⚠️ Error al actualizar UID en la base de datos:', uidError);
+                // No fallar la creación si no se puede actualizar el UID
+            }
+
             return {
                 success: true,
                 uid: userCredential.user.uid,
@@ -942,8 +979,16 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             return { direccion: e.direccion, idZona: e.idZona, observacion: e.observacion, capacidad: e.capacidad }
         })
 
-        // Generar contraseña aleatoria
-        const generatedPassword = Math.floor(1000 + Math.random() * 9000).toString();
+        // Generar contraseña aleatoria más segura (mínimo 8 caracteres)
+        const generateSecurePassword = () => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let password = '';
+            for (let i = 0; i < 8; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        };
+        const generatedPassword = generateSecurePassword();
 
         signUp({
             razon_social,
@@ -963,7 +1008,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             descuento: null,
             tokenPhone: null,
             codigoRegistro: null,
-            idPadre: null
+            idPadre: idVeo || null
         })
             .then(async (e) => {
                 if (e.status) {
@@ -1087,30 +1132,29 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                             });
                         }
 
-                        if (imagen.length === 0) {
-                            // Actualizar contexto si es edición de perfil propio
-                            if (!state.tipoAcceso || state.tipoAcceso === "") {
-                                // Actualizar contexto en tiempo real
-                                if (context.updateUserData) {
-                                    context.updateUserData({
-                                        nombre: e.user.nombre,
-                                        email: e.user.email,
-                                        avatar: e.user.avatar
-                                    });
-                                }
+                        // Actualizar contexto si es edición de perfil propio
+                        if (!state.tipoAcceso || state.tipoAcceso === "") {
+                            // Actualizar contexto en tiempo real
+                            if (context.updateUserData) {
+                                context.updateUserData({
+                                    nombre: e.user.nombre,
+                                    email: e.user.email,
+                                    avatar: e.user.avatar
+                                });
                             }
-
-                            // Solo navegar si es creación de usuario, no edición de perfil propio
-                            if (state.tipoAcceso && state.tipoAcceso !== "") {
-                                setTimeout(() => {
-                                    navigation.navigate("Home")
-                                }, 1500);
-                            }
-
-                            updateState({ cargando: false });
-                        } else {
-                            avatar(imagen, e.user._id)
                         }
+
+                        // Solo navegar si es creación de usuario, no edición de perfil propio
+                        if (state.tipoAcceso && state.tipoAcceso !== "") {
+                            setTimeout(() => {
+                                navigation.navigate("Home")
+                            }, 1500);
+                        }
+
+                        updateState({ cargando: false });
+
+                        // Nota: Las imágenes se manejarán posteriormente si es necesario
+                        // No intentar subir avatar inmediatamente después de crear usuario
                     }
                 } else {
                     updateState({ cargando: false });

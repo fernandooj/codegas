@@ -117,6 +117,7 @@ export interface EditarPerfilProps {
             tipoAcceso?: string;
             idUsuario?: string;
             scrollPosition?: number;
+            accesoDefault?: string;
         };
     };
 }

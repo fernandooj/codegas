@@ -1,4 +1,3 @@
-estas function no estas devolviendo bien los datos
 drop function if exists get_reporte_emergencia;
 CREATE OR REPLACE FUNCTION get_reporte_emergencia(
     _start INT,

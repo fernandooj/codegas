@@ -94,6 +94,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         modalResetPedido,
         terminoBuscador,
         showSearch,
+        searchLoading,
         final,
         limit,
         elevation,
@@ -172,6 +173,11 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
         // Solo cargar pedidos si tenemos los datos necesarios
         if (idUsuario && acceso) {
+            // Si es conductor, establecer filtro por defecto a "asignado"
+            if (acceso === 'conductor' && estadoFiltro === 'todos') {
+                updateState(actions.setEstadoFiltro('asignado'));
+            }
+
             // Delay mínimo para evitar cargas múltiples
             const timeoutId = setTimeout(() => {
                 loadPedidos('load');
@@ -210,24 +216,34 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         if (terminoBuscador && terminoBuscador.length >= 2) {
             const searchTimeout = setTimeout(() => {
                 updateState(actions.setShowSearch(true));
-                // Solo limpiar pedidos si hay búsqueda activa
+                updateState(actions.setSearchLoading(true));
+                // Limpiar pedidos inmediatamente para evitar mostrar resultados antiguos
                 dispatch({
                     type: 'GET_PEDIDOS',
                     pedidos: []
                 });
-                dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
-            }, 300); // Debounce reducido de 500ms a 300ms
+
+                // Realizar la búsqueda
+                dispatch(getPedidos(idUsuario, 0, 10, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden))
+                    .finally(() => {
+                        updateState(actions.setSearchLoading(false));
+                    });
+            }, 150); // Debounce optimizado para mejor experiencia
 
             return () => clearTimeout(searchTimeout);
         }
         // Si no hay término de búsqueda y estaba en búsqueda, recargar todos
         else if (terminoBuscador === '' && showSearch) {
             updateState(actions.setShowSearch(false));
+            updateState(actions.setSearchLoading(true));
             dispatch({
                 type: 'GET_PEDIDOS',
                 pedidos: []
             });
-            dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+            dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden))
+                .finally(() => {
+                    updateState(actions.setSearchLoading(false));
+                });
         }
     }, [terminoBuscador]); // Solo reaccionar a cambios en el término de búsqueda
 
@@ -247,12 +263,12 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         // Reiniciar paginación y limpiar estado
         updateState(actions.setInicio(0));
         updateState(actions.setFinal(false));
-        updateState(actions.setLimit(20));
+        updateState(actions.setLimit(10));
 
         // Cargar pedidos inmediatamente sin delay
         const loadPedidosWithFilters = async () => {
             try {
-                await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
+                await dispatch(getPedidos(idUsuario, 0, 10, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
             } catch (error) {
                 console.error('Error cargando pedidos:', error);
                 Alert.alert(
@@ -390,7 +406,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
 
         // Optimización: usar valores por defecto más eficientes
-        const currentLimit = type === 'load' ? 20 : limit || 20;
+        const currentLimit = type === 'load' ? 10 : limit || 10;
         const currentStart = 0; // Siempre empezar desde 0
         const currentTerminoBuscador = type === 'load' ? undefined : terminoBuscador;
 
@@ -448,7 +464,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Obtener el ID del usuario logueado desde el contexto
             const { userId: usuarioId } = context;
 
-            const res2 = await guardarNovedadInactivo(id, novedad, usuarioId as any);
+            const res2 = await guardarNovedadInactivo(id, novedad, usuarioId as any, 'inactivo');
             updateState(actions.setModalNovedad(false));
             updateState(actions.setPedidoData({ estadoEntrega: "noentregado" }));
             updateState(actions.setNovedad(""));
@@ -615,7 +631,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     };
 
 
-    const handleGuardarNovedadCerrar = async (novedad: string, pedidoId?: string): Promise<void> => {
+    const handleGuardarNovedadCerrar = async (novedad: string, pedidoId?: string, motivoKey?: string): Promise<void> => {
         try {
 
             if (!novedad || novedad.trim() === '') {
@@ -647,7 +663,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             const response = await guardarNovedadInactivo(
                 pedidoIdFinal, // pedidoId
                 novedad,
-                usuarioId as any // conductorId (ID del usuario logueado)
+                usuarioId as any, // conductorId (ID del usuario logueado)
+                motivoKey // motivo seleccionado
             );
 
             if (response.status) {
@@ -1092,7 +1109,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 color: '#333',
                                 marginBottom: 4
                             }}>
-                                Pedidos
+                                {acceso === 'conductor' ? 'Mis Pedidos' : 'Pedidos'}
                             </Text>
                             {pedidos && (
                                 <Text style={{
@@ -1100,7 +1117,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                     color: '#666',
                                     fontWeight: '500'
                                 }}>
-                                    {pedidos.length} pedidos {estadoFiltro !== 'todos' ? `(${estadoFiltro})` : 'encontrados'}
+                                    {acceso === 'conductor'
+                                        ? `${pedidos.length} pedidos asignados`
+                                        : `${pedidos.length} pedidos ${estadoFiltro !== 'todos' ? `(${estadoFiltro})` : 'encontrados'}`
+                                    }
                                 </Text>
                             )}
                         </View>
@@ -1222,7 +1242,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                         color: '#fff'
                                     }} />
                                 </TouchableOpacity>
-                            ) : showSearch ? (
+                            ) : searchLoading ? (
                                 <View style={{
                                     width: 32,
                                     height: 32,
@@ -1237,204 +1257,304 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 )}
 
                 {/* Botones de filtro por estado */}
-                <View style={{
-                    marginHorizontal: 20,
-                    marginTop: 12,
-                }}>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{
-                            paddingHorizontal: 4,
-                            gap: 8
-                        }}
-                    >
-                        {/* Botón Todos */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: '#007bff',
-                                borderRadius: 20,
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderWidth: estadoFiltro === 'todos' ? 4 : 1,
-                                borderColor: estadoFiltro === 'todos' ? '#fff' : 'rgba(0, 123, 255, 0.3)',
-                                shadowColor: estadoFiltro === 'todos' ? '#007bff' : '#000',
-                                shadowOffset: { width: 0, height: estadoFiltro === 'todos' ? 3 : 1 },
-                                shadowOpacity: estadoFiltro === 'todos' ? 0.4 : 0.1,
-                                shadowRadius: estadoFiltro === 'todos' ? 6 : 2,
-                                elevation: estadoFiltro === 'todos' ? 8 : 2,
-                                transform: estadoFiltro === 'todos' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                {acceso !== "conductor" && (
+                    <View style={{
+                        marginHorizontal: 20,
+                        marginTop: 12,
+                    }}>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{
+                                paddingHorizontal: 4,
+                                gap: 8
                             }}
-                            onPress={() => updateState(actions.setEstadoFiltro('todos'))}
                         >
-                            <Text style={{
-                                fontSize: 12,
-                                fontWeight: estadoFiltro === 'todos' ? '700' : '600',
-                                color: '#fff'
-                            }}>
-                                Todos
-                            </Text>
-                        </TouchableOpacity>
+                            {/* Botón Todos */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#007bff',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'todos' ? 4 : 1,
+                                    borderColor: estadoFiltro === 'todos' ? '#fff' : 'rgba(0, 123, 255, 0.3)',
+                                    shadowColor: estadoFiltro === 'todos' ? '#007bff' : '#000',
+                                    shadowOffset: { width: 0, height: estadoFiltro === 'todos' ? 3 : 1 },
+                                    shadowOpacity: estadoFiltro === 'todos' ? 0.4 : 0.1,
+                                    shadowRadius: estadoFiltro === 'todos' ? 6 : 2,
+                                    elevation: estadoFiltro === 'todos' ? 8 : 2,
+                                    transform: estadoFiltro === 'todos' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('todos'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'todos' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    Todos
+                                </Text>
+                            </TouchableOpacity>
 
-                        {/* Botón Espera */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: 'rgba(91, 192, 222, 1)',
-                                borderRadius: 20,
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderWidth: estadoFiltro === 'espera' ? 4 : 1,
-                                borderColor: estadoFiltro === 'espera' ? '#fff' : 'rgba(91, 192, 222, 0.3)',
-                                shadowColor: estadoFiltro === 'espera' ? 'rgba(91, 192, 222, 1)' : '#000',
-                                shadowOffset: { width: 0, height: estadoFiltro === 'espera' ? 3 : 1 },
-                                shadowOpacity: estadoFiltro === 'espera' ? 0.4 : 0.1,
-                                shadowRadius: estadoFiltro === 'espera' ? 6 : 2,
-                                elevation: estadoFiltro === 'espera' ? 8 : 2,
-                                transform: estadoFiltro === 'espera' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                            }}
-                            onPress={() => updateState(actions.setEstadoFiltro('espera'))}
-                        >
-                            <Text style={{
-                                fontSize: 12,
-                                fontWeight: estadoFiltro === 'espera' ? '700' : '600',
-                                color: '#fff'
-                            }}>
-                                Espera
-                            </Text>
-                        </TouchableOpacity>
+                            {/* Botón Espera */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(91, 192, 222, 1)',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'espera' ? 4 : 1,
+                                    borderColor: estadoFiltro === 'espera' ? '#fff' : 'rgba(91, 192, 222, 0.3)',
+                                    shadowColor: estadoFiltro === 'espera' ? 'rgba(91, 192, 222, 1)' : '#000',
+                                    shadowOffset: { width: 0, height: estadoFiltro === 'espera' ? 3 : 1 },
+                                    shadowOpacity: estadoFiltro === 'espera' ? 0.4 : 0.1,
+                                    shadowRadius: estadoFiltro === 'espera' ? 6 : 2,
+                                    elevation: estadoFiltro === 'espera' ? 8 : 2,
+                                    transform: estadoFiltro === 'espera' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('espera'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'espera' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    Espera
+                                </Text>
+                            </TouchableOpacity>
 
-                        {/* Botón Activo */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: 'rgba(255, 235, 0, 1)',
-                                borderRadius: 20,
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderWidth: estadoFiltro === 'activo' ? 4 : 1,
-                                borderColor: estadoFiltro === 'activo' ? '#333' : 'rgba(255, 235, 0, 0.3)',
-                                shadowColor: estadoFiltro === 'activo' ? 'rgba(255, 235, 0, 1)' : '#000',
-                                shadowOffset: { width: 0, height: estadoFiltro === 'activo' ? 3 : 1 },
-                                shadowOpacity: estadoFiltro === 'activo' ? 0.4 : 0.1,
-                                shadowRadius: estadoFiltro === 'activo' ? 6 : 2,
-                                elevation: estadoFiltro === 'activo' ? 8 : 2,
-                                transform: estadoFiltro === 'activo' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                            }}
-                            onPress={() => updateState(actions.setEstadoFiltro('activo'))}
-                        >
-                            <Text style={{
-                                fontSize: 12,
-                                fontWeight: estadoFiltro === 'activo' ? '700' : '600',
-                                color: '#333'
-                            }}>
-                                Activo
-                            </Text>
-                        </TouchableOpacity>
+                            {/* Botón Activo */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(255, 235, 0, 1)',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'activo' ? 4 : 1,
+                                    borderColor: estadoFiltro === 'activo' ? '#333' : 'rgba(255, 235, 0, 0.3)',
+                                    shadowColor: estadoFiltro === 'activo' ? 'rgba(255, 235, 0, 1)' : '#000',
+                                    shadowOffset: { width: 0, height: estadoFiltro === 'activo' ? 3 : 1 },
+                                    shadowOpacity: estadoFiltro === 'activo' ? 0.4 : 0.1,
+                                    shadowRadius: estadoFiltro === 'activo' ? 6 : 2,
+                                    elevation: estadoFiltro === 'activo' ? 8 : 2,
+                                    transform: estadoFiltro === 'activo' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('activo'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'activo' ? '700' : '600',
+                                    color: '#333'
+                                }}>
+                                    Activo
+                                </Text>
+                            </TouchableOpacity>
 
-                        {/* Botón Asignado */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: 'rgba(240, 173, 78, 1)',
-                                borderRadius: 20,
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderWidth: estadoFiltro === 'asignado' ? 3 : 1,
-                                borderColor: estadoFiltro === 'asignado' ? '#fff' : 'rgba(240, 173, 78, 0.3)',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 1 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 2,
-                                elevation: 2,
-                            }}
-                            onPress={() => updateState(actions.setEstadoFiltro('asignado'))}
-                        >
-                            <Text style={{
-                                fontSize: 12,
-                                fontWeight: estadoFiltro === 'asignado' ? '700' : '600',
-                                color: '#fff'
-                            }}>
-                                Asignado
-                            </Text>
-                        </TouchableOpacity>
+                            {/* Botón Asignado */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(240, 173, 78, 1)',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'asignado' ? 3 : 1,
+                                    borderColor: estadoFiltro === 'asignado' ? '#fff' : 'rgba(240, 173, 78, 0.3)',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 1 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 2,
+                                    elevation: 2,
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('asignado'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'asignado' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    Asignado
+                                </Text>
+                            </TouchableOpacity>
 
-                        {/* Botón Inactivo */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: 'rgba(217, 83, 79, 1)',
-                                borderRadius: 20,
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderWidth: estadoFiltro === 'innactivo' ? 3 : 1,
-                                borderColor: estadoFiltro === 'innactivo' ? '#fff' : 'rgba(217, 83, 79, 0.3)',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 1 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 2,
-                                elevation: 2,
-                            }}
-                            onPress={() => updateState(actions.setEstadoFiltro('innactivo'))}
-                        >
-                            <Text style={{
-                                fontSize: 12,
-                                fontWeight: estadoFiltro === 'innactivo' ? '700' : '600',
-                                color: '#fff'
-                            }}>
-                                Inactivo
-                            </Text>
-                        </TouchableOpacity>
+                            {/* Botón Inactivo */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(217, 83, 79, 1)',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'innactivo' ? 3 : 1,
+                                    borderColor: estadoFiltro === 'innactivo' ? '#fff' : 'rgba(217, 83, 79, 0.3)',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 1 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 2,
+                                    elevation: 2,
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('innactivo'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'innactivo' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    Inactivo
+                                </Text>
+                            </TouchableOpacity>
 
-                        {/* Botón No Entregado */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: '#6c757d',
-                                borderRadius: 20,
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderWidth: estadoFiltro === 'noentregado' ? 3 : 1,
-                                borderColor: estadoFiltro === 'noentregado' ? '#fff' : 'rgba(108, 117, 125, 0.3)',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 1 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 2,
-                                elevation: 2,
-                            }}
-                            onPress={() => updateState(actions.setEstadoFiltro('noentregado'))}
-                        >
-                            <Text style={{
-                                fontSize: 12,
-                                fontWeight: estadoFiltro === 'noentregado' ? '700' : '600',
-                                color: '#fff'
-                            }}>
-                                No Entregado
-                            </Text>
-                        </TouchableOpacity>
+                            {/* Botón No Entregado */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#6c757d',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'noentregado' ? 3 : 1,
+                                    borderColor: estadoFiltro === 'noentregado' ? '#fff' : 'rgba(108, 117, 125, 0.3)',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 1 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 2,
+                                    elevation: 2,
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('noentregado'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'noentregado' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    No Entregado
+                                </Text>
+                            </TouchableOpacity>
 
-                        {/* Botón Otro */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: 'rgba(92, 184, 92, 1)',
-                                borderRadius: 20,
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderWidth: estadoFiltro === 'otro' ? 3 : 1,
-                                borderColor: estadoFiltro === 'otro' ? '#fff' : 'rgba(92, 184, 92, 0.3)',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 1 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 2,
-                                elevation: 2,
+                            {/* Botón Otro */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(92, 184, 92, 1)',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'otro' ? 3 : 1,
+                                    borderColor: estadoFiltro === 'otro' ? '#fff' : 'rgba(92, 184, 92, 0.3)',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 1 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 2,
+                                    elevation: 2,
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('otro'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'otro' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    Cerrados
+                                </Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                )}
+
+                {/* Botones de filtro para conductores */}
+                {acceso === "conductor" && (
+                    <View style={{
+                        marginHorizontal: 20,
+                        marginTop: 12,
+                    }}>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{
+                                paddingHorizontal: 4,
+                                gap: 8
                             }}
-                            onPress={() => updateState(actions.setEstadoFiltro('otro'))}
                         >
-                            <Text style={{
-                                fontSize: 12,
-                                fontWeight: estadoFiltro === 'otro' ? '700' : '600',
-                                color: '#fff'
-                            }}>
-                                Cerrados
-                            </Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
+                            {/* Botón Asignado */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(240, 173, 78, 1)',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'asignado' ? 4 : 1,
+                                    borderColor: estadoFiltro === 'asignado' ? '#fff' : 'rgba(240, 173, 78, 0.3)',
+                                    shadowColor: estadoFiltro === 'asignado' ? 'rgba(240, 173, 78, 1)' : '#000',
+                                    shadowOffset: { width: 0, height: estadoFiltro === 'asignado' ? 3 : 1 },
+                                    shadowOpacity: estadoFiltro === 'asignado' ? 0.4 : 0.1,
+                                    shadowRadius: estadoFiltro === 'asignado' ? 6 : 2,
+                                    elevation: estadoFiltro === 'asignado' ? 8 : 2,
+                                    transform: estadoFiltro === 'asignado' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('asignado'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'asignado' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    Asignados
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Botón No Entregado */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#6c757d',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'noentregado' ? 4 : 1,
+                                    borderColor: estadoFiltro === 'noentregado' ? '#fff' : 'rgba(108, 117, 125, 0.3)',
+                                    shadowColor: estadoFiltro === 'noentregado' ? '#6c757d' : '#000',
+                                    shadowOffset: { width: 0, height: estadoFiltro === 'noentregado' ? 3 : 1 },
+                                    shadowOpacity: estadoFiltro === 'noentregado' ? 0.4 : 0.1,
+                                    shadowRadius: estadoFiltro === 'noentregado' ? 6 : 2,
+                                    elevation: estadoFiltro === 'noentregado' ? 8 : 2,
+                                    transform: estadoFiltro === 'noentregado' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('noentregado'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'noentregado' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    No Entregados
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Botón Cerrados */}
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(92, 184, 92, 1)',
+                                    borderRadius: 20,
+                                    paddingHorizontal: 16,
+                                    paddingVertical: 8,
+                                    borderWidth: estadoFiltro === 'otro' ? 4 : 1,
+                                    borderColor: estadoFiltro === 'otro' ? '#fff' : 'rgba(92, 184, 92, 0.3)',
+                                    shadowColor: estadoFiltro === 'otro' ? 'rgba(92, 184, 92, 1)' : '#000',
+                                    shadowOffset: { width: 0, height: estadoFiltro === 'otro' ? 3 : 1 },
+                                    shadowOpacity: estadoFiltro === 'otro' ? 0.4 : 0.1,
+                                    shadowRadius: estadoFiltro === 'otro' ? 6 : 2,
+                                    elevation: estadoFiltro === 'otro' ? 8 : 2,
+                                    transform: estadoFiltro === 'otro' ? [{ scale: 1.05 }] : [{ scale: 1 }],
+                                }}
+                                onPress={() => updateState(actions.setEstadoFiltro('otro'))}
+                            >
+                                <Text style={{
+                                    fontSize: 12,
+                                    fontWeight: estadoFiltro === 'otro' ? '700' : '600',
+                                    color: '#fff'
+                                }}>
+                                    Entregados
+                                </Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                )}
             </View>
         );
     };
@@ -1597,7 +1717,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 ref={scrollViewRef}
                 scrollEnabled={!(modalConductor || modalFechaEntrega || modalNovedad || modalPerfiles || modalCerrarPedido || modalOrdenamiento || modalResetPedido)}
             >
-                {showSpin1 || !pedidos ? (
+                {showSpin1 || !pedidos || (searchLoading && pedidos.length === 0) ? (
                     <View style={{
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1623,7 +1743,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             fontWeight: '600',
                             textAlign: 'center'
                         }}>
-                            {showSpin1 ? 'Cargando pedidos...' : 'Inicializando...'}
+                            {searchLoading ? 'Buscando...' : showSpin1 ? 'Cargando pedidos...' : 'Inicializando...'}
                         </Text>
                         <Text style={{
                             fontSize: showSpin1 ? 12 : 14,
@@ -1632,9 +1752,11 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             textAlign: 'center',
                             paddingHorizontal: 20
                         }}>
-                            {showSpin1
-                                ? (estadoFiltro === 'todos' ? 'Obteniendo todos los pedidos' : `Filtrando por "${estadoFiltro}"`)
-                                : 'Preparando la lista de pedidos'
+                            {searchLoading
+                                ? `Buscando "${terminoBuscador}"...`
+                                : showSpin1
+                                    ? (estadoFiltro === 'todos' ? 'Obteniendo todos los pedidos' : `Filtrando por "${estadoFiltro}"`)
+                                    : 'Preparando la lista de pedidos'
                             }
                         </Text>
                     </View>
@@ -1648,12 +1770,19 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             />
                         </View>
                         <Text style={style.emptyStateTitle}>
-                            {estadoFiltro === 'todos' ? 'No hay pedidos' : `Sin pedidos ${estadoFiltro}`}
+                            {showSearch
+                                ? 'Sin resultados'
+                                : estadoFiltro === 'todos'
+                                    ? 'No hay pedidos'
+                                    : `Sin pedidos ${estadoFiltro}`
+                            }
                         </Text>
                         <Text style={style.emptyStateSubtitle}>
-                            {estadoFiltro === 'todos'
-                                ? 'No se encontraron pedidos en el sistema'
-                                : `No hay pedidos en estado "${estadoFiltro}"`
+                            {showSearch
+                                ? `No se encontraron pedidos para "${terminoBuscador}"`
+                                : estadoFiltro === 'todos'
+                                    ? 'No se encontraron pedidos en el sistema'
+                                    : `No hay pedidos en estado "${estadoFiltro}"`
                             }
                         </Text>
                         <View style={style.emptyStateDivider} />

@@ -2,7 +2,7 @@
 create table if not exists users(
     _id SERIAL PRIMARY KEY,
     uid character varying,
-    created TIMESTAMP DEFAULT (NOW() - INTERVAL '5 hours'),
+    created TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'America/Bogota'),
     razon_social character varying,
     cedula character varying,
     direccion_factura character varying,

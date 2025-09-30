@@ -133,7 +133,10 @@ const Usuarios: React.FC<UsuarioProps> = ({ navigation }) => {
     }, [navigation, acceso]);
 
     const navigateToCreateClient = useCallback(() => {
-        navigation.navigate('editarPerfil', { tipoAcceso: 'crear' });
+        navigation.navigate('editarPerfil', {
+            tipoAcceso: 'crear',
+            accesoDefault: 'admin'
+        });
     }, [navigation]);
 
     // Función para renderizar usuarios jerárquicamente

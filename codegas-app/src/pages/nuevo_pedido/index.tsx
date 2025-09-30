@@ -19,22 +19,48 @@ import HeaderLogo from '../../components/HeaderLogo'
 import { style } from './style'
 
 import { frecuencias, dias, diasN, dia1, dia2 } from '../../utils/pedido_info'
+import {
+    NuevoPedidoProps,
+    NuevoPedidoState,
+    Cliente,
+    PuntoEntrega,
+    PedidoData,
+    VerificacionPedidoResponse,
+    CrearPedidoResponse,
+    PuntosPorClienteResponse,
+    FormaPedido,
+    FrecuenciaPedido,
+    DiaSemana,
+    AccesoUsuario,
+    ModalSelectorOption,
+    CalendarDay,
+    MarkedDates,
+    DataContextType,
+    RootState,
+    TextInputMaskRef,
+    FiltroClientesParams,
+    VerificacionPedidoParams,
+    CrearPedidoParams,
+    GetPuntosParams,
+    GetClientesParams,
+    PedidoExistente
+} from './types'
 
-const Nuevo_pedido = ({ navigation }) => {
-    const context = useContext(DataContext);
+const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
+    const context = useContext(DataContext) as DataContextType;
     const { acceso, userId: idUsuario, email, nombre } = context;
     const dispatch = useDispatch();
-    const campoMonto = useRef(null);
+    const campoMonto = useRef<TextInputMaskRef>(null);
 
     // Estados para animaciones del modal
     const [modalAnimation] = useState(new Animated.Value(0));
     const [overlayAnimation] = useState(new Animated.Value(0));
 
     // Selector de Redux para obtener los clientes
-    const clientes = useSelector(state => state.usuario.usuarios || []);
-    const usuariosAcceso = useSelector(state => state.usuario.usuariosAcceso || []);
+    const clientes = useSelector((state: RootState) => state.usuario.usuarios || []);
+    const usuariosAcceso = useSelector((state: RootState) => state.usuario.usuariosAcceso || []);
 
-    const [state, setState] = useState({
+    const [state, setState] = useState<NuevoPedidoState>({
         imagen: [],
         terminoBuscador: "",
         inicio: 0,
@@ -66,7 +92,18 @@ const Nuevo_pedido = ({ navigation }) => {
         fechaSolicitud: '',
         novedad: '',
         guardando: false,
-        idUsuario: null
+        idUsuario: null,
+        showPedidosExistentes: false,
+        pedidosExistentes: []
+    });
+
+    // Estado separado para manejar el modal de pedidos existentes
+    const [modalData, setModalData] = useState<{
+        show: boolean;
+        pedidos: PedidoExistente[];
+    }>({
+        show: false,
+        pedidos: []
     });
 
     useEffect(() => {
@@ -114,9 +151,9 @@ const Nuevo_pedido = ({ navigation }) => {
         }
     }, [state.showClientes]);
 
-    const getPuntos = async (id) => {
+    const getPuntos = async (id: string): Promise<void> => {
         try {
-            const response = await getPointsByClient(id);
+            const response = await getPointsByClient(id) as PuntosPorClienteResponse;
             if (response.status) {
                 if (response.puntos.length === 1) {
                     setState(prev => ({
@@ -144,7 +181,7 @@ const Nuevo_pedido = ({ navigation }) => {
         }
     };
 
-    const getClientes = () => {
+    const getClientes = (): void => {
         const { terminoBuscador, idUsuario, acceso } = state;
 
         // Si el acceso es cliente, no debe llamar a ningún endpoint de usuarios
@@ -163,8 +200,8 @@ const Nuevo_pedido = ({ navigation }) => {
             dispatch(action);
         }
     };
-    const renderUsuarios = () => {
-        return clientes.map((e, key) => {
+    const renderUsuarios = (): React.JSX.Element[] => {
+        return clientes.map((e: Cliente, key: number) => {
             const isInactive = !e.activo;
             return (
                 <TouchableOpacity
@@ -248,7 +285,7 @@ const Nuevo_pedido = ({ navigation }) => {
             )
         })
     };
-    const renderCliente = () => {
+    const renderCliente = (): React.JSX.Element | null => {
         const { idCliente, cliente, acceso } = state;
 
         // Si el acceso es cliente, no debe mostrar opciones de asignar cliente
@@ -283,10 +320,10 @@ const Nuevo_pedido = ({ navigation }) => {
             </View>
         )
     };
-    const modalCliente = () => {
+    const modalCliente = (): React.JSX.Element => {
         const { showRenderUsuarios, terminoBuscador } = state;
 
-        const closeModal = () => {
+        const closeModal = (): void => {
             Animated.parallel([
                 Animated.timing(overlayAnimation, {
                     toValue: 0,
@@ -436,7 +473,7 @@ const Nuevo_pedido = ({ navigation }) => {
             </Modal>
         )
     };
-    const renderPedido = () => {
+    const renderPedido = (): React.JSX.Element => {
         const {
             forma,
             acceso,
@@ -458,6 +495,7 @@ const Nuevo_pedido = ({ navigation }) => {
         return (
             <View style={style.subContainerNuevo}>
                 {showClientes && modalCliente()}
+                {modalData.show && modalPedidosExistentes()}
                 <View style={style.contenedorMonto}>
                     <Text style={style.tituloForm}>Realice su pedido</Text>
                     <TouchableOpacity
@@ -799,9 +837,9 @@ const Nuevo_pedido = ({ navigation }) => {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Selecciona una dirección' });
                         } else if (!forma) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Selecciona una forma' });
-                        } else if (forma === "monto" && cantidad < 10) {
+                        } else if (forma === "monto" && parseInt(cantidad) < 10) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta una cantidad' });
-                        } else if (forma === "cantidad" && cantidad < 10) {
+                        } else if (forma === "cantidad" && parseInt(cantidad) < 10) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta una cantidad' });
                         } else if ((frecuencia === "semanal" || frecuencia === "mensual") && !diaSeleccionado1) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta un dia de frecuencia' });
@@ -822,7 +860,7 @@ const Nuevo_pedido = ({ navigation }) => {
             </View>
         )
     }
-    const filtroClientes = ({ _id, email, nombre }) => {
+    const filtroClientes = ({ _id, email, nombre }: FiltroClientesParams): void => {
         setState(prev => ({
             ...prev,
             cliente: nombre,
@@ -832,7 +870,199 @@ const Nuevo_pedido = ({ navigation }) => {
         }));
         getPuntos(_id);
     };
-    const modalFechaEntrega = () => {
+    const modalPedidosExistentes = (): React.JSX.Element => {
+        const closeModal = (): void => {
+            setModalData({
+                show: false,
+                pedidos: []
+            });
+        };
+
+        const confirmCreate = (): void => {
+            setModalData({
+                show: false,
+                pedidos: []
+            });
+            handleSubmit();
+        };
+
+        return (
+            <Modal transparent visible={modalData.show} animationType="fade">
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <View style={{
+                        backgroundColor: 'white',
+                        borderRadius: 10,
+                        padding: 20,
+                        width: '90%',
+                        maxHeight: '80%'
+                    }}>
+                        <TouchableOpacity
+                            onPress={closeModal}
+                            style={{ position: 'absolute', right: 10, top: 10, zIndex: 1 }}
+                        >
+                            <FontAwesome name={'times'} size={20} color="#666" />
+                        </TouchableOpacity>
+
+                        <Text style={{
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                            marginBottom: 10,
+                            marginTop: 10
+                        }}>
+                            Pedidos Existentes
+                        </Text>
+
+                        <Text style={{
+                            fontSize: 14,
+                            textAlign: 'center',
+                            marginBottom: 20,
+                            color: '#666'
+                        }}>
+                            Se encontraron pedidos existentes para este cliente
+                        </Text>
+
+                        <ScrollView style={{ maxHeight: 300, marginBottom: 20 }}>
+                            {modalData.pedidos && modalData.pedidos.length > 0 ? modalData.pedidos.map((pedido: PedidoExistente, index: number) => {
+                                const fechaSolicitud = pedido.fechasolicitud || 'Sin fecha';
+                                const forma = pedido.forma || 'Sin forma';
+                                const cantidadKl = pedido.cantidadkl || 0;
+                                const cantidadPrecio = pedido.cantidadprecio || 0;
+                                const creadoPor = pedido.nombre_usuario || pedido.razon_social_usuario || 'Usuario';
+                                const fechaCreado = pedido.creado || '';
+
+                                return (
+                                    <View key={`pedido-${index}`} style={{
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: 8,
+                                        padding: 15,
+                                        marginBottom: 10,
+                                        borderLeftWidth: 4,
+                                        borderLeftColor: '#007bff'
+                                    }}>
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: 'bold',
+                                            color: '#007bff',
+                                            marginBottom: 8
+                                        }}>
+                                            Pedido #{pedido._id}
+                                        </Text>
+
+                                        <Text style={{
+                                            fontSize: 14,
+                                            color: '#28a745',
+                                            fontWeight: '600',
+                                            marginBottom: 4
+                                        }}>
+                                            Fecha: {fechaSolicitud}
+                                        </Text>
+
+                                        <Text style={{
+                                            fontSize: 14,
+                                            color: '#333',
+                                            marginBottom: 4
+                                        }}>
+                                            Forma: {forma}
+                                        </Text>
+
+                                        {cantidadKl > 0 && (
+                                            <Text style={{
+                                                fontSize: 14,
+                                                color: '#6f42c1',
+                                                marginBottom: 4
+                                            }}>
+                                                Cantidad: {cantidadKl} KG
+                                            </Text>
+                                        )}
+
+                                        {cantidadPrecio > 0 && (
+                                            <Text style={{
+                                                fontSize: 14,
+                                                color: '#28a745',
+                                                marginBottom: 4
+                                            }}>
+                                                Precio: ${cantidadPrecio.toLocaleString()}
+                                            </Text>
+                                        )}
+
+                                        <Text style={{
+                                            fontSize: 14,
+                                            color: '#dc3545',
+                                            marginBottom: 4
+                                        }}>
+                                            Creado por: {creadoPor}
+                                        </Text>
+
+                                        {fechaCreado && (
+                                            <Text style={{
+                                                fontSize: 12,
+                                                color: '#6c757d',
+                                                fontStyle: 'italic'
+                                            }}>
+                                                Fecha creación: {moment(fechaCreado).format('DD/MM/YYYY HH:mm')}
+                                            </Text>
+                                        )}
+                                    </View>
+                                );
+                            }) : (
+                                <Text style={{ textAlign: 'center', color: '#666', padding: 20 }}>
+                                    No hay pedidos para mostrar
+                                </Text>
+                            )}
+                        </ScrollView>
+
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#6c757d',
+                                    borderRadius: 8,
+                                    padding: 15,
+                                    alignItems: 'center'
+                                }}
+                                onPress={closeModal}
+                            >
+                                <Text style={{
+                                    color: '#fff',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    Cancelar
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#007bff',
+                                    borderRadius: 8,
+                                    padding: 15,
+                                    alignItems: 'center'
+                                }}
+                                onPress={confirmCreate}
+                            >
+                                <Text style={{
+                                    color: '#fff',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    Crear de todos modos
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        );
+    };
+
+    const modalFechaEntrega = (): React.JSX.Element => {
         const { modalFechaEntrega, fechaSolicitud } = state;
 
         // Validar que fechaSolicitud no esté vacía antes de formatear
@@ -853,7 +1083,7 @@ const Nuevo_pedido = ({ navigation }) => {
                                 current={fechaFormateada}
                                 minDate={diaActual}
                                 firstDay={1}
-                                onDayPress={(day) => {
+                                onDayPress={(day: CalendarDay) => {
                                     setState(prev => ({
                                         ...prev,
                                         solicitud: true,
@@ -877,40 +1107,32 @@ const Nuevo_pedido = ({ navigation }) => {
     };
 
     //// verifica si se creo un pedido ese dia
-    const verificaPedido = async () => {
+    const verificaPedido = async (): Promise<void> => {
         setState(prev => ({ ...prev, guardando: true }));
         const { idCliente, idUsuario, acceso, puntoId } = state;
         const id = acceso === "cliente" ? idUsuario : idCliente;
 
         try {
-            const response = await verificarPedidoHoy(id, puntoId);
-            const { status, pedido } = response;
+            const response = await verificarPedidoHoy(id, puntoId) as VerificacionPedidoResponse;
+            const { status, pedidos, total } = response;
             if (status) {
-                if (pedido > 0) {
-                    Alert.alert(
-                        '⚠️ Pedido ya creado hoy',
-                        `Ya se ha creado ${pedido} pedido${pedido > 1 ? 's' : ''} para este cliente en este punto de entrega hoy. ¿Desea crear otro pedido?`,
-                        [
-                            {
-                                text: 'No crear',
-                                style: 'cancel',
-                                onPress: () => setState(prev => ({ ...prev, guardando: false }))
-                            },
-                            {
-                                text: 'Sí, crear',
-                                style: 'default',
-                                onPress: () => handleSubmit()
-                            },
-                        ],
-                        { cancelable: false },
-                    );
+                if (total > 0) {
+                    // Mostrar modal con pedidos existentes
+                    setModalData({
+                        show: true,
+                        pedidos: pedidos || []
+                    });
+                    setState(prev => ({
+                        ...prev,
+                        guardando: false
+                    }));
                 } else {
                     handleSubmit();
                 }
             } else {
-                response.message.path === "puntoId"
-                    ? alert("Inserte un punto de entrega")
-                    : alert("tenemos un problema intentalo nuevamente");
+                response.message?.path === "puntoId"
+                    ? Alert.alert("Error", "Inserte un punto de entrega")
+                    : Alert.alert("Error", "tenemos un problema intentalo nuevamente");
                 setState(prev => ({ ...prev, guardando: false }));
             }
         } catch (error) {
@@ -918,28 +1140,28 @@ const Nuevo_pedido = ({ navigation }) => {
             setState(prev => ({ ...prev, guardando: false }));
         }
     };
-    const handleSubmit = async () => {
+    const handleSubmit = async (): Promise<void> => {
         const { forma, cantidad, idCliente, diaSeleccionado1, diaSeleccionado2, frecuencia, novedad: observacion, puntoId, fechaSolicitud, idUsuario } = state;
 
         const cantidadKl = forma === "cantidad" ? cantidad : 0;
-        const cantidadPrecio = forma === "monto" ? campoMonto.current.getRawValue() : 0;
+        const cantidadPrecio = forma === "monto" ? (campoMonto.current?.getRawValue() || 0) : 0;
 
-        const data = {
-            forma,
+        const data: PedidoData = {
+            forma: forma!,
             ...(diaSeleccionado1 !== undefined && { dia1: diaSeleccionado1 }),
             ...(diaSeleccionado2 !== undefined && { dia2: diaSeleccionado2 }),
             ...(frecuencia !== undefined && { frecuencia }),
-            puntoId,
+            puntoId: puntoId!,
             fechaSolicitud,
-            cantidadKl,
+            cantidadKl: typeof cantidadKl === 'string' ? parseInt(cantidadKl) : cantidadKl,
             cantidadPrecio,
-            usuarioCrea: idUsuario,
-            usuarioId: idCliente,
+            usuarioCrea: idUsuario!,
+            usuarioId: idCliente!,
             observacion
         };
 
         try {
-            const response = await crearPedido(data);
+            const response = await crearPedido(data) as CrearPedidoResponse;
 
             // Mostrar toast de éxito
             Toast.show({
@@ -969,7 +1191,7 @@ const Nuevo_pedido = ({ navigation }) => {
         } catch (err) {
             console.error('Error creando pedido:', err);
             setState(prev => ({ ...prev, guardando: false }));
-            alert("No pudimos procesar el pedido, intentelo mas tarde", JSON.stringify(err));
+            Alert.alert("Error", "No pudimos procesar el pedido, intentelo mas tarde");
         }
     };
 
@@ -977,7 +1199,7 @@ const Nuevo_pedido = ({ navigation }) => {
 
     return (
         <View style={style.container} >
-            <HeaderLogo variant="compact" />
+            <HeaderLogo variant="compact" style={{}} />
             <ImageBackground style={style.container} source={require('../../assets/img/pg1/fondo2.jpg')} >
                 {showFechaEntrega && modalFechaEntrega()}
                 <KeyboardAwareScrollView style={style.containerNuevo}>

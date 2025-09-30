@@ -220,9 +220,9 @@ const generateEmailTemplate = (pedidoData) => {
 module.exports.main = async (event) => {
     const body = JSON.parse(event.body);
     const {
-        _id, novedad, perfil_novedad, fechaEntrega, conductorId
+        _id, novedad, perfil_novedad, motivo_key, fechaEntrega, conductorId
     } = body;
-    console.log({ _id, novedad, perfil_novedad, fechaEntrega, conductorId });
+    console.log({ _id, novedad, perfil_novedad, motivo_key, fechaEntrega, conductorId });
     // Determinar asunto del email
     const asunto = "🚨 URGENTE: Pedido cerrado sin entregar - CodeGas Colombia";
 
@@ -231,7 +231,7 @@ module.exports.main = async (event) => {
 
         // Ejecutar la consulta a la base de datos
         await client.query(NOVEDAD_PEDIDO, [
-            _id, novedad, perfil_novedad, fechaEntrega, conductorId
+            _id, novedad, motivo_key, fechaEntrega, conductorId
         ]);
 
         // Datos para el template del email

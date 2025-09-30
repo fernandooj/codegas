@@ -9,39 +9,12 @@ import {
     Alert,
     Keyboard,
     Dimensions,
-    Image,
-    PermissionsAndroid,
-    Platform
+    Image
 } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
-import { style } from './style';
 import TomarFoto from '../components/tomarFoto';
-
-interface CerrarPedidoModalProps {
-    visible: boolean;
-    onClose: () => void;
-    pedidoId?: string; // Agregar pedidoId como prop
-    entregado: boolean;
-    imagenCerrar?: string;
-    kilos?: string;
-    factura?: string;
-    valor_total?: string;
-    remision?: string;
-    forma_pago?: string;
-    valor_unitario?: string;
-    onCerrarPedido: (data: CerrarPedidoData, pedidoId?: string) => void;
-    onGuardarNovedad: (novedad: string, pedidoId?: string) => void;
-}
-
-interface CerrarPedidoData {
-    kilos: string;
-    factura: string;
-    valor_total: string;
-    remision: string;
-    forma_pago: string;
-    novedad: string;
-    imagen?: string;
-}
+import { motivoNoCierre } from '../../utils/pedido_info';
+import { CerrarPedidoModalProps, CerrarPedidoData } from './types';
 
 const { width, height } = Dimensions.get('window');
 
@@ -89,6 +62,8 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     const [formaPago, setFormaPago] = useState(formaPagoProps || '');
     const [novedad, setNovedad] = useState('');
     const [imagen, setImagen] = useState<string | undefined>(imagenCerrar);
+    const [showMotivoModal, setShowMotivoModal] = useState(false);
+    const [motivoSeleccionado, setMotivoSeleccionado] = useState<string>('');
 
     const convertImageToBase64 = async (imageUri: string): Promise<string | null> => {
         try {
@@ -190,7 +165,28 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             Alert.alert('Error', 'Inserte alguna novedad (mínimo 4 caracteres)');
             return;
         }
-        onGuardarNovedad(novedad, pedidoId);
+        // Abrir modal de selección de motivo antes de guardar
+        setShowMotivoModal(true);
+    };
+
+    const handleConfirmarMotivo = () => {
+        if (!motivoSeleccionado) {
+            Alert.alert('Error', 'Por favor seleccione un motivo para la novedad');
+            return;
+        }
+
+        // Encontrar el motivo completo seleccionado
+        const selectedMotivo = motivoNoCierre.find(m => m.key === motivoSeleccionado);
+        if (!selectedMotivo) {
+            Alert.alert('Error', 'Motivo seleccionado no válido');
+            return;
+        }
+
+        // Cerrar modal y llamar a la función con el motivo seleccionado
+        setShowMotivoModal(false);
+        onGuardarNovedad(novedad, pedidoId, selectedMotivo.key);
+        // Limpiar selección
+        setMotivoSeleccionado('');
     };
 
     const formatCurrency = (value: string) => {
@@ -960,6 +956,221 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                     </ScrollView>
                 </View>
             </View>
+
+            {/* Modal de selección de motivo */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={showMotivoModal}
+                onRequestClose={() => setShowMotivoModal(false)}
+                presentationStyle="overFullScreen"
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 99999,
+                    elevation: 20,
+                }}>
+                    <View style={{
+                        backgroundColor: '#fff',
+                        borderRadius: 20,
+                        width: width * 0.9,
+                        maxHeight: height * 0.8,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 5 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 10,
+                        elevation: 25,
+                        zIndex: 99999,
+                    }}>
+                        {/* Header del modal de motivo */}
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: 20,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#e9ecef',
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                            backgroundColor: '#f8f9fa'
+                        }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={{
+                                    backgroundColor: '#ffc107',
+                                    borderRadius: 10,
+                                    padding: 8,
+                                    marginRight: 12
+                                }}>
+                                    <FontAwesome
+                                        name="exclamation-triangle"
+                                        style={{ fontSize: 20, color: '#fff' }}
+                                    />
+                                </View>
+                                <View>
+                                    <Text style={{
+                                        fontSize: 18,
+                                        fontWeight: 'bold',
+                                        color: '#333'
+                                    }}>
+                                        Motivo de la Novedad
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: '#666',
+                                        marginTop: 2
+                                    }}>
+                                        Seleccione el motivo por el cual no se puede entregar
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <TouchableOpacity
+                                onPress={() => setShowMotivoModal(false)}
+                                style={{
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: 20,
+                                    width: 36,
+                                    height: 36,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <FontAwesome name="times" style={{ fontSize: 16, color: '#666' }} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Contenido del modal de motivo */}
+                        <ScrollView
+                            style={{ maxHeight: height * 0.6 }}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            <View style={{ padding: 20 }}>
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: 16,
+                                    textAlign: 'center'
+                                }}>
+                                    📋 Seleccione una opción:
+                                </Text>
+
+                                <View style={{ gap: 12 }}>
+                                    {motivoNoCierre.map((motivo, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={{
+                                                backgroundColor: motivoSeleccionado === motivo.key ? '#e3f2fd' : '#f8f9fa',
+                                                borderRadius: 12,
+                                                paddingHorizontal: 16,
+                                                borderWidth: 2,
+                                                borderColor: motivoSeleccionado === motivo.key ? '#2196f3' : '#e9ecef',
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                height: 50
+                                            }}
+                                            onPress={() => setMotivoSeleccionado(motivo.key)}
+                                            activeOpacity={0.7}
+                                        >
+                                            <Text style={{
+                                                flex: 1,
+                                                fontSize: 14,
+                                                fontWeight: '600',
+                                                color: motivoSeleccionado === motivo.key ? '#2196f3' : '#333',
+                                                textAlignVertical: 'center',
+                                                includeFontPadding: false
+                                            }}>
+                                                {motivo.key} {motivo.label.replace(motivo.key, '').trim()}
+                                            </Text>
+                                            {motivoSeleccionado === motivo.key && (
+                                                <FontAwesome
+                                                    name="check-circle"
+                                                    style={{ fontSize: 18, color: '#2196f3', marginLeft: 8 }}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        </ScrollView>
+
+                        {/* Botones del modal de motivo */}
+                        <View style={{
+                            padding: 20,
+                            borderTopWidth: 1,
+                            borderTopColor: '#e9ecef',
+                            gap: 12
+                        }}>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: !motivoSeleccionado ? '#ccc' : '#007bff',
+                                    borderRadius: 12,
+                                    paddingVertical: 16,
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 4,
+                                    elevation: 3,
+                                }}
+                                onPress={handleConfirmarMotivo}
+                                disabled={!motivoSeleccionado}
+                                activeOpacity={0.8}
+                            >
+                                <FontAwesome name="save" style={{
+                                    fontSize: 18,
+                                    color: '#fff',
+                                    marginRight: 10
+                                }} />
+                                <Text style={{
+                                    color: '#fff',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    Confirmar y Guardar
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#6c757d',
+                                    borderRadius: 12,
+                                    paddingVertical: 16,
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 4,
+                                    elevation: 3,
+                                }}
+                                onPress={() => setShowMotivoModal(false)}
+                                activeOpacity={0.8}
+                            >
+                                <FontAwesome name="times" style={{
+                                    fontSize: 18,
+                                    color: '#fff',
+                                    marginRight: 10
+                                }} />
+                                <Text style={{
+                                    color: '#fff',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    Cancelar
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </Modal>
     );
 };

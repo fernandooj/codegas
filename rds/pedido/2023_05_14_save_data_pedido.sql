@@ -1,3 +1,4 @@
+drop function if exists save_pedidos;
 CREATE OR REPLACE FUNCTION save_pedidos(
     _forma character varying,
     _cantidadKl INT,
@@ -24,13 +25,13 @@ BEGIN
     SELECT _id, acceso, valorunitario INTO idUser, user_acceso, user_valor_unitario FROM users WHERE _id = _usuarioCrea;
 
     IF user_acceso = 'cliente' THEN
-        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, observacion, puntoId, valorUnitario, usuarioCrea, usuarioId)
-        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, _observacion, _puntoId, user_valor_unitario, _usuarioCrea, idUser)
+        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, observacion, puntoId, valorUnitario, usuarioCrea, usuarioId, creado)
+        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, _observacion, _puntoId, user_valor_unitario, _usuarioCrea, idUser, (NOW() AT TIME ZONE 'America/Bogota'))
         RETURNING _id INTO new_id;
     ELSE
         SELECT valorunitario INTO user_valor_unitario_no_cliente FROM users WHERE _id = _usuarioId;
-        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, observacion, valorUnitario, puntoId, usuarioCrea, usuarioId)
-        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, _observacion, user_valor_unitario_no_cliente, _puntoId, _usuarioCrea, _usuarioId)
+        INSERT INTO pedidos(forma, cantidadKl, cantidadPrecio, frecuencia, dia1, dia2, fechaSolicitud, observacion, valorUnitario, puntoId, usuarioCrea, usuarioId, creado)
+        VALUES (_forma, _cantidadKl, _cantidadPrecio, _frecuencia, _dia1, _dia2, _fechaSolicitud, _observacion, user_valor_unitario_no_cliente, _puntoId, _usuarioCrea, _usuarioId, (NOW() AT TIME ZONE 'America/Bogota'))
         RETURNING _id INTO new_id;
     END IF;
 

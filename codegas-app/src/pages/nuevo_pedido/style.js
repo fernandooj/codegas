@@ -476,9 +476,9 @@ export const style = MediaQueryStyleSheet.create({
         backgroundColor: '#ffffff',
     },
     modalScrollView: {
-        flex: 1,
-        padding: 10,
-        backgroundColor: '#ffffff',
+        maxHeight: 400,
+        backgroundColor: 'transparent',
+        paddingHorizontal: 10,
     },
     modalEmptyState: {
         padding: 40,
@@ -728,6 +728,72 @@ export const style = MediaQueryStyleSheet.create({
         fontSize: 11,
         fontWeight: 'bold',
         fontFamily: "Comfortaa-Bold",
-    }
+    },
+
+    // Estilos para el modal de pedidos existentes
+    pedidoExistenteCard: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: '#007bff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    pedidoExistenteHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    pedidoExistenteId: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#007bff',
+    },
+    pedidoExistenteFecha: {
+        fontSize: 14,
+        color: '#28a745',
+        fontWeight: '600',
+    },
+    pedidoExistenteInfo: {
+        gap: 4,
+    },
+    pedidoExistenteForma: {
+        fontSize: 14,
+        color: '#333',
+        fontWeight: '500',
+    },
+    pedidoExistenteCantidad: {
+        fontSize: 14,
+        color: '#6f42c1',
+        fontWeight: '500',
+    },
+    pedidoExistentePrecio: {
+        fontSize: 14,
+        color: '#28a745',
+        fontWeight: '500',
+    },
+    pedidoExistenteCreado: {
+        fontSize: 14,
+        color: '#dc3545',
+        fontWeight: '500',
+    },
+    pedidoExistenteFechaCreado: {
+        fontSize: 12,
+        color: '#6c757d',
+        fontStyle: 'italic',
+    },
+    textModal: {
+        fontSize: 16,
+        color: '#333',
+        textAlign: 'center',
+        marginBottom: 8,
+        fontWeight: '500',
+    },
 
 })

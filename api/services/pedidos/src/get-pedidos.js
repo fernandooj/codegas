@@ -8,7 +8,7 @@ const DatabaseError = require('../../../lib/errors/database-error');
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
-const GET_PEDIDOS = 'SELECT * FROM get_pedidos($1, $2, $3, $4, $5, $6, $7, $8)';
+const GET_PEDIDOS = 'SELECT * FROM get_pedidos_search_optimized($1, $2, $3, $4, $5, $6, $7, $8)';
 
 module.exports.main = async (event) => {
   const {

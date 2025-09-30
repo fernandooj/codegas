@@ -1,3 +1,4 @@
+drop function if exists get_user_by_id;
 CREATE FUNCTION get_user_by_id(
     _userId int
 )

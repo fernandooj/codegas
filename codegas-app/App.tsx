@@ -12,9 +12,9 @@ import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
 import SplashScreen from './src/components/SplashScreen';
 const store = configStore();
 
-// export const URL = 'https://2wea912yue.execute-api.us-east-1.amazonaws.com';
+export const URL = 'https://2wea912yue.execute-api.us-east-1.amazonaws.com';
 // export const URL = 'https://appcodegas.com:3131'; //// URL WEB DEV
-export const URL = 'http://192.168.0.16:4000'; //// URL local para Android
+// export const URL = 'http://192.168.0.16:4000'; //// URL local para Android
 export const VERSION = '1.0.0';
 axios.defaults.baseURL = URL;
 

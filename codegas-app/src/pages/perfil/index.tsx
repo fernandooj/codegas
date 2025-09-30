@@ -146,6 +146,16 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               <FontAwesome name="user" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
+          {(['solucion', 'admin', 'veo'] as UserAccess[]).includes(acceso) && (
+            <TouchableOpacity
+              style={style.btnLista}
+              onPress={() => navigation.navigate('usuarios')}>
+              <Text style={style.txtLista}>Usuarios</Text>
+              <View style={style.icon}>
+                <FontAwesome name="user-plus" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#ffffff' }} />
+              </View>
+            </TouchableOpacity>
+          )}
 
           {/* {(acceso === 'admin' || acceso === 'despacho') && (
           <TouchableOpacity
@@ -180,16 +190,7 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           )}
-          {(['solucion', 'admin', 'veo'] as UserAccess[]).includes(acceso) && (
-            <TouchableOpacity
-              style={style.btnLista}
-              onPress={() => navigation.navigate('usuarios')}>
-              <Text style={style.txtLista}>Usuarios</Text>
-              <View style={style.icon}>
-                <FontAwesome name="user-plus" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#ffffff' }} />
-              </View>
-            </TouchableOpacity>
-          )}
+
           {(acceso === 'admin') && (
             <TouchableOpacity
               style={style.btnLista}

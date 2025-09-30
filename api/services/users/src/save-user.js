@@ -231,6 +231,12 @@ module.exports.main = async (event) => {
   const cleanNombre = cleanAndNormalizeString(nombre);
   const cleanEmail = email ? email.toLowerCase().trim() : email;
 
+  // Validar y convertir valorUnitario
+  let cleanValorUnitario = null;
+  if (valorUnitario && valorUnitario !== '' && !isNaN(valorUnitario)) {
+    cleanValorUnitario = parseInt(valorUnitario);
+  }
+
   // Datos para el template del email
   const userData = {
     nombre,
@@ -255,7 +261,7 @@ module.exports.main = async (event) => {
   try {
     const client = await poolConection.connect();
     //await client.query('BEGIN');
-    const { rows } = await client.query(SAVE_USER, [cleanRazonSocial, uid, cedula, direccion_factura, cleanEmail, cleanNombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, valorUnitario, idPadre]);
+    const { rows } = await client.query(SAVE_USER, [cleanRazonSocial, uid, cedula, direccion_factura, cleanEmail, cleanNombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, cleanValorUnitario, idPadre]);
 
     // Enviar email de bienvenida si el usuario se creó exitosamente
     if (rows[0].save_users) {

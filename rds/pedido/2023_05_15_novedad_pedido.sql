@@ -1,7 +1,8 @@
+drop function if exists novedad_pedidos;
 CREATE OR REPLACE FUNCTION novedad_pedidos(
     _pedidoId INT,
     _novedad character varying,
-    _perfil_novedad character varying,
+    _motivo_key character varying,
     _fechaEntrega character varying,
     _conductorId INT
 )
@@ -30,7 +31,8 @@ BEGIN
     estado = _estado,
     orden_cerrado = newOrden,
     motivo_no_cierre = _novedad,
-    perfil_novedad = _perfil_novedad,
+    observacion = _novedad,
+    perfil_novedad = _motivo_key,
     fechaEntregado = _fechaEntregado,
     novedades = _novedades
     WHERE _id = _pedidoId

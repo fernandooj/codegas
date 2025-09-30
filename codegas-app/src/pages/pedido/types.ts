@@ -450,6 +450,22 @@ export interface CerrarPedidoData {
     imagen?: string;
 }
 
+export interface CerrarPedidoModalProps {
+    visible: boolean;
+    onClose: () => void;
+    pedidoId?: string;
+    entregado: boolean;
+    imagenCerrar?: string;
+    kilos?: string;
+    factura?: string;
+    valor_total?: string;
+    remision?: string;
+    forma_pago?: string;
+    valor_unitario?: string;
+    onCerrarPedido: (data: CerrarPedidoData, pedidoId?: string) => void;
+    onGuardarNovedad: (novedad: string, pedidoId?: string, motivoKey?: string) => void;
+}
+
 // Utility types
 export type EstadoPedido = 'activo' | 'innactivo' | 'espera' | 'noentregado';
 export type FormaPedido = 'cantidad' | 'monto';
