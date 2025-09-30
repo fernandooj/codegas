@@ -33,7 +33,23 @@ BEGIN
     WHERE p.usuarioId = _usuarioId 
     AND p.puntoId = _punto
     AND p.eliminado = FALSE
-    AND p.fechaSolicitud::DATE >= DATE_TRUNC('day', CURRENT_TIMESTAMP)::DATE
-    ORDER BY p.fechaSolicitud ASC;
+    AND CASE 
+        -- Si contiene '/' asumimos formato DD/MM/YYYY
+        WHEN p.fechaSolicitud LIKE '%/%' THEN 
+            TO_DATE(p.fechaSolicitud, 'DD/MM/YYYY')
+        -- Si contiene '-' asumimos formato YYYY-MM-DD o ISO
+        WHEN p.fechaSolicitud LIKE '%-%' THEN 
+            p.fechaSolicitud::DATE
+        ELSE 
+            NULL
+    END >= DATE_TRUNC('day', CURRENT_TIMESTAMP)::DATE
+    ORDER BY CASE 
+        WHEN p.fechaSolicitud LIKE '%/%' THEN 
+            TO_DATE(p.fechaSolicitud, 'DD/MM/YYYY')
+        WHEN p.fechaSolicitud LIKE '%-%' THEN 
+            p.fechaSolicitud::DATE
+        ELSE 
+            NULL
+    END ASC;
 END
 $func$;

@@ -53,6 +53,7 @@ import EditarPedidoModal from './EditarPedidoModal';
 import NovedadModal from './NovedadModal';
 import CerrarPedidoModal from './CerrarPedidoModal';
 import ModalOrdenamiento from './ModalOrdenamiento';
+import ModalEstadisticas from './ModalEstadisticas';
 
 // Configurar el calendario en español
 setupCalendarLocale();
@@ -149,6 +150,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     const [acceso, setAcceso] = useState<AccesoUsuario | undefined>();
     const [pedidoIdParaCerrar, setPedidoIdParaCerrar] = useState<string | undefined>(); // Estado para el ID del pedido
     const [valorUnitarioParaCerrar, setValorUnitarioParaCerrar] = useState<string | undefined>(); // Estado para el valor unitario del pedido
+    const [modalEstadisticas, setModalEstadisticas] = useState<boolean>(false); // Estado para el modal de estadísticas
     const [top] = useState(new Animated.Value(size.height));
     const [modalScale] = useState(new Animated.Value(0));
     const [modalMainScale] = useState(new Animated.Value(0));
@@ -575,6 +577,11 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 return;
             }
 
+            // Formatear la fechaEntrega correctamente
+            const fechaFormateada = fechaEntrega
+                ? moment(fechaEntrega).format('YYYY-MM-DD HH:mm:ss')
+                : moment().format('YYYY-MM-DD HH:mm:ss');
+
             // Preparar datos para el backend
             const pedidoData = {
                 email: email || '',
@@ -583,7 +590,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 factura,
                 valor_total,
                 forma_pago,
-                fechaEntrega: fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss'),
+                fechaEntrega: fechaFormateada,
                 remision,
                 novedad: novedad || '',
                 imagen: imagen || null
@@ -822,19 +829,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 <TouchableOpacity
                     key={key}
                     style={[
-                        style.pedidoBtn,
+                        style.pedidoCard,
                         {
                             backgroundColor: getPedidoBackgroundColor(e),
-                            borderRadius: 12,
-                            marginHorizontal: 8, // Reducido de 15 a 8 para más cercanía a los bordes
-                            marginVertical: 8,
-                            padding: 16,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 4,
-                            elevation: 3,
-                            borderLeftWidth: 4,
                             borderLeftColor: getEstadoColor(e.estado),
                         }
                     ]}
@@ -890,43 +887,29 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         });
                     }}
                 >
-                    {/* Card content - same as before */}
-                    <View style={{
-                        marginBottom: 12,
-                        paddingBottom: 8,
-                        borderBottomWidth: 1,
-                        borderBottomColor: '#e9ecef',
-                    }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
-                            <FontAwesome name="building" style={{ fontSize: 14, color: '#007bff', marginRight: 6, marginTop: 2 }} />
-                            <Text style={{ fontSize: 15, fontWeight: '600', color: '#333', flex: 1, lineHeight: 18 }}>
+                    {/* Card content */}
+                    <View style={style.pedidoCardHeader}>
+                        <View style={style.pedidoCardHeaderRow}>
+                            <FontAwesome name="building" style={style.pedidoCardBuildingIcon} />
+                            <Text style={style.pedidoCardCompanyText}>
                                 {e.razon_social}
                             </Text>
                         </View>
 
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                <FontAwesome name="id-card" style={{ fontSize: 12, color: '#6c757d', marginRight: 6 }} />
-                                <Text style={{ fontSize: 13, color: '#6c757d' }}>
+                        <View style={style.pedidoCardInfoRow}>
+                            <View style={style.pedidoCardInfoLeft}>
+                                <FontAwesome name="id-card" style={style.pedidoCardIdIcon} />
+                                <Text style={style.pedidoCardCedulaText}>
                                     {e.cedula}
                                 </Text>
                             </View>
 
-                            <View style={{
-                                backgroundColor: getEstadoColor(e.estado),
-                                paddingHorizontal: 6,
-                                paddingVertical: 3,
-                                borderRadius: 10,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                minWidth: 60,
-                                justifyContent: 'center',
-                            }}>
+                            <View style={[style.pedidoCardEstadoBadge, { backgroundColor: getEstadoColor(e.estado) }]}>
                                 <FontAwesome
                                     name={e.estado === "activo" ? "check" : e.estado === "innactivo" ? "times" : "pause"}
-                                    style={{ fontSize: 9, color: 'white', marginRight: 3 }}
+                                    style={style.pedidoCardEstadoIcon}
                                 />
-                                <Text style={{ fontSize: 10, color: 'white', fontWeight: '600' }}>
+                                <Text style={style.pedidoCardEstadoText}>
                                     {e.estado === "activo" && !e.entregado ? "Activo" :
                                         e.estado === "innactivo" ? "Inact." :
                                             e.estado === "espera" ? "Espera" :
@@ -938,23 +921,23 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     </View>
 
                     {/* Rest of card content */}
-                    <View style={{ gap: 12 }}>
+                    <View style={style.pedidoCardBody}>
                         {/* Primera fila: N° Pedido (25%) + Zona (75%) */}
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
-                            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                                <FontAwesome name="hashtag" style={{ fontSize: 12, color: '#007bff', marginRight: 6 }} />
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>N° Pedido</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#333' }} numberOfLines={1}>
+                        <View style={style.pedidoCardRow}>
+                            <View style={style.pedidoCardFieldSmall}>
+                                <FontAwesome name="hashtag" style={style.pedidoCardIconHashtag} />
+                                <View style={style.pedidoCardFieldContent}>
+                                    <Text style={style.pedidoCardLabelText}>N° Pedido</Text>
+                                    <Text style={style.pedidoCardValueSmall} numberOfLines={1}>
                                         {e._id}
                                     </Text>
                                 </View>
                             </View>
-                            <View style={{ flex: 3, flexDirection: 'row', alignItems: 'center' }}>
-                                <FontAwesome name="map-marker" style={{ fontSize: 12, color: '#dc3545', marginRight: 6 }} />
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>Zona</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#333' }} numberOfLines={2}>
+                            <View style={style.pedidoCardFieldLarge}>
+                                <FontAwesome name="map-marker" style={style.pedidoCardIconMarker} />
+                                <View style={style.pedidoCardFieldContent}>
+                                    <Text style={style.pedidoCardLabelText}>Zona</Text>
+                                    <Text style={style.pedidoCardValueSmall} numberOfLines={2}>
                                         {e.zona || 'Sin zona'}
                                     </Text>
                                 </View>
@@ -962,25 +945,25 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         </View>
 
                         {/* Segunda fila: CODT (25%) + Dirección (75%) */}
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <View style={style.pedidoCardRow}>
                             {e.codt ? (
-                                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-start' }}>
-                                    <FontAwesome name="code" style={{ fontSize: 12, color: '#6f42c1', marginRight: 6, marginTop: 2 }} />
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>CODT</Text>
-                                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#333' }} numberOfLines={1}>
+                                <View style={style.pedidoCardFieldSmallStart}>
+                                    <FontAwesome name="code" style={style.pedidoCardIconCode} />
+                                    <View style={style.pedidoCardFieldContent}>
+                                        <Text style={style.pedidoCardLabelText}>CODT</Text>
+                                        <Text style={style.pedidoCardValue} numberOfLines={1}>
                                             {e.codt}
                                         </Text>
                                     </View>
                                 </View>
                             ) : (
-                                <View style={{ flex: 1 }} />
+                                <View style={style.pedidoCardFieldSpacer} />
                             )}
-                            <View style={{ flex: 3, flexDirection: 'row', alignItems: 'flex-start' }}>
-                                <FontAwesome name="home" style={{ fontSize: 12, color: '#28a745', marginRight: 6, marginTop: 2 }} />
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>Dirección</Text>
-                                    <Text style={{ fontSize: 12, color: '#333' }} numberOfLines={2}>
+                            <View style={style.pedidoCardFieldLargeStart}>
+                                <FontAwesome name="home" style={style.pedidoCardIconHome} />
+                                <View style={style.pedidoCardFieldContent}>
+                                    <Text style={style.pedidoCardLabelText}>Dirección</Text>
+                                    <Text style={style.pedidoCardValueAddress} numberOfLines={2}>
                                         {e.direccion || "Sin dirección"}
                                     </Text>
                                 </View>
@@ -988,82 +971,61 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                         </View>
                     </View>
 
-                    {acceso !== "conductor" && (
-                        <View style={{
-                            backgroundColor: '#ffffff', // Color de fondo más específico
-                            paddingHorizontal: 16,
-                            paddingVertical: 12,
-                            marginTop: 12,
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 1 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 2,
-                            elevation: 2,
-                        }}>
-                            {e.fechasolicitud && (
-                                <View style={{ flex: 1, alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>Solicitud</Text>
-                                    <Text style={{ fontSize: 11, fontWeight: '600', color: '#333' }}>
-                                        {moment(e.fechasolicitud).format('DD/MM/YY')}
-                                    </Text>
-                                </View>
-                            )}
 
-                            {e.fechaentrega && (
-                                <View style={{ flex: 1, alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>Entrega</Text>
-                                    <Text style={{ fontSize: 11, fontWeight: '600', color: '#007bff' }}>
-                                        {moment(e.fechaentrega).format('DD/MM/YY')}
-                                    </Text>
-                                </View>
-                            )}
+                    <View style={style.pedidoCardInfoPanel}>
+                        {e.fechasolicitud && (
+                            <View style={style.pedidoCardInfoItem}>
+                                <Text style={style.pedidoCardInfoItemLabel}>Solicitud</Text>
+                                <Text style={style.pedidoCardInfoItemValue}>
+                                    {moment(e.fechasolicitud).format('DD/MM/YY')}
+                                </Text>
+                            </View>
+                        )}
 
-                            {e.valorunitario && (
-                                <View style={{ flex: 1, alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>Precio</Text>
-                                    <Text style={{ fontSize: 11, fontWeight: '600', color: '#28a745' }}>
-                                        {formatCurrency(e.valorunitario)}
-                                    </Text>
-                                </View>
-                            )}
+                        {e.fechaentrega && (
+                            <View style={style.pedidoCardInfoItem}>
+                                <Text style={style.pedidoCardInfoItemLabel}>Entrega</Text>
+                                <Text style={style.pedidoCardInfoItemValueEntrega}>
+                                    {moment(e.fechaentrega).format('DD/MM/YY')}
+                                </Text>
+                            </View>
+                        )}
 
-                            {e.capacidad && (
-                                <View style={{ flex: 1, alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>Cantidad</Text>
-                                    <Text style={{ fontSize: 11, fontWeight: '600', color: '#007bff' }}>
-                                        {e.capacidad} gal
-                                    </Text>
-                                </View>
-                            )}
+                        {e.valorunitario && (
+                            <View style={style.pedidoCardInfoItem}>
+                                <Text style={style.pedidoCardInfoItemLabel}>Precio</Text>
+                                <Text style={style.pedidoCardInfoItemValuePrecio}>
+                                    {formatCurrency(e.valorunitario)}
+                                </Text>
+                            </View>
+                        )}
 
-                            {e.factura && (
-                                <View style={{ flex: 1, alignItems: 'center' }}>
-                                    <Text style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>Factura</Text>
-                                    <Text style={{ fontSize: 11, fontWeight: '600', color: '#6f42c1' }}>
-                                        #{e.factura}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    )}
+                        {e.capacidad && (
+                            <View style={style.pedidoCardInfoItem}>
+                                <Text style={style.pedidoCardInfoItemLabel}>Cantidad</Text>
+                                <Text style={style.pedidoCardInfoItemValue}>
+                                    {e.capacidad} gal
+                                </Text>
+                            </View>
+                        )}
+
+                        {e.factura && (
+                            <View style={style.pedidoCardInfoItem}>
+                                <Text style={style.pedidoCardInfoItemLabel}>Factura</Text>
+                                <Text style={style.pedidoCardInfoItemValueFactura}>
+                                    #{e.factura}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+
 
                     {(e.conductor && acceso !== "conductor") && (
-                        <View style={{
-                            backgroundColor: '#e8f5e8',
-                            padding: 8,
-                            borderRadius: 6,
-                            marginTop: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                        }}>
-                            <FontAwesome name="truck" style={{ fontSize: 12, color: '#28a745', marginRight: 8 }} />
-                            <View style={{ flex: 1 }}>
-                                <Text style={{ fontSize: 11, color: '#666', marginBottom: 2 }}>Vehículo Asignado</Text>
-                                <Text style={{ fontSize: 13, fontWeight: '600', color: '#333' }}>
+                        <View style={style.pedidoCardVehicleBox}>
+                            <FontAwesome name="truck" style={style.pedidoCardVehicleIcon} />
+                            <View style={style.pedidoCardVehicleContent}>
+                                <Text style={style.pedidoCardVehicleLabel}>Vehículo Asignado</Text>
+                                <Text style={style.pedidoCardVehicleValue}>
                                     {e.placa} - {e.conductor}
                                 </Text>
                             </View>
@@ -1084,39 +1046,16 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         };
 
         return (
-            <View style={{
-                backgroundColor: '#f8f9fa',
-                paddingHorizontal: 0, // Sin padding horizontal para ancho completo
-                paddingTop: getStatusBarHeight(), // Reducido de +10 a +5
-                paddingBottom: 12, // Reducido de 15 a 12
-                borderBottomWidth: 1,
-                borderBottomColor: '#e9ecef',
-                width: '100%', // Ancho completo
-            }}>
+            <View style={[style.headerContainer, { paddingTop: getStatusBarHeight() }]}>
                 {/* Header con mejor espaciado */}
-                <View style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 10, // Reducido de 15 a 10
-                    paddingHorizontal: 20 // Padding interno para el contenido
-                }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={{
-                                fontSize: 24,
-                                fontWeight: 'bold',
-                                color: '#333',
-                                marginBottom: 4
-                            }}>
+                <View style={style.headerTitleContainer}>
+                    <View style={style.headerTitleLeft}>
+                        <View style={style.headerTitleWrapper}>
+                            <Text style={style.headerTitle}>
                                 {acceso === 'conductor' ? 'Mis Pedidos' : 'Pedidos'}
                             </Text>
                             {pedidos && (
-                                <Text style={{
-                                    fontSize: 16,
-                                    color: '#666',
-                                    fontWeight: '500'
-                                }}>
+                                <Text style={style.headerSubtitle}>
                                     {acceso === 'conductor'
                                         ? `${pedidos.length} pedidos asignados`
                                         : `${pedidos.length} pedidos ${estadoFiltro !== 'todos' ? `(${estadoFiltro})` : 'encontrados'}`
@@ -1124,131 +1063,67 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 </Text>
                             )}
                         </View>
-
                     </View>
 
-                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <View style={style.headerButtonGroup}>
+                        {/* Botón de estadísticas - Solo visible para admin y conductor */}
+                        {(acceso === 'admin' || acceso === 'conductor') && (
+                            <TouchableOpacity
+                                style={[style.headerButton, { backgroundColor: '#17a2b8' }]}
+                                onPress={() => setModalEstadisticas(true)}
+                                activeOpacity={0.8}
+                            >
+                                <FontAwesome name='bar-chart' style={style.headerIcon} />
+                            </TouchableOpacity>
+                        )}
+
                         {/* Botón de ordenamiento */}
                         <TouchableOpacity
-                            style={{
-                                backgroundColor: '#28a745',
-                                borderRadius: 8,
-                                width: 36,
-                                height: 36,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 1 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 2,
-                                elevation: 2,
-                            }}
+                            style={[style.headerButton, { backgroundColor: '#28a745' }]}
                             onPress={() => updateState(actions.setModalOrdenamiento(true))}
                             activeOpacity={0.8}
                         >
-                            <FontAwesome name='sort' style={{
-                                fontSize: 14,
-                                color: '#fff'
-                            }} />
+                            <FontAwesome name='sort' style={style.headerIcon} />
                         </TouchableOpacity>
 
                         {/* Botón de actualizar */}
                         <TouchableOpacity
-                            style={{
-                                backgroundColor: '#007bff',
-                                borderRadius: 8,
-                                width: 36,
-                                height: 36,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 1 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 2,
-                                elevation: 2,
-                            }}
+                            style={[style.headerButton, { backgroundColor: '#007bff' }]}
                             onPress={() => loadPedidos('load')}
                             activeOpacity={0.8}
                         >
-                            <FontAwesome name='refresh' style={{
-                                fontSize: 14,
-                                color: '#fff'
-                            }} />
+                            <FontAwesome name='refresh' style={style.headerIcon} />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Barra de búsqueda con mejor diseño */}
                 {acceso !== "conductor" && (
-                    <View style={{
-                        marginHorizontal: 20, // Margen para que no toque los bordes
-                    }}>
-                        <View style={{
-                            backgroundColor: '#fff', // Ya tiene backgroundColor sólido
-                            borderRadius: 10, // Reducido de 12 a 10
-                            flexDirection: "row",
-                            alignItems: 'center',
-                            paddingHorizontal: 12, // Reducido de 16 a 12
-                            paddingVertical: 2, // Reducido de 4 a 2
-                            borderWidth: 1, // Reducido de 2 a 1
-                            borderColor: showSearch && terminoBuscador ? '#007bff' : '#e9ecef',
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 1 },
-                            shadowOpacity: 0.1,
-                            shadowRadius: 2,
-                            elevation: 2,
-                            height: 40, // Altura fija más pequeña
-                        }}>
-                            <FontAwesome
-                                name='search'
-                                style={{
-                                    fontSize: 16,
-                                    color: '#6c757d',
-                                    marginRight: 12
-                                }}
-                            />
+                    <View style={style.searchBarContainer}>
+                        <View style={[style.searchBar, showSearch && terminoBuscador ? style.searchBarActive : style.searchBarInactive]}>
+                            <FontAwesome name='search' style={style.searchIconStyle} />
                             <TextInput
                                 placeholder="Escribir para buscar..."
                                 placeholderTextColor="#999"
                                 autoCapitalize='none'
                                 onChangeText={(terminoBuscador) => updateState(actions.setTerminoBuscador(terminoBuscador))}
                                 value={terminoBuscador}
-                                style={{
-                                    flex: 1,
-                                    fontSize: 15,
-                                    color: '#333',
-                                    paddingVertical: 8,
-                                }}
+                                style={style.searchInputStyle}
                             />
 
                             {terminoBuscador ? (
                                 <TouchableOpacity
-                                    style={{
-                                        backgroundColor: '#dc3545', // Ya tiene backgroundColor sólido
-                                        borderRadius: 6,
-                                        width: 32,
-                                        height: 32,
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                    }}
+                                    style={style.searchClearButton}
                                     onPress={() => {
                                         updateState(actions.setTerminoBuscador(''));
                                         updateState(actions.setShowSearch(false));
                                     }}
                                     activeOpacity={0.8}
                                 >
-                                    <FontAwesome name='times' style={{
-                                        fontSize: 14,
-                                        color: '#fff'
-                                    }} />
+                                    <FontAwesome name='times' style={style.searchClearIcon} />
                                 </TouchableOpacity>
                             ) : searchLoading ? (
-                                <View style={{
-                                    width: 32,
-                                    height: 32,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                }}>
+                                <View style={style.searchLoadingContainer}>
                                     <ActivityIndicator size="small" color="#007bff" />
                                 </View>
                             ) : null}
@@ -1258,199 +1133,78 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
                 {/* Botones de filtro por estado */}
                 {acceso !== "conductor" && (
-                    <View style={{
-                        marginHorizontal: 20,
-                        marginTop: 12,
-                    }}>
+                    <View style={style.filterContainer}>
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{
-                                paddingHorizontal: 4,
-                                gap: 8
-                            }}
+                            contentContainerStyle={style.filterScrollContent}
                         >
                             {/* Botón Todos */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: '#007bff',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'todos' ? 4 : 1,
-                                    borderColor: estadoFiltro === 'todos' ? '#fff' : 'rgba(0, 123, 255, 0.3)',
-                                    shadowColor: estadoFiltro === 'todos' ? '#007bff' : '#000',
-                                    shadowOffset: { width: 0, height: estadoFiltro === 'todos' ? 3 : 1 },
-                                    shadowOpacity: estadoFiltro === 'todos' ? 0.4 : 0.1,
-                                    shadowRadius: estadoFiltro === 'todos' ? 6 : 2,
-                                    elevation: estadoFiltro === 'todos' ? 8 : 2,
-                                    transform: estadoFiltro === 'todos' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                                }}
+                                style={[style.filterButtonBase, style.filterTodos, estadoFiltro === 'todos' && style.filterTodosActive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('todos'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'todos' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterTodosText, estadoFiltro === 'todos' && style.filterTextActive]}>
                                     Todos
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón Espera */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: 'rgba(91, 192, 222, 1)',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'espera' ? 4 : 1,
-                                    borderColor: estadoFiltro === 'espera' ? '#fff' : 'rgba(91, 192, 222, 0.3)',
-                                    shadowColor: estadoFiltro === 'espera' ? 'rgba(91, 192, 222, 1)' : '#000',
-                                    shadowOffset: { width: 0, height: estadoFiltro === 'espera' ? 3 : 1 },
-                                    shadowOpacity: estadoFiltro === 'espera' ? 0.4 : 0.1,
-                                    shadowRadius: estadoFiltro === 'espera' ? 6 : 2,
-                                    elevation: estadoFiltro === 'espera' ? 8 : 2,
-                                    transform: estadoFiltro === 'espera' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                                }}
+                                style={[style.filterButtonBase, style.filterEspera, estadoFiltro === 'espera' && style.filterEsperaActive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('espera'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'espera' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterEsperaText, estadoFiltro === 'espera' && style.filterTextActive]}>
                                     Espera
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón Activo */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: 'rgba(255, 235, 0, 1)',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'activo' ? 4 : 1,
-                                    borderColor: estadoFiltro === 'activo' ? '#333' : 'rgba(255, 235, 0, 0.3)',
-                                    shadowColor: estadoFiltro === 'activo' ? 'rgba(255, 235, 0, 1)' : '#000',
-                                    shadowOffset: { width: 0, height: estadoFiltro === 'activo' ? 3 : 1 },
-                                    shadowOpacity: estadoFiltro === 'activo' ? 0.4 : 0.1,
-                                    shadowRadius: estadoFiltro === 'activo' ? 6 : 2,
-                                    elevation: estadoFiltro === 'activo' ? 8 : 2,
-                                    transform: estadoFiltro === 'activo' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                                }}
+                                style={[style.filterButtonBase, style.filterActivo, estadoFiltro === 'activo' && style.filterActivoActive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('activo'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'activo' ? '700' : '600',
-                                    color: '#333'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterActivoText, estadoFiltro === 'activo' && style.filterTextActive]}>
                                     Activo
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón Asignado */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: 'rgba(240, 173, 78, 1)',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'asignado' ? 3 : 1,
-                                    borderColor: estadoFiltro === 'asignado' ? '#fff' : 'rgba(240, 173, 78, 0.3)',
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 2,
-                                    elevation: 2,
-                                }}
+                                style={[style.filterButtonBase, style.filterAsignado, estadoFiltro === 'asignado' ? style.filterAsignadoActive : style.filterAsignadoInactive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('asignado'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'asignado' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterAsignadoText, estadoFiltro === 'asignado' && style.filterTextActive]}>
                                     Asignado
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón Inactivo */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: 'rgba(217, 83, 79, 1)',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'innactivo' ? 3 : 1,
-                                    borderColor: estadoFiltro === 'innactivo' ? '#fff' : 'rgba(217, 83, 79, 0.3)',
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 2,
-                                    elevation: 2,
-                                }}
+                                style={[style.filterButtonBase, style.filterInnactivo, estadoFiltro === 'innactivo' && style.filterInnactivoActive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('innactivo'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'innactivo' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterInnactivoText, estadoFiltro === 'innactivo' && style.filterTextActive]}>
                                     Inactivo
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón No Entregado */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: '#6c757d',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'noentregado' ? 3 : 1,
-                                    borderColor: estadoFiltro === 'noentregado' ? '#fff' : 'rgba(108, 117, 125, 0.3)',
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 2,
-                                    elevation: 2,
-                                }}
+                                style={[style.filterButtonBase, style.filterNoEntregado, estadoFiltro === 'noentregado' && style.filterNoEntregadoActive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('noentregado'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'noentregado' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterNoEntregadoText, estadoFiltro === 'noentregado' && style.filterTextActive]}>
                                     No Entregado
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón Otro */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: 'rgba(92, 184, 92, 1)',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'otro' ? 3 : 1,
-                                    borderColor: estadoFiltro === 'otro' ? '#fff' : 'rgba(92, 184, 92, 0.3)',
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 1 },
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 2,
-                                    elevation: 2,
-                                }}
+                                style={[style.filterButtonBase, style.filterOtro, estadoFiltro === 'otro' ? style.filterOtroActive : style.filterOtroInactive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('otro'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'otro' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterOtroText, estadoFiltro === 'otro' && style.filterTextActive]}>
                                     Cerrados
                                 </Text>
                             </TouchableOpacity>
@@ -1460,95 +1214,38 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
                 {/* Botones de filtro para conductores */}
                 {acceso === "conductor" && (
-                    <View style={{
-                        marginHorizontal: 20,
-                        marginTop: 12,
-                    }}>
+                    <View style={style.filterContainer}>
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{
-                                paddingHorizontal: 4,
-                                gap: 8
-                            }}
+                            contentContainerStyle={style.filterScrollContent}
                         >
                             {/* Botón Asignado */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: 'rgba(240, 173, 78, 1)',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'asignado' ? 4 : 1,
-                                    borderColor: estadoFiltro === 'asignado' ? '#fff' : 'rgba(240, 173, 78, 0.3)',
-                                    shadowColor: estadoFiltro === 'asignado' ? 'rgba(240, 173, 78, 1)' : '#000',
-                                    shadowOffset: { width: 0, height: estadoFiltro === 'asignado' ? 3 : 1 },
-                                    shadowOpacity: estadoFiltro === 'asignado' ? 0.4 : 0.1,
-                                    shadowRadius: estadoFiltro === 'asignado' ? 6 : 2,
-                                    elevation: estadoFiltro === 'asignado' ? 8 : 2,
-                                    transform: estadoFiltro === 'asignado' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                                }}
+                                style={[style.filterButtonBase, style.filterAsignado, estadoFiltro === 'asignado' && style.filterAsignadoActive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('asignado'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'asignado' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterAsignadoText, estadoFiltro === 'asignado' && style.filterTextActive]}>
                                     Asignados
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón No Entregado */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: '#6c757d',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'noentregado' ? 4 : 1,
-                                    borderColor: estadoFiltro === 'noentregado' ? '#fff' : 'rgba(108, 117, 125, 0.3)',
-                                    shadowColor: estadoFiltro === 'noentregado' ? '#6c757d' : '#000',
-                                    shadowOffset: { width: 0, height: estadoFiltro === 'noentregado' ? 3 : 1 },
-                                    shadowOpacity: estadoFiltro === 'noentregado' ? 0.4 : 0.1,
-                                    shadowRadius: estadoFiltro === 'noentregado' ? 6 : 2,
-                                    elevation: estadoFiltro === 'noentregado' ? 8 : 2,
-                                    transform: estadoFiltro === 'noentregado' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                                }}
+                                style={[style.filterButtonBase, style.filterNoEntregado, estadoFiltro === 'noentregado' && style.filterNoEntregadoActive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('noentregado'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'noentregado' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterNoEntregadoText, estadoFiltro === 'noentregado' && style.filterTextActive]}>
                                     No Entregados
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Botón Cerrados */}
                             <TouchableOpacity
-                                style={{
-                                    backgroundColor: 'rgba(92, 184, 92, 1)',
-                                    borderRadius: 20,
-                                    paddingHorizontal: 16,
-                                    paddingVertical: 8,
-                                    borderWidth: estadoFiltro === 'otro' ? 4 : 1,
-                                    borderColor: estadoFiltro === 'otro' ? '#fff' : 'rgba(92, 184, 92, 0.3)',
-                                    shadowColor: estadoFiltro === 'otro' ? 'rgba(92, 184, 92, 1)' : '#000',
-                                    shadowOffset: { width: 0, height: estadoFiltro === 'otro' ? 3 : 1 },
-                                    shadowOpacity: estadoFiltro === 'otro' ? 0.4 : 0.1,
-                                    shadowRadius: estadoFiltro === 'otro' ? 6 : 2,
-                                    elevation: estadoFiltro === 'otro' ? 8 : 2,
-                                    transform: estadoFiltro === 'otro' ? [{ scale: 1.05 }] : [{ scale: 1 }],
-                                }}
+                                style={[style.filterButtonBase, style.filterOtro, estadoFiltro === 'otro' ? style.filterOtroActive : style.filterOtroInactive]}
                                 onPress={() => updateState(actions.setEstadoFiltro('otro'))}
                             >
-                                <Text style={{
-                                    fontSize: 12,
-                                    fontWeight: estadoFiltro === 'otro' ? '700' : '600',
-                                    color: '#fff'
-                                }}>
+                                <Text style={[style.filterButtonText, style.filterOtroText, estadoFiltro === 'otro' && style.filterTextActive]}>
                                     Entregados
                                 </Text>
                             </TouchableOpacity>
@@ -1628,16 +1325,12 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     }, 300);
                 }}
                 onClosePedido={() => {
-                    // Capturar el ID del pedido y valor unitario antes de cerrar el modal
+                    // Capturar el ID del pedido y valor unitario
                     setPedidoIdParaCerrar(id);
                     setValorUnitarioParaCerrar(valor_unitarioUsuario?.toString());
 
-                    // Primero cerrar el modal principal
-                    closePedidoModal();
-                    // Luego abrir el modal de cerrar pedido con un pequeño delay
-                    setTimeout(() => {
-                        updateState(actions.setModalCerrarPedido(true));
-                    }, 300);
+                    // Abrir el modal de cerrar pedido SIN cerrar el modal principal
+                    updateState(actions.setModalCerrarPedido(true));
                 }}
                 // Props para CambiarEstadoModal
                 modalPerfiles={modalPerfiles}
@@ -1649,7 +1342,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 modalFechaEntrega={modalFechaEntrega}
                 vehiculos={vehiculos}
                 showCalendar={showCalendar}
-                fechaEntrega={fechaEntrega}
+                fechaEntregaModal={fechaEntrega}
                 idVehiculo={idVehiculo}
                 placa={placa}
                 onCloseConductor={() => {
@@ -1663,6 +1356,16 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onAssignVehicleAction={asignarConductorFunc}
                 onCloseFechaEntrega={() => updateState(actions.setModalFechaEntrega(false))}
                 onSaveFecha={asignarFecha}
+                // Props para CerrarPedidoModal
+                modalCerrarPedido={modalCerrarPedido}
+                onCloseCerrarPedido={() => {
+                    updateState(actions.setModalCerrarPedido(false));
+                    setPedidoIdParaCerrar(undefined);
+                    setValorUnitarioParaCerrar(undefined);
+                }}
+                onCerrarPedido={handleCerrarPedido}
+                onGuardarNovedad={handleGuardarNovedadCerrar}
+                valorUnitario={valorUnitarioParaCerrar}
             />
 
             {/* Todos los modales internos ahora se renderizan dentro del EditarPedidoModal */}
@@ -1673,38 +1376,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 novedad={novedad}
                 onNovedadChange={(text) => updateState(actions.setNovedad(text))}
                 onSave={guardarNovedadInnactivo}
-            />
-
-            <CerrarPedidoModal
-                visible={modalCerrarPedido}
-                pedidoId={pedidoIdParaCerrar} // Usar el ID capturado antes de cerrar el modal
-                onClose={() => {
-                    updateState(actions.setModalCerrarPedido(false));
-                    setPedidoIdParaCerrar(undefined); // Limpiar el ID capturado
-                    setValorUnitarioParaCerrar(undefined); // Limpiar el valor unitario capturado
-                    // Reabrir el modal principal después de un pequeño delay
-                    setTimeout(() => {
-                        openPedidoModal({
-                            // Mantener los mismos datos del pedido
-                            id, estado, estadoEntrega, razon_social, cedula, forma,
-                            cantidadKl, cantidadPrecio, fechaEntrega, creado, usuarioCrea,
-                            capacidad, observacion, observacion_pedido, entregado,
-                            placaPedido, conductorPedido, kilos, factura, valor_total,
-                            forma_pago, motivo_no_cierre, perfil_novedad, idVehiculo, placa,
-                            valor_unitarioUsuario
-                        });
-                    }, 200);
-                }}
-                entregado={entregado}
-                imagenCerrar={undefined} // TODO: Agregar imagen del estado
-                kilos={kilos}
-                factura={factura}
-                valor_total={valor_total}
-                remision={undefined} // TODO: Agregar remision del estado
-                forma_pago={forma_pago}
-                valor_unitario={valorUnitarioParaCerrar || undefined}
-                onCerrarPedido={handleCerrarPedido}
-                onGuardarNovedad={handleGuardarNovedadCerrar}
             />
 
             {renderCabezera()}
@@ -1718,40 +1389,19 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 scrollEnabled={!(modalConductor || modalFechaEntrega || modalNovedad || modalPerfiles || modalCerrarPedido || modalOrdenamiento || modalResetPedido)}
             >
                 {showSpin1 || !pedidos || (searchLoading && pedidos.length === 0) ? (
-                    <View style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                    <View style={[style.loadingContainerMain, {
                         paddingVertical: showSpin1 ? 20 : 40,
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        marginHorizontal: 10,
                         marginTop: showSpin1 ? 10 : 20,
-                        borderRadius: 12,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.1,
-                        shadowRadius: 4,
-                        elevation: 3
-                    }}>
+                    }]}>
                         <ActivityIndicator
                             size="large"
                             color="#0071bb"
-                            style={{ marginBottom: showSpin1 ? 10 : 15 }}
+                            style={showSpin1 ? style.loadingIndicatorSmall : style.loadingIndicatorLarge}
                         />
-                        <Text style={{
-                            fontSize: showSpin1 ? 16 : 18,
-                            color: '#0071bb',
-                            fontWeight: '600',
-                            textAlign: 'center'
-                        }}>
+                        <Text style={showSpin1 ? style.loadingTextSmall : style.loadingTextLarge}>
                             {searchLoading ? 'Buscando...' : showSpin1 ? 'Cargando pedidos...' : 'Inicializando...'}
                         </Text>
-                        <Text style={{
-                            fontSize: showSpin1 ? 12 : 14,
-                            color: '#666',
-                            marginTop: 4,
-                            textAlign: 'center',
-                            paddingHorizontal: 20
-                        }}>
+                        <Text style={showSpin1 ? style.loadingSubtextSmall : style.loadingSubtextContainer}>
                             {searchLoading
                                 ? `Buscando "${terminoBuscador}"...`
                                 : showSpin1
@@ -1796,34 +1446,13 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             </ScrollView>
 
             {showSpin && (
-                <View style={{
-                    position: 'absolute',
-                    bottom: 80,
-                    left: 0,
-                    right: 0,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingVertical: 15,
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    marginHorizontal: 20,
-                    borderRadius: 25,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 8,
-                    elevation: 6
-                }}>
+                <View style={style.loadingPaginationContainer}>
                     <ActivityIndicator
                         size="small"
                         color="#0071bb"
-                        style={{ marginBottom: 8 }}
+                        style={style.loadingIndicatorSmall}
                     />
-                    <Text style={{
-                        fontSize: 14,
-                        color: '#0071bb',
-                        fontWeight: '600',
-                        textAlign: 'center'
-                    }}>
+                    <Text style={style.loadingTextPagination}>
                         Cargando más pedidos...
                     </Text>
                 </View>
@@ -1832,52 +1461,24 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             <Toast
                 config={{
                     success: (internalState) => (
-                        <View style={{
-                            height: 60,
-                            width: '90%',
-                            backgroundColor: '#28a745', // Ya tiene backgroundColor sólido
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            paddingHorizontal: 15,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 4,
-                            elevation: 20,
-                            zIndex: 99999
-                        }}>
-                            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                        <View style={style.toastSuccessContainer}>
+                            <Text style={style.toastTextPrimary}>
                                 ✅ {internalState.text1}
                             </Text>
                             {internalState.text2 && (
-                                <Text style={{ color: 'white', fontSize: 14, marginLeft: 8 }}>
+                                <Text style={style.toastTextSecondary}>
                                     {internalState.text2}
                                 </Text>
                             )}
                         </View>
                     ),
                     error: (internalState) => (
-                        <View style={{
-                            height: 60,
-                            width: '90%',
-                            backgroundColor: '#dc3545', // Ya tiene backgroundColor sólido
-                            borderRadius: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            paddingHorizontal: 15,
-                            shadowColor: '#000',
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 4,
-                            elevation: 20,
-                            zIndex: 99999
-                        }}>
-                            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                        <View style={style.toastErrorContainer}>
+                            <Text style={style.toastTextPrimary}>
                                 ❌ {internalState.text1}
                             </Text>
                             {internalState.text2 && (
-                                <Text style={{ color: 'white', fontSize: 14, marginLeft: 8 }}>
+                                <Text style={style.toastTextSecondary}>
                                     {internalState.text2}
                                 </Text>
                             )}
@@ -1897,6 +1498,14 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 onApply={async () => {
                     updateState(actions.setModalOrdenamiento(false));
                 }}
+            />
+
+            {/* Modal de Estadísticas */}
+            <ModalEstadisticas
+                visible={modalEstadisticas}
+                onClose={() => setModalEstadisticas(false)}
+                conductorId={acceso === 'conductor' ? parseInt(idUsuario || '0') : null}
+                acceso={acceso}
             />
 
         </View>

@@ -14,15 +14,32 @@ DECLARE
     idConductor integer;
     newOrden integer;
     fechaEntregaTimestamp TIMESTAMP; -- Variable para almacenar la fecha como TIMESTAMP
+    fechaActual TIMESTAMP; -- Variable para almacenar la fecha actual del pedido
 BEGIN
-    -- Convertir la fecha desde formato estándar (2025-09-22 05:00:00) a TIMESTAMP
-    fechaEntregaTimestamp := TO_TIMESTAMP(_fechaEntrega, 'YYYY-MM-DD HH24:MI:SS');
+    -- Convertir la fecha solo si llega un valor
+    IF _fechaEntrega IS NOT NULL AND _fechaEntrega != '' THEN
+        fechaEntregaTimestamp := TO_TIMESTAMP(_fechaEntrega, 'YYYY-MM-DD HH24:MI:SS');
+    END IF;
+    
     SELECT conductor INTO idConductor FROM carros WHERE _id = _carroId;
-    SELECT orden INTO newOrden FROM pedidos WHERE fechaEntrega = fechaEntregaTimestamp AND conductorId = idConductor;
+    
+    -- Obtener la fecha actual del pedido y calcular el nuevo orden
+    SELECT fechaEntrega INTO fechaActual FROM pedidos WHERE _id = _pedidoId;
+    
+    -- Usar la nueva fecha si llega, o mantener la actual
+    SELECT orden INTO newOrden 
+    FROM pedidos 
+    WHERE fechaEntrega = COALESCE(fechaEntregaTimestamp, fechaActual) 
+    AND conductorId = idConductor;
+    
     IF newOrden IS NULL THEN newOrden := 0+1; ELSE newOrden := newOrden + 1; END IF;
 
     UPDATE pedidos 
-    SET carroId = _carroId, conductorId = idConductor, usuarioAsignaVehiculo = _usuarioAsigna, orden = newOrden, fechaEntrega = fechaEntregaTimestamp
+    SET carroId = _carroId, 
+        conductorId = idConductor, 
+        usuarioAsignaVehiculo = _usuarioAsigna, 
+        orden = newOrden, 
+        fechaEntrega = COALESCE(fechaEntregaTimestamp, fechaEntrega)
     WHERE _id = _pedidoId
     RETURNING _id INTO new_id;
 

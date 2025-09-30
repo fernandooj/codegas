@@ -488,3 +488,31 @@ export interface ScrollEvent {
         };
     };
 }
+
+// Estadísticas types
+export interface Estadistica {
+    placa: string;
+    total_kilos_credito: number;
+    total_valor_credito: number;
+    total_kilos_contado: number;
+    total_valor_contado: number;
+    total_kilos: number;
+    total_valor: number;
+    cantidad_pedidos: number;
+}
+
+export interface DetallePedido {
+    remision: number | null;
+    pedido: string;
+    codt: string;
+    total_kilos: number;
+    vlr_contado: number | null;
+    valor_total: number;
+}
+
+export interface ModalEstadisticasProps {
+    visible: boolean;
+    onClose: () => void;
+    conductorId?: number | null;
+    acceso?: 'admin' | 'conductor' | 'cliente' | 'solucion' | 'comercial' | 'despacho';
+}

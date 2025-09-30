@@ -127,3 +127,13 @@ resetPedido:
     include:
       - services/pedidos/src/reset-pedido.js
       - lib/errors/database-error.js
+
+getEstadisticas:
+  name: ${self:custom.base}-get-estadisticas
+  handler: services/pedidos/src/get-estadisticas.main
+  events:
+    - httpApi: 'GET /ped/pedido/estadisticas'
+  package:
+    include:
+      - services/pedidos/src/get-estadisticas.js
+      - lib/errors/database-error.js

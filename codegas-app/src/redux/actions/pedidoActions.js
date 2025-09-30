@@ -428,6 +428,36 @@ const resetPedido = async (pedidoId) => {
   }
 };
 
+const getEstadisticas = async (conductorId, periodo) => {
+  try {
+    const params = {
+      conductorId: conductorId || null,
+      periodo: periodo || 'dia'
+    };
+
+    const response = await axios.get('/ped/pedido/estadisticas', { params });
+
+    if (response.data.status) {
+      return {
+        status: true,
+        estadisticas: response.data.estadisticas,
+        periodo: response.data.periodo,
+        tipoVista: response.data.tipoVista,
+        conductorId: response.data.conductorId
+      };
+    } else {
+      throw new Error(response.data.message || 'Error al obtener estadísticas');
+    }
+  } catch (error) {
+    console.error('Error obteniendo estadísticas:', error);
+    return {
+      status: false,
+      message: error.response?.data?.message || 'Error al obtener estadísticas',
+      estadisticas: []
+    };
+  }
+};
+
 export {
   getPedido,
   getPedidos,
@@ -445,5 +475,6 @@ export {
   guardarNovedadCerrarPedido,
   finalizarPedido,
   cambiarEstadoPedido,
-  resetPedido
+  resetPedido,
+  getEstadisticas
 };

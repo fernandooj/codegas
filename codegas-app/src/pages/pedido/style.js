@@ -584,17 +584,1432 @@ export const style = MediaQueryStyleSheet.create({
 	containerEditar: {
 		padding: 10,
 		marginBottom: 40
-	}
-	// inputIOS: {
-	// },
-	// inputAndroid: {
-	// 	fontSize: 16,
-	// 	paddingHorizontal: 10,
-	// 	paddingVertical: 8,
-	// 	borderWidth: 1,
-	// 	borderColor:"red",
-	// 	borderRadius: 8,
-	// 	width:"95.5%",
-	// 	// paddingRight: 30, // to ensure the text is never behind the icon
-	// },
+	},
+
+	// New organized styles for pedido page
+	headerContainer: {
+		backgroundColor: '#f8f9fa',
+		paddingHorizontal: 0,
+		paddingBottom: 12,
+		borderBottomWidth: 1,
+		borderBottomColor: '#e9ecef',
+		width: '100%',
+	},
+	headerButton: {
+		borderRadius: 8,
+		width: 36,
+		height: 36,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	headerIcon: {
+		fontSize: 14,
+		color: '#fff'
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				LOADING AND PAGINATION STYLES
+	//////////////////////////////////////////////////////////////////
+	loadingContainerMain: {
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: 'rgba(255, 255, 255, 0.9)',
+		marginHorizontal: 10,
+		borderRadius: 12,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3
+	},
+	loadingPaginationContainer: {
+		position: 'absolute',
+		bottom: 80,
+		left: 0,
+		right: 0,
+		alignItems: 'center',
+		justifyContent: 'center',
+		paddingVertical: 15,
+		backgroundColor: 'rgba(255, 255, 255, 0.95)',
+		marginHorizontal: 20,
+		borderRadius: 25,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
+		elevation: 6
+	},
+	loadingIndicatorLarge: {
+		marginBottom: 15
+	},
+	loadingIndicatorSmall: {
+		marginBottom: 8
+	},
+	loadingTextLarge: {
+		fontSize: 18,
+		color: '#0071bb',
+		fontWeight: '600',
+		textAlign: 'center'
+	},
+	loadingTextSmall: {
+		fontSize: 16,
+		color: '#0071bb',
+		fontWeight: '600',
+		textAlign: 'center'
+	},
+	loadingTextPagination: {
+		fontSize: 14,
+		color: '#0071bb',
+		fontWeight: '600',
+		textAlign: 'center'
+	},
+	loadingSubtextContainer: {
+		fontSize: 14,
+		color: '#666',
+		marginTop: 4,
+		textAlign: 'center',
+		paddingHorizontal: 20
+	},
+	loadingSubtextSmall: {
+		fontSize: 12,
+		color: '#666',
+		marginTop: 4,
+		textAlign: 'center',
+		paddingHorizontal: 20
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				TOAST NOTIFICATION STYLES
+	//////////////////////////////////////////////////////////////////
+	toastSuccessContainer: {
+		height: 60,
+		width: '90%',
+		backgroundColor: '#28a745',
+		borderRadius: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingHorizontal: 15,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.25,
+		shadowRadius: 4,
+		elevation: 20,
+		zIndex: 99999
+	},
+	toastErrorContainer: {
+		height: 60,
+		width: '90%',
+		backgroundColor: '#dc3545',
+		borderRadius: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingHorizontal: 15,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.25,
+		shadowRadius: 4,
+		elevation: 20,
+		zIndex: 99999
+	},
+	toastTextPrimary: {
+		color: 'white',
+		fontSize: 16,
+		fontWeight: '600'
+	},
+	toastTextSecondary: {
+		color: 'white',
+		fontSize: 14,
+		marginLeft: 8
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				SEARCH BAR STYLES
+	//////////////////////////////////////////////////////////////////
+	searchBarContainer: {
+		marginHorizontal: 20,
+	},
+	searchBar: {
+		backgroundColor: '#fff',
+		borderRadius: 10,
+		flexDirection: "row",
+		alignItems: 'center',
+		paddingHorizontal: 12,
+		paddingVertical: 2,
+		borderWidth: 1,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+		elevation: 2,
+		height: 40,
+	},
+	searchBarActive: {
+		borderColor: '#007bff',
+	},
+	searchBarInactive: {
+		borderColor: '#e9ecef',
+	},
+	searchIconStyle: {
+		fontSize: 16,
+		color: '#6c757d',
+		marginRight: 12
+	},
+	searchInputStyle: {
+		flex: 1,
+		fontSize: 15,
+		color: '#333',
+		paddingVertical: 8,
+	},
+	searchClearButton: {
+		backgroundColor: '#dc3545',
+		borderRadius: 6,
+		width: 32,
+		height: 32,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	searchClearIcon: {
+		fontSize: 14,
+		color: '#fff'
+	},
+	searchLoadingContainer: {
+		width: 32,
+		height: 32,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				FILTER BUTTONS STYLES
+	//////////////////////////////////////////////////////////////////
+	filterContainer: {
+		marginHorizontal: 20,
+		marginTop: 12,
+	},
+	filterScrollContent: {
+		paddingHorizontal: 4,
+		gap: 8
+	},
+	filterButtonBase: {
+		borderRadius: 20,
+		paddingHorizontal: 16,
+		paddingVertical: 8,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	filterButtonText: {
+		fontSize: 12,
+		fontWeight: '600',
+	},
+	// Todos button
+	filterTodos: {
+		backgroundColor: '#007bff',
+		borderWidth: 1,
+		borderColor: 'rgba(0, 123, 255, 0.3)',
+	},
+	filterTodosActive: {
+		borderWidth: 4,
+		borderColor: '#fff',
+		shadowColor: '#007bff',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.4,
+		shadowRadius: 6,
+		elevation: 8,
+		transform: [{ scale: 1.05 }],
+	},
+	filterTodosText: {
+		color: '#fff'
+	},
+	// Espera button
+	filterEspera: {
+		backgroundColor: 'rgba(91, 192, 222, 1)',
+		borderWidth: 1,
+		borderColor: 'rgba(91, 192, 222, 0.3)',
+	},
+	filterEsperaActive: {
+		borderWidth: 4,
+		borderColor: '#fff',
+		shadowColor: 'rgba(91, 192, 222, 1)',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.4,
+		shadowRadius: 6,
+		elevation: 8,
+		transform: [{ scale: 1.05 }],
+	},
+	filterEsperaText: {
+		color: '#fff'
+	},
+	// Activo button
+	filterActivo: {
+		backgroundColor: 'rgba(255, 235, 0, 1)',
+		borderWidth: 1,
+		borderColor: 'rgba(255, 235, 0, 0.3)',
+	},
+	filterActivoActive: {
+		borderWidth: 4,
+		borderColor: '#333',
+		shadowColor: 'rgba(255, 235, 0, 1)',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.4,
+		shadowRadius: 6,
+		elevation: 8,
+		transform: [{ scale: 1.05 }],
+	},
+	filterActivoText: {
+		color: '#333'
+	},
+	// Asignado button
+	filterAsignado: {
+		backgroundColor: 'rgba(240, 173, 78, 1)',
+		borderWidth: 1,
+		borderColor: 'rgba(240, 173, 78, 0.3)',
+	},
+	filterAsignadoActive: {
+		borderWidth: 4,
+		borderColor: '#fff',
+		shadowColor: 'rgba(240, 173, 78, 1)',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.4,
+		shadowRadius: 6,
+		elevation: 8,
+		transform: [{ scale: 1.05 }],
+	},
+	filterAsignadoInactive: {
+		borderWidth: 3,
+	},
+	filterAsignadoText: {
+		color: '#fff'
+	},
+	// Inactivo button
+	filterInnactivo: {
+		backgroundColor: 'rgba(217, 83, 79, 1)',
+		borderWidth: 1,
+		borderColor: 'rgba(217, 83, 79, 0.3)',
+	},
+	filterInnactivoActive: {
+		borderWidth: 3,
+		borderColor: '#fff',
+	},
+	filterInnactivoText: {
+		color: '#fff'
+	},
+	// No Entregado button
+	filterNoEntregado: {
+		backgroundColor: '#6c757d',
+		borderWidth: 1,
+		borderColor: 'rgba(108, 117, 125, 0.3)',
+	},
+	filterNoEntregadoActive: {
+		borderWidth: 4,
+		borderColor: '#fff',
+		shadowColor: '#6c757d',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.4,
+		shadowRadius: 6,
+		elevation: 8,
+		transform: [{ scale: 1.05 }],
+	},
+	filterNoEntregadoText: {
+		color: '#fff'
+	},
+	// Otro/Cerrados button
+	filterOtro: {
+		backgroundColor: 'rgba(92, 184, 92, 1)',
+		borderWidth: 1,
+		borderColor: 'rgba(92, 184, 92, 0.3)',
+	},
+	filterOtroActive: {
+		borderWidth: 4,
+		borderColor: '#fff',
+		shadowColor: 'rgba(92, 184, 92, 1)',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.4,
+		shadowRadius: 6,
+		elevation: 8,
+		transform: [{ scale: 1.05 }],
+	},
+	filterOtroInactive: {
+		borderWidth: 3,
+	},
+	filterOtroText: {
+		color: '#fff'
+	},
+	filterTextActive: {
+		fontWeight: '700',
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				PEDIDO CARD STYLES
+	//////////////////////////////////////////////////////////////////
+	pedidoCard: {
+		borderRadius: 12,
+		marginHorizontal: 8,
+		marginVertical: 8,
+		padding: 16,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+		borderLeftWidth: 4,
+	},
+	pedidoCardHeader: {
+		marginBottom: 12,
+		paddingBottom: 8,
+		borderBottomWidth: 1,
+		borderBottomColor: '#e9ecef',
+	},
+	pedidoCardHeaderRow: {
+		flexDirection: 'row',
+		alignItems: 'flex-start',
+		marginBottom: 8
+	},
+	pedidoCardBuildingIcon: {
+		fontSize: 14,
+		color: '#007bff',
+		marginRight: 6,
+		marginTop: 2
+	},
+	pedidoCardCompanyText: {
+		fontSize: 15,
+		fontWeight: '600',
+		color: '#333',
+		flex: 1,
+		lineHeight: 18
+	},
+	pedidoCardInfoRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between'
+	},
+	pedidoCardInfoLeft: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		flex: 1
+	},
+	pedidoCardIdIcon: {
+		fontSize: 12,
+		color: '#6c757d',
+		marginRight: 6
+	},
+	pedidoCardCedulaText: {
+		fontSize: 13,
+		color: '#6c757d'
+	},
+	pedidoCardEstadoBadge: {
+		paddingHorizontal: 6,
+		paddingVertical: 3,
+		borderRadius: 10,
+		flexDirection: 'row',
+		alignItems: 'center',
+		minWidth: 60,
+		justifyContent: 'center',
+	},
+	pedidoCardEstadoIcon: {
+		fontSize: 9,
+		color: 'white',
+		marginRight: 3
+	},
+	pedidoCardEstadoText: {
+		fontSize: 10,
+		color: 'white',
+		fontWeight: '600'
+	},
+	pedidoCardBody: {
+		gap: 12
+	},
+	pedidoCardRow: {
+		flexDirection: 'row',
+		gap: 8
+	},
+	pedidoCardFieldSmall: {
+		flex: 1,
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	pedidoCardFieldSmallStart: {
+		flex: 1,
+		flexDirection: 'row',
+		alignItems: 'flex-start'
+	},
+	pedidoCardFieldLarge: {
+		flex: 3,
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	pedidoCardFieldLargeStart: {
+		flex: 3,
+		flexDirection: 'row',
+		alignItems: 'flex-start'
+	},
+	pedidoCardFieldContent: {
+		flex: 1
+	},
+	pedidoCardFieldSpacer: {
+		flex: 1
+	},
+	pedidoCardIconHashtag: {
+		fontSize: 12,
+		color: '#007bff',
+		marginRight: 6
+	},
+	pedidoCardIconMarker: {
+		fontSize: 12,
+		color: '#dc3545',
+		marginRight: 6
+	},
+	pedidoCardIconCode: {
+		fontSize: 12,
+		color: '#6f42c1',
+		marginRight: 6,
+		marginTop: 2
+	},
+	pedidoCardIconHome: {
+		fontSize: 12,
+		color: '#28a745',
+		marginRight: 6,
+		marginTop: 2
+	},
+	pedidoCardLabelText: {
+		fontSize: 11,
+		color: '#666',
+		marginBottom: 2
+	},
+	pedidoCardValueSmall: {
+		fontSize: 13,
+		fontWeight: '600',
+		color: '#333'
+	},
+	pedidoCardValue: {
+		fontSize: 12,
+		fontWeight: '600',
+		color: '#333'
+	},
+	pedidoCardValueAddress: {
+		fontSize: 12,
+		color: '#333'
+	},
+	pedidoCardInfoPanel: {
+		backgroundColor: '#ffffff',
+		paddingHorizontal: 16,
+		paddingVertical: 12,
+		marginTop: 12,
+		borderRadius: 8,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	pedidoCardInfoItem: {
+		flex: 1,
+		alignItems: 'center'
+	},
+	pedidoCardInfoItemLabel: {
+		fontSize: 10,
+		color: '#666',
+		marginBottom: 2
+	},
+	pedidoCardInfoItemValue: {
+		fontSize: 11,
+		fontWeight: '600',
+		color: '#333'
+	},
+	pedidoCardInfoItemValueEntrega: {
+		fontSize: 11,
+		fontWeight: '600',
+		color: '#007bff'
+	},
+	pedidoCardInfoItemValuePrecio: {
+		fontSize: 11,
+		fontWeight: '600',
+		color: '#28a745'
+	},
+	pedidoCardInfoItemValueFactura: {
+		fontSize: 11,
+		fontWeight: '600',
+		color: '#6f42c1'
+	},
+	pedidoCardVehicleBox: {
+		backgroundColor: '#e8f5e8',
+		padding: 8,
+		borderRadius: 6,
+		marginTop: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	pedidoCardVehicleIcon: {
+		fontSize: 12,
+		color: '#28a745',
+		marginRight: 8
+	},
+	pedidoCardVehicleContent: {
+		flex: 1
+	},
+	pedidoCardVehicleLabel: {
+		fontSize: 11,
+		color: '#666',
+		marginBottom: 2
+	},
+	pedidoCardVehicleValue: {
+		fontSize: 13,
+		fontWeight: '600',
+		color: '#333'
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				HEADER TITLE STYLES
+	//////////////////////////////////////////////////////////////////
+	headerTitleContainer: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 10,
+		paddingHorizontal: 20
+	},
+	headerTitleLeft: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		flex: 1
+	},
+	headerTitleWrapper: {
+		flex: 1
+	},
+	headerTitle: {
+		fontSize: 24,
+		fontWeight: 'bold',
+		color: '#333',
+		marginBottom: 4
+	},
+	headerSubtitle: {
+		fontSize: 16,
+		color: '#666',
+		fontWeight: '500'
+	},
+	headerButtonGroup: {
+		flexDirection: 'row',
+		gap: 8
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				EDITAR PEDIDO MODAL STYLES
+	//////////////////////////////////////////////////////////////////
+	editarModalOverlay: {
+		flex: 1,
+		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		padding: 20,
+	},
+	editarModalContainer: {
+		backgroundColor: '#ffffff',
+		borderRadius: 16,
+		width: '100%',
+		maxHeight: '90%',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 10 },
+		shadowOpacity: 0.25,
+		shadowRadius: 20,
+		elevation: 10,
+	},
+	editarModalHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		padding: 20,
+		borderBottomWidth: 1,
+		borderBottomColor: '#e9ecef',
+		backgroundColor: '#f8f9fa',
+		borderTopLeftRadius: 16,
+		borderTopRightRadius: 16,
+	},
+	editarModalHeaderContent: {
+		flex: 1
+	},
+	editarModalHeaderTitle: {
+		fontSize: 18,
+		fontWeight: '700',
+		color: '#333',
+		marginBottom: 4,
+	},
+	editarModalHeaderSubtitle: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalHashtagIcon: {
+		fontSize: 12,
+		color: '#007bff',
+		marginRight: 4
+	},
+	editarModalPedidoId: {
+		fontSize: 14,
+		color: '#6c757d'
+	},
+	editarModalResetButton: {
+		width: 36,
+		height: 36,
+		borderRadius: 18,
+		backgroundColor: '#ffc107',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 12,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.2,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	editarModalResetIcon: {
+		fontSize: 16,
+		color: '#fff'
+	},
+	editarModalCloseButton: {
+		width: 36,
+		height: 36,
+		borderRadius: 18,
+		backgroundColor: 'rgba(0, 0, 0, 0.1)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.2,
+		shadowRadius: 2,
+		elevation: 2,
+	},
+	editarModalCloseIcon: {
+		fontSize: 18,
+		color: '#666'
+	},
+	editarModalBody: {
+		padding: 20
+	},
+	editarModalInfoCard: {
+		backgroundColor: '#f8f9fa',
+		padding: 15,
+		borderRadius: 8,
+		marginBottom: 15,
+	},
+	editarModalInfoCardTitle: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#333',
+		marginBottom: 10,
+	},
+	editarModalInfoCardContent: {
+		gap: 8
+	},
+	editarModalInfoRow: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalInfoIcon: {
+		fontSize: 14,
+		marginRight: 8,
+		width: 20
+	},
+	editarModalInfoIconBlue: {
+		color: '#007bff'
+	},
+	editarModalInfoIconGreen: {
+		color: '#28a745'
+	},
+	editarModalInfoIconPurple: {
+		color: '#6f42c1'
+	},
+	editarModalInfoIconRed: {
+		color: '#dc3545'
+	},
+	editarModalInfoText: {
+		fontSize: 14,
+		color: '#333'
+	},
+	editarModalInfoTextBold: {
+		fontWeight: '600'
+	},
+	editarModalAdditionalInfo: {
+		gap: 6
+	},
+	editarModalAdditionalInfoText: {
+		fontSize: 13,
+		color: '#666'
+	},
+	editarModalAdditionalInfoIcon: {
+		fontSize: 12,
+		marginRight: 6
+	},
+	editarModalNavigateButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		backgroundColor: '#007bff',
+		paddingHorizontal: 12,
+		paddingVertical: 8,
+		borderRadius: 6,
+		marginTop: 8,
+		alignSelf: 'flex-start'
+	},
+	editarModalNavigateIcon: {
+		fontSize: 12,
+		color: '#fff',
+		marginRight: 6
+	},
+	editarModalNavigateText: {
+		fontSize: 13,
+		color: '#fff',
+		fontWeight: '600'
+	},
+	editarModalEmergencyButton: {
+		backgroundColor: '#dc3545',
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		marginTop: 12,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	editarModalEmergencyIcon: {
+		color: '#fff',
+		fontSize: 16,
+		marginRight: 8
+	},
+	editarModalEmergencyText: {
+		color: '#fff',
+		fontWeight: '600',
+		fontSize: 14
+	},
+	editarModalEstadoSection: {
+		backgroundColor: '#f8f9fa',
+		borderRadius: 12,
+		padding: 20,
+		marginTop: 20,
+		borderLeftWidth: 4,
+		borderLeftColor: '#007bff',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	editarModalEstadoTitle: {
+		fontSize: 18,
+		fontWeight: '700',
+		color: '#333',
+		marginBottom: 16,
+		textAlign: 'center'
+	},
+	editarModalEstadoActual: {
+		backgroundColor: 'white',
+		padding: 15,
+		borderRadius: 10,
+		marginBottom: 20,
+		borderWidth: 1,
+	},
+	editarModalEstadoLabel: {
+		fontSize: 14,
+		color: '#666',
+		marginBottom: 4
+	},
+	editarModalEstadoRow: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalEstadoIcon: {
+		fontSize: 16,
+		marginRight: 8
+	},
+	editarModalEstadoText: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#333'
+	},
+	editarModalEstadoLocked: {
+		backgroundColor: '#e9ecef',
+		padding: 15,
+		borderRadius: 8,
+		alignItems: 'center'
+	},
+	editarModalEstadoLockedIcon: {
+		fontSize: 20,
+		color: '#6c757d',
+		marginBottom: 8
+	},
+	editarModalEstadoLockedText: {
+		color: '#6c757d',
+		textAlign: 'center'
+	},
+	editarModalEstadoChangeButton: {
+		backgroundColor: '#007bff',
+		paddingVertical: 12,
+		borderRadius: 8,
+		alignItems: 'center',
+		flexDirection: 'row',
+		justifyContent: 'center',
+	},
+	editarModalEstadoChangeIcon: {
+		fontSize: 14,
+		color: 'white',
+		marginRight: 6
+	},
+	editarModalEstadoChangeText: {
+		color: 'white',
+		fontSize: 14,
+		fontWeight: '600'
+	},
+	editarModalVehiculoSection: {
+		marginBottom: 15
+	},
+	editarModalVehiculoAsignado: {
+		backgroundColor: '#e8f5e8',
+		padding: 12,
+		borderRadius: 8,
+		marginBottom: 15,
+		borderLeftWidth: 4,
+	},
+	editarModalVehiculoNoAsignado: {
+		backgroundColor: '#fff3cd',
+		padding: 12,
+		borderRadius: 8,
+		marginBottom: 15,
+		borderLeftWidth: 4,
+	},
+	editarModalVehiculoLabel: {
+		fontSize: 14,
+		color: '#666',
+		marginBottom: 4
+	},
+	editarModalVehiculoRowAsignado: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalVehiculoIconAsignado: {
+		fontSize: 16,
+		marginRight: 8
+	},
+	editarModalVehiculoTextAsignado: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#333'
+	},
+	editarModalVehiculoRowNoAsignado: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalVehiculoIconNoAsignado: {
+		fontSize: 16,
+		color: '#856404',
+		marginRight: 8
+	},
+	editarModalVehiculoTextNoAsignado: {
+		fontSize: 14,
+		color: '#856404'
+	},
+	editarModalVehiculoButton: {
+		backgroundColor: '#28a745',
+		paddingVertical: 15,
+		paddingHorizontal: 20,
+		borderRadius: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	editarModalVehiculoButtonIcon: {
+		fontSize: 16,
+		color: 'white',
+		marginRight: 10
+	},
+	editarModalVehiculoButtonText: {
+		color: 'white',
+		fontSize: 16,
+		fontWeight: '600'
+	},
+	editarModalCancelarSection: {
+		marginBottom: 20
+	},
+	editarModalCancelarWarning: {
+		backgroundColor: '#f8d7da',
+		padding: 12,
+		borderRadius: 8,
+		marginBottom: 15,
+		borderLeftWidth: 4,
+		borderLeftColor: '#dc3545'
+	},
+	editarModalCancelarWarningRow: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalCancelarWarningIcon: {
+		fontSize: 16,
+		color: '#721c24',
+		marginRight: 8
+	},
+	editarModalCancelarWarningText: {
+		fontSize: 14,
+		color: '#721c24',
+		flex: 1
+	},
+	editarModalCancelarButton: {
+		backgroundColor: '#dc3545',
+		paddingVertical: 15,
+		paddingHorizontal: 20,
+		borderRadius: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	editarModalCancelarButtonIcon: {
+		fontSize: 16,
+		color: 'white',
+		marginRight: 10
+	},
+	editarModalCancelarButtonText: {
+		color: 'white',
+		fontSize: 16,
+		fontWeight: '600'
+	},
+	editarModalEntregadoContainer: {
+		marginBottom: 20
+	},
+	editarModalEntregadoHeader: {
+		alignItems: 'center',
+		marginBottom: 24,
+		paddingVertical: 20,
+		backgroundColor: '#f8f9fa',
+		borderRadius: 16,
+		marginHorizontal: 20
+	},
+	editarModalEntregadoIconContainer: {
+		backgroundColor: '#d4edda',
+		borderRadius: 40,
+		width: 60,
+		height: 60,
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginBottom: 12,
+		shadowColor: '#28a745',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 0.3,
+		shadowRadius: 6,
+		elevation: 4
+	},
+	editarModalEntregadoIcon: {
+		fontSize: 28,
+		color: '#28a745'
+	},
+	editarModalEntregadoTitle: {
+		fontSize: 18,
+		fontWeight: 'bold',
+		color: '#28a745',
+		marginBottom: 6
+	},
+	editarModalEntregadoSubtitle: {
+		fontSize: 13,
+		color: '#666',
+		textAlign: 'center'
+	},
+	editarModalImageSection: {
+		marginBottom: 20,
+		marginHorizontal: 20,
+		alignItems: 'center'
+	},
+	editarModalImageTitle: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#333',
+		marginBottom: 12,
+		textAlign: 'center'
+	},
+	editarModalImageWrapper: {
+		borderRadius: 12,
+		overflow: 'hidden',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
+		elevation: 5,
+		backgroundColor: '#fff'
+	},
+	editarModalImage: {
+		width: 280,
+		height: 200,
+		borderRadius: 12
+	},
+	editarModalImageBadge: {
+		backgroundColor: '#e8f5e8',
+		borderRadius: 8,
+		padding: 8,
+		marginTop: 12,
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalImageBadgeIcon: {
+		fontSize: 12,
+		color: '#28a745',
+		marginRight: 6
+	},
+	editarModalImageBadgeText: {
+		color: '#28a745',
+		fontSize: 12,
+		fontWeight: '500'
+	},
+	editarModalCardsContainer: {
+		marginHorizontal: 20,
+		gap: 12
+	},
+	editarModalMainCard: {
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		padding: 16,
+		borderLeftWidth: 4,
+		borderLeftColor: '#28a745',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3
+	},
+	editarModalMainCardRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: 12
+	},
+	editarModalMainCardTitle: {
+		fontSize: 16,
+		fontWeight: 'bold',
+		color: '#333'
+	},
+	editarModalMainCardValue: {
+		fontSize: 20,
+		color: '#28a745',
+		fontWeight: 'bold'
+	},
+	editarModalMainCardDivider: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingTop: 12,
+		borderTopWidth: 1,
+		borderTopColor: '#e9ecef'
+	},
+	editarModalMainCardLabel: {
+		fontSize: 14,
+		color: '#666'
+	},
+	editarModalFormaPagoBadge: {
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		borderRadius: 16
+	},
+	editarModalFormaPagoBadgeContado: {
+		backgroundColor: '#e3f2fd'
+	},
+	editarModalFormaPagoBadgeCredito: {
+		backgroundColor: '#e8f5e8'
+	},
+	editarModalFormaPagoText: {
+		fontSize: 12,
+		fontWeight: '600'
+	},
+	editarModalFormaPagoTextContado: {
+		color: '#2196f3'
+	},
+	editarModalFormaPagoTextCredito: {
+		color: '#4caf50'
+	},
+	editarModalDetailsCard: {
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		padding: 16,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3
+	},
+	editarModalDetailsCardTitle: {
+		fontSize: 14,
+		fontWeight: '600',
+		color: '#333',
+		marginBottom: 12,
+		textAlign: 'center'
+	},
+	editarModalDetailsCardContent: {
+		gap: 8
+	},
+	editarModalDetailsRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingVertical: 6
+	},
+	editarModalDetailsRowLeft: {
+		flexDirection: 'row',
+		alignItems: 'center'
+	},
+	editarModalDetailsIcon: {
+		fontSize: 14,
+		color: '#666',
+		marginRight: 8
+	},
+	editarModalDetailsLabel: {
+		fontSize: 13,
+		color: '#666'
+	},
+	editarModalDetailsValue: {
+		fontSize: 13,
+		color: '#333',
+		fontWeight: '600'
+	},
+	editarModalWarningCard: {
+		backgroundColor: '#fff3cd',
+		borderRadius: 12,
+		padding: 16,
+		borderLeftWidth: 4,
+		borderLeftColor: '#ffc107'
+	},
+	editarModalWarningCardTitle: {
+		fontSize: 14,
+		fontWeight: '600',
+		color: '#856404',
+		marginBottom: 8,
+		textAlign: 'center'
+	},
+	editarModalWarningRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		marginBottom: 6
+	},
+	editarModalWarningLabel: {
+		fontSize: 12,
+		color: '#856404',
+		flex: 1
+	},
+	editarModalWarningValue: {
+		fontSize: 12,
+		color: '#856404',
+		fontWeight: '600',
+		flex: 2,
+		textAlign: 'right'
+	},
+	editarModalCerrarSection: {
+		backgroundColor: '#f8f9fa',
+		borderRadius: 10,
+		padding: 16,
+		marginTop: 20,
+		borderLeftWidth: 4,
+		borderLeftColor: '#28a745'
+	},
+	editarModalCerrarHeader: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 12
+	},
+	editarModalCerrarIcon: {
+		fontSize: 18,
+		color: '#28a745',
+		marginRight: 10
+	},
+	editarModalCerrarTitle: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#333'
+	},
+	editarModalCerrarDescription: {
+		fontSize: 14,
+		color: '#666',
+		marginBottom: 16,
+		lineHeight: 20
+	},
+	editarModalCerrarButton: {
+		backgroundColor: '#28a745',
+		paddingVertical: 14,
+		paddingHorizontal: 20,
+		borderRadius: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	editarModalCerrarButtonIcon: {
+		fontSize: 16,
+		color: 'white',
+		marginRight: 10
+	},
+	editarModalCerrarButtonText: {
+		color: 'white',
+		fontSize: 16,
+		fontWeight: '600'
+	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				NAVIGATION MODAL STYLES
+	//////////////////////////////////////////////////////////////////
+	navModalOverlay: {
+		flex: 1,
+		backgroundColor: 'rgba(0,0,0,0.5)',
+		justifyContent: 'center',
+		alignItems: 'center',
+		padding: 20
+	},
+	navModalContainer: {
+		backgroundColor: '#fff',
+		borderRadius: 15,
+		padding: 20,
+		width: '90%',
+		maxWidth: 350,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 8
+	},
+	navModalHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: 20
+	},
+	navModalTitle: {
+		fontSize: 18,
+		fontWeight: '700',
+		color: '#333'
+	},
+	navModalCloseButton: {
+		backgroundColor: '#f8f9fa',
+		borderRadius: 15,
+		width: 30,
+		height: 30,
+		justifyContent: 'center',
+		alignItems: 'center'
+	},
+	navModalCloseIcon: {
+		fontSize: 14,
+		color: '#666'
+	},
+	navModalCoordBox: {
+		backgroundColor: '#f8f9fa',
+		padding: 12,
+		borderRadius: 8,
+		marginBottom: 20
+	},
+	navModalCoordText: {
+		fontSize: 13,
+		color: '#666',
+		textAlign: 'center'
+	},
+	navModalCoordIcon: {
+		marginRight: 6
+	},
+	navModalCoordNote: {
+		fontSize: 11,
+		color: '#999',
+		fontStyle: 'italic'
+	},
+	navModalOptions: {
+		gap: 12
+	},
+	navModalWazeButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		backgroundColor: '#00d4ff',
+		padding: 15,
+		borderRadius: 12,
+		shadowColor: '#00d4ff',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 4,
+		elevation: 3
+	},
+	navModalGoogleButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		backgroundColor: '#4285f4',
+		padding: 15,
+		borderRadius: 12,
+		shadowColor: '#4285f4',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 4,
+		elevation: 3
+	},
+	navModalAppleButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		backgroundColor: '#007aff',
+		padding: 15,
+		borderRadius: 12,
+		shadowColor: '#007aff',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 4,
+		elevation: 3
+	},
+	navModalButtonIconBox: {
+		backgroundColor: 'rgba(255,255,255,0.2)',
+		borderRadius: 8,
+		padding: 8,
+		marginRight: 12
+	},
+	navModalButtonIcon: {
+		fontSize: 20,
+		color: '#fff'
+	},
+	navModalButtonContent: {
+		flex: 1
+	},
+	navModalButtonTitle: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#fff'
+	},
+	navModalButtonSubtitle: {
+		fontSize: 12,
+		color: 'rgba(255,255,255,0.8)'
+	},
+	navModalButtonChevron: {
+		fontSize: 14,
+		color: 'rgba(255,255,255,0.7)'
+	},
+	navModalCancelButton: {
+		backgroundColor: '#6c757d',
+		padding: 15,
+		borderRadius: 12,
+		marginTop: 15,
+		alignItems: 'center'
+	},
+	navModalCancelText: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#fff'
+	},
 })
