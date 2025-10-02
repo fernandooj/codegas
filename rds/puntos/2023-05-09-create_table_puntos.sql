@@ -12,10 +12,10 @@ create table if not exists puntos(
     idPadre INT,
     coordenadas POINT,
     place_name character varying,
-    activo boolean default true
+    activo boolean default true,
+    email character varying,
+    celular character varying,
+    nombre character varying
 );
 
 COMMENT ON TABLE puntos IS 'Info data of PUNTOS';
-
-
-alter table puntos add column if not exists activo boolean default true;

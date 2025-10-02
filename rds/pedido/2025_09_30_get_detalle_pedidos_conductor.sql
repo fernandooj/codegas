@@ -4,11 +4,12 @@ CREATE OR REPLACE FUNCTION get_detalle_pedidos_conductor(
     _periodo VARCHAR(10) -- 'dia', 'semana', 'mes', 'año'
 )
 RETURNS TABLE(
-    remision INT,          -- ID del pedido
-    pedido VARCHAR,        -- Número de pedido
+    remision VARCHAR,      -- Número de pedido/factura
+    pedido INT,            -- ID del pedido
     codt VARCHAR,          -- Código del punto
     total_kilos NUMERIC,   -- Total de kilos
     vlr_contado NUMERIC,   -- Valor en contado
+    vlr_credito NUMERIC,   -- Valor en crédito
     valor_total NUMERIC    -- Valor total
 )
 LANGUAGE plpgsql AS
@@ -33,8 +34,8 @@ BEGIN
     RETURN QUERY
     SELECT * FROM (
         SELECT 
-            p._id::INT as remision,
-            COALESCE(p.factura, '')::VARCHAR as pedido,
+            COALESCE(p.factura, '')::VARCHAR as remision,
+            p._id::INT as pedido,
             COALESCE(u.codt, '')::VARCHAR as codt,
             CASE 
                 WHEN p.kilos IS NOT NULL AND TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC
@@ -46,8 +47,16 @@ BEGIN
                         WHEN p.valor_total IS NOT NULL AND TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
                         ELSE 0
                     END
-                ELSE NULL
+                ELSE 0
             END as vlr_contado,
+            CASE 
+                WHEN LOWER(COALESCE(p.forma_pago, '')) = 'credito' THEN
+                    CASE 
+                        WHEN p.valor_total IS NOT NULL AND TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
+                        ELSE 0
+                    END
+                ELSE 0
+            END as vlr_credito,
             CASE 
                 WHEN p.valor_total IS NOT NULL AND TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
                 ELSE 0
@@ -84,8 +93,8 @@ BEGIN
         
         -- Fila de TOTAL
         SELECT 
-            NULL::INT as remision,
-            'TOTAL'::VARCHAR as pedido,
+            'TOTAL'::VARCHAR as remision,
+            NULL::INT as pedido,
             ''::VARCHAR as codt,
             SUM(CASE 
                 WHEN p.kilos IS NOT NULL AND TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC
@@ -99,6 +108,14 @@ BEGIN
                     END
                 ELSE 0
             END) as vlr_contado,
+            SUM(CASE 
+                WHEN LOWER(COALESCE(p.forma_pago, '')) = 'credito' THEN
+                    CASE 
+                        WHEN p.valor_total IS NOT NULL AND TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
+                        ELSE 0
+                    END
+                ELSE 0
+            END) as vlr_credito,
             SUM(CASE 
                 WHEN p.valor_total IS NOT NULL AND TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
                 ELSE 0
@@ -129,8 +146,12 @@ BEGIN
         ) <= CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'
     ) subquery
     ORDER BY 
-        CASE WHEN subquery.remision IS NULL THEN 1 ELSE 0 END, -- TOTAL al final
-        subquery.remision; -- Ordenar por remision
+        CASE WHEN subquery.remision = 'TOTAL' THEN 1 ELSE 0 END, -- TOTAL al final
+        CASE 
+            WHEN subquery.remision = 'TOTAL' THEN NULL
+            WHEN subquery.remision ~ '^[0-9]+$' THEN subquery.remision::INT
+            ELSE NULL
+        END; -- Ordenar por remision de menor a mayor
 END
 $func$;
 

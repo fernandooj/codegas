@@ -1,3 +1,6 @@
+-- Script para actualizar la función get_pedidos con los campos del punto
+-- Ejecutar este script en la base de datos PostgreSQL
+
 DROP FUNCTION IF EXISTS get_pedidos;
 
 CREATE OR REPLACE FUNCTION get_pedidos(
@@ -301,3 +304,8 @@ BEGIN
     RETURN;
 END
 $func$;
+
+-- Verificar que la función se creó correctamente
+SELECT routine_name, routine_type 
+FROM information_schema.routines 
+WHERE routine_name = 'get_pedidos';

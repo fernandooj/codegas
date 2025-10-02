@@ -31,7 +31,6 @@ BEGIN
     estado = _estado,
     orden_cerrado = newOrden,
     motivo_no_cierre = _novedad,
-    observacion = _novedad,
     perfil_novedad = _motivo_key,
     fechaEntregado = _fechaEntregado,
     novedades = _novedades

@@ -24,7 +24,10 @@ ON users USING gin(to_tsvector('spanish',
 CREATE INDEX IF NOT EXISTS idx_puntos_search_main 
 ON puntos USING gin(to_tsvector('spanish', 
     COALESCE(direccion, '') || ' ' || 
-    COALESCE(observacion, '')
+    COALESCE(observacion, '') || ' ' ||
+    COALESCE(email, '') || ' ' ||
+    COALESCE(celular, '') || ' ' ||
+    COALESCE(nombre, '')
 ));
 
 -- Índice compuesto para filtros comunes
@@ -88,6 +91,9 @@ RETURNS TABLE (
     coordenadas point,
     lat double precision,
     lng double precision,
+    punto_email VARCHAR(255),
+    punto_celular VARCHAR(255),
+    punto_nombre VARCHAR(255),
     total INT
 )
 LANGUAGE plpgsql AS
@@ -110,6 +116,9 @@ BEGIN
                 u.cedula ILIKE ''%' || _busqueda || '%'' OR
                 u.codt ILIKE ''%' || _busqueda || '%'' OR
                 pt.direccion ILIKE ''%' || _busqueda || '%'' OR
+                pt.email ILIKE ''%' || _busqueda || '%'' OR
+                pt.celular ILIKE ''%' || _busqueda || '%'' OR
+                pt.nombre ILIKE ''%' || _busqueda || '%'' OR
                 c.placa ILIKE ''%' || _busqueda || '%'' OR
                 z.nombre ILIKE ''%' || _busqueda || '%''
             )';
@@ -148,6 +157,7 @@ BEGIN
             SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, pt.coordenadas,
                    CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[1] ELSE NULL END AS lat,
                    CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[0] ELSE NULL END AS lng,
+                   pt.email AS punto_email, pt.celular AS punto_celular, pt.nombre AS punto_nombre,
                    $1::INT
             FROM pedidos p
             LEFT JOIN puntos pt ON p.puntoId = pt._id
@@ -206,6 +216,7 @@ BEGIN
             SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre, u2.nombre, u3.nombre, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, pt.coordenadas,
                    CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[1] ELSE NULL END AS lat,
                    CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[0] ELSE NULL END AS lng,
+                   pt.email AS punto_email, pt.celular AS punto_celular, pt.nombre AS punto_nombre,
                    $1::INT
             FROM pedidos p
             LEFT JOIN puntos pt ON p.puntoId = pt._id
@@ -276,6 +287,7 @@ BEGIN
             SELECT p._id, p.creado, p.fechaSolicitud, p.fechaEntrega, p.forma, p.cantidadKl, p.kilos, p.cantidadPrecio, p.estado, p.entregado, p.novedades, p.imagenCerrar, p.valorUnitario, p.usuarioId, u.tokenPhone, u.email, u.valorUnitario AS valorUnitarioUsuario, u.codt, u.razon_social, u.nombre, u.cedula, pt.direccion, pt.capacidad, pt.observacion, c.placa, z.nombre AS zona, u2.nombre AS usuarioCrea, u3.nombre AS conductor, p.puntoId, p.motivo_no_cierre, p.perfil_novedad, p.factura, p.valor_total, p.remision, p.forma_pago, p.observacion AS observacion_pedido, pt.coordenadas,
                    CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[1] ELSE NULL END AS lat,
                    CASE WHEN pt.coordenadas IS NOT NULL THEN pt.coordenadas[0] ELSE NULL END AS lng,
+                   pt.email AS punto_email, pt.celular AS punto_celular, pt.nombre AS punto_nombre,
                    $1::INT
             FROM pedidos p
             LEFT JOIN puntos pt ON p.puntoId = pt._id
