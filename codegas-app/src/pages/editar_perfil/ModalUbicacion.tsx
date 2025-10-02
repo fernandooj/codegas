@@ -20,6 +20,7 @@ interface Ubicacion {
     capacidad?: string;
     lat?: string;
     lng?: string;
+    observacion?: string;
     activo: boolean;
     nuevo?: boolean;
     acceso: string;
@@ -203,6 +204,7 @@ const ModalUbicacion: React.FC<ModalUbicacionProps> = ({
                                     </Text>
                                     <TextInput
                                         placeholder="Observaciones ingreso del vehículo"
+                                        value={ubicacion.observacion || ''}
                                         onChangeText={observacion => onUpdateUbicacion("observacion", observacion, key)}
                                         style={style.ubicacionFieldInput}
                                     />

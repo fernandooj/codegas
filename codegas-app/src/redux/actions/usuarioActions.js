@@ -630,6 +630,25 @@ const sendFCMToken = (userId, fcmToken) => {
   };
 };
 
+// Deactivate user account
+const deleteAccount = async (userId) => {
+  try {
+    const response = await axios.put(`users/cambiarEstado/${userId}/false`);
+    return response.data;
+  } catch (error) {
+    console.error('Error en deleteAccount:', {
+      function: 'deleteAccount',
+      userId: userId,
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
 
 export {
   getPerfil,
@@ -660,5 +679,6 @@ export {
   updateUserProfile,
   getVeos,
   getActiveZones,
-  sendFCMToken
+  sendFCMToken,
+  deleteAccount
 };

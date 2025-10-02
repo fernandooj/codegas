@@ -211,6 +211,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
         }
         closeNavigationModal();
     };
+    console.log('pedidoData', pedidoData);
     return (
         <Modal
             transparent={true}
@@ -344,6 +345,27 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                 <FontAwesome name="database" style={style.editarModalAdditionalInfoIcon} />
                                                 <Text style={style.editarModalInfoTextBold}>Almacenamiento: </Text>
                                                 {capacidad} galones
+                                            </Text>
+                                        )}
+                                        {pedidoData.punto_email && (
+                                            <Text style={style.editarModalAdditionalInfoText}>
+                                                <FontAwesome name="envelope" style={style.editarModalAdditionalInfoIcon} />
+                                                <Text style={style.editarModalInfoTextBold}>Email punto: </Text>
+                                                {pedidoData.punto_email}
+                                            </Text>
+                                        )}
+                                        {pedidoData.punto_nombre && (
+                                            <Text style={style.editarModalAdditionalInfoText}>
+                                                <FontAwesome name="user" style={style.editarModalAdditionalInfoIcon} />
+                                                <Text style={style.editarModalInfoTextBold}>Encargado: </Text>
+                                                {pedidoData.punto_nombre}
+                                            </Text>
+                                        )}
+                                        {pedidoData.punto_celular && (
+                                            <Text style={style.editarModalAdditionalInfoText}>
+                                                <FontAwesome name="phone" style={style.editarModalAdditionalInfoIcon} />
+                                                <Text style={style.editarModalInfoTextBold}>Celular: </Text>
+                                                {pedidoData.punto_celular}
                                             </Text>
                                         )}
 

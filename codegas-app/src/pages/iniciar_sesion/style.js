@@ -10,8 +10,11 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	containerRegistro: {
 		flex: 1,
-		marginBottom: 80,
 		width: "100%",
+	},
+	scrollContent: {
+		flexGrow: 1,
+		paddingBottom: 100,
 	},
 	subContainerRegistro: {
 		flex: 1,
@@ -23,6 +26,89 @@ export const style = MediaQueryStyleSheet.create({
 		left: "10%",
 		marginTop: 0,
 		backgroundColor: "rgba(0,0,0,.1)"
+	},
+	// Nuevos estilos modernos
+	registerSection: {
+		marginHorizontal: 20,
+		marginTop: 30,
+		marginBottom: 20,
+	},
+	loginSection: {
+		marginHorizontal: 20,
+		marginTop: 20,
+		marginBottom: 30,
+	},
+	registerCard: {
+		backgroundColor: 'rgba(255, 255, 255, 0.95)',
+		borderRadius: 20,
+		padding: 25,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 8,
+		borderWidth: 1,
+		borderColor: 'rgba(255, 255, 255, 0.3)',
+	},
+	loginCard: {
+		backgroundColor: 'rgba(255, 255, 255, 0.95)',
+		borderRadius: 20,
+		padding: 25,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 8,
+		borderWidth: 1,
+		borderColor: 'rgba(255, 255, 255, 0.3)',
+	},
+	iconContainer: {
+		alignSelf: 'center',
+		backgroundColor: 'rgba(0, 33, 139, 0.1)',
+		borderRadius: 50,
+		width: 80,
+		height: 80,
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginBottom: 20,
+	},
+	sectionTitle: {
+		fontFamily: "Comfortaa-Regular",
+		color: "#00218b",
+		fontSize: 24,
+		textAlign: 'center',
+		marginBottom: 8,
+		fontWeight: '600',
+	},
+	sectionSubtitle: {
+		fontFamily: "Comfortaa-Light",
+		color: "#666",
+		fontSize: 14,
+		textAlign: 'center',
+		marginBottom: 25,
+		lineHeight: 20,
+	},
+	elegantSeparator: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginVertical: 30,
+		marginHorizontal: 20,
+	},
+	separatorLine: {
+		flex: 1,
+		height: 1,
+		backgroundColor: 'rgba(255, 255, 255, 0.3)',
+	},
+	separatorText: {
+		marginHorizontal: 15,
+		color: '#fff',
+		fontSize: 16,
+		fontWeight: '500',
+		backgroundColor: 'rgba(0, 33, 139, 0.8)',
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 15,
+		overflow: 'hidden',
 	},
 	iconAvatar: {
 		fontSize: 50,
@@ -87,8 +173,50 @@ export const style = MediaQueryStyleSheet.create({
 		width: "100%"
 	},
 	//////////////////////////////////////////////////////////////////
-	//////////////////////      INPUTS
+	//////////////////////      INPUTS MODERNOS
 	//////////////////////////////////////////////////////////////////
+	inputContainer: {
+		marginBottom: 20,
+		position: 'relative',
+	},
+	inputIcon: {
+		position: 'absolute',
+		left: 15,
+		top: 16,
+		zIndex: 1,
+	},
+	modernInput: {
+		backgroundColor: '#ffffff',
+		borderWidth: 2,
+		borderColor: 'rgba(0, 33, 139, 0.1)',
+		borderRadius: 12,
+		paddingVertical: 15,
+		paddingLeft: 45,
+		paddingRight: 15,
+		fontSize: 16,
+		fontFamily: "Comfortaa-Light",
+		color: '#333',
+		shadowColor: 'rgba(0, 33, 139, 0.1)',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 2,
+	},
+	passwordInput: {
+		paddingRight: 50,
+	},
+	eyeButton: {
+		position: 'absolute',
+		right: 15,
+		top: 15,
+		padding: 5,
+		zIndex: 1,
+	},
+	inputInvalid: {
+		borderColor: '#e74c3c',
+		borderWidth: 2,
+	},
+	// Estilos antiguos (mantener compatibilidad)
 	input: {
 		width: "85%",
 		paddingVertical: 10,
@@ -126,30 +254,61 @@ export const style = MediaQueryStyleSheet.create({
 		borderRadius: 5,
 		height: 45,
 	},
-	passwordInput: {
-		flex: 1,
-		paddingVertical: 10,
-		paddingLeft: 10,
-		paddingRight: 10,
-		fontFamily: "Comfortaa-Light",
-		height: 45,
-		textAlignVertical: "center",
-	},
-	eyeButton: {
-		padding: 10,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	inputInvalid: {
-		borderWidth: 1,
-		borderColor: "rgba(255, 0, 0, 0.42)"
-	},
 	titulo: {
 		fontFamily: "Comfortaa-Regular",
 		color: "#002587",
 		fontSize: 22,
 		marginBottom: 20,
 	},
+	// Botones modernos
+	modernButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		paddingVertical: 16,
+		paddingHorizontal: 24,
+		borderRadius: 12,
+		marginTop: 10,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	registerButton: {
+		backgroundColor: '#00218b',
+	},
+	loginButton: {
+		backgroundColor: '#27ae60',
+	},
+	disabledButton: {
+		backgroundColor: '#bdc3c7',
+		opacity: 0.6,
+	},
+	buttonText: {
+		fontFamily: "Comfortaa-Regular",
+		color: '#ffffff',
+		fontSize: 16,
+		fontWeight: '600',
+		marginLeft: 8,
+	},
+	forgotPasswordButton: {
+		alignItems: 'center',
+		marginTop: 20,
+	},
+	forgotPasswordText: {
+		fontFamily: "Comfortaa-Light",
+		color: "#00218b",
+		fontSize: 14,
+		textDecorationLine: 'underline',
+	},
+	versionText: {
+		fontFamily: "Comfortaa-Light",
+		color: "#666",
+		fontSize: 11,
+		marginTop: 5,
+	},
+	// Estilos antiguos (mantener compatibilidad)
 	btnGuardar: {
 		flexDirection: "row",
 		backgroundColor: "#00218b",

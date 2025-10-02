@@ -140,7 +140,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             nombre,
             codt,
             puntoId,
-            valor_unitarioUsuario
+            valor_unitarioUsuario,
+            punto_email,
+            punto_celular,
+            punto_nombre
         }
     } = state;
 
@@ -882,6 +885,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 lat: e.lat,
                                 lng: e.lng
                             } : undefined,
+                            punto_email: e.punto_email,
+                            punto_celular: e.punto_celular,
+                            punto_nombre: e.punto_nombre,
                             idVehiculo: e.idVehiculo,
                             placa: e.placa,
                         });
@@ -1293,7 +1299,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     coordenadas,
                     nombre,
                     codt,
-                    puntoId
+                    puntoId,
+                    punto_email,
+                    punto_celular,
+                    punto_nombre
                 }}
                 acceso={acceso}
                 navigation={navigation}

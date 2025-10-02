@@ -26,7 +26,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
     const [detallePedidos, setDetallePedidos] = useState<DetallePedido[]>([]);
     const [loading, setLoading] = useState(false);
     const [periodo, setPeriodo] = useState<'dia' | 'semana' | 'mes' | 'año'>('dia');
-    const [tipoVista, setTipoVista] = useState<'resumen' | 'detalle'>('resumen');
+    const [tipoVista, setTipoVista] = useState<'resumen' | 'detalle' | 'por_dia'>('resumen');
 
     // Refs para sincronizar scroll
     const headerScrollRef = useRef<ScrollView>(null);
@@ -57,8 +57,12 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                     // Vista de detalle para conductores
                     setDetallePedidos(resultado.estadisticas || []);
                     setEstadisticas([]);
+                } else if (tipoVistaRecibido === 'por_dia') {
+                    // Vista por día para períodos largos
+                    setEstadisticas(resultado.estadisticas || []);
+                    setDetallePedidos([]);
                 } else {
-                    // Vista de resumen para admin
+                    // Vista de resumen para admin (día actual)
                     setEstadisticas(resultado.estadisticas || []);
                     setDetallePedidos([]);
                 }
@@ -121,10 +125,10 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
 
     const formatKilos = (value: any): string => {
         if (value === null || value === undefined || value === '') {
-            return '0';
+            return '0,0';
         }
         const num = typeof value === 'string' ? parseFloat(value) : value;
-        return isNaN(num) ? '0' : num.toFixed(0);
+        return isNaN(num) ? '0,0' : num.toFixed(1).replace('.', ',');
     };
 
     const renderPlacaColumn = (item: Estadistica, isTotal: boolean = false) => (
@@ -206,6 +210,33 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
         </View>
     );
 
+    // Renderizar fila de estadísticas por día
+    const renderEstadisticaPorDiaRow = (item: any, index: number) => (
+        <View
+            key={`dia-${item.fechaentrega}-${index}`}
+            style={styles.porDiaRow}
+        >
+            <Text style={[styles.porDiaCell, styles.fechaCell]}>
+                {item.fechaentrega}
+            </Text>
+            <Text style={[styles.porDiaCell, styles.cantidadCell]}>
+                {item.cantidad_pedidos || 0}
+            </Text>
+            <Text style={[styles.porDiaCell, styles.kilosCell]}>
+                {formatKilos(item.total_kilos)}
+            </Text>
+            <Text style={[styles.porDiaCell, styles.contadoCell]}>
+                {formatCurrency(item.vlr_contado || 0, 0)}
+            </Text>
+            <Text style={[styles.porDiaCell, styles.creditoCell]}>
+                {formatCurrency(item.vlr_credito || 0, 0)}
+            </Text>
+            <Text style={[styles.porDiaCell, styles.valorCell]}>
+                {formatCurrency(item.valor_total || 0, 0)}
+            </Text>
+        </View>
+    );
+
     // Renderizar fila de detalle de pedido para conductores
     const renderDetallePedidoRow = (item: DetallePedido, index: number, isTotal: boolean = false) => (
         <View
@@ -216,10 +247,10 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
             ]}
         >
             <Text style={[styles.detalleCell, styles.remisionCell, isTotal && styles.totalText]}>
-                {item.remision || ''}
+                {item.remision}
             </Text>
             <Text style={[styles.detalleCell, styles.pedidoCell, isTotal && styles.totalText]}>
-                {item.pedido}
+                {item.pedido || ''}
             </Text>
             <Text style={[styles.detalleCell, styles.codtCell, isTotal && styles.totalText]}>
                 {item.codt}
@@ -229,6 +260,9 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
             </Text>
             <Text style={[styles.detalleCell, styles.contadoCell, isTotal && styles.totalText]}>
                 {item.vlr_contado ? formatCurrency(item.vlr_contado, 0) : '-'}
+            </Text>
+            <Text style={[styles.detalleCell, styles.creditoCell, isTotal && styles.totalText]}>
+                {item.vlr_credito ? formatCurrency(item.vlr_credito, 0) : '-'}
             </Text>
             <Text style={[styles.detalleCell, styles.valorCell, isTotal && styles.totalText]}>
                 {formatCurrency(item.valor_total || 0, 0)}
@@ -295,6 +329,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                                         <Text style={[styles.detalleHeaderCell, styles.codtCell]}>Codt</Text>
                                         <Text style={[styles.detalleHeaderCell, styles.kilosCell]}>Total Kilos</Text>
                                         <Text style={[styles.detalleHeaderCell, styles.contadoCell]}>Vlr Contado</Text>
+                                        <Text style={[styles.detalleHeaderCell, styles.creditoCell]}>Vlr Crédito</Text>
                                         <Text style={[styles.detalleHeaderCell, styles.valorCell]}>Valor Total</Text>
                                     </View>
 
@@ -302,7 +337,39 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                                     {detallePedidos.length > 0 ? (
                                         <ScrollView style={styles.detalleScrollContainer} showsVerticalScrollIndicator={true}>
                                             {detallePedidos.map((item, index) =>
-                                                renderDetallePedidoRow(item, index, item.pedido === 'TOTAL')
+                                                renderDetallePedidoRow(item, index, item.remision === 'TOTAL')
+                                            )}
+                                        </ScrollView>
+                                    ) : (
+                                        <View style={styles.emptyContainer}>
+                                            <FontAwesome name="inbox" style={styles.emptyIcon} />
+                                            <Text style={styles.emptyText}>
+                                                No hay entregas registradas en este periodo
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            </ScrollView>
+                        </View>
+                    ) : tipoVista === 'por_dia' ? (
+                        /* Vista por Día para períodos largos */
+                        <View style={styles.tableWrapper}>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+                                <View>
+                                    <View style={styles.porDiaHeaderRow}>
+                                        <Text style={[styles.porDiaHeaderCell, styles.fechaCell]}>Fecha Entrega</Text>
+                                        <Text style={[styles.porDiaHeaderCell, styles.cantidadCell]}>Pedidos</Text>
+                                        <Text style={[styles.porDiaHeaderCell, styles.kilosCell]}>Total Kilos</Text>
+                                        <Text style={[styles.porDiaHeaderCell, styles.contadoCell]}>Vlr Contado</Text>
+                                        <Text style={[styles.porDiaHeaderCell, styles.creditoCell]}>Vlr Crédito</Text>
+                                        <Text style={[styles.porDiaHeaderCell, styles.valorCell]}>Valor Total</Text>
+                                    </View>
+
+                                    {/* Datos */}
+                                    {estadisticas.length > 0 ? (
+                                        <ScrollView style={styles.porDiaScrollContainer} showsVerticalScrollIndicator={true}>
+                                            {estadisticas.map((item, index) =>
+                                                renderEstadisticaPorDiaRow(item, index)
                                             )}
                                         </ScrollView>
                                     ) : (
@@ -688,6 +755,49 @@ const styles = StyleSheet.create({
         width: 110,
     },
     valorCell: {
+        width: 110,
+    },
+    // Estilos para vista por día
+    porDiaHeaderRow: {
+        flexDirection: 'row',
+        backgroundColor: '#007bff',
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
+        borderBottomWidth: 2,
+        borderBottomColor: '#0056b3',
+    },
+    porDiaHeaderCell: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    porDiaScrollContainer: {
+        maxHeight: 360,
+    },
+    porDiaRow: {
+        flexDirection: 'row',
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+        backgroundColor: 'white',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    porDiaCell: {
+        fontSize: 11,
+        color: '#333',
+        textAlign: 'center',
+    },
+    fechaCell: {
+        width: 120,
+        fontWeight: '500',
+    },
+    cantidadCell: {
+        width: 80,
+    },
+    creditoCell: {
         width: 110,
     },
 });

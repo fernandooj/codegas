@@ -73,6 +73,12 @@ export interface Pedido {
     lat?: number;
     lng?: number;
     eliminado: boolean;
+    // Nuevos campos del punto
+    punto_email?: string;
+    punto_celular?: string;
+    punto_nombre?: string;
+    // Campo del vehículo
+    idVehiculo?: string;
 }
 
 export interface Novedad {
@@ -185,6 +191,9 @@ export interface SelectedPedidoData {
         lat?: number;
         lng?: number;
     };
+    punto_email?: string;
+    punto_celular?: string;
+    punto_nombre?: string;
 }
 
 // Action Types para el reducer
@@ -502,11 +511,12 @@ export interface Estadistica {
 }
 
 export interface DetallePedido {
-    remision: number | null;
-    pedido: string;
+    remision: string;
+    pedido: number | null;
     codt: string;
     total_kilos: number;
     vlr_contado: number | null;
+    vlr_credito: number | null;
     valor_total: number;
 }
 

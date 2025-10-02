@@ -713,6 +713,21 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                                                     <Text style={style.puntoEntregaCapacidad}>
                                                         🏭 Capacidad: {e.capacidad} kg
                                                     </Text>
+                                                    {e.email && e.email.trim() !== "" && (
+                                                        <Text style={style.puntoEntregaObservacion}>
+                                                            📧 {e.email}
+                                                        </Text>
+                                                    )}
+                                                    {e.nombre && e.nombre.trim() !== "" && (
+                                                        <Text style={style.puntoEntregaObservacion}>
+                                                            👤 Encargado: {e.nombre}
+                                                        </Text>
+                                                    )}
+                                                    {e.celular && e.celular.trim() !== "" && (
+                                                        <Text style={style.puntoEntregaObservacion}>
+                                                            📱 {e.celular}
+                                                        </Text>
+                                                    )}
                                                     {e.observacion && e.observacion.trim() !== "" && (
                                                         <Text style={style.puntoEntregaObservacion}>
                                                             💬 {e.observacion}
@@ -773,6 +788,21 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                                                 <Text style={style.puntoEntregaCapacidad}>
                                                     🏭 Capacidad: {e.capacidad} kg
                                                 </Text>
+                                                {e.email && e.email.trim() !== "" && (
+                                                    <Text style={style.puntoEntregaObservacion}>
+                                                        📧 {e.email}
+                                                    </Text>
+                                                )}
+                                                {e.nombre && e.nombre.trim() !== "" && (
+                                                    <Text style={style.puntoEntregaObservacion}>
+                                                        👤 Encargado: {e.nombre}
+                                                    </Text>
+                                                )}
+                                                {e.celular && e.celular.trim() !== "" && (
+                                                    <Text style={style.puntoEntregaObservacion}>
+                                                        📱 {e.celular}
+                                                    </Text>
+                                                )}
                                                 {e.observacion && e.observacion.trim() !== "" && (
                                                     <Text style={style.puntoEntregaObservacion}>
                                                         💬 {e.observacion}

@@ -766,7 +766,10 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         activo: punto.activo !== undefined ? punto.activo : true,
                         idZona: punto.idZona,
                         idCliente: idUsuario,
-                        idPadre: null
+                        idPadre: null,
+                        email: punto.email || null,
+                        celular: punto.celular || null,
+                        nombre: punto.nombre || null
                     };
                 });
 
@@ -793,7 +796,10 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         activo: punto.activo !== undefined ? punto.activo : true,
                         idZona: punto.idZona,
                         idCliente: idUsuario,
-                        idPadre: null
+                        idPadre: null,
+                        email: punto.email || null,
+                        celular: punto.celular || null,
+                        nombre: punto.nombre || null
                     };
                 });
 

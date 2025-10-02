@@ -30,6 +30,7 @@ import {
   UserAccess
 } from './types';
 import { getResponsiveValue } from './responsiveStyles';
+import DeleteAccountModal from '../../components/DeleteAccountModal';
 
 const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
 
@@ -38,6 +39,23 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
   const [idUsuarioSearch, setIdUsuarioSearch] = useState<string>('');
   const [currentNombre, setCurrentNombre] = useState<string>(nombre);
   const [currentEmail, setCurrentEmail] = useState<string>(email);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string>('');
+
+  // Efecto para cargar userId desde AsyncStorage
+  useEffect(() => {
+    const loadUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        if (storedUserId) {
+          setUserId(storedUserId);
+        }
+      } catch (error) {
+        console.error('Error loading userId:', error);
+      }
+    };
+    loadUserId();
+  }, []);
 
   // Efecto para sincronizar estados locales con el contexto
   useEffect(() => {
@@ -119,6 +137,15 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
     // Note: tokenPhone variable is not defined in the original code
     // AsyncStorage.setItem('tokenPhone', tokenPhone);
     navigation.navigate("Home");
+  };
+
+  const handleAccountDeleted = () => {
+    // Clear all local data and navigate to login
+    cerrarSesion();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Home' }],
+    });
   };
   const RenderPerfil = () => {
     return (
@@ -292,6 +319,18 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               <FontAwesome name="sign-out" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#e74c3c' }} />
             </View>
           </TouchableOpacity>
+
+          {/* Account Deactivation Button - Only for regular users, not admin/system accounts */}
+
+          <TouchableOpacity
+            style={[style.btnLista, { backgroundColor: '#8e44ad' }]}
+            onPress={() => setShowDeleteModal(true)}>
+            <Text style={[style.txtLista, { color: '#ffffff' }]}>Eliminar Cuenta</Text>
+            <View style={[style.icon, { backgroundColor: '#ffffff' }]}>
+              <FontAwesome name="ban" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#8e44ad' }} />
+            </View>
+          </TouchableOpacity>
+
           <TouchableOpacity style={[style.btnLista, style.btnVersion]}>
             <Text style={[style.txtLista, style.txtVersion]}>Ver 11.5.3-1</Text>
             <View style={[style.icon, { backgroundColor: '#ffffff' }]}>
@@ -310,6 +349,14 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
         {RenderPerfil()}
       </View>
       <Footer navigation={navigation} />
+
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onAccountDeleted={handleAccountDeleted}
+        userName={currentNombre || nombre}
+        userId={userId}
+      />
     </View>
   )
 };
