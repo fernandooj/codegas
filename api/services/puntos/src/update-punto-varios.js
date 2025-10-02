@@ -1,7 +1,7 @@
 const { poolConection } = require('../../../lib/connection-pg.js')
 
 /** update point */
-const UPDATE_POINT = 'UPDATE puntos SET observacion = $1, direccion = $2, capacidad = $3, punto = $4, coordenadas = $5, place_name = $6, activo = $7, idZona = $8, idCliente = $9, idPadre = $10 WHERE _id = $11';
+const UPDATE_POINT = 'UPDATE puntos SET observacion = $1, direccion = $2, capacidad = $3, punto = $4, coordenadas = $5, place_name = $6, activo = $7, idZona = $8, idCliente = $9, idPadre = $10, email = $11, celular = $12, nombre = $13 WHERE _id = $14';
 
 /**
  * Updates points in the database.
@@ -16,6 +16,9 @@ const UPDATE_POINT = 'UPDATE puntos SET observacion = $1, direccion = $2, capaci
  * @param {number} points.idPadre - Identifier of the parent point, if any.
  * @param {string} points.location - Location coordinates.
  * @param {string} points.place_name - Place name.
+ * @param {string} points.email - Email of the point manager (optional).
+ * @param {string} points.celular - Phone number of the point manager (optional).
+ * @param {string} points.nombre - Name of the point manager (optional).
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
@@ -29,7 +32,7 @@ module.exports.main = async (event) => {
     try {
         await Promise.all(points.map(point => {
             const {
-                _id, observacion, direccion, capacidad, location, place_name, activo, idZona, idCliente, idPadre
+                _id, observacion, direccion, capacidad, location, place_name, activo, idZona, idCliente, idPadre, email, celular, nombre
             } = point;
 
             // Convert location to point format if it's a string
@@ -53,6 +56,9 @@ module.exports.main = async (event) => {
                 idZona,
                 idCliente,
                 idPadre,
+                email || null,
+                celular || null,
+                nombre || null,
                 _id
             ]);
         }));
