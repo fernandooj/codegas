@@ -190,6 +190,21 @@ class userServices {
 		}, callback);
 	}
 
+	// Delete user account permanently
+	deleteUserAccount(userId, callback) {
+		User.findByIdAndDelete(userId, callback);
+	}
+
+	// Update FCM token
+	updateFCMToken(userId, fcmToken, callback) {
+		User.findByIdAndUpdate(userId, {
+			$set: {
+				fcmToken: fcmToken,
+				'updatedAt': moment(fecha).valueOf()
+			}
+		}, callback);
+	}
+
 }
 
 module.exports = new userServices()
