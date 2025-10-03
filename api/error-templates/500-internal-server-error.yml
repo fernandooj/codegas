@@ -1,0 +1,6 @@
+|
+  {
+    "type": "InternalServerError",
+    "message": "The server failed to fulfill an apparently valid request",
+    "requestId": "$context.requestId"
+  }

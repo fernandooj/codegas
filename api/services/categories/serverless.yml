@@ -1,0 +1,9 @@
+getCategories:
+  name: ${self:custom.base}-get-categories
+  handler: services/categories/src/get-categories.handle
+  events:
+    - httpApi: 'GET /categories'
+  package:
+    include:
+      - services/categories/src/get-categories.js
+      - lib/errors/database-error.js

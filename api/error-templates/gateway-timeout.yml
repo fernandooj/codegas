@@ -1,0 +1,7 @@
+|
+  #set ($errorMessage = $input.path('$.errorMessage'))
+  {
+    "type": "gatewayTimeout",
+    "message": "$errorMessage",
+    "requestId": "$context.requestId"
+  }

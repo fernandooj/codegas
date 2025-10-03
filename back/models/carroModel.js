@@ -1,0 +1,21 @@
+//////////////////////////////////////////////////////////////////////
+////////***********     llamo a las librerias        ****////////////
+//////////////////////////////////////////////////////////////////////
+let mongoose = require('mongoose')
+let Schema   = mongoose.Schema;
+ 
+//////////////////////////////////////////////////////////////////////////////
+////////***********     creo el esquema / ciudad        ****//////////////
+//////////////////////////////////////////////////////////////////////////////
+let Carro = new Schema({
+	creado: 	Number,
+	centro: 	Number,
+	bodega: 	Number,
+	placa: 	    String,
+	activo:     {type:Boolean, default:true},
+	eliminado:  {type:Boolean, default:false},
+	conductor:  {type: Schema.ObjectId, ref:'User'},
+	usuarioCrea:{type: Schema.ObjectId, ref:'User'},
+})
+
+module.exports = mongoose.model('Carro', Carro)

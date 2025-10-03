@@ -1,0 +1,6 @@
+|
+  {
+    "type": "UnprocessableEntity",
+    "message": "Error caused by 3rd party service",
+    "requestId": "$context.requestId"
+  }

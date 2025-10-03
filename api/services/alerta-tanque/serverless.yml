@@ -1,0 +1,63 @@
+createAlertaTanque:
+  name: ${self:custom.base}-create-alerta-tanque
+  handler: services/alerta-tanque/src/create-alerta-tanque.main
+  events:
+    - httpApi: 'POST /ale/alertaTanque'
+  package:
+    include:
+      - services/alerta-tanque/src/create-tanque.js
+      - lib/errors/database-error.js
+
+getAlertaTanque:
+  name: ${self:custom.base}-get-alerta-tanque
+  handler: services/alerta-tanque/src/get-alerta-tanque.main
+  events:
+    - httpApi: 'GET /ale/alertaTanque'
+  package:
+    include:
+      - services/alerta-tanque/src/get-alerta-tanque.js
+      - lib/errors/database-error.js
+
+getAlertaTanqueByTanque:
+  name: ${self:custom.base}-get-alerta-tanque-by-tanque
+  handler: services/alerta-tanque/src/get-alerta-tanque-by-tanque.main
+  events:
+    - httpApi: 'GET /ale/alertaTanque/byTanque/{tanqueId}'
+  package:
+    include:
+      - services/alerta-tanque/src/get-alerta-tanque-by-tanque.js
+      - lib/errors/database-error.js
+
+getAlertaTanqueByUser:
+  name: ${self:custom.base}-get-alerta-tanque-by-user
+  handler: services/alerta-tanque/src/get-alerta-tanque-by-user.main
+  events:
+    - httpApi: 'GET /ale/alertaTanque/byUsuario/{usuarioId}'
+  package:
+    include:
+      - services/alerta-tanque/src/get-alerta-tanque-by-user.js
+      - lib/errors/database-error.js
+
+getAlertaTanqueById:
+  name: ${self:custom.base}-get-alerta-tanque-by-id
+  handler: services/alerta-tanque/src/get-alerta-tanque-by-id.main
+  events:
+    - httpApi: 'GET /ale/alertaTanque/byId/{tanqueId}'
+  package:
+    include:
+      - services/alerta-tanque/src/get-alerta-tanque-by-id.js
+      - lib/errors/database-error.js
+
+CerrarAlertaTanque:
+  name: ${self:custom.base}-cerrar
+  handler: services/alerta-tanque/src/cerrar.main
+  events:
+    - httpApi: 'PUT /ale/alertaTanque/cerrar/{idTanque}'
+  environment:
+    BUCKET: codegas
+  package:
+    include:
+      - services/alerta-tanque/src/cerrar.js
+      - lib/errors/database-error.js
+      - lib/image.js
+      - lib/responses.js 
