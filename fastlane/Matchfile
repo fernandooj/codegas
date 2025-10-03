@@ -1,5 +1,0 @@
-git_url("https://github.com/your-username/certificates.git") # Cambia por tu repositorio de certificados
-storage_mode("git")
-type("appstore") # The default type, can be: appstore, adhoc, development, enterprise
-app_identifier(["com.codegas"])
-username("your-apple-id@example.com") # Tu Apple ID

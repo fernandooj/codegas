@@ -1,3 +1,0 @@
-/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86/CMakeFiles/appmodules.dir
-/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86/CMakeFiles/edit_cache.dir
-/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86/CMakeFiles/rebuild_cache.dir
