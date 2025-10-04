@@ -35,7 +35,7 @@ export function parseNumber(strg) {
  * @param {number} decimals - Cantidad de decimales (default: 2)
  * @returns {string} - Número formateado como moneda
  */
-export function formatCurrency(number, decimals = 2) {
+export function formatCurrency(number, decimals=0) {
     return '$' + Number(number).toFixed(decimals).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 }
 

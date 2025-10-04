@@ -730,7 +730,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                             }}>
                                                 <FontAwesome name="truck" style={{ fontSize: 16, color: '#666', marginRight: 10 }} />
                                                 <TextInput
-                                                    placeholder="Ej: REM-001234"
+                                                    placeholder="Ej: FV-162000"
                                                     placeholderTextColor="#999"
                                                     value={remision}
                                                     onChangeText={setRemision}

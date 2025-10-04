@@ -76,7 +76,7 @@ const generateEmailTemplate = (pedidoData) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Novedad de Pedido - CodeGas Colombia</title>
+        <title>Novedad de Pedido - App Codegas Colombia</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; line-height: 1.6;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
@@ -95,7 +95,7 @@ const generateEmailTemplate = (pedidoData) => {
                                     📦 Novedad de Pedido
                                 </h1>
                                 <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 14px;">
-                                    CodeGas Colombia - Sistema de Gestión de Pedidos
+                                    App CodeGas Colombia - Sistema de Gestión de Pedidos
                                 </p>
                             </td>
                         </tr>

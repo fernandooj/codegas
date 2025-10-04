@@ -348,7 +348,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         if (pedido.estado === "espera") return colors.espera;
         if (pedido.estado === "noentregado") return colors.noentregado;
         if (pedido.estado === "innactivo") return colors.innactivo;
-
         // Si está activo y no entregado
         if (pedido.estado === "activo" && !pedido.entregado) {
             // Si tiene conductor Y fecha de entrega -> Color naranja (asignado)
@@ -356,7 +355,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Si no tiene conductor o no tiene fecha -> Color amarillo (activo)
             return colors.activo;
         }
-
         return colors.otro;
     };
 
@@ -933,7 +931,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             <View style={style.pedidoCardFieldSmall}>
                                 <FontAwesome name="hashtag" style={style.pedidoCardIconHashtag} />
                                 <View style={style.pedidoCardFieldContent}>
-                                    <Text style={style.pedidoCardLabelText}>N° Pedido</Text>
+                                    <Text style={style.pedidoCardLabelText}>Pedido</Text>
                                     <Text style={style.pedidoCardValueSmall} numberOfLines={1}>
                                         {e._id}
                                     </Text>
@@ -968,7 +966,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             <View style={style.pedidoCardFieldLargeStart}>
                                 <FontAwesome name="home" style={style.pedidoCardIconHome} />
                                 <View style={style.pedidoCardFieldContent}>
-                                    <Text style={style.pedidoCardLabelText}>Dirección</Text>
+                                    <Text style={style.pedidoCardLabelText}>Dirección entrega</Text>
                                     <Text style={style.pedidoCardValueAddress} numberOfLines={2}>
                                         {e.direccion || "Sin dirección"}
                                     </Text>
@@ -1010,7 +1008,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             <View style={style.pedidoCardInfoItem}>
                                 <Text style={style.pedidoCardInfoItemLabel}>Cantidad</Text>
                                 <Text style={style.pedidoCardInfoItemValue}>
-                                    {e.capacidad} gal
+                                    {e.capacidad} Gal
                                 </Text>
                             </View>
                         )}
