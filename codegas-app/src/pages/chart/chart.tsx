@@ -42,7 +42,7 @@ const formatNumber = (num: number): string => {
     return num.toLocaleString('es-ES');
 };
 
-const Chart: React.FC<ChartProps> = ({ navigation, pedidos, getPedidosChart }) => {
+const Chart: React.FC<ChartProps> = ({ navigation, route, pedidos, getPedidosChart }) => {
     const context = useContext(DataContext) as any;
     const { acceso, userId } = context;
 
@@ -66,13 +66,21 @@ const Chart: React.FC<ChartProps> = ({ navigation, pedidos, getPedidosChart }) =
             try {
                 setState(prev => ({ ...prev, loading: true, error: null }));
 
+                console.log('📊 Chart - Parámetros de navegación (route.params):', route?.params);
+                console.log('📊 Chart - userId del contexto:', userId);
+                console.log('📊 Chart - acceso:', acceso);
+
                 const targetUserId = acceso === "cliente"
                     ? userId
-                    : navigation.state?.params?.idUsuario || userId;
+                    : route?.params?.idUsuario || userId;
+
+                console.log('📊 Chart - targetUserId calculado:', targetUserId);
 
                 if (targetUserId) {
+                    console.log('📊 Chart - Llamando getPedidosChart con:', targetUserId);
                     getPedidosChart(targetUserId);
                 } else {
+                    console.log('❌ Chart - No se pudo determinar el usuario');
                     setState(prev => ({
                         ...prev,
                         loading: false,
@@ -90,10 +98,13 @@ const Chart: React.FC<ChartProps> = ({ navigation, pedidos, getPedidosChart }) =
         };
 
         loadChartData();
-    }, [acceso, userId, navigation.state?.params?.idUsuario, getPedidosChart]);
+    }, [acceso, userId, route?.params?.idUsuario, getPedidosChart]);
 
     // Process pedidos data when it changes
     useEffect(() => {
+        console.log('📊 Chart - Pedidos recibidos:', pedidos);
+        console.log('📊 Chart - Cantidad de pedidos:', pedidos?.length || 0);
+
         if (pedidos && pedidos.length > 0) {
             try {
                 const filteredPedidos = pedidos
@@ -103,6 +114,8 @@ const Chart: React.FC<ChartProps> = ({ navigation, pedidos, getPedidosChart }) =
                         kilos: e.kilos.replace(',', '.')
                     }));
 
+                console.log('📊 Chart - Pedidos filtrados:', filteredPedidos.length);
+
                 const chartData: ChartData[] = filteredPedidos.map((e: PedidoData) => ({
                     date: e.fechaentrega,
                     count: parseInt(e.kilos) || 0
@@ -111,6 +124,9 @@ const Chart: React.FC<ChartProps> = ({ navigation, pedidos, getPedidosChart }) =
                 const groupedData = groupBy(chartData, month);
                 const fechas = groupedData.map(e => e.date);
                 const total = groupedData.map(e => e.count);
+
+                console.log('📊 Chart - Fechas agrupadas:', fechas);
+                console.log('📊 Chart - Totales:', total);
 
                 setState(prev => ({
                     ...prev,
@@ -129,6 +145,7 @@ const Chart: React.FC<ChartProps> = ({ navigation, pedidos, getPedidosChart }) =
                 }));
             }
         } else if (pedidos && pedidos.length === 0) {
+            console.log('📊 Chart - No hay pedidos (array vacío)');
             setState(prev => ({
                 ...prev,
                 fechas: [],
@@ -137,6 +154,8 @@ const Chart: React.FC<ChartProps> = ({ navigation, pedidos, getPedidosChart }) =
                 loading: false,
                 error: null
             }));
+        } else {
+            console.log('📊 Chart - pedidos es null o undefined');
         }
     }, [pedidos]);
 

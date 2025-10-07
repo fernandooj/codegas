@@ -17,24 +17,30 @@ LANGUAGE plpgsql AS
 $func$
 DECLARE
     fecha_inicio TIMESTAMP;
+    fecha_fin TIMESTAMP;
 BEGIN
-    -- Definir el inicio del periodo según el parámetro
+    -- Definir el inicio y fin del periodo según el parámetro
     CASE _periodo
         WHEN 'dia' THEN
-            -- Desde hoy a las 00:00
+            -- Desde hoy a las 00:00 hasta mañana a las 00:00
             fecha_inicio := DATE_TRUNC('day', CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota');
+            fecha_fin := fecha_inicio + INTERVAL '1 day';
         WHEN 'semana' THEN
-            -- Desde el lunes de esta semana a las 00:00
+            -- Desde el lunes de esta semana a las 00:00 hasta ahora
             fecha_inicio := DATE_TRUNC('week', CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota');
+            fecha_fin := CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota';
         WHEN 'mes' THEN
-            -- Desde el día 1 del mes actual a las 00:00
+            -- Desde el día 1 del mes actual a las 00:00 hasta ahora
             fecha_inicio := DATE_TRUNC('month', CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota');
+            fecha_fin := CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota';
         WHEN 'año' THEN
-            -- Desde el 1 de enero del año actual a las 00:00
+            -- Desde el 1 de enero del año actual a las 00:00 hasta ahora
             fecha_inicio := DATE_TRUNC('year', CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota');
+            fecha_fin := CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota';
         ELSE
             -- Por defecto, día actual
             fecha_inicio := DATE_TRUNC('day', CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota');
+            fecha_fin := fecha_inicio + INTERVAL '1 day';
     END CASE;
 
     RETURN QUERY
@@ -98,6 +104,9 @@ BEGIN
             -- Si contiene '-', es formato ISO (YYYY-MM-DD)
             WHEN p.fechaEntregado LIKE '%-%' THEN 
                 p.fechaEntregado::TIMESTAMP
+            -- Si es solo fecha sin hora, agregar hora
+            WHEN p.fechaEntregado ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN 
+                TO_TIMESTAMP(p.fechaEntregado || ' 00:00', 'DD/MM/YYYY HH24:MI')
             ELSE NULL
         END
     ) >= fecha_inicio
@@ -107,9 +116,11 @@ BEGIN
                 TO_TIMESTAMP(p.fechaEntregado, 'DD/MM/YYYY HH24:MI')
             WHEN p.fechaEntregado LIKE '%-%' THEN 
                 p.fechaEntregado::TIMESTAMP
+            WHEN p.fechaEntregado ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN 
+                TO_TIMESTAMP(p.fechaEntregado || ' 23:59', 'DD/MM/YYYY HH24:MI')
             ELSE NULL
         END
-    ) <= CURRENT_TIMESTAMP AT TIME ZONE 'America/Bogota'
+    ) < fecha_fin
     -- Si se proporciona un conductorId (conductor consultando), filtrar solo sus pedidos
     AND (_conductorId IS NULL OR p.conductorId = _conductorId)
     GROUP BY ROLLUP(c.placa)

@@ -12,6 +12,9 @@ export interface PedidoFrecuencia {
     dia1?: string | number;
     dia2?: string | number;
     fecha_creacion?: string;
+    punto_direccion?: string;
+    punto_capacidad?: string;
+    puntoId?: number;
 }
 
 export interface FrecuenciaEditData {

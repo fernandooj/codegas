@@ -2012,4 +2012,305 @@ export const style = MediaQueryStyleSheet.create({
 		fontWeight: '600',
 		color: '#fff'
 	},
+
+	//////////////////////////////////////////////////////////////////		
+	///////////				MODAL ESTADISTICAS STYLES
+	//////////////////////////////////////////////////////////////////
+	modalEstadisticasOverlay: {
+		flex: 1,
+		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	modalEstadisticasContainer: {
+		backgroundColor: 'white',
+		borderRadius: 12,
+		padding: 20,
+		width: size.width * 0.95,
+		maxHeight: '80%',
+	},
+	modalEstadisticasHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: 20,
+	},
+	modalEstadisticasTitle: {
+		fontSize: 20,
+		fontWeight: 'bold',
+		color: '#333',
+	},
+	modalEstadisticasCloseButton: {
+		padding: 5,
+	},
+	modalEstadisticasCloseIcon: {
+		fontSize: 24,
+		color: '#666',
+	},
+	modalEstadisticasFiltrosContainer: {
+		flexDirection: 'row',
+		justifyContent: 'space-around',
+		marginBottom: 15,
+		gap: 8,
+	},
+	modalEstadisticasFiltroButton: {
+		flex: 1,
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 8,
+		backgroundColor: '#f0f0f0',
+		alignItems: 'center',
+	},
+	modalEstadisticasFiltroButtonActive: {
+		backgroundColor: '#007bff',
+	},
+	modalEstadisticasFiltroText: {
+		fontSize: 14,
+		color: '#666',
+		fontWeight: '500',
+	},
+	modalEstadisticasFiltroTextActive: {
+		color: 'white',
+		fontWeight: 'bold',
+	},
+	modalEstadisticasPeriodoLabel: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#007bff',
+		textAlign: 'center',
+		marginBottom: 15,
+	},
+	modalEstadisticasTableWrapper: {
+		maxHeight: 420,
+	},
+	modalEstadisticasScrollContainer: {
+		maxHeight: 320,
+	},
+	modalEstadisticasHeaderRow: {
+		flexDirection: 'row',
+		backgroundColor: '#007bff',
+		paddingVertical: 10,
+		borderTopLeftRadius: 8,
+		borderTopRightRadius: 8,
+		overflow: 'hidden',
+	},
+	modalEstadisticasSubHeaderRow: {
+		flexDirection: 'row',
+		backgroundColor: '#0056b3',
+		paddingVertical: 8,
+		overflow: 'hidden',
+	},
+	modalEstadisticasTablaHeaderCell: {
+		color: 'white',
+		fontWeight: 'bold',
+		fontSize: 13,
+		textAlign: 'center',
+	},
+	modalEstadisticasSubHeaderText: {
+		color: 'white',
+		fontSize: 11,
+		textAlign: 'center',
+		flex: 1,
+	},
+	modalEstadisticasTableBody: {
+		flexDirection: 'row',
+	},
+	modalEstadisticasPlacaColumn: {
+		width: 90,
+	},
+	modalEstadisticasHeaderScrollContainer: {
+		flex: 1,
+	},
+	modalEstadisticasDataScrollContainer: {
+		flex: 1,
+	},
+	modalEstadisticasPlacaRow: {
+		paddingVertical: 12,
+		paddingHorizontal: 8,
+		backgroundColor: 'white',
+		borderBottomWidth: 1,
+		borderBottomColor: '#e0e0e0',
+		justifyContent: 'center',
+		borderRightWidth: 2,
+		borderRightColor: '#e0e0e0',
+	},
+	modalEstadisticasPlacaRowTotal: {
+		backgroundColor: '#f8f9fa',
+		borderTopWidth: 2,
+		borderTopColor: '#007bff',
+	},
+	modalEstadisticasDataRow: {
+		flexDirection: 'row',
+		paddingVertical: 12,
+		paddingHorizontal: 8,
+		backgroundColor: 'white',
+		borderBottomWidth: 1,
+		borderBottomColor: '#e0e0e0',
+	},
+	modalEstadisticasDataRowTotal: {
+		backgroundColor: '#f8f9fa',
+		borderTopWidth: 2,
+		borderTopColor: '#007bff',
+	},
+	modalEstadisticasTablaCell: {
+		fontSize: 12,
+		color: '#333',
+		textAlign: 'center',
+	},
+	modalEstadisticasPlacaFixedContainer: {
+		width: 90,
+		backgroundColor: '#007bff',
+		justifyContent: 'center',
+		paddingVertical: 8,
+		paddingHorizontal: 8,
+		borderRightWidth: 2,
+		borderRightColor: 'white',
+	},
+	modalEstadisticasPlacaFixed: {
+		width: '100%',
+		fontWeight: '600',
+		color: '#333',
+	},
+	modalEstadisticasScrollableContent: {
+		flexDirection: 'row',
+		paddingVertical: 8,
+		paddingHorizontal: 8,
+	},
+	modalEstadisticasTablaSectionWide: {
+		width: 180,
+		flexDirection: 'row',
+		justifyContent: 'space-around',
+	},
+	modalEstadisticasDataText: {
+		fontSize: 10,
+		flex: 1,
+		flexWrap: 'nowrap',
+	},
+	modalEstadisticasCantidadCellWide: {
+		width: 60,
+	},
+	modalEstadisticasTotalText: {
+		fontWeight: 'bold',
+		color: '#007bff',
+	},
+	modalEstadisticasLoadingContainer: {
+		padding: 40,
+		alignItems: 'center',
+	},
+	modalEstadisticasLoadingText: {
+		marginTop: 10,
+		color: '#666',
+	},
+	modalEstadisticasEmptyContainer: {
+		padding: 40,
+		alignItems: 'center',
+	},
+	modalEstadisticasEmptyIcon: {
+		fontSize: 48,
+		color: '#ccc',
+		marginBottom: 10,
+	},
+	modalEstadisticasEmptyText: {
+		color: '#666',
+		textAlign: 'center',
+	},
+	// Estilos para vista de detalle de conductor
+	modalEstadisticasDetalleHeaderRow: {
+		flexDirection: 'row',
+		backgroundColor: '#007bff',
+		paddingVertical: 12,
+		paddingHorizontal: 8,
+		borderTopLeftRadius: 8,
+		borderTopRightRadius: 8,
+		borderBottomWidth: 2,
+		borderBottomColor: '#0056b3',
+	},
+	modalEstadisticasDetalleHeaderCell: {
+		color: 'white',
+		fontWeight: 'bold',
+		fontSize: 12,
+		textAlign: 'center',
+	},
+	modalEstadisticasDetalleScrollContainer: {
+		maxHeight: 360,
+	},
+	modalEstadisticasDetalleRow: {
+		flexDirection: 'row',
+		paddingVertical: 12,
+		paddingHorizontal: 8,
+		backgroundColor: 'white',
+		borderBottomWidth: 1,
+		borderBottomColor: '#e0e0e0',
+	},
+	modalEstadisticasDetalleRowTotal: {
+		backgroundColor: '#f8f9fa',
+		borderTopWidth: 2,
+		borderTopColor: '#007bff',
+	},
+	modalEstadisticasDetalleCell: {
+		fontSize: 11,
+		color: '#333',
+		textAlign: 'center',
+	},
+	modalEstadisticasRemisionCell: {
+		width: 80,
+	},
+	modalEstadisticasPedidoCell: {
+		width: 90,
+	},
+	modalEstadisticasCodtCell: {
+		width: 75,
+	},
+	modalEstadisticasKilosCell: {
+		width: 95,
+	},
+	modalEstadisticasContadoCell: {
+		width: 110,
+	},
+	modalEstadisticasValorCell: {
+		width: 110,
+	},
+	// Estilos para vista por día
+	modalEstadisticasPorDiaHeaderRow: {
+		flexDirection: 'row',
+		backgroundColor: '#007bff',
+		paddingVertical: 12,
+		paddingHorizontal: 8,
+		borderTopLeftRadius: 8,
+		borderTopRightRadius: 8,
+		borderBottomWidth: 2,
+		borderBottomColor: '#0056b3',
+	},
+	modalEstadisticasPorDiaHeaderCell: {
+		color: 'white',
+		fontWeight: 'bold',
+		fontSize: 12,
+		textAlign: 'center',
+	},
+	modalEstadisticasPorDiaScrollContainer: {
+		maxHeight: 360,
+	},
+	modalEstadisticasPorDiaRow: {
+		flexDirection: 'row',
+		paddingVertical: 12,
+		paddingHorizontal: 8,
+		backgroundColor: 'white',
+		borderBottomWidth: 1,
+		borderBottomColor: '#e0e0e0',
+	},
+	modalEstadisticasPorDiaCell: {
+		fontSize: 11,
+		color: '#333',
+		textAlign: 'center',
+	},
+	modalEstadisticasFechaCell: {
+		width: 120,
+		fontWeight: '500',
+	},
+	modalEstadisticasCantidadCell: {
+		width: 80,
+	},
+	modalEstadisticasCreditoCell: {
+		width: 110,
+	},
 })

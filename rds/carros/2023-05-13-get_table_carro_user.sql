@@ -1,9 +1,11 @@
+drop function if exists get_data_carro_user;
 CREATE OR REPLACE FUNCTION get_data_carro_user(idUser INT)
 RETURNS TABLE (
     _id INT, 
     placa VARCHAR(45), 
     centro INT, 
     bodega INT, 
+    capacidad INT,
     usuarioCrea JSON,
     creado BIGINT, 
     conductor JSON,
@@ -18,6 +20,7 @@ BEGIN
         carros.placa,
         carros.centro,
         carros.bodega,
+        carros.capacidad,
         json_build_object(
             '_id', users._id,
             'acceso', users.acceso,

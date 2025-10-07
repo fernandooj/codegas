@@ -5,16 +5,13 @@ import {
     Modal,
     TouchableOpacity,
     ScrollView,
-    ActivityIndicator,
-    StyleSheet,
-    Dimensions
+    ActivityIndicator
 } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import { getEstadisticas } from '../../redux/actions/pedidoActions';
 import { formatCurrency } from '../../utils/number';
 import { Estadistica, DetallePedido, ModalEstadisticasProps } from './types';
-
-const { width } = Dimensions.get('window');
+import { style } from './style';
 
 const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
     visible,
@@ -26,7 +23,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
     const [detallePedidos, setDetallePedidos] = useState<DetallePedido[]>([]);
     const [loading, setLoading] = useState(false);
     const [periodo, setPeriodo] = useState<'dia' | 'semana' | 'mes' | 'año'>('dia');
-    const [tipoVista, setTipoVista] = useState<'resumen' | 'detalle' | 'por_dia'>('resumen');
+    const [tipoVista, setTipoVista] = useState<'resumen' | 'detalle' | 'por_dia' | 'listado_pedidos'>('resumen');
 
     // Refs para sincronizar scroll
     const headerScrollRef = useRef<ScrollView>(null);
@@ -53,10 +50,16 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                 const tipoVistaRecibido = (resultado as any).tipoVista || 'resumen';
                 setTipoVista(tipoVistaRecibido);
 
-                if (tipoVistaRecibido === 'detalle') {
-                    // Vista de detalle para conductores
+                if (tipoVistaRecibido === 'listado_pedidos') {
+                    // Vista de listado de pedidos para conductores (día)
+                    console.log('📊 Datos recibidos:', resultado.estadisticas);
+                    console.log('📊 Primer pedido:', resultado.estadisticas?.[0]);
                     setDetallePedidos(resultado.estadisticas || []);
                     setEstadisticas([]);
+                } else if (tipoVistaRecibido === 'detalle') {
+                    // Vista de detalle por fecha para conductores (día)
+                    setEstadisticas(resultado.estadisticas || []);
+                    setDetallePedidos([]);
                 } else if (tipoVistaRecibido === 'por_dia') {
                     // Vista por día para períodos largos
                     setEstadisticas(resultado.estadisticas || []);
@@ -135,11 +138,11 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
         <View
             key={`placa-${item.placa}`}
             style={[
-                styles.placaRow,
-                isTotal && styles.placaRowTotal
+                style.modalEstadisticasPlacaRow,
+                isTotal && style.modalEstadisticasPlacaRowTotal
             ]}
         >
-            <Text style={[styles.tablaCell, styles.placaFixed, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasTablaCell, style.modalEstadisticasPlacaFixed, isTotal && style.modalEstadisticasTotalText]}>
                 {item.placa}
             </Text>
         </View>
@@ -149,20 +152,20 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
         <View
             key={`data-${item.placa}`}
             style={[
-                styles.dataRow,
-                isTotal && styles.dataRowTotal
+                style.modalEstadisticasDataRow,
+                isTotal && style.modalEstadisticasDataRowTotal
             ]}
         >
             {/* Crédito */}
-            <View style={styles.tablaSectionWide}>
+            <View style={style.modalEstadisticasTablaSectionWide}>
                 <Text
-                    style={[styles.tablaCell, styles.dataText, isTotal && styles.totalText]}
+                    style={[style.modalEstadisticasTablaCell, style.modalEstadisticasDataText, isTotal && style.modalEstadisticasTotalText]}
                     numberOfLines={1}
                 >
                     {formatKilos(item.total_kilos_credito)} Kg
                 </Text>
                 <Text
-                    style={[styles.tablaCell, styles.dataText, isTotal && styles.totalText]}
+                    style={[style.modalEstadisticasTablaCell, style.modalEstadisticasDataText, isTotal && style.modalEstadisticasTotalText]}
                     numberOfLines={1}
                 >
                     {formatCurrency(item.total_valor_credito || 0, 0)}
@@ -170,15 +173,15 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
             </View>
 
             {/* Contado */}
-            <View style={styles.tablaSectionWide}>
+            <View style={style.modalEstadisticasTablaSectionWide}>
                 <Text
-                    style={[styles.tablaCell, styles.dataText, isTotal && styles.totalText]}
+                    style={[style.modalEstadisticasTablaCell, style.modalEstadisticasDataText, isTotal && style.modalEstadisticasTotalText]}
                     numberOfLines={1}
                 >
                     {formatKilos(item.total_kilos_contado)} Kg
                 </Text>
                 <Text
-                    style={[styles.tablaCell, styles.dataText, isTotal && styles.totalText]}
+                    style={[style.modalEstadisticasTablaCell, style.modalEstadisticasDataText, isTotal && style.modalEstadisticasTotalText]}
                     numberOfLines={1}
                 >
                     {formatCurrency(item.total_valor_contado || 0, 0)}
@@ -186,15 +189,15 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
             </View>
 
             {/* Total */}
-            <View style={styles.tablaSectionWide}>
+            <View style={style.modalEstadisticasTablaSectionWide}>
                 <Text
-                    style={[styles.tablaCell, styles.dataText, isTotal && styles.totalText]}
+                    style={[style.modalEstadisticasTablaCell, style.modalEstadisticasDataText, isTotal && style.modalEstadisticasTotalText]}
                     numberOfLines={1}
                 >
                     {formatKilos(item.total_kilos)} Kg
                 </Text>
                 <Text
-                    style={[styles.tablaCell, styles.dataText, isTotal && styles.totalText]}
+                    style={[style.modalEstadisticasTablaCell, style.modalEstadisticasDataText, isTotal && style.modalEstadisticasTotalText]}
                     numberOfLines={1}
                 >
                     {formatCurrency(item.total_valor || 0, 0)}
@@ -202,7 +205,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
             </View>
 
             <Text
-                style={[styles.tablaCell, styles.cantidadCellWide, isTotal && styles.totalText]}
+                style={[style.modalEstadisticasTablaCell, style.modalEstadisticasCantidadCellWide, isTotal && style.modalEstadisticasTotalText]}
                 numberOfLines={1}
             >
                 {item.cantidad_pedidos || 0}
@@ -214,24 +217,24 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
     const renderEstadisticaPorDiaRow = (item: any, index: number) => (
         <View
             key={`dia-${item.fechaentrega}-${index}`}
-            style={styles.porDiaRow}
+            style={style.modalEstadisticasPorDiaRow}
         >
-            <Text style={[styles.porDiaCell, styles.fechaCell]}>
+            <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasFechaCell]}>
                 {item.fechaentrega}
             </Text>
-            <Text style={[styles.porDiaCell, styles.cantidadCell]}>
+            <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasCantidadCell]}>
                 {item.cantidad_pedidos || 0}
             </Text>
-            <Text style={[styles.porDiaCell, styles.kilosCell]}>
+            <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasKilosCell]}>
                 {formatKilos(item.total_kilos)}
             </Text>
-            <Text style={[styles.porDiaCell, styles.contadoCell]}>
+            <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasContadoCell]}>
                 {formatCurrency(item.vlr_contado || 0, 0)}
             </Text>
-            <Text style={[styles.porDiaCell, styles.creditoCell]}>
+            <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasCreditoCell]}>
                 {formatCurrency(item.vlr_credito || 0, 0)}
             </Text>
-            <Text style={[styles.porDiaCell, styles.valorCell]}>
+            <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasValorCell]}>
                 {formatCurrency(item.valor_total || 0, 0)}
             </Text>
         </View>
@@ -242,29 +245,29 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
         <View
             key={`detalle-${item.remision || 'total'}-${index}`}
             style={[
-                styles.detalleRow,
-                isTotal && styles.detalleRowTotal
+                style.modalEstadisticasDetalleRow,
+                isTotal && style.modalEstadisticasDetalleRowTotal
             ]}
         >
-            <Text style={[styles.detalleCell, styles.remisionCell, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasRemisionCell, isTotal && style.modalEstadisticasTotalText]}>
                 {item.remision}
             </Text>
-            <Text style={[styles.detalleCell, styles.pedidoCell, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasPedidoCell, isTotal && style.modalEstadisticasTotalText]}>
                 {item.pedido || ''}
             </Text>
-            <Text style={[styles.detalleCell, styles.codtCell, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasCodtCell, isTotal && style.modalEstadisticasTotalText]}>
                 {item.codt}
             </Text>
-            <Text style={[styles.detalleCell, styles.kilosCell, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasKilosCell, isTotal && style.modalEstadisticasTotalText]}>
                 {formatKilos(item.total_kilos)}
             </Text>
-            <Text style={[styles.detalleCell, styles.contadoCell, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasContadoCell, isTotal && style.modalEstadisticasTotalText]}>
                 {item.vlr_contado ? formatCurrency(item.vlr_contado, 0) : '-'}
             </Text>
-            <Text style={[styles.detalleCell, styles.creditoCell, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasCreditoCell, isTotal && style.modalEstadisticasTotalText]}>
                 {item.vlr_credito ? formatCurrency(item.vlr_credito, 0) : '-'}
             </Text>
-            <Text style={[styles.detalleCell, styles.valorCell, isTotal && styles.totalText]}>
+            <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasValorCell, isTotal && style.modalEstadisticasTotalText]}>
                 {formatCurrency(item.valor_total || 0, 0)}
             </Text>
         </View>
@@ -277,30 +280,30 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
             animationType="slide"
             onRequestClose={onClose}
         >
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContainer}>
+            <View style={style.modalEstadisticasOverlay}>
+                <View style={style.modalEstadisticasContainer}>
                     {/* Header */}
-                    <View style={styles.header}>
-                        <Text style={styles.title}>📊 Estadísticas de Entregas</Text>
-                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <FontAwesome name="times" style={styles.closeIcon} />
+                    <View style={style.modalEstadisticasHeader}>
+                        <Text style={style.modalEstadisticasTitle}>📊 Estadísticas de Entregas</Text>
+                        <TouchableOpacity onPress={onClose} style={style.modalEstadisticasCloseButton}>
+                            <FontAwesome name="times" style={style.modalEstadisticasCloseIcon} />
                         </TouchableOpacity>
                     </View>
 
                     {/* Filtros de Periodo */}
-                    <View style={styles.filtrosContainer}>
+                    <View style={style.modalEstadisticasFiltrosContainer}>
                         {(['dia', 'semana', 'mes', 'año'] as const).map((p) => (
                             <TouchableOpacity
                                 key={p}
                                 style={[
-                                    styles.filtroButton,
-                                    periodo === p && styles.filtroButtonActive
+                                    style.modalEstadisticasFiltroButton,
+                                    periodo === p && style.modalEstadisticasFiltroButtonActive
                                 ]}
                                 onPress={() => setPeriodo(p)}
                             >
                                 <Text style={[
-                                    styles.filtroText,
-                                    periodo === p && styles.filtroTextActive
+                                    style.modalEstadisticasFiltroText,
+                                    periodo === p && style.modalEstadisticasFiltroTextActive
                                 ]}>
                                     {p === 'dia' ? 'Hoy' : p === 'semana' ? 'Semana' : p === 'mes' ? 'Mes' : 'Año'}
                                 </Text>
@@ -309,73 +312,160 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                     </View>
 
                     {/* Periodo seleccionado */}
-                    <Text style={styles.periodoLabel}>{getPeriodoLabel()}</Text>
+                    <Text style={style.modalEstadisticasPeriodoLabel}>{getPeriodoLabel()}</Text>
 
                     {/* Tabla de estadísticas */}
                     {loading ? (
-                        <View style={styles.loadingContainer}>
+                        <View style={style.modalEstadisticasLoadingContainer}>
                             <ActivityIndicator size="large" color="#007bff" />
-                            <Text style={styles.loadingText}>Cargando estadísticas...</Text>
+                            <Text style={style.modalEstadisticasLoadingText}>Cargando estadísticas...</Text>
                         </View>
-                    ) : tipoVista === 'detalle' ? (
-                        /* Vista de Detalle para Conductores */
-                        <View style={styles.tableWrapper}>
-                            {/* Header de la tabla de detalle */}
-                            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-                                <View>
-                                    <View style={styles.detalleHeaderRow}>
-                                        <Text style={[styles.detalleHeaderCell, styles.remisionCell]}>Remisión</Text>
-                                        <Text style={[styles.detalleHeaderCell, styles.pedidoCell]}>Pedido</Text>
-                                        <Text style={[styles.detalleHeaderCell, styles.codtCell]}>Codt</Text>
-                                        <Text style={[styles.detalleHeaderCell, styles.kilosCell]}>Total Kilos</Text>
-                                        <Text style={[styles.detalleHeaderCell, styles.contadoCell]}>Vlr Contado</Text>
-                                        <Text style={[styles.detalleHeaderCell, styles.creditoCell]}>Vlr Crédito</Text>
-                                        <Text style={[styles.detalleHeaderCell, styles.valorCell]}>Valor Total</Text>
-                                    </View>
-
-                                    {/* Datos */}
+                    ) : tipoVista === 'listado_pedidos' ? (
+                        /* Vista de Tabla de Pedidos para Conductores */
+                        <View style={style.modalEstadisticasTableWrapper}>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={true}
+                                nestedScrollEnabled={true}
+                            >
+                                <ScrollView
+                                    showsVerticalScrollIndicator={true}
+                                    nestedScrollEnabled={true}
+                                    style={{ maxHeight: 400 }}
+                                >
                                     {detallePedidos.length > 0 ? (
-                                        <ScrollView style={styles.detalleScrollContainer} showsVerticalScrollIndicator={true}>
-                                            {detallePedidos.map((item, index) =>
-                                                renderDetallePedidoRow(item, index, item.remision === 'TOTAL')
-                                            )}
-                                        </ScrollView>
+                                        <View style={{ marginTop: 10, marginBottom: 10 }}>
+                                            {/* Header de la tabla */}
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                backgroundColor: '#007bff',
+                                                padding: 10,
+                                                borderTopLeftRadius: 8,
+                                                borderTopRightRadius: 8
+                                            }}>
+                                                <Text style={{ width: 65, fontSize: 9, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Remision</Text>
+                                                <Text style={{ width: 55, fontSize: 9, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Pedido</Text>
+                                                <Text style={{ width: 50, fontSize: 9, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Codt</Text>
+                                                <Text style={{ width: 70, fontSize: 9, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Total Kilos</Text>
+                                                <Text style={{ width: 85, fontSize: 9, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Vlr Contado</Text>
+                                                <Text style={{ width: 85, fontSize: 9, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Vlr Crédito</Text>
+                                                <Text style={{ width: 90, fontSize: 9, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>Valor Total</Text>
+                                            </View>
+
+                                            {/* Filas de datos */}
+                                            {detallePedidos.map((pedido: any, index: number) => (
+                                                <View
+                                                    key={`total-row-${index}`}
+                                                    style={{
+                                                        flexDirection: 'row',
+                                                        backgroundColor: index % 2 === 0 ? '#f8f9fa' : 'white',
+                                                        padding: 8,
+                                                        borderBottomWidth: 1,
+                                                        borderBottomColor: '#e0e0e0'
+                                                    }}
+                                                >
+                                                    <Text style={{ width: 65, fontSize: 8, color: '#333', textAlign: 'center' }}>
+                                                        {pedido.remision || ''}
+                                                    </Text>
+                                                    <Text style={{ width: 55, fontSize: 8, color: '#333', textAlign: 'center' }}>
+                                                        {pedido._id}
+                                                    </Text>
+                                                    <Text style={{ width: 50, fontSize: 8, color: '#333', textAlign: 'center' }}>
+                                                        {pedido.codt || ''}
+                                                    </Text>
+                                                    <Text style={{ width: 70, fontSize: 8, color: '#333', textAlign: 'center' }}>
+                                                        {parseFloat(pedido.kilos || '0').toFixed(1)}
+                                                    </Text>
+                                                    <Text style={{ width: 85, fontSize: 8, color: '#333', textAlign: 'center' }}>
+                                                        {pedido.vlr_contado ? formatCurrency(parseFloat(pedido.vlr_contado), 0) : ''}
+                                                    </Text>
+                                                    <Text style={{ width: 85, fontSize: 8, color: '#333', textAlign: 'center' }}>
+                                                        {pedido.vlr_credito ? formatCurrency(parseFloat(pedido.vlr_credito), 0) : ''}
+                                                    </Text>
+                                                    <Text style={{ width: 90, fontSize: 8, color: '#333', textAlign: 'center' }}>
+                                                        {formatCurrency(parseFloat(pedido.valor_total || '0'), 0)}
+                                                    </Text>
+                                                </View>
+                                            ))}
+
+                                            {/* Fila de totales */}
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                backgroundColor: '#007bff',
+                                                padding: 10,
+                                                borderBottomLeftRadius: 8,
+                                                borderBottomRightRadius: 8
+                                            }}>
+                                                <Text style={{ width: 65, fontSize: 10, fontWeight: 'bold', color: 'white', textAlign: 'center' }}></Text>
+                                                <Text style={{ width: 55, fontSize: 10, fontWeight: 'bold', color: 'white', textAlign: 'center' }}></Text>
+                                                <Text style={{ width: 50, fontSize: 10, fontWeight: 'bold', color: 'white', textAlign: 'center' }}></Text>
+                                                <Text style={{ width: 70, fontSize: 10, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                    {detallePedidos.reduce((sum, p: any) => sum + parseFloat(p.kilos || '0'), 0).toFixed(1)}
+                                                </Text>
+                                                <Text style={{ width: 85, fontSize: 10, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                    {formatCurrency(
+                                                        detallePedidos.reduce((sum, p: any) => sum + parseFloat(p.vlr_contado || '0'), 0),
+                                                        0
+                                                    )}
+                                                </Text>
+                                                <Text style={{ width: 85, fontSize: 10, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                    {formatCurrency(
+                                                        detallePedidos.reduce((sum, p: any) => sum + parseFloat(p.vlr_credito || '0'), 0),
+                                                        0
+                                                    )}
+                                                </Text>
+                                                <Text style={{ width: 90, fontSize: 10, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                    {formatCurrency(
+                                                        detallePedidos.reduce((sum, p: any) => sum + parseFloat(p.valor_total || '0'), 0),
+                                                        0
+                                                    )}
+                                                </Text>
+                                            </View>
+                                        </View>
                                     ) : (
-                                        <View style={styles.emptyContainer}>
-                                            <FontAwesome name="inbox" style={styles.emptyIcon} />
-                                            <Text style={styles.emptyText}>
-                                                No hay entregas registradas en este periodo
+                                        <View style={style.modalEstadisticasEmptyContainer}>
+                                            <FontAwesome name="inbox" style={style.modalEstadisticasEmptyIcon} />
+                                            <Text style={style.modalEstadisticasEmptyText}>
+                                                No hay pedidos entregados hoy
                                             </Text>
                                         </View>
                                     )}
-                                </View>
+                                </ScrollView>
                             </ScrollView>
                         </View>
-                    ) : tipoVista === 'por_dia' ? (
-                        /* Vista por Día para períodos largos */
-                        <View style={styles.tableWrapper}>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+                    ) : (tipoVista === 'detalle' || tipoVista === 'por_dia') && periodo !== 'dia' ? (
+                        /* Vista por Día para conductores y períodos largos */
+                        <View style={style.modalEstadisticasTableWrapper}>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={true}
+                                nestedScrollEnabled={true}
+                            >
                                 <View>
-                                    <View style={styles.porDiaHeaderRow}>
-                                        <Text style={[styles.porDiaHeaderCell, styles.fechaCell]}>Fecha Entrega</Text>
-                                        <Text style={[styles.porDiaHeaderCell, styles.cantidadCell]}>Pedidos</Text>
-                                        <Text style={[styles.porDiaHeaderCell, styles.kilosCell]}>Total Kilos</Text>
-                                        <Text style={[styles.porDiaHeaderCell, styles.contadoCell]}>Vlr Contado</Text>
-                                        <Text style={[styles.porDiaHeaderCell, styles.creditoCell]}>Vlr Crédito</Text>
-                                        <Text style={[styles.porDiaHeaderCell, styles.valorCell]}>Valor Total</Text>
+                                    <View style={style.modalEstadisticasPorDiaHeaderRow}>
+                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasFechaCell]}>Fecha Entrega</Text>
+                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasCantidadCell]}>Pedidos</Text>
+                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasKilosCell]}>Total Kilos</Text>
+                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasContadoCell]}>Vlr Contado</Text>
+                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasCreditoCell]}>Vlr Crédito</Text>
+                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasValorCell]}>Valor Total</Text>
                                     </View>
 
                                     {/* Datos */}
                                     {estadisticas.length > 0 ? (
-                                        <ScrollView style={styles.porDiaScrollContainer} showsVerticalScrollIndicator={true}>
+                                        <ScrollView
+                                            style={style.modalEstadisticasPorDiaScrollContainer}
+                                            showsVerticalScrollIndicator={true}
+                                            nestedScrollEnabled={true}
+                                        >
                                             {estadisticas.map((item, index) =>
                                                 renderEstadisticaPorDiaRow(item, index)
                                             )}
                                         </ScrollView>
                                     ) : (
-                                        <View style={styles.emptyContainer}>
-                                            <FontAwesome name="inbox" style={styles.emptyIcon} />
-                                            <Text style={styles.emptyText}>
+                                        <View style={style.modalEstadisticasEmptyContainer}>
+                                            <FontAwesome name="inbox" style={style.modalEstadisticasEmptyIcon} />
+                                            <Text style={style.modalEstadisticasEmptyText}>
                                                 No hay entregas registradas en este periodo
                                             </Text>
                                         </View>
@@ -385,11 +475,11 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                         </View>
                     ) : (
                         /* Vista de Resumen para Admin */
-                        <View style={styles.tableWrapper}>
+                        <View style={style.modalEstadisticasTableWrapper}>
                             {/* Header de la tabla */}
-                            <View style={styles.headerRow}>
-                                <View style={styles.placaFixedContainer}>
-                                    <Text style={[styles.tablaHeaderCell, styles.placaFixed]}>Placa</Text>
+                            <View style={style.modalEstadisticasHeaderRow}>
+                                <View style={style.modalEstadisticasPlacaFixedContainer}>
+                                    <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasPlacaFixed]}>Placa</Text>
                                 </View>
                                 <ScrollView
                                     ref={headerScrollRef}
@@ -397,27 +487,28 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                                     showsHorizontalScrollIndicator={false}
                                     scrollEventThrottle={16}
                                     onScroll={handleHeaderScroll}
-                                    style={styles.headerScrollContainer}
+                                    style={style.modalEstadisticasHeaderScrollContainer}
+                                    nestedScrollEnabled={true}
                                 >
-                                    <View style={styles.scrollableContent}>
-                                        <View style={styles.tablaSectionWide}>
-                                            <Text style={styles.tablaHeaderCell}>Crédito</Text>
+                                    <View style={style.modalEstadisticasScrollableContent}>
+                                        <View style={style.modalEstadisticasTablaSectionWide}>
+                                            <Text style={style.modalEstadisticasTablaHeaderCell}>Crédito</Text>
                                         </View>
-                                        <View style={styles.tablaSectionWide}>
-                                            <Text style={styles.tablaHeaderCell}>Contado</Text>
+                                        <View style={style.modalEstadisticasTablaSectionWide}>
+                                            <Text style={style.modalEstadisticasTablaHeaderCell}>Contado</Text>
                                         </View>
-                                        <View style={styles.tablaSectionWide}>
-                                            <Text style={styles.tablaHeaderCell}>Total</Text>
+                                        <View style={style.modalEstadisticasTablaSectionWide}>
+                                            <Text style={style.modalEstadisticasTablaHeaderCell}>Total</Text>
                                         </View>
-                                        <Text style={[styles.tablaHeaderCell, styles.cantidadCellWide]}>Cant Ped</Text>
+                                        <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasCantidadCellWide]}>Cant Ped</Text>
                                     </View>
                                 </ScrollView>
                             </View>
 
                             {/* Subheader (Kg / Valor) */}
-                            <View style={styles.subHeaderRow}>
-                                <View style={[styles.placaFixedContainer, { backgroundColor: '#0056b3' }]}>
-                                    <Text style={[styles.tablaHeaderCell, styles.placaFixed]}></Text>
+                            <View style={style.modalEstadisticasSubHeaderRow}>
+                                <View style={[style.modalEstadisticasPlacaFixedContainer, { backgroundColor: '#0056b3' }]}>
+                                    <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasPlacaFixed]}></Text>
                                 </View>
                                 <ScrollView
                                     ref={subHeaderScrollRef}
@@ -425,71 +516,126 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                                     showsHorizontalScrollIndicator={false}
                                     scrollEnabled={false}
                                     scrollEventThrottle={16}
-                                    style={styles.headerScrollContainer}
+                                    style={style.modalEstadisticasHeaderScrollContainer}
+                                    nestedScrollEnabled={true}
                                 >
-                                    <View style={styles.scrollableContent}>
-                                        <View style={styles.tablaSectionWide}>
-                                            <Text style={styles.subHeaderText}>Kg</Text>
-                                            <Text style={styles.subHeaderText}>Valor</Text>
+                                    <View style={style.modalEstadisticasScrollableContent}>
+                                        <View style={style.modalEstadisticasTablaSectionWide}>
+                                            <Text style={style.modalEstadisticasSubHeaderText}>Kg</Text>
+                                            <Text style={style.modalEstadisticasSubHeaderText}>Valor</Text>
                                         </View>
-                                        <View style={styles.tablaSectionWide}>
-                                            <Text style={styles.subHeaderText}>Kg</Text>
-                                            <Text style={styles.subHeaderText}>Valor</Text>
+                                        <View style={style.modalEstadisticasTablaSectionWide}>
+                                            <Text style={style.modalEstadisticasSubHeaderText}>Kg</Text>
+                                            <Text style={style.modalEstadisticasSubHeaderText}>Valor</Text>
                                         </View>
-                                        <View style={styles.tablaSectionWide}>
-                                            <Text style={styles.subHeaderText}>Kg</Text>
-                                            <Text style={styles.subHeaderText}>Valor</Text>
+                                        <View style={style.modalEstadisticasTablaSectionWide}>
+                                            <Text style={style.modalEstadisticasSubHeaderText}>Kg</Text>
+                                            <Text style={style.modalEstadisticasSubHeaderText}>Valor</Text>
                                         </View>
-                                        <Text style={[styles.tablaHeaderCell, styles.cantidadCellWide]}></Text>
+                                        <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasCantidadCellWide]}></Text>
                                     </View>
                                 </ScrollView>
                             </View>
 
-                            {/* Datos con scroll sincronizado */}
+                            {/* Datos con scroll mejorado para Android */}
                             {estadisticas.length > 0 ? (
-                                <View style={styles.tableBody}>
-                                    {/* Columna fija de placas */}
-                                    <View style={styles.placaColumn}>
-                                        <ScrollView
-                                            ref={placaScrollRef}
-                                            style={styles.scrollContainer}
-                                            scrollEnabled={false}
-                                            showsVerticalScrollIndicator={false}
-                                            scrollEventThrottle={16}
-                                            onScroll={handlePlacaScroll}
-                                        >
-                                            {estadisticas.map((item) =>
-                                                renderPlacaColumn(item, item.placa === 'TOTAL')
-                                            )}
-                                        </ScrollView>
-                                    </View>
-
-                                    {/* Contenido scrollable horizontal */}
+                                <ScrollView
+                                    style={{ maxHeight: 360 }}
+                                    showsVerticalScrollIndicator={true}
+                                    nestedScrollEnabled={true}
+                                >
                                     <ScrollView
-                                        ref={dataScrollRef}
                                         horizontal
                                         showsHorizontalScrollIndicator={true}
-                                        scrollEventThrottle={16}
-                                        onScroll={handleDataScroll}
-                                        style={styles.dataScrollContainer}
+                                        nestedScrollEnabled={true}
                                     >
-                                        <ScrollView
-                                            ref={dataVerticalScrollRef}
-                                            style={styles.scrollContainer}
-                                            showsVerticalScrollIndicator={true}
-                                            scrollEventThrottle={16}
-                                            onScroll={handleVerticalScroll}
-                                        >
-                                            {estadisticas.map((item) =>
-                                                renderDataRow(item, item.placa === 'TOTAL')
-                                            )}
-                                        </ScrollView>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            {/* Columna de Placa */}
+                                            <View style={{ width: 90, backgroundColor: '#f8f9fa', borderRightWidth: 2, borderRightColor: '#e0e0e0' }}>
+                                                {estadisticas.map((item, index) => (
+                                                    <View
+                                                        key={`placa-${index}`}
+                                                        style={{
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 8,
+                                                            backgroundColor: item.placa === 'TOTAL' ? '#f8f9fa' : 'white',
+                                                            borderBottomWidth: 1,
+                                                            borderBottomColor: '#e0e0e0',
+                                                            borderTopWidth: item.placa === 'TOTAL' ? 2 : 0,
+                                                            borderTopColor: '#007bff'
+                                                        }}
+                                                    >
+                                                        <Text style={{
+                                                            fontSize: 12,
+                                                            fontWeight: item.placa === 'TOTAL' ? 'bold' : '600',
+                                                            color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                            textAlign: 'center'
+                                                        }}>
+                                                            {item.placa}
+                                                        </Text>
+                                                    </View>
+                                                ))}
+                                            </View>
+
+                                            {/* Columnas de datos */}
+                                            <View>
+                                                {estadisticas.map((item, index) => (
+                                                    <View
+                                                        key={`data-${index}`}
+                                                        style={{
+                                                            flexDirection: 'row',
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 8,
+                                                            backgroundColor: item.placa === 'TOTAL' ? '#f8f9fa' : 'white',
+                                                            borderBottomWidth: 1,
+                                                            borderBottomColor: '#e0e0e0',
+                                                            borderTopWidth: item.placa === 'TOTAL' ? 2 : 0,
+                                                            borderTopColor: '#007bff'
+                                                        }}
+                                                    >
+                                                        {/* Crédito */}
+                                                        <View style={{ width: 180, flexDirection: 'row', justifyContent: 'space-around' }}>
+                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                                {formatKilos(item.total_kilos_credito)} Kg
+                                                            </Text>
+                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                                {formatCurrency(item.total_valor_credito || 0, 0)}
+                                                            </Text>
+                                                        </View>
+
+                                                        {/* Contado */}
+                                                        <View style={{ width: 180, flexDirection: 'row', justifyContent: 'space-around' }}>
+                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                                {formatKilos(item.total_kilos_contado)} Kg
+                                                            </Text>
+                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                                {formatCurrency(item.total_valor_contado || 0, 0)}
+                                                            </Text>
+                                                        </View>
+
+                                                        {/* Total */}
+                                                        <View style={{ width: 180, flexDirection: 'row', justifyContent: 'space-around' }}>
+                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                                {formatKilos(item.total_kilos)} Kg
+                                                            </Text>
+                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                                {formatCurrency(item.total_valor || 0, 0)}
+                                                            </Text>
+                                                        </View>
+
+                                                        <Text style={{ width: 60, fontSize: 12, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                            {item.cantidad_pedidos || 0}
+                                                        </Text>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        </View>
                                     </ScrollView>
-                                </View>
+                                </ScrollView>
                             ) : (
-                                <View style={styles.emptyContainer}>
-                                    <FontAwesome name="inbox" style={styles.emptyIcon} />
-                                    <Text style={styles.emptyText}>
+                                <View style={style.modalEstadisticasEmptyContainer}>
+                                    <FontAwesome name="inbox" style={style.modalEstadisticasEmptyIcon} />
+                                    <Text style={style.modalEstadisticasEmptyText}>
                                         No hay entregas registradas en este periodo
                                     </Text>
                                 </View>
@@ -498,308 +644,8 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                     )}
                 </View>
             </View>
-        </Modal>
+        </Modal >
     );
 };
-
-const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContainer: {
-        backgroundColor: 'white',
-        borderRadius: 12,
-        padding: 20,
-        width: width * 0.95,
-        maxHeight: '80%',
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    closeButton: {
-        padding: 5,
-    },
-    closeIcon: {
-        fontSize: 24,
-        color: '#666',
-    },
-    filtrosContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 15,
-        gap: 8,
-    },
-    filtroButton: {
-        flex: 1,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        backgroundColor: '#f0f0f0',
-        alignItems: 'center',
-    },
-    filtroButtonActive: {
-        backgroundColor: '#007bff',
-    },
-    filtroText: {
-        fontSize: 14,
-        color: '#666',
-        fontWeight: '500',
-    },
-    filtroTextActive: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    periodoLabel: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#007bff',
-        textAlign: 'center',
-        marginBottom: 15,
-    },
-    tableWrapper: {
-        maxHeight: 420,
-    },
-    scrollContainer: {
-        maxHeight: 320,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        backgroundColor: '#007bff',
-        paddingVertical: 10,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-        overflow: 'hidden',
-    },
-    subHeaderRow: {
-        flexDirection: 'row',
-        backgroundColor: '#0056b3',
-        paddingVertical: 8,
-        overflow: 'hidden',
-    },
-    tablaHeaderCell: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 13,
-        textAlign: 'center',
-    },
-    subHeaderText: {
-        color: 'white',
-        fontSize: 11,
-        textAlign: 'center',
-        flex: 1,
-    },
-    tableBody: {
-        flexDirection: 'row',
-    },
-    placaColumn: {
-        width: 90,
-    },
-    headerScrollContainer: {
-        flex: 1,
-    },
-    dataScrollContainer: {
-        flex: 1,
-    },
-    placaRow: {
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-        justifyContent: 'center',
-        borderRightWidth: 2,
-        borderRightColor: '#e0e0e0',
-    },
-    placaRowTotal: {
-        backgroundColor: '#f8f9fa',
-        borderTopWidth: 2,
-        borderTopColor: '#007bff',
-    },
-    dataRow: {
-        flexDirection: 'row',
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    dataRowTotal: {
-        backgroundColor: '#f8f9fa',
-        borderTopWidth: 2,
-        borderTopColor: '#007bff',
-    },
-    tablaCell: {
-        fontSize: 12,
-        color: '#333',
-        textAlign: 'center',
-    },
-    placaFixedContainer: {
-        width: 90,
-        backgroundColor: '#007bff',
-        justifyContent: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 8,
-        borderRightWidth: 2,
-        borderRightColor: 'white',
-    },
-    placaFixed: {
-        width: '100%',
-        fontWeight: '600',
-        color: '#333',
-    },
-    scrollableContent: {
-        flexDirection: 'row',
-        paddingVertical: 8,
-        paddingHorizontal: 8,
-    },
-    tablaSectionWide: {
-        width: 180,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    dataText: {
-        fontSize: 10,
-        flex: 1,
-        flexWrap: 'nowrap',
-    },
-    cantidadCellWide: {
-        width: 60,
-    },
-    totalText: {
-        fontWeight: 'bold',
-        color: '#007bff',
-    },
-    loadingContainer: {
-        padding: 40,
-        alignItems: 'center',
-    },
-    loadingText: {
-        marginTop: 10,
-        color: '#666',
-    },
-    emptyContainer: {
-        padding: 40,
-        alignItems: 'center',
-    },
-    emptyIcon: {
-        fontSize: 48,
-        color: '#ccc',
-        marginBottom: 10,
-    },
-    emptyText: {
-        color: '#666',
-        textAlign: 'center',
-    },
-    // Estilos para vista de detalle de conductor
-    detalleHeaderRow: {
-        flexDirection: 'row',
-        backgroundColor: '#007bff',
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-        borderBottomWidth: 2,
-        borderBottomColor: '#0056b3',
-    },
-    detalleHeaderCell: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 12,
-        textAlign: 'center',
-    },
-    detalleScrollContainer: {
-        maxHeight: 360,
-    },
-    detalleRow: {
-        flexDirection: 'row',
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    detalleRowTotal: {
-        backgroundColor: '#f8f9fa',
-        borderTopWidth: 2,
-        borderTopColor: '#007bff',
-    },
-    detalleCell: {
-        fontSize: 11,
-        color: '#333',
-        textAlign: 'center',
-    },
-    remisionCell: {
-        width: 80,
-    },
-    pedidoCell: {
-        width: 90,
-    },
-    codtCell: {
-        width: 75,
-    },
-    kilosCell: {
-        width: 95,
-    },
-    contadoCell: {
-        width: 110,
-    },
-    valorCell: {
-        width: 110,
-    },
-    // Estilos para vista por día
-    porDiaHeaderRow: {
-        flexDirection: 'row',
-        backgroundColor: '#007bff',
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-        borderBottomWidth: 2,
-        borderBottomColor: '#0056b3',
-    },
-    porDiaHeaderCell: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 12,
-        textAlign: 'center',
-    },
-    porDiaScrollContainer: {
-        maxHeight: 360,
-    },
-    porDiaRow: {
-        flexDirection: 'row',
-        paddingVertical: 12,
-        paddingHorizontal: 8,
-        backgroundColor: 'white',
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    porDiaCell: {
-        fontSize: 11,
-        color: '#333',
-        textAlign: 'center',
-    },
-    fechaCell: {
-        width: 120,
-        fontWeight: '500',
-    },
-    cantidadCell: {
-        width: 80,
-    },
-    creditoCell: {
-        width: 110,
-    },
-});
 
 export default ModalEstadisticas;

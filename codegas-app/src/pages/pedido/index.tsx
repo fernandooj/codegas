@@ -931,9 +931,11 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             <View style={style.pedidoCardFieldSmall}>
                                 <FontAwesome name="hashtag" style={style.pedidoCardIconHashtag} />
                                 <View style={style.pedidoCardFieldContent}>
-                                    <Text style={style.pedidoCardLabelText}>Pedido</Text>
+                                    <Text style={style.pedidoCardLabelText}>
+                                        {e.entregado ? 'Remisión' : 'N° Pedido'}
+                                    </Text>
                                     <Text style={style.pedidoCardValueSmall} numberOfLines={1}>
-                                        {e._id}
+                                        {e.entregado ? (e.remision || e._id) : e._id}
                                     </Text>
                                 </View>
                             </View>
@@ -999,7 +1001,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             <View style={style.pedidoCardInfoItem}>
                                 <Text style={style.pedidoCardInfoItemLabel}>Precio</Text>
                                 <Text style={style.pedidoCardInfoItemValuePrecio}>
-                                    {formatCurrency(e.valorunitario)}
+                                    {formatCurrency(e.valorunitario, 0)}
                                 </Text>
                             </View>
                         )}
@@ -1394,6 +1396,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 scrollEventThrottle={16}
                 ref={scrollViewRef}
                 scrollEnabled={!(modalConductor || modalFechaEntrega || modalNovedad || modalPerfiles || modalCerrarPedido || modalOrdenamiento || modalResetPedido)}
+                nestedScrollEnabled={true}
             >
                 {showSpin1 || !pedidos || (searchLoading && pedidos.length === 0) ? (
                     <View style={[style.loadingContainerMain, {

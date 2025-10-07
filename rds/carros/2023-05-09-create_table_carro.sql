@@ -8,6 +8,7 @@ create table if not exists carros(
     activo BOOLEAN DEFAULT TRUE,
     eliminado BOOLEAN DEFAULT FALSE,
     conductor INT,
+    capacidad INT DEFAULT 0,
     usuarioCrea INT
 );
 

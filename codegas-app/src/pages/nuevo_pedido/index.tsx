@@ -1136,13 +1136,45 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
         )
     };
 
-    //// verifica si se creo un pedido ese dia
+    //// verifica si se creo un pedido ese dia y valida que el punto pertenece al cliente
     const verificaPedido = async (): Promise<void> => {
         setState(prev => ({ ...prev, guardando: true }));
         const { idCliente, idUsuario, acceso, puntoId } = state;
         const id = acceso === "cliente" ? idUsuario : idCliente;
 
         try {
+            // PRIMERO: Validar que el punto pertenece al cliente
+            if (acceso !== "cliente" && puntoId && idCliente) {
+                const validacionPunto = await axios.get(`ped/validar-punto-cliente`, {
+                    params: {
+                        puntoId: puntoId,
+                        clienteId: idCliente
+                    }
+                });
+
+                if (!validacionPunto.data.status) {
+                    const mensajeError = validacionPunto.data.message || "El punto de entrega no pertenece al cliente seleccionado";
+
+                    Alert.alert(
+                        "⚠️ Error de Validación",
+                        mensajeError,
+                        [
+                            {
+                                text: "Entendido",
+                                style: "default",
+                                onPress: () => {
+                                    // Limpiar el punto seleccionado para forzar nueva selección
+                                    setState(prev => ({ ...prev, puntoId: null, guardando: false }));
+                                }
+                            }
+                        ]
+                    );
+                    setState(prev => ({ ...prev, guardando: false }));
+                    return;
+                }
+            }
+
+            // SEGUNDO: Verificar si ya existe un pedido hoy
             const response = await verificarPedidoHoy(id, puntoId) as VerificacionPedidoResponse;
             const { status, pedidos, total } = response;
             if (status) {
@@ -1168,6 +1200,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
         } catch (error) {
             console.error('Error verificando pedido:', error);
             setState(prev => ({ ...prev, guardando: false }));
+            Alert.alert("Error", "No se pudo validar el pedido. Intente nuevamente.");
         }
     };
     const handleSubmit = async (): Promise<void> => {
@@ -1202,6 +1235,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                 visibilityTime: 3000,
             });
 
+            // Limpiar TODO el estado para evitar datos arrastrados
             setState(prev => ({
                 ...prev,
                 guardando: false,
@@ -1211,13 +1245,20 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                 forma: null,
                 solicitud: false,
                 puntos: [],
+                puntoId: null,
                 cantidad: '',
                 frecuencia: null,
                 diaSeleccionado1: null,
                 diaSeleccionado2: null,
                 novedad: '',
-                fechaSolicitud: ''
+                fechaSolicitud: '',
+                terminoBuscador: '',
+                showRenderUsuarios: false,
+                showClientes: false
             }));
+
+            // Limpiar también el estado de Redux de clientes
+            dispatch({ type: 'CLEAR_USUARIOS_SEARCH' });
         } catch (err) {
             console.error('Error creando pedido:', err);
             setState(prev => ({ ...prev, guardando: false }));

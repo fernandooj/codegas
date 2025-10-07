@@ -43,6 +43,17 @@ getPedidosChart:
       - services/pedidos/src/get-pedidos-chart.js
       - lib/errors/database-error.js
 
+validatePuntoCliente:
+  name: ${self:custom.base}-validate-punto-cliente
+  handler: services/pedidos/src/validate-punto-cliente.main
+  timeout: 15
+  events:
+    - httpApi: 'GET /ped/validar-punto-cliente'
+  package:
+    include:
+      - services/pedidos/src/validate-punto-cliente.js
+      - lib/errors/database-error.js
+
 getPedidoById:
   name: ${self:custom.base}-get-pedido-by-id
   handler: services/pedidos/src/get-pedido-by-id.main

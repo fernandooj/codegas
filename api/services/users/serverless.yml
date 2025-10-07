@@ -23,6 +23,16 @@ getUsers:
       - services/users/src/get-users.js
       - lib/errors/database-error.js
 
+getConductoresSimple:
+  name: ${self:custom.base}-get-conductores-simple
+  handler: services/users/src/get-conductores-simple.main
+  events:
+    - httpApi: 'GET /users/conductores/{limit}/{start}'
+  package:
+    include:
+      - services/users/src/get-conductores-simple.js
+      - lib/errors/database-error.js
+
 getUserByEmail:
   name: ${self:custom.base}-get-user-by-email
   handler: services/users/src/get-user-by-email.main

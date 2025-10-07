@@ -1,29 +1,38 @@
+DROP FUNCTION IF EXISTS get_pedidos_chart(INT);
 CREATE OR REPLACE FUNCTION get_pedidos_chart(
     _usuarioId INT
 )
 RETURNS TABLE (
-    fechaEntrega TIMESTAMP,
-    kilos VARCHAR(30),
+    fechaentrega VARCHAR,
+    kilos VARCHAR,
     cantidadPrecio INT,
     entregado BOOLEAN,
     estado VARCHAR
 )
 LANGUAGE plpgsql AS
 $func$
-DECLARE
-    _limit INT := 3000; -- Puedes ajustar el límite según tus necesidades
-    _start_date TIMESTAMP := now() - interval '6 months';
 BEGIN  
     RETURN QUERY 
-    SELECT p.fechaEntrega, p.kilos, p.cantidadPrecio, p.entregado, p.estado
+    SELECT 
+        p.fechaEntregado as fechaentrega,
+        p.kilos,
+        p.cantidadPrecio,
+        p.entregado,
+        p.estado
     FROM pedidos p
-    WHERE p.fechaEntrega >= _start_date
-    AND p.entregado = true
-    AND p.eliminado = false
-    AND p.estado = 'activo'
+    WHERE p.entregado = TRUE
+    AND p.eliminado = FALSE
     AND p.usuarioId = _usuarioId
-    ORDER BY p.fechaEntrega DESC
-    LIMIT _limit;
+    ORDER BY 
+        CASE 
+            WHEN p.fechaEntregado LIKE '%/%' THEN 
+                TO_TIMESTAMP(p.fechaEntregado, 'DD/MM/YYYY HH24:MI')
+            WHEN p.fechaEntregado LIKE '%-%' THEN 
+                p.fechaEntregado::TIMESTAMP
+            WHEN p.fechaEntregado ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN 
+                TO_TIMESTAMP(p.fechaEntregado || ' 00:00', 'DD/MM/YYYY HH24:MI')
+            ELSE NULL
+        END DESC;
 END
 $func$;
 

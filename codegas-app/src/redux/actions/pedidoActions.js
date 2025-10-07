@@ -133,18 +133,25 @@ const getFrecuencia = () => {
 const getPedidosChart = (idUser) => {
   return async (dispatch) => {
     try {
+      console.log('🔄 getPedidosChart - Llamando API con userId:', idUser);
       const response = await axios.get(`/ped/pedido/chart/${idUser}`);
+      console.log('✅ getPedidosChart - Respuesta del API:', response.data);
+      console.log('📊 getPedidosChart - Cantidad de pedidos:', response.data.pedido?.length || 0);
+
       if (response.status !== 200) {
-        throw new Error(`Ruquest failed with status ${response.status}`)
+        throw new Error(`Request failed with status ${response.status}`)
       }
       dispatch({
         type: GET_PEDIDOS_CHART,
-        pedidosChart: response.data.pedido,
+        pedidosChart: response.data.pedido || [],
       });
     } catch (err) {
+      console.error('❌ getPedidosChart - Error:', err);
+      console.error('❌ getPedidosChart - Error message:', err.message);
+      console.error('❌ getPedidosChart - Error response:', err.response?.data);
       dispatch({
         type: GET_PEDIDOS_CHART,
-        pedidos: [],
+        pedidosChart: [],
       });
     }
   };

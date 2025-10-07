@@ -25,6 +25,8 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     const dispatch = useDispatch<AppDispatch>();
     const pedidos = useSelector((state: any) => state.pedido.pedidosFrecuencia);
 
+    const [isLoadingData, setIsLoadingData] = useState(true);
+
     const [state, setState] = useState<FrecuenciaState>({
         terminoBuscador: "",
         pedidos: [],
@@ -41,13 +43,25 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     useEffect(() => {
         const loadFrecuencias = async () => {
             try {
+                setIsLoadingData(true);
+                // Limpiar datos anteriores de Redux
+                dispatch({
+                    type: 'GET_PEDIDOS_FRECUENCIA',
+                    pedidosFrecuencia: []
+                });
+
+                // Pequeño delay para que se vea el preloader
+                await new Promise(resolve => setTimeout(resolve, 100));
+
                 await dispatch(getFrecuencia());
             } catch (error) {
                 console.error('Error loading frecuencias:', error);
-                setState(prev => ({
-                    ...prev,
-                    initialLoading: false
-                }));
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error al cargar frecuencias',
+                    text2: 'Intenta nuevamente'
+                });
+                setIsLoadingData(false);
             }
         };
 
@@ -55,12 +69,25 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     }, [dispatch]);
 
     useEffect(() => {
-        setState(prev => ({
-            ...prev,
-            pedidos,
-            pedidosFiltrados: pedidos,
-            initialLoading: false
-        }));
+        // Solo actualizar cuando realmente cambien los pedidos desde Redux
+        if (pedidos !== undefined) {
+            // Debug: ver qué datos llegan
+            if (pedidos.length > 0) {
+                console.log('Pedidos cargados:', pedidos.length);
+                console.log('Primer pedido:', pedidos[0]);
+                console.log('Tiene punto_direccion?', pedidos[0]?.punto_direccion);
+            }
+
+            setState(prev => ({
+                ...prev,
+                pedidos: pedidos || [],
+                pedidosFiltrados: pedidos || [],
+                initialLoading: false
+            }));
+
+            // Desactivar loading después de recibir datos
+            setIsLoadingData(false);
+        }
     }, [pedidos]);
 
     const filtrarPedidos = useCallback((termino: string) => {
@@ -82,7 +109,8 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                 String(pedido.frecuencia || '').toLowerCase().includes(busqueda) ||
                 String(pedido.razon_social || '').toLowerCase().includes(busqueda) ||
                 String(pedido.dia1 || '').toLowerCase().includes(busqueda) ||
-                String(pedido.dia2 || '').toLowerCase().includes(busqueda)
+                String(pedido.dia2 || '').toLowerCase().includes(busqueda) ||
+                String(pedido.punto_direccion || '').toLowerCase().includes(busqueda)
             );
         });
 
@@ -234,10 +262,10 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         }
     };
 
-    const { terminoBuscador, pedidosFiltrados, showSpin, loading, showEditModal, editingFrecuencia, initialLoading } = state;
+    const { terminoBuscador, pedidosFiltrados, showSpin, loading, showEditModal, editingFrecuencia } = state;
 
-    // Mostrar preloading inicial
-    if (initialLoading) {
+    // Mostrar preloading mientras se cargan los datos
+    if (isLoadingData) {
         return (
             <View style={style.container}>
                 <View style={style.header}>
@@ -248,11 +276,16 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                         </View>
                     </View>
                 </View>
-                <View style={style.preloadingContainer}>
-                    <ActivityIndicator size="large" color="#002587" />
-                    <Text style={style.preloadingText}>Cargando pedidos frecuentes...</Text>
-                    <Text style={style.preloadingSubtext}>Esto puede tomar unos momentos</Text>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9fa' }}>
+                    <ActivityIndicator size="large" color="#002587" style={{ marginBottom: 20 }} />
+                    <Text style={{ fontSize: 18, fontWeight: '600', color: '#002587', marginBottom: 8 }}>
+                        Cargando pedidos frecuentes...
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', paddingHorizontal: 40 }}>
+                        Esto puede tomar unos momentos
+                    </Text>
                 </View>
+                <Footer navigation={navigation} />
             </View>
         );
     }
@@ -265,25 +298,25 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                     <View style={style.headerTextContainer}>
                         <Text style={style.titulo}>Pedidos Frecuentes</Text>
                         <Text style={style.subtitulo}>
-                            {initialLoading ? 'Cargando...' : `${pedidosFiltrados.length} pedidos encontrados`}
+                            {`${pedidosFiltrados.length} pedidos encontrados`}
                         </Text>
                     </View>
                     <View style={style.headerStats}>
                         <View style={style.statItem}>
                             <Text style={style.statNumber}>
-                                {initialLoading ? '...' : pedidosFiltrados.filter(p => p.frecuencia === 'semanal').length}
+                                {pedidosFiltrados.filter(p => p.frecuencia === 'semanal').length}
                             </Text>
                             <Text style={style.statLabel}>Semanal</Text>
                         </View>
                         <View style={style.statItem}>
                             <Text style={style.statNumber}>
-                                {initialLoading ? '...' : pedidosFiltrados.filter(p => p.frecuencia === 'quincenal').length}
+                                {pedidosFiltrados.filter(p => p.frecuencia === 'quincenal').length}
                             </Text>
                             <Text style={style.statLabel}>Quincenal</Text>
                         </View>
                         <View style={style.statItem}>
                             <Text style={style.statNumber}>
-                                {initialLoading ? '...' : pedidosFiltrados.filter(p => p.frecuencia === 'mensual').length}
+                                {pedidosFiltrados.filter(p => p.frecuencia === 'mensual').length}
                             </Text>
                             <Text style={style.statLabel}>Mensual</Text>
                         </View>
@@ -295,7 +328,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
             <View style={style.searchContainer}>
                 <FontAwesome name="search" style={style.searchIcon} />
                 <TextInput
-                    placeholder="Buscar por: cliente, razón social, forma, frecuencia..."
+                    placeholder="Buscar por: cliente, razón social, dirección..."
                     autoCapitalize='none'
                     placeholderTextColor="#aaa"
                     onChangeText={handleSearch}
@@ -402,6 +435,16 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                         <View style={style.detailRow}>
                                             <FontAwesome name="calendar" style={style.detailIcon} />
                                             <Text style={style.detailText}>Día del mes: {formatDay(pedido.dia1, 'mensual')}</Text>
+                                        </View>
+                                    )}
+
+                                    {pedido.punto_direccion && (
+                                        <View style={style.detailRow}>
+                                            <FontAwesome name="map-marker" style={style.detailIcon} />
+                                            <Text style={style.detailText}>
+                                                📍 {pedido.punto_direccion}
+                                                {pedido.punto_capacidad && ` (${pedido.punto_capacidad} kg)`}
+                                            </Text>
                                         </View>
                                     )}
                                 </View>

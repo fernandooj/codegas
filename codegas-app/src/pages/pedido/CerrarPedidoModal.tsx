@@ -317,6 +317,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                     <ScrollView
                         style={{ maxHeight: height * 0.7 }}
                         showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled={true}
                     >
                         <View style={{ padding: 20 }}>
                             {entregado ? (
@@ -1046,6 +1047,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                         <ScrollView
                             style={{ maxHeight: height * 0.6 }}
                             showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled={true}
                         >
                             <View style={{ padding: 20 }}>
                                 <Text style={{

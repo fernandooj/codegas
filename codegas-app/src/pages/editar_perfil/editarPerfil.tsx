@@ -440,10 +440,15 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
                         updateMultipleUsers(clientes, idUsuario, e.user.nombre)
                             .then(res => {
-                                AsyncStorage.setItem('nombre', e.user.nombre)
+                                // Solo guardar nombre si es el perfil propio
+                                if (!state.tipoAcceso || state.tipoAcceso === "") {
+                                    AsyncStorage.setItem('nombre', e.user.nombre)
+                                }
                                 Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
                                 setTimeout(() => {
-                                    navigation.navigate("clientes", {
+                                    // Navegar según el tipo de acceso del usuario editado
+                                    const destinoNavegacion = acceso === 'cliente' ? 'clientes' : 'usuarios';
+                                    navigation.navigate(destinoNavegacion, {
                                         scrollPosition: route?.params?.scrollPosition || 0
                                     });
                                 }, 1500);
@@ -457,10 +462,15 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     if (clientesNuevos.length > 0) {
                         createMultipleUsers(clientesNuevos, idUsuario, e.user.nombre)
                             .then(res => {
-                                AsyncStorage.setItem('nombre', e.user.nombre)
+                                // Solo guardar nombre si es el perfil propio
+                                if (!state.tipoAcceso || state.tipoAcceso === "") {
+                                    AsyncStorage.setItem('nombre', e.user.nombre)
+                                }
                                 Toast.show({ type: 'success', text1: 'Usuario editado con éxito' })
                                 setTimeout(() => {
-                                    navigation.navigate("clientes", {
+                                    // Navegar según el tipo de acceso del usuario editado
+                                    const destinoNavegacion = acceso === 'cliente' ? 'clientes' : 'usuarios';
+                                    navigation.navigate(destinoNavegacion, {
                                         scrollPosition: route?.params?.scrollPosition || 0
                                     });
                                 }, 1500);
@@ -489,7 +499,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     // Solo navegar si venimos de la lista de clientes (tipoAcceso === "editar")
                     if (state.tipoAcceso === "editar") {
                         setTimeout(() => {
-                            navigation.navigate("clientes", {
+                            // Navegar según el tipo de acceso del usuario editado
+                            const destinoNavegacion = acceso === 'cliente' ? 'clientes' : 'usuarios';
+                            navigation.navigate(destinoNavegacion, {
                                 scrollPosition: route?.params?.scrollPosition || 0
                             });
                         }, 1500);
@@ -501,17 +513,20 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
 
                 } else {
                     // Para usuarios no cliente (admin, veo, etc.)
-                    // Actualizar AsyncStorage con los nuevos datos
-                    AsyncStorage.setItem('nombre', e.user.nombre || '')
-                    AsyncStorage.setItem('email', e.user.email || '')
+                    // Solo actualizar AsyncStorage y contexto si es el perfil propio
+                    if (!state.tipoAcceso || state.tipoAcceso === "") {
+                        // Es perfil propio
+                        AsyncStorage.setItem('nombre', e.user.nombre || '')
+                        AsyncStorage.setItem('email', e.user.email || '')
 
-                    // Actualizar contexto en tiempo real
-                    if (context.updateUserData) {
-                        context.updateUserData({
-                            nombre: e.user.nombre,
-                            email: e.user.email,
-                            avatar: e.user.avatar
-                        });
+                        // Actualizar contexto en tiempo real
+                        if (context.updateUserData) {
+                            context.updateUserData({
+                                nombre: e.user.nombre,
+                                email: e.user.email,
+                                avatar: e.user.avatar
+                            });
+                        }
                     }
 
                     if (editaAvatar) {
@@ -520,7 +535,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                             // Solo navegar si venimos de la lista de clientes (tipoAcceso === "editar")
                             if (state.tipoAcceso === "editar") {
                                 setTimeout(() => {
-                                    navigation.navigate("clientes", {
+                                    // Navegar según el tipo de acceso del usuario editado
+                                    const destinoNavegacion = acceso === 'cliente' ? 'clientes' : 'usuarios';
+                                    navigation.navigate(destinoNavegacion, {
                                         scrollPosition: route?.params?.scrollPosition || 0
                                     });
                                 }, 1500);
@@ -536,7 +553,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                         // Solo navegar si venimos de la lista de clientes (tipoAcceso === "editar")
                         if (state.tipoAcceso === "editar") {
                             setTimeout(() => {
-                                navigation.navigate("clientes", {
+                                // Navegar según el tipo de acceso del usuario editado
+                                const destinoNavegacion = acceso === 'cliente' ? 'clientes' : 'usuarios';
+                                navigation.navigate(destinoNavegacion, {
                                     scrollPosition: route?.params?.scrollPosition || 0
                                 });
                             }, 1500);
@@ -627,7 +646,9 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     if (res.status) {
                         Toast.show({ type: 'success', text1: 'Usuario eliminado con éxito' });
                         setTimeout(() => {
-                            navigation.navigate("clientes", {
+                            // Navegar según el tipo de acceso del usuario eliminado
+                            const destinoNavegacion = state.acceso === 'cliente' ? 'clientes' : 'usuarios';
+                            navigation.navigate(destinoNavegacion, {
                                 scrollPosition: route?.params?.scrollPosition || 0
                             });
                         }, 1500);
@@ -655,7 +676,11 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     if (res.status) {
                         Toast.show({ type: 'success', text1: `Usuario ${!activo ? 'activado' : 'desactivado'} con éxito` });
                         setTimeout(() => {
-                            navigation.navigate("clientes");
+                            // Navegar según el tipo de acceso del usuario
+                            const destinoNavegacion = state.acceso === 'cliente' ? 'clientes' : 'usuarios';
+                            navigation.navigate(destinoNavegacion, {
+                                scrollPosition: route?.params?.scrollPosition || 0
+                            });
                         }, 1500);
                     }
                 })
@@ -1181,8 +1206,11 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         }
     }, [updateState, navigation, state.tipoAcceso]);
     const loginExitoso: LoginExitosoFunction = useCallback(async (user: User) => {
-        AsyncStorage.setItem('nombre', user.nombre || '');
-        AsyncStorage.setItem('avatar', user.avatar ? JSON.stringify(user.avatar) : '');
+        // Solo guardar en AsyncStorage si es el perfil propio (no tipoAcceso o tipoAcceso vacío)
+        if (!state.tipoAcceso || state.tipoAcceso === "") {
+            AsyncStorage.setItem('nombre', user.nombre || '');
+            AsyncStorage.setItem('avatar', user.avatar ? JSON.stringify(user.avatar) : '');
+        }
         updateState({ cargando: false });
         Toast.show({ type: 'success', text1: 'Informacion guardado' });
         // Solo navegar si no es edición de perfil propio

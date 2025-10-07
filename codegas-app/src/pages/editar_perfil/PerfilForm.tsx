@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -7,6 +7,7 @@ import {
     TextInput,
     ActivityIndicator,
     Alert,
+    Modal,
 } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import Toast from 'react-native-toast-message';
@@ -105,6 +106,9 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
     onHandleSubmit,
     onNavigate
 }) => {
+    const [modalAccesoVisible, setModalAccesoVisible] = useState(false);
+    const [opcionesAccesoFiltradas, setOpcionesAccesoFiltradas] = useState<typeof accesos>([]);
+
     const valorUnitarioStr = valorUnitario ? valorUnitario.toString() : '';
     const razonSocialUpper = razon_social ? razon_social.toUpperCase() : razon_social;
     const emailUpper = email ? email.toUpperCase() : email;
@@ -161,15 +165,9 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                                     opcionesAcceso = accesos.filter(item => item.value !== "cliente");
                                 }
 
-                                // Abrir modal para seleccionar acceso
-                                Alert.alert(
-                                    'Seleccionar Tipo de Acceso',
-                                    'Elija el tipo de acceso:',
-                                    opcionesAcceso.map(item => ({
-                                        text: item.label,
-                                        onPress: () => onUpdateState({ acceso: item.value })
-                                    }))
-                                );
+                                // Guardar opciones filtradas y abrir modal
+                                setOpcionesAccesoFiltradas(opcionesAcceso);
+                                setModalAccesoVisible(true);
                             }}
                         >
                             <Text style={style.selectorText}>
@@ -636,6 +634,103 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                     }
                 </View>
             </ScrollView>
+
+            {/* Modal de selección de acceso */}
+            <Modal
+                visible={modalAccesoVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setModalAccesoVisible(false)}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <View style={{
+                        backgroundColor: 'white',
+                        borderRadius: 12,
+                        width: '100%',
+                        maxWidth: 400,
+                        maxHeight: '70%',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 8,
+                        elevation: 5,
+                    }}>
+                        {/* Header del modal */}
+                        <View style={{
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#e9ecef',
+                            padding: 20,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <Text style={{
+                                fontSize: 18,
+                                fontWeight: 'bold',
+                                color: '#333'
+                            }}>
+                                Seleccionar Tipo de Acceso
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => setModalAccesoVisible(false)}
+                                style={{
+                                    padding: 5
+                                }}
+                            >
+                                <FontAwesome name="times" style={{ fontSize: 24, color: '#666' }} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Lista de opciones */}
+                        <ScrollView
+                            style={{ maxHeight: 400 }}
+                            nestedScrollEnabled={true}
+                            showsVerticalScrollIndicator={true}
+                        >
+                            <View style={{ padding: 15 }}>
+                                {opcionesAccesoFiltradas.map((item, index) => (
+                                    <TouchableOpacity
+                                        key={item.value}
+                                        style={{
+                                            padding: 16,
+                                            backgroundColor: acceso === item.value ? '#007bff' : '#f8f9fa',
+                                            borderRadius: 8,
+                                            marginBottom: 10,
+                                            borderWidth: 1,
+                                            borderColor: acceso === item.value ? '#007bff' : '#e9ecef',
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between'
+                                        }}
+                                        onPress={() => {
+                                            onUpdateState({ acceso: item.value });
+                                            setModalAccesoVisible(false);
+                                        }}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: acceso === item.value ? '600' : 'normal',
+                                            color: acceso === item.value ? 'white' : '#333'
+                                        }}>
+                                            {item.label}
+                                        </Text>
+                                        {acceso === item.value && (
+                                            <FontAwesome name="check" style={{ fontSize: 16, color: 'white' }} />
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };

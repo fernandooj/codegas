@@ -10,6 +10,7 @@ export interface GroupedData {
 
 export interface ChartProps {
     navigation: any;
+    route: any;
     pedidos: any[];
     getPedidosChart: (idUser: string) => void;
 }

@@ -227,7 +227,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                         opacity: modalMainOpacity,
                     }
                 ]}>
-                    <ScrollView>
+                    <ScrollView nestedScrollEnabled={true} showsVerticalScrollIndicator={false}>
                         {/* Header mejorado del modal */}
                         <View style={style.editarModalHeader}>
                             <View style={style.editarModalHeaderContent}>

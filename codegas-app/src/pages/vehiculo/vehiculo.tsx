@@ -12,15 +12,16 @@ import {
     Dimensions,
     Animated,
     Platform,
-    StatusBar
+    StatusBar,
+    FlatList
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import axios from 'axios';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import { useSelector, useDispatch } from 'react-redux';
 import Footer from '../components/footer';
-import { getUsuariosAcceso } from '../../redux/actions/usuarioActions';
 import { getVehiculos } from '../../redux/actions/vehiculoActions';
+import { getConductoresSimple } from '../../redux/actions/usuarioActions';
 import { DataContext } from '../../context/context';
 import { style } from './style';
 import {
@@ -42,7 +43,7 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
     // Redux hooks
     const dispatch = useDispatch();
     const vehiculos = useSelector((state: RootState) => state.vehiculo.vehiculos || []);
-    const conductores = useSelector((state: RootState) => state.usuario.usuariosAcceso || []);
+    const conductores = useSelector((state: RootState) => state.usuario.usuarios || []);
 
     // Context
     const { userId, acceso } = useContext(DataContext) as DataContextType;
@@ -52,8 +53,10 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
         placa: '',
         centro: '',
         bodega: '',
+        capacidad: '',
         modalConductor: false,
         modalEditar: false,
+        modalCrear: false,
         conductores: [],
         conductor: '',
         placaVehiculo: '',
@@ -61,6 +64,8 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
         placaEditar: '',
         centroEditar: '',
         bodegaEditar: '',
+        capacidadEditar: '',
+        activoEditar: true,
         idUsuario: userId,
         acceso: acceso || '',
         sortBy: 'placa',
@@ -70,6 +75,9 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
     // Animation refs
     const modalScale = useRef(new Animated.Value(0)).current;
     const modalOpacity = useRef(new Animated.Value(0)).current;
+    const conductorModalScale = useRef(new Animated.Value(0.5)).current;
+    const conductorModalOpacity = useRef(new Animated.Value(0)).current;
+    const conductorModalTranslateY = useRef(new Animated.Value(30)).current;
 
     // Update state helper
     const updateState = useCallback((updates: Partial<VehiculoState>) => {
@@ -79,14 +87,14 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
     // Load initial data
     useEffect(() => {
         dispatch(getVehiculos() as any);
-        dispatch(getUsuariosAcceso(VEHICULO_CONSTANTS.DEFAULT_LIMIT, VEHICULO_CONSTANTS.DEFAULT_START, VEHICULO_CONSTANTS.CONDUCTOR_ACCESO) as any);
+        dispatch(getConductoresSimple(1000, 0) as any);
     }, [dispatch]);
 
     // Filter available conductors
     const resultFilter = useCallback((firstArray: Usuario[], secondArray: Vehiculo[]) => {
         return firstArray.filter(firstArrayItem =>
-            !secondArray.some(
-                secondArrayItem => firstArrayItem._id === secondArrayItem.conductor?._id
+            !secondArray.some(secondArrayItem =>
+                firstArrayItem._id === secondArrayItem.conductor?._id
             )
         );
     }, []);
@@ -99,21 +107,45 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
 
     // Modal animations
     useEffect(() => {
-        if (state.modalConductor || state.modalEditar) {
-            Animated.parallel([
-                Animated.spring(modalScale, {
-                    toValue: 1,
-                    useNativeDriver: true,
-                    tension: 100,
-                    friction: 8
-                }),
-                Animated.timing(modalOpacity, {
-                    toValue: 1,
-                    duration: 300,
-                    useNativeDriver: true
-                })
-            ]).start();
+        if (state.modalConductor || state.modalEditar || state.modalCrear) {
+            if (state.modalConductor) {
+                // Animación específica para modal de conductores
+                Animated.parallel([
+                    Animated.spring(conductorModalScale, {
+                        toValue: 1,
+                        tension: 100,
+                        friction: 8,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(conductorModalOpacity, {
+                        toValue: 1,
+                        duration: 250,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(conductorModalTranslateY, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                    }),
+                ]).start();
+            } else {
+                // Animación para otros modales
+                Animated.parallel([
+                    Animated.spring(modalScale, {
+                        toValue: 1,
+                        useNativeDriver: true,
+                        tension: 100,
+                        friction: 8
+                    }),
+                    Animated.timing(modalOpacity, {
+                        toValue: 1,
+                        duration: 300,
+                        useNativeDriver: true
+                    })
+                ]).start();
+            }
         } else {
+            // Cerrar todos los modales
             Animated.parallel([
                 Animated.spring(modalScale, {
                     toValue: 0,
@@ -125,10 +157,25 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
                     toValue: 0,
                     duration: 200,
                     useNativeDriver: true
-                })
+                }),
+                Animated.timing(conductorModalScale, {
+                    toValue: 0.5,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(conductorModalOpacity, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(conductorModalTranslateY, {
+                    toValue: 30,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
             ]).start();
         }
-    }, [state.modalConductor, state.modalEditar, modalScale, modalOpacity]);
+    }, [state.modalConductor, state.modalEditar, state.modalCrear, modalScale, modalOpacity, conductorModalScale, conductorModalOpacity, conductorModalTranslateY]);
 
     // Sort vehicles
     const getSortedVehiculos = useCallback(() => {
@@ -191,7 +238,6 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    marginBottom: 15,
                     paddingHorizontal: 20
                 }}>
                     <View style={{ flex: 1 }}>
@@ -301,104 +347,6 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                {/* Form for creating new vehicle */}
-                <View style={{
-                    paddingHorizontal: 20,
-                    backgroundColor: '#fff',
-                    marginHorizontal: 20,
-                    borderRadius: 8,
-                    paddingVertical: 15,
-                    shadowColor: 'rgba(0,0,0, .4)',
-                    shadowOffset: { height: 2, width: 2 },
-                    shadowOpacity: .5,
-                    shadowRadius: 5,
-                    elevation: 4,
-                    borderWidth: 1,
-                    borderColor: '#e9ecef'
-                }}>
-                    <Text style={{
-                        fontSize: 16,
-                        fontWeight: '600',
-                        color: '#333',
-                        marginBottom: 10
-                    }}>
-                        Agregar Nuevo Vehículo
-                    </Text>
-
-                    <View style={{
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                    }}>
-                        <TextInput
-                            placeholder="Placa"
-                            autoCapitalize='characters'
-                            onChangeText={(placa) => updateState({ placa })}
-                            value={state.placa}
-                            style={{
-                                flex: 1,
-                                borderWidth: 1,
-                                borderColor: '#e9ecef',
-                                borderRadius: 6,
-                                paddingHorizontal: 12,
-                                paddingVertical: 8,
-                                marginRight: 8,
-                                fontSize: 14
-                            }}
-                            placeholderTextColor="#aaa"
-                        />
-                        <TextInput
-                            placeholder="Centro"
-                            autoCapitalize='none'
-                            onChangeText={(centro) => updateState({ centro })}
-                            value={state.centro}
-                            style={{
-                                flex: 1,
-                                borderWidth: 1,
-                                borderColor: '#e9ecef',
-                                borderRadius: 6,
-                                paddingHorizontal: 12,
-                                paddingVertical: 8,
-                                marginRight: 8,
-                                fontSize: 14
-                            }}
-                            placeholderTextColor="#aaa"
-                            keyboardType="numeric"
-                        />
-                        <TextInput
-                            placeholder="Bodega"
-                            autoCapitalize='none'
-                            onChangeText={(bodega) => updateState({ bodega })}
-                            value={state.bodega}
-                            style={{
-                                flex: 1,
-                                borderWidth: 1,
-                                borderColor: '#e9ecef',
-                                borderRadius: 6,
-                                paddingHorizontal: 12,
-                                paddingVertical: 8,
-                                marginRight: 8,
-                                fontSize: 14
-                            }}
-                            placeholderTextColor="#aaa"
-                            keyboardType="numeric"
-                        />
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: '#00218b',
-                                paddingHorizontal: 16,
-                                paddingVertical: 8,
-                                borderRadius: 6,
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}
-                            onPress={crearVehiculo}
-                        >
-                            <FontAwesome name='plus' style={{ color: 'white', fontSize: 16 }} />
-                        </TouchableOpacity>
-                    </View>
-                </View>
             </View>
         );
     };
@@ -415,8 +363,31 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
                     <Text style={{ fontFamily: "Comfortaa-Regular" }}>Centro: {vehiculo.centro}</Text>
                     <Text style={{ fontFamily: "Comfortaa-Regular" }}>Bodega: {vehiculo.bodega}</Text>
                     <Text style={{ fontFamily: "Comfortaa-Regular" }}>
+                        Capacidad: {vehiculo.capacidad || 0} litros
+                    </Text>
+                    <Text style={{ fontFamily: "Comfortaa-Regular" }}>
                         Conductor: {vehiculo.conductor?.nombre || "Sin conductor"}
                     </Text>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 4
+                    }}>
+                        <View style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: 5,
+                            backgroundColor: vehiculo.activo !== false ? '#5cb85c' : '#d9534f',
+                            marginRight: 6
+                        }} />
+                        <Text style={{
+                            fontFamily: "Comfortaa-Regular",
+                            color: vehiculo.activo !== false ? '#5cb85c' : '#d9534f',
+                            fontWeight: '600'
+                        }}>
+                            {vehiculo.activo !== false ? 'Activo' : 'Inactivo'}
+                        </Text>
+                    </View>
                 </View>
 
                 {vehiculo.conductor && (
@@ -446,8 +417,10 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
                         modalEditar: true,
                         idVehiculo: vehiculo._id,
                         placaEditar: vehiculo.placa,
-                        centroEditar: vehiculo.centro,
-                        bodegaEditar: vehiculo.bodega
+                        centroEditar: vehiculo.centro ? String(vehiculo.centro) : '',
+                        bodegaEditar: vehiculo.bodega ? String(vehiculo.bodega) : '',
+                        capacidadEditar: vehiculo.capacidad ? String(vehiculo.capacidad) : '0',
+                        activoEditar: vehiculo.activo !== false
                     })}
                 >
                     <FontAwesome name='pencil' style={style.iconVehiculo} />
@@ -467,139 +440,701 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
 
     // Modal for editing vehicle
     const renderModalEditar = () => {
-        const { placaEditar, modalEditar, centroEditar, bodegaEditar } = state;
+        const { placaEditar, modalEditar, centroEditar, bodegaEditar, capacidadEditar, activoEditar } = state;
 
         return (
             <Modal transparent visible={modalEditar} animationType="none">
-                <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => updateState({ modalEditar: false })}
-                >
-                    <View style={style.contenedorModal}>
-                        <Animated.View
-                            style={[
-                                style.subContenedorModalEditar,
-                                {
-                                    transform: [{ scale: modalScale }],
-                                    opacity: modalOpacity
-                                }
-                            ]}
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <Animated.View
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: 12,
+                            width: '100%',
+                            maxWidth: 500,
+                            maxHeight: '80%',
+                            transform: [{ scale: modalScale }],
+                            opacity: modalOpacity,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 8,
+                            elevation: 5,
+                        }}
+                    >
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => updateState({ modalEditar: false })}
+                            style={{
+                                position: 'absolute',
+                                top: 15,
+                                right: 15,
+                                zIndex: 10,
+                                padding: 5
+                            }}
                         >
-                            <TouchableOpacity
-                                activeOpacity={1}
-                                onPress={() => updateState({ modalEditar: false })}
-                                style={style.btnModalClose}
-                            >
-                                <FontAwesome name='times-circle' style={style.iconCerrar} />
-                            </TouchableOpacity>
+                            <FontAwesome name='times-circle' style={{ fontSize: 28, color: '#666' }} />
+                        </TouchableOpacity>
 
-                            <Text style={style.text}>Placa</Text>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ padding: 25, paddingTop: 50 }}
+                        >
+                            <Text style={{
+                                fontSize: 20,
+                                fontWeight: 'bold',
+                                textAlign: 'center',
+                                marginBottom: 25,
+                                color: '#333'
+                            }}>
+                                Editar Vehículo
+                            </Text>
+
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8,
+                                marginTop: 10
+                            }}>Placa</Text>
                             <TextInput
                                 placeholder="Placa"
                                 autoCapitalize='characters'
                                 onChangeText={(placaEditar) => updateState({ placaEditar })}
                                 value={placaEditar}
-                                style={style.input}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
                                 placeholderTextColor="#aaa"
                             />
 
-                            <Text style={style.text}>Centro de costos</Text>
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8
+                            }}>Centro de costos</Text>
                             <TextInput
                                 placeholder="Centro Costos"
                                 autoCapitalize='none'
                                 onChangeText={(centroEditar) => updateState({ centroEditar })}
                                 value={centroEditar}
-                                style={style.input}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
                                 placeholderTextColor="#aaa"
                                 keyboardType="numeric"
                             />
 
-                            <Text style={style.text}>Bodega</Text>
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8
+                            }}>Bodega</Text>
                             <TextInput
                                 placeholder="Bodega"
                                 autoCapitalize='none'
                                 onChangeText={(bodegaEditar) => updateState({ bodegaEditar })}
                                 value={bodegaEditar}
-                                style={style.input}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
                                 placeholderTextColor="#aaa"
                                 keyboardType="numeric"
                             />
 
-                            <TouchableOpacity style={style.btnGuardar} onPress={editar}>
-                                <Text style={style.textGuardar}>Guardar</Text>
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8
+                            }}>Capacidad (litros)</Text>
+                            <TextInput
+                                placeholder="Capacidad"
+                                autoCapitalize='none'
+                                onChangeText={(capacidadEditar) => updateState({ capacidadEditar })}
+                                value={capacidadEditar}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
+                                placeholderTextColor="#aaa"
+                                keyboardType="numeric"
+                            />
+
+                            <View style={{ marginVertical: 10 }}>
+                                <Text style={{
+                                    fontSize: 14,
+                                    fontWeight: '600',
+                                    color: '#333',
+                                    marginBottom: 10
+                                }}>
+                                    Estado del vehículo
+                                </Text>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    gap: 10
+                                }}>
+                                    <TouchableOpacity
+                                        style={{
+                                            flex: 1,
+                                            paddingVertical: 12,
+                                            paddingHorizontal: 20,
+                                            borderRadius: 8,
+                                            backgroundColor: activoEditar ? '#5cb85c' : '#f8f9fa',
+                                            borderWidth: 2,
+                                            borderColor: activoEditar ? '#5cb85c' : '#e9ecef',
+                                            alignItems: 'center'
+                                        }}
+                                        onPress={() => updateState({ activoEditar: true })}
+                                    >
+                                        <Text style={{
+                                            color: activoEditar ? 'white' : '#666',
+                                            fontWeight: '600',
+                                            fontSize: 15
+                                        }}>
+                                            ✓ Activo
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={{
+                                            flex: 1,
+                                            paddingVertical: 12,
+                                            paddingHorizontal: 20,
+                                            borderRadius: 8,
+                                            backgroundColor: !activoEditar ? '#d9534f' : '#f8f9fa',
+                                            borderWidth: 2,
+                                            borderColor: !activoEditar ? '#d9534f' : '#e9ecef',
+                                            alignItems: 'center'
+                                        }}
+                                        onPress={() => updateState({ activoEditar: false })}
+                                    >
+                                        <Text style={{
+                                            color: !activoEditar ? 'white' : '#666',
+                                            fontWeight: '600',
+                                            fontSize: 15
+                                        }}>
+                                            ✕ Inactivo
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#00218b',
+                                    paddingVertical: 15,
+                                    borderRadius: 8,
+                                    marginTop: 20,
+                                    alignItems: 'center',
+                                    shadowColor: '#00218b',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.3,
+                                    shadowRadius: 4,
+                                    elevation: 3
+                                }}
+                                onPress={editar}
+                            >
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 16,
+                                    fontWeight: 'bold'
+                                }}>Guardar Cambios</Text>
                             </TouchableOpacity>
-                        </Animated.View>
-                    </View>
-                </TouchableOpacity>
+                        </ScrollView>
+                    </Animated.View>
+                </View>
             </Modal>
         );
     };
 
     // Modal for selecting conductor
     const renderModalConductores = () => {
-        const { conductor, modalConductor, conductores } = state;
+        const { conductor, modalConductor, conductores, placaVehiculo } = state;
 
         return (
-            <Modal transparent visible={modalConductor} animationType="none">
-                <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => updateState({ modalConductor: false })}
-                >
-                    <View style={style.contenedorModal}>
-                        <Animated.View
-                            style={[
-                                style.subContenedorModal,
-                                {
-                                    transform: [{ scale: modalScale }],
-                                    opacity: modalOpacity
+            <Modal transparent visible={modalConductor} animationType="fade">
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.6)',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    paddingTop: 100
+                }}>
+                    <Animated.View
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: 16,
+                            width: '90%',
+                            maxWidth: 400,
+                            height: 'auto',
+                            minHeight: 500,
+                            maxHeight: '70%',
+                            transform: [
+                                { scale: conductorModalScale },
+                                { translateY: conductorModalTranslateY }
+                            ],
+                            opacity: conductorModalOpacity,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 8 },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 16,
+                            elevation: 10,
+                        }}
+                    >
+                        {/* Header del modal */}
+                        <View style={{
+                            backgroundColor: '#00218b',
+                            borderTopLeftRadius: 16,
+                            borderTopRightRadius: 16,
+                            padding: 20,
+                            paddingTop: 25,
+                            paddingBottom: 25
+                        }}>
+                            <TouchableOpacity
+                                activeOpacity={0.8}
+                                onPress={() => updateState({ modalConductor: false })}
+                                style={{
+                                    position: 'absolute',
+                                    top: 15,
+                                    right: 15,
+                                    zIndex: 10,
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    borderRadius: 20,
+                                    width: 36,
+                                    height: 36,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <FontAwesome name='times' style={{ fontSize: 18, color: 'white' }} />
+                            </TouchableOpacity>
+
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={{
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    borderRadius: 12,
+                                    padding: 12,
+                                    marginRight: 15
+                                }}>
+                                    <FontAwesome name='users' style={{ fontSize: 24, color: 'white' }} />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{
+                                        fontSize: 22,
+                                        fontWeight: 'bold',
+                                        color: 'white',
+                                        marginBottom: 4
+                                    }}>
+                                        Asignar Conductor
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: 'rgba(255,255,255,0.9)'
+                                    }}>
+                                        {placaVehiculo}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Contador de conductores */}
+                        <View style={{
+                            backgroundColor: 'white',
+                            paddingVertical: 12,
+                            paddingHorizontal: 20,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#e9ecef'
+                        }}>
+                            <Text style={{
+                                fontSize: 14,
+                                color: '#666',
+                                fontWeight: '600'
+                            }}>
+                                {conductores.length === 0
+                                    ? '😔 No hay conductores disponibles'
+                                    : `✓ ${conductores.length} conductor${conductores.length !== 1 ? 'es' : ''} disponible${conductores.length !== 1 ? 's' : ''}`
                                 }
-                            ]}
-                        >
-                            <ScrollView>
-                                <TouchableOpacity
-                                    activeOpacity={1}
-                                    onPress={() => updateState({ modalConductor: false })}
-                                    style={style.btnModalClose}
-                                >
-                                    <FontAwesome name='times-circle' style={style.iconCerrar} />
-                                </TouchableOpacity>
+                            </Text>
+                        </View>
 
-                                <Text style={style.titulo}>
-                                    {conductores.length === 0 ? "No hay conductores libres" : "Selecciona un conductor"}
+                        {/* Lista de conductores - FlatList approach */}
+                        <View style={{
+                            backgroundColor: 'white',
+                            margin: 15,
+                            padding: 10,
+                            paddingBottom: 20
+                        }}>
+                            {conductores.length === 0 ? (
+                                <View style={{
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    paddingVertical: 40,
+                                    flex: 1
+                                }}>
+                                    <FontAwesome name='user-times' style={{ fontSize: 50, color: '#adb5bd', marginBottom: 20 }} />
+                                    <Text style={{
+                                        fontSize: 18,
+                                        fontWeight: '600',
+                                        color: '#495057',
+                                        marginBottom: 8,
+                                        textAlign: 'center'
+                                    }}>
+                                        No hay conductores libres
+                                    </Text>
+                                    <Text style={{
+                                        fontSize: 14,
+                                        color: '#6c757d',
+                                        textAlign: 'center',
+                                        paddingHorizontal: 30,
+                                        lineHeight: 20
+                                    }}>
+                                        Todos los conductores están asignados
+                                    </Text>
+                                </View>
+                            ) : (
+                                <FlatList
+                                    data={conductores}
+                                    keyExtractor={(item) => item._id.toString()}
+                                    renderItem={({ item: conductorItem }: { item: Usuario }) => {
+                                        const isSelected = conductor === conductorItem._id;
+                                        return (
+                                            <TouchableOpacity
+                                                activeOpacity={0.7}
+                                                onPress={isSelected
+                                                    ? () => desvincularConductor(conductorItem.nombre, conductorItem._id)
+                                                    : () => asignarConductor(conductorItem.nombre, conductorItem._id)
+                                                }
+                                                style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    backgroundColor: isSelected ? '#d4edda' : 'white',
+                                                    borderRadius: 10,
+                                                    padding: 15,
+                                                    marginBottom: 8,
+                                                    borderWidth: 1,
+                                                    borderColor: isSelected ? '#28a745' : '#dee2e6',
+                                                    shadowColor: '#000',
+                                                    shadowOffset: { width: 0, height: 1 },
+                                                    shadowOpacity: 0.1,
+                                                    shadowRadius: 2,
+                                                    elevation: 2
+                                                }}
+                                            >
+                                                {/* Avatar simple */}
+                                                <View style={{
+                                                    width: 45,
+                                                    height: 45,
+                                                    borderRadius: 22.5,
+                                                    backgroundColor: isSelected ? '#28a745' : '#007bff',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    marginRight: 12
+                                                }}>
+                                                    <FontAwesome
+                                                        name='user'
+                                                        style={{ fontSize: 20, color: 'white' }}
+                                                    />
+                                                </View>
+
+                                                {/* Info del conductor */}
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={{
+                                                        fontSize: 15,
+                                                        fontWeight: '600',
+                                                        color: '#333',
+                                                        marginBottom: 2
+                                                    }}>
+                                                        {conductorItem.nombre}
+                                                    </Text>
+                                                    <Text style={{
+                                                        fontSize: 12,
+                                                        color: '#6c757d'
+                                                    }}>
+                                                        ID: {conductorItem._id}
+                                                    </Text>
+                                                </View>
+
+                                                {/* Checkmark */}
+                                                <View style={{
+                                                    width: 25,
+                                                    height: 25,
+                                                    borderRadius: 12.5,
+                                                    backgroundColor: isSelected ? '#28a745' : '#e9ecef',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center'
+                                                }}>
+                                                    {isSelected && (
+                                                        <FontAwesome name='check' style={{ fontSize: 12, color: 'white' }} />
+                                                    )}
+                                                </View>
+                                            </TouchableOpacity>
+                                        );
+                                    }}
+                                    showsVerticalScrollIndicator={true}
+                                    nestedScrollEnabled={true}
+                                    style={{ maxHeight: 250 }}
+                                />
+                            )}
+                        </View>
+
+                        {/* Footer info */}
+                        {conductores.length > 0 && (
+                            <View style={{
+                                backgroundColor: 'white',
+                                paddingVertical: 12,
+                                paddingHorizontal: 20,
+                                borderBottomLeftRadius: 16,
+                                borderBottomRightRadius: 16,
+                                borderTopWidth: 1,
+                                borderTopColor: '#e9ecef'
+                            }}>
+                                <Text style={{
+                                    fontSize: 12,
+                                    color: '#6c757d',
+                                    textAlign: 'center'
+                                }}>
+                                    💡 Toca un conductor para asignarlo al vehículo
                                 </Text>
+                            </View>
+                        )}
+                    </Animated.View>
+                </View>
+            </Modal>
+        );
+    };
 
-                                {conductores.map((conductorItem: Usuario) => (
-                                    <TouchableOpacity
-                                        key={conductorItem._id}
-                                        style={[
-                                            style.contenedorConductor,
-                                            conductor === conductorItem._id ? { backgroundColor: "#5cb85c" } : {}
-                                        ]}
-                                        onPress={conductor === conductorItem._id
-                                            ? () => desvincularConductor(conductorItem.nombre, conductorItem._id)
-                                            : () => asignarConductor(conductorItem.nombre, conductorItem._id)
-                                        }
-                                    >
-                                        <Text style={style.conductor}>{conductorItem.nombre}</Text>
-                                        {conductorItem.avatar && (
-                                            <Image source={{ uri: conductorItem.avatar }} style={style.avatar} />
-                                        )}
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-                        </Animated.View>
-                    </View>
-                </TouchableOpacity>
+    // Modal for creating vehicle
+    const renderModalCrear = () => {
+        const { placa, modalCrear, centro, bodega, capacidad } = state;
+
+        return (
+            <Modal transparent visible={modalCrear} animationType="none">
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <Animated.View
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: 12,
+                            width: '100%',
+                            maxWidth: 500,
+                            maxHeight: '80%',
+                            transform: [{ scale: modalScale }],
+                            opacity: modalOpacity,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 8,
+                            elevation: 5,
+                        }}
+                    >
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            onPress={() => updateState({ modalCrear: false })}
+                            style={{
+                                position: 'absolute',
+                                top: 15,
+                                right: 15,
+                                zIndex: 10,
+                                padding: 5
+                            }}
+                        >
+                            <FontAwesome name='times-circle' style={{ fontSize: 28, color: '#666' }} />
+                        </TouchableOpacity>
+
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ padding: 25, paddingTop: 50 }}
+                        >
+                            <Text style={{
+                                fontSize: 20,
+                                fontWeight: 'bold',
+                                textAlign: 'center',
+                                marginBottom: 25,
+                                color: '#333'
+                            }}>
+                                Agregar Nuevo Vehículo
+                            </Text>
+
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8,
+                                marginTop: 10
+                            }}>Placa</Text>
+                            <TextInput
+                                placeholder="Placa"
+                                autoCapitalize='characters'
+                                onChangeText={(placa) => updateState({ placa })}
+                                value={placa}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
+                                placeholderTextColor="#aaa"
+                            />
+
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8
+                            }}>Centro de costos</Text>
+                            <TextInput
+                                placeholder="Centro Costos"
+                                autoCapitalize='none'
+                                onChangeText={(centro) => updateState({ centro })}
+                                value={centro}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
+                                placeholderTextColor="#aaa"
+                                keyboardType="numeric"
+                            />
+
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8
+                            }}>Bodega</Text>
+                            <TextInput
+                                placeholder="Bodega"
+                                autoCapitalize='none'
+                                onChangeText={(bodega) => updateState({ bodega })}
+                                value={bodega}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
+                                placeholderTextColor="#aaa"
+                                keyboardType="numeric"
+                            />
+
+                            <Text style={{
+                                fontSize: 14,
+                                fontWeight: '600',
+                                color: '#333',
+                                marginBottom: 8
+                            }}>Capacidad (litros)</Text>
+                            <TextInput
+                                placeholder="Capacidad"
+                                autoCapitalize='none'
+                                onChangeText={(capacidad) => updateState({ capacidad })}
+                                value={capacidad}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: '#e9ecef',
+                                    borderRadius: 8,
+                                    paddingHorizontal: 15,
+                                    paddingVertical: 12,
+                                    fontSize: 16,
+                                    backgroundColor: '#f8f9fa',
+                                    marginBottom: 15
+                                }}
+                                placeholderTextColor="#aaa"
+                                keyboardType="numeric"
+                            />
+
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: '#00218b',
+                                    paddingVertical: 15,
+                                    borderRadius: 8,
+                                    marginTop: 20,
+                                    alignItems: 'center',
+                                    shadowColor: '#00218b',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.3,
+                                    shadowRadius: 4,
+                                    elevation: 3
+                                }}
+                                onPress={crearVehiculo}
+                            >
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 16,
+                                    fontWeight: 'bold'
+                                }}>Crear Vehículo</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </Animated.View>
+                </View>
             </Modal>
         );
     };
 
     // Create vehicle
     const crearVehiculo = useCallback(() => {
-        const { placa, centro, bodega, idUsuario: usuarioCrea } = state;
+        const { placa, centro, bodega, capacidad, idUsuario: usuarioCrea } = state;
 
         if (placa.length > VEHICULO_CONSTANTS.MIN_PLACA_LENGTH) {
-            const data = { placa, centro, bodega, usuarioCrea };
+            const data = {
+                placa,
+                centro,
+                bodega,
+                capacidad: capacidad ? parseInt(capacidad, 10) : 0,
+                usuarioCrea
+            };
 
             axios({
                 method: 'post',
@@ -612,7 +1147,13 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
                 .then(res => {
                     if (res.data.status) {
                         Toast.show({ type: 'success', text1: 'Vehículo Guardado' });
-                        updateState({ placa: "", centro: "", bodega: "" });
+                        updateState({
+                            placa: "",
+                            centro: "",
+                            bodega: "",
+                            capacidad: "",
+                            modalCrear: false
+                        });
                         dispatch(getVehiculos() as any);
                     } else {
                         Toast.show({ type: 'error', text1: 'Esta placa ya existe' });
@@ -628,18 +1169,27 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
 
     // Edit vehicle
     const editar = useCallback(() => {
-        const { idVehiculo, placaEditar, centroEditar, bodegaEditar } = state;
+        const { idVehiculo, placaEditar, centroEditar, bodegaEditar, capacidadEditar, activoEditar } = state;
 
         if (placaEditar.length > VEHICULO_CONSTANTS.MIN_PLACA_LENGTH) {
             axios.put(`veh/vehiculo/editar/${idVehiculo}`, {
                 placa: placaEditar,
                 centro: centroEditar,
-                bodega: bodegaEditar
+                bodega: bodegaEditar,
+                capacidad: capacidadEditar ? parseInt(capacidadEditar, 10) : 0,
+                activo: activoEditar
             })
                 .then(res => {
                     if (res.data.status) {
                         Toast.show({ type: 'success', text1: 'Vehículo Editado' });
-                        updateState({ modalEditar: false, placaEditar: "", centroEditar: "", bodegaEditar: "" });
+                        updateState({
+                            modalEditar: false,
+                            placaEditar: "",
+                            centroEditar: "",
+                            bodegaEditar: "",
+                            capacidadEditar: "",
+                            activoEditar: true
+                        });
                         dispatch(getVehiculos() as any);
                     } else {
                         Toast.show({ type: 'error', text1: 'Esta placa ya existe' });
@@ -755,6 +1305,7 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
             {renderHeader()}
             {renderModalConductores()}
             {renderModalEditar()}
+            {renderModalCrear()}
 
             <ScrollView style={style.subContenedor}>
                 {vehiculos.length === 0 ? (
@@ -763,6 +1314,29 @@ const VehiculoComponent: React.FC<VehiculoProps> = ({ navigation }) => {
                     renderVehiculos()
                 )}
             </ScrollView>
+
+            {/* Floating Action Button */}
+            <TouchableOpacity
+                style={{
+                    position: 'absolute',
+                    bottom: 80,
+                    right: 20,
+                    backgroundColor: '#00218b',
+                    width: 60,
+                    height: 60,
+                    borderRadius: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 5,
+                    elevation: 8,
+                }}
+                onPress={() => updateState({ modalCrear: true })}
+            >
+                <FontAwesome name='plus' style={{ color: 'white', fontSize: 24 }} />
+            </TouchableOpacity>
 
             <Footer navigation={navigation} />
             <Toast />

@@ -39,6 +39,11 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
     // Estado local para la fecha seleccionada en el calendario
     const [fechaSeleccionadaLocal, setFechaSeleccionadaLocal] = useState<string | null>(null);
 
+    // Filtrar solo vehículos activos
+    const vehiculosActivos = useMemo(() => {
+        return vehiculos.filter(vehiculo => vehiculo.activo !== false);
+    }, [vehiculos]);
+
     // Resetear fecha local cuando el modal se abre
     useEffect(() => {
         if (visible) {
@@ -369,7 +374,7 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                         </View>
                     ) : (
                         <View style={{ paddingHorizontal: 20, paddingTop: 20, height: 400 }}>
-                            {!vehiculos || vehiculos.length === 0 ? (
+                            {!vehiculosActivos || vehiculosActivos.length === 0 ? (
                                 <View style={{
                                     padding: 40,
                                     alignItems: 'center',
@@ -378,7 +383,7 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                 }}>
                                     <FontAwesome name="truck" style={{ fontSize: 48, color: '#ccc', marginBottom: 16 }} />
                                     <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>
-                                        No hay vehículos disponibles
+                                        No hay vehículos activos disponibles
                                     </Text>
                                     <Text style={{ fontSize: 14, color: '#999', textAlign: 'center', marginTop: 8 }}>
                                         Contacta con el administrador
@@ -386,17 +391,13 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                 </View>
                             ) : (
                                 <FlatList
-                                    data={vehiculos}
+                                    data={vehiculosActivos}
                                     renderItem={renderVehiculoItem}
                                     keyExtractor={(item) => item._id}
                                     showsVerticalScrollIndicator={true}
-                                    nestedScrollEnabled={false}
+                                    nestedScrollEnabled={true}
                                     style={{ height: 300 }}
                                     scrollEventThrottle={16}
-                                    onStartShouldSetResponder={() => true}
-                                    onMoveShouldSetResponder={() => true}
-                                    onScrollBeginDrag={(e) => e.stopPropagation()}
-                                    onScroll={(e) => e.stopPropagation()}
                                     ListFooterComponent={() => (
                                         <>
                                             {/* Botón para continuar a fecha cuando se haya seleccionado vehículo */}

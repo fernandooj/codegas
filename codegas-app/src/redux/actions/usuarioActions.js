@@ -83,33 +83,32 @@ const getUsuarios = (limit, start, acceso, search, id) => {
   };
 };
 
-const getUsuariosAcceso = (limit, start, acceso) => {
-  return dispatch => {
-    return axios
-      .get(`/users/acceso/${limit}/${start}/${acceso}/undefined`)
-      .then(res => {
-        dispatch({
-          type: GET_USUARIOS_ACCESO,
-          usuariosAcceso: res.data.user || []
-        });
-      })
-      .catch(err => {
-        dispatch({
-          type: GET_USUARIOS_ACCESO,
-          usuariosAcceso: []
-        });
-        console.error('Error en getUsuariosAcceso:', {
-          function: 'getUsuariosAcceso',
-          parameters: { limit, start, acceso },
-          error: err,
-          message: err.message,
-          response: err.response?.data,
-          status: err.response?.status,
-          url: err.config?.url
-        });
+const getConductoresSimple = (limit = 1000, start = 0) => {
+  return async dispatch => {
+    try {
+      const res = await axios.get(`/users/conductores/${limit}/${start}`);
+      dispatch({
+        type: GET_USUARIOS,
+        usuarios: res.data.user || []
       });
+    } catch (err) {
+      console.error('Error en getConductoresSimple:', {
+        function: 'getConductoresSimple',
+        parameters: { limit, start },
+        error: err,
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: err.config?.url
+      });
+      dispatch({
+        type: GET_USUARIOS,
+        usuarios: []
+      });
+    }
   };
 };
+
 
 
 const getUserByUid = async (uid) => {
@@ -653,8 +652,8 @@ const deleteAccount = async (userId) => {
 export {
   getPerfil,
   getUsuarios,
+  getConductoresSimple,
   getUsuario,
-  getUsuariosAcceso,
   getUserByUid,
   getUserByEmail,
   sendNewPassword,

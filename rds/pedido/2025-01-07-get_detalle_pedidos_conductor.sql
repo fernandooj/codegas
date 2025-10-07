@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS get_estadisticas_por_dia;
-CREATE OR REPLACE FUNCTION get_estadisticas_por_dia(
+DROP FUNCTION IF EXISTS get_detalle_pedidos_conductor;
+CREATE OR REPLACE FUNCTION get_detalle_pedidos_conductor(
     _conductorId INT,
     _periodo VARCHAR(10) -- 'dia', 'semana', 'mes', 'año'
 )
@@ -36,67 +36,6 @@ BEGIN
             fecha_fin := fecha_inicio + INTERVAL '1 day';
     END CASE;
 
-    -- Solo para año: mostrar TOTAL GENERAL primero
-    IF _periodo = 'año' THEN
-        RETURN QUERY
-        SELECT 
-            'TOTAL GENERAL'::TEXT as fechaentrega,
-            COUNT(p._id)::INT as cantidad_pedidos,
-            SUM(CASE 
-                WHEN TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC
-                ELSE 0
-            END) as total_kilos,
-            SUM(CASE 
-                WHEN LOWER(COALESCE(p.forma_pago, '')) = 'contado' THEN
-                    CASE 
-                        WHEN TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
-                        ELSE 0
-                    END
-                ELSE 0
-            END) as vlr_contado,
-            SUM(CASE 
-                WHEN LOWER(COALESCE(p.forma_pago, '')) = 'credito' THEN
-                    CASE 
-                        WHEN TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
-                        ELSE 0
-                    END
-                ELSE 0
-            END) as vlr_credito,
-            SUM(CASE 
-                WHEN TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
-                ELSE 0
-            END) as valor_total
-        FROM pedidos p
-        WHERE p.entregado = TRUE
-        AND p.eliminado = FALSE
-        AND p.fechaEntregado IS NOT NULL
-        AND p.fechaEntregado != ''
-        AND (_conductorId IS NULL OR p.conductorId = _conductorId)
-        AND (
-            CASE 
-                WHEN p.fechaEntregado LIKE '%/%' THEN 
-                    TO_TIMESTAMP(p.fechaEntregado, 'DD/MM/YYYY HH24:MI')
-                WHEN p.fechaEntregado LIKE '%-%' THEN 
-                    p.fechaEntregado::TIMESTAMP
-                WHEN p.fechaEntregado ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN 
-                    TO_TIMESTAMP(p.fechaEntregado || ' 00:00', 'DD/MM/YYYY HH24:MI')
-                ELSE NULL
-            END
-        ) >= fecha_inicio
-        AND (
-            CASE 
-                WHEN p.fechaEntregado LIKE '%/%' THEN 
-                    TO_TIMESTAMP(p.fechaEntregado, 'DD/MM/YYYY HH24:MI')
-                WHEN p.fechaEntregado LIKE '%-%' THEN 
-                    p.fechaEntregado::TIMESTAMP
-                WHEN p.fechaEntregado ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN 
-                    TO_TIMESTAMP(p.fechaEntregado || ' 23:59', 'DD/MM/YYYY HH24:MI')
-                ELSE NULL
-            END
-        ) < fecha_fin;
-    END IF;
-
-    -- Datos por día (para todos los períodos)
     RETURN QUERY
     SELECT 
         resultados.fechaentrega,
@@ -154,7 +93,7 @@ BEGIN
                 ELSE 0
             END) as valor_total,
             fecha_grupo as fecha_ordenamiento,
-            1 as orden -- Para ordenar después del total
+            1 as orden -- Para ordenar antes del total
         FROM (
             SELECT 
                 p.*,
@@ -166,7 +105,7 @@ BEGIN
                                     TO_TIMESTAMP(p.fechaEntregado, 'DD/MM/YYYY HH24:MI')::DATE
                                 WHEN p.fechaEntregado LIKE '%-%' THEN 
                                     p.fechaEntregado::DATE
-                                ELSE NULL
+                                ELSE CURRENT_DATE
                             END
                         )
                     ELSE
@@ -175,7 +114,7 @@ BEGIN
                                 TO_TIMESTAMP(p.fechaEntregado, 'DD/MM/YYYY HH24:MI')::DATE
                             WHEN p.fechaEntregado LIKE '%-%' THEN 
                                 p.fechaEntregado::DATE
-                            ELSE NULL
+                            ELSE CURRENT_DATE
                         END
                 END as fecha_grupo
             FROM pedidos p
@@ -184,7 +123,7 @@ BEGIN
         AND p.eliminado = FALSE
         AND p.fechaEntregado IS NOT NULL
         AND p.fechaEntregado != ''
-        AND (_conductorId IS NULL OR p.conductorId = _conductorId)
+        AND p.conductorId = _conductorId
         AND (
             CASE 
                 WHEN p.fechaEntregado LIKE '%/%' THEN 
@@ -211,9 +150,16 @@ BEGIN
         
         UNION ALL
         
-        -- Para semana y mes, mostrar totales al final
+        -- Total general
         SELECT 
-            'TOTAL PERIODO'::TEXT as fechaentrega,
+            'TOTAL ' || 
+            CASE 
+                WHEN _periodo = 'dia' THEN TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY')
+                WHEN _periodo = 'semana' THEN 'SEMANA'
+                WHEN _periodo = 'mes' THEN 'MES'
+                WHEN _periodo = 'año' THEN 'AÑO'
+                ELSE 'PERIODO'
+            END::TEXT as fechaentrega,
             COUNT(p._id)::INT as cantidad_pedidos,
             SUM(CASE 
                 WHEN TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC
@@ -246,7 +192,7 @@ BEGIN
         AND p.eliminado = FALSE
         AND p.fechaEntregado IS NOT NULL
         AND p.fechaEntregado != ''
-        AND (_conductorId IS NULL OR p.conductorId = _conductorId)
+        AND p.conductorId = _conductorId
         AND (
             CASE 
                 WHEN p.fechaEntregado LIKE '%/%' THEN 
@@ -269,7 +215,6 @@ BEGIN
                 ELSE NULL
             END
         ) < fecha_fin
-        AND _periodo IN ('semana', 'mes', 'año')
     ) resultados
     ORDER BY 
         resultados.orden,
@@ -278,12 +223,9 @@ END
 $func$;
 
 -- Ejemplos de uso:
--- Para admin (ver estadísticas por día):
--- SELECT * FROM get_estadisticas_por_dia(NULL, 'semana');
--- SELECT * FROM get_estadisticas_por_dia(NULL, 'mes');
--- SELECT * FROM get_estadisticas_por_dia(NULL, 'año');
-
 -- Para conductor (ver sus estadísticas por día):
--- SELECT * FROM get_estadisticas_por_dia(123, 'semana');
--- SELECT * FROM get_estadisticas_por_dia(123, 'mes');
--- SELECT * FROM get_estadisticas_por_dia(123, 'año');
+-- SELECT * FROM get_detalle_pedidos_conductor(123, 'dia');
+-- SELECT * FROM get_detalle_pedidos_conductor(123, 'semana');
+-- SELECT * FROM get_detalle_pedidos_conductor(123, 'mes');
+-- SELECT * FROM get_detalle_pedidos_conductor(123, 'año');
+

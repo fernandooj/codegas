@@ -11,6 +11,7 @@ const DatabaseError = require('../../../lib/errors/database-error');
 const GET_ESTADISTICAS_ADMIN = 'SELECT * FROM get_estadisticas_pedido($1, $2)';
 const GET_ESTADISTICAS_POR_DIA = 'SELECT * FROM get_estadisticas_por_dia($1, $2)';
 const GET_DETALLE_CONDUCTOR = 'SELECT * FROM get_detalle_pedidos_conductor($1, $2)';
+const GET_PEDIDOS_CONDUCTOR_DIA = 'SELECT * FROM get_pedidos_conductor_dia($1, $2)';
 
 module.exports.main = async (event) => {
     const {
@@ -33,21 +34,31 @@ module.exports.main = async (event) => {
 
         // Determinar el tipo de vista según el período y el conductor
         if (periodoFinal === 'dia') {
-            // Para el día actual, mostrar detalle individual si es conductor, resumen por placa si es admin
+            // Para el día actual
             if (conductorIdFinal !== null) {
-                const { rows } = await client.query(GET_DETALLE_CONDUCTOR, [conductorIdFinal, periodoFinal]);
+                // Conductor: mostrar listado de pedidos individuales
+                const { rows } = await client.query(GET_PEDIDOS_CONDUCTOR_DIA, [conductorIdFinal, periodoFinal]);
                 estadisticas = rows;
-                tipoVista = 'detalle';
+                tipoVista = 'listado_pedidos';
             } else {
+                // Admin: mostrar resumen por placa
                 const { rows } = await client.query(GET_ESTADISTICAS_ADMIN, [conductorIdFinal, periodoFinal]);
                 estadisticas = rows;
                 tipoVista = 'resumen';
             }
         } else {
-            // Para períodos largos (semana, mes, año), siempre mostrar vista agrupada por día
-            const { rows } = await client.query(GET_ESTADISTICAS_POR_DIA, [conductorIdFinal, periodoFinal]);
-            estadisticas = rows;
-            tipoVista = 'por_dia';
+            // Para períodos largos (semana, mes, año)
+            if (conductorIdFinal !== null) {
+                // Conductor: mostrar estadísticas agrupadas por día
+                const { rows } = await client.query(GET_DETALLE_CONDUCTOR, [conductorIdFinal, periodoFinal]);
+                estadisticas = rows;
+                tipoVista = 'detalle';
+            } else {
+                // Admin: mostrar estadísticas agrupadas por día
+                const { rows } = await client.query(GET_ESTADISTICAS_POR_DIA, [conductorIdFinal, periodoFinal]);
+                estadisticas = rows;
+                tipoVista = 'por_dia';
+            }
         }
 
         client.release();

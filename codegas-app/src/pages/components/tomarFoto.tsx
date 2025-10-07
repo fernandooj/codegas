@@ -246,9 +246,10 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             }
         } else {
             // Si es múltiple, agregar a la lista
-            if (imagenesState.length < limiteImagenes) {
+            const currentImages = imagenesState && Array.isArray(imagenesState) ? imagenesState : [];
+            if (currentImages.length < limiteImagenes) {
                 const newImage = { uri: imageUri, base64: base64String };
-                const newImagenes = [...imagenesState, newImage];
+                const newImagenes = [...currentImages, newImage];
                 setImagenesState(newImagenes);
                 imagenes?.(newImagenes);
                 // Subir a S3 si está habilitado - solo la nueva imagen
@@ -344,6 +345,10 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
     }
     const renderImagenes = () => {
         let img: any[] = []
+
+        if (!imagenesState || !Array.isArray(imagenesState)) {
+            return img;
+        }
 
         imagenesState.map((e: any) => {
             if (e.uri) {
@@ -448,7 +453,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             {
                 tipoMensaje
                     ? renderModal()
-                    : permitirSubir && !soloLectura && !mostrarSoloConImagenes && (multiple ? imagenesState.length < limiteImagenes : true)
+                    : permitirSubir && !soloLectura && !mostrarSoloConImagenes && (multiple ? (imagenesState && Array.isArray(imagenesState) ? imagenesState.length : 0) < limiteImagenes : true)
                     && <View style={{
                         backgroundColor: '#f8f9fa',
                         borderRadius: 12,
@@ -493,12 +498,12 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                                     }}
                                 />
                                 <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-                                    {isUploading ? 'Subiendo...' : (multiple ? 'Subir Foto' : (imagenesState.length > 0 ? 'Cambiar Foto' : 'Tomar Foto'))}
+                                    {isUploading ? 'Subiendo...' : (multiple ? 'Subir Foto' : ((imagenesState && Array.isArray(imagenesState) && imagenesState.length > 0) ? 'Cambiar Foto' : 'Tomar Foto'))}
                                 </Text>
                             </TouchableOpacity>
                         )}
 
-                        {imagenesState.length > 0 && (
+                        {imagenesState && Array.isArray(imagenesState) && imagenesState.length > 0 && (
                             <View style={{
                                 marginTop: 12,
                                 alignItems: 'center'
@@ -587,7 +592,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                                 }}>
                                     <FontAwesome name="check" style={{ fontSize: 14, color: '#28a745', marginRight: 8 }} />
                                     <Text style={{ color: '#28a745', fontSize: 14, fontWeight: '500' }}>
-                                        {imagenesState.length === 1 ? 'Foto agregada correctamente' : `${imagenesState.length} fotos agregadas correctamente`}
+                                        {(imagenesState && Array.isArray(imagenesState) && imagenesState.length === 1) ? 'Foto agregada correctamente' : `${imagenesState && Array.isArray(imagenesState) ? imagenesState.length : 0} fotos agregadas correctamente`}
                                     </Text>
                                 </View>
                             </View>
@@ -613,7 +618,7 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
                 </View>
             }
             {
-                !tipoMensaje && soloLectura && imagenesState.length > 0 && (
+                !tipoMensaje && soloLectura && imagenesState && Array.isArray(imagenesState) && imagenesState.length > 0 && (
                     <View style={{
                         marginTop: 12,
                         alignItems: 'center'

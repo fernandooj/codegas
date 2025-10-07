@@ -7,6 +7,7 @@ export interface Vehiculo {
     placa: string;
     centro: string;
     bodega: string;
+    capacidad?: number;
     conductor?: Conductor;
     fechaCreacion?: string;
     activo?: boolean;
@@ -34,8 +35,10 @@ export interface VehiculoState {
     placa: string;
     centro: string;
     bodega: string;
+    capacidad: string;
     modalConductor: boolean;
     modalEditar: boolean;
+    modalCrear: boolean;
     conductores: Usuario[];
     conductor: string;
     placaVehiculo: string;
@@ -43,6 +46,8 @@ export interface VehiculoState {
     placaEditar: string;
     centroEditar: string;
     bodegaEditar: string;
+    capacidadEditar: string;
+    activoEditar: boolean;
     idUsuario: string;
     acceso: string;
     sortBy: VehiculoSortField;
@@ -69,6 +74,9 @@ export interface RootState {
     };
     usuario: {
         usuariosAcceso: Usuario[];
+        usuarios: Usuario[];
+        usuario: Usuario | null;
+        perfil: Usuario | null;
     };
 }
 
@@ -98,12 +106,15 @@ export interface VehiculoFormData {
     placa: string;
     centro: string;
     bodega: string;
+    capacidad: number;
 }
 
 export interface EditarVehiculoFormData {
     placa: string;
     centro: string;
     bodega: string;
+    capacidad: number;
+    activo: boolean;
 }
 
 // Action types for Redux
@@ -156,9 +167,13 @@ export interface EditarModalProps extends ModalProps {
     placaEditar: string;
     centroEditar: string;
     bodegaEditar: string;
+    capacidadEditar: string;
+    activoEditar: boolean;
     onPlacaChange: (placa: string) => void;
     onCentroChange: (centro: string) => void;
     onBodegaChange: (bodega: string) => void;
+    onCapacidadChange: (capacidad: string) => void;
+    onActivoChange: (activo: boolean) => void;
     onSave: () => void;
 }
 
