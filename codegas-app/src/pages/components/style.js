@@ -13,9 +13,9 @@ export const style = MediaQueryStyleSheet.create({
 		bottom: 0,
 		left: 0,
 		right: 0,
-		height: Platform.OS === 'ios' ? 100 : 90,
 		alignItems: 'center',
 		justifyContent: 'flex-end',
+		// height y paddingBottom serán manejados dinámicamente por useSafeAreaInsets
 	},
 
 	// Contenedor principal del footer

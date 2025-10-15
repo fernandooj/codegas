@@ -242,8 +242,8 @@ BEGIN
                 ))
             )
             ORDER BY p._id DESC
-            LIMIT $4 OFFSET $5
-        ' USING _total, _usuarioId, _estado_filtro, _limit, _start;
+        ' USING _total, _usuarioId, _estado_filtro;
+        -- Sin LIMIT ni OFFSET para conductores, devuelve todos los pedidos
 
     ELSE
         -- Query optimizada para otros usuarios (cliente, etc.)

@@ -222,9 +222,8 @@ BEGIN
                 WHEN _orden_por = 'fecha_solicitud' AND _tipo_orden = 'ASC' THEN p.fechaSolicitud
                 ELSE NULL
             END ASC NULLS LAST,
-            p._id DESC
-        LIMIT _limit
-        OFFSET _start;
+            p._id DESC;
+        -- Sin LIMIT ni OFFSET para conductores, devuelve todos los pedidos
 
     ELSE
         RETURN QUERY

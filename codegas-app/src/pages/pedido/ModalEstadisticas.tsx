@@ -32,6 +32,11 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
     const placaScrollRef = useRef<ScrollView>(null);
     const dataVerticalScrollRef = useRef<ScrollView>(null);
 
+    // Refs para la nueva implementación de tabla
+    const mainHeaderScrollRef = useRef<ScrollView>(null);
+    const subHeaderScrollRefNew = useRef<ScrollView>(null);
+    const dataHorizontalScrollRef = useRef<ScrollView>(null);
+
     useEffect(() => {
         if (visible) {
             cargarEstadisticas(periodo);
@@ -43,29 +48,30 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
         try {
             // Si es conductor, enviar su ID, si es admin enviar null para ver todos
             const idConductor = acceso === 'conductor' ? conductorId : null;
-            const resultado = await getEstadisticas(idConductor, periodoSeleccionado);
+
+            const resultado = await getEstadisticas(idConductor, periodoSeleccionado, acceso);
 
             if (resultado.status) {
-                // Detectar el tipo de vista según la respuesta del API
-                const tipoVistaRecibido = (resultado as any).tipoVista || 'resumen';
+                // Para admin, forzar siempre resumen por placa en semana/mes/año
+                const tipoVistaRecibido = acceso === 'admin' && periodoSeleccionado !== 'dia'
+                    ? 'resumen'
+                    : (resultado as any).tipoVista || 'resumen';
                 setTipoVista(tipoVistaRecibido);
 
                 if (tipoVistaRecibido === 'listado_pedidos') {
-                    // Vista de listado de pedidos para conductores (día)
-                    console.log('📊 Datos recibidos:', resultado.estadisticas);
-                    console.log('📊 Primer pedido:', resultado.estadisticas?.[0]);
+                    // Vista de listado de pedidos (normalmente para conductores en día)
                     setDetallePedidos(resultado.estadisticas || []);
                     setEstadisticas([]);
                 } else if (tipoVistaRecibido === 'detalle') {
-                    // Vista de detalle por fecha para conductores (día)
+                    // Vista de detalle por fecha
                     setEstadisticas(resultado.estadisticas || []);
                     setDetallePedidos([]);
                 } else if (tipoVistaRecibido === 'por_dia') {
-                    // Vista por día para períodos largos
+                    // Vista por día para períodos largos (semana/mes/año)
                     setEstadisticas(resultado.estadisticas || []);
                     setDetallePedidos([]);
                 } else {
-                    // Vista de resumen para admin (día actual)
+                    // Vista de resumen (por placa)
                     setEstadisticas(resultado.estadisticas || []);
                     setDetallePedidos([]);
                 }
@@ -123,6 +129,37 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
         const offsetY = event.nativeEvent.contentOffset.y;
         if (dataVerticalScrollRef.current) {
             dataVerticalScrollRef.current.scrollTo({ y: offsetY, animated: false });
+        }
+    };
+
+    // Funciones de sincronización para la nueva tabla
+    const handleMainHeaderScroll = (event: any) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        if (subHeaderScrollRefNew.current) {
+            subHeaderScrollRefNew.current.scrollTo({ x: offsetX, animated: false });
+        }
+        if (dataHorizontalScrollRef.current) {
+            dataHorizontalScrollRef.current.scrollTo({ x: offsetX, animated: false });
+        }
+    };
+
+    const handleSubHeaderScroll = (event: any) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        if (mainHeaderScrollRef.current) {
+            mainHeaderScrollRef.current.scrollTo({ x: offsetX, animated: false });
+        }
+        if (dataHorizontalScrollRef.current) {
+            dataHorizontalScrollRef.current.scrollTo({ x: offsetX, animated: false });
+        }
+    };
+
+    const handleDataHorizontalScroll = (event: any) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        if (mainHeaderScrollRef.current) {
+            mainHeaderScrollRef.current.scrollTo({ x: offsetX, animated: false });
+        }
+        if (subHeaderScrollRefNew.current) {
+            subHeaderScrollRefNew.current.scrollTo({ x: offsetX, animated: false });
         }
     };
 
@@ -433,7 +470,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                                 </ScrollView>
                             </ScrollView>
                         </View>
-                    ) : (tipoVista === 'detalle' || tipoVista === 'por_dia') && periodo !== 'dia' ? (
+                    ) : (tipoVista === 'detalle' || tipoVista === 'por_dia') ? (
                         /* Vista por Día para conductores y períodos largos */
                         <View style={style.modalEstadisticasTableWrapper}>
                             <ScrollView
@@ -474,172 +511,400 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({
                             </ScrollView>
                         </View>
                     ) : (
-                        /* Vista de Resumen para Admin */
+                        /* Vista de Resumen por placa */
                         <View style={style.modalEstadisticasTableWrapper}>
-                            {/* Header de la tabla */}
-                            <View style={style.modalEstadisticasHeaderRow}>
-                                <View style={style.modalEstadisticasPlacaFixedContainer}>
-                                    <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasPlacaFixed]}>Placa</Text>
-                                </View>
-                                <ScrollView
-                                    ref={headerScrollRef}
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    scrollEventThrottle={16}
-                                    onScroll={handleHeaderScroll}
-                                    style={style.modalEstadisticasHeaderScrollContainer}
-                                    nestedScrollEnabled={true}
-                                >
-                                    <View style={style.modalEstadisticasScrollableContent}>
-                                        <View style={style.modalEstadisticasTablaSectionWide}>
-                                            <Text style={style.modalEstadisticasTablaHeaderCell}>Crédito</Text>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={true}
+                                nestedScrollEnabled={true}
+                                style={{ maxHeight: 400 }}
+                            >
+                                <View>
+                                    {/* Headers */}
+                                    <View style={{ flexDirection: 'row', backgroundColor: '#007bff', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+                                        <View style={{ width: 90, paddingVertical: 12, paddingHorizontal: 8, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                Placa
+                                            </Text>
                                         </View>
-                                        <View style={style.modalEstadisticasTablaSectionWide}>
-                                            <Text style={style.modalEstadisticasTablaHeaderCell}>Contado</Text>
+                                        <View style={{ width: 180, paddingVertical: 8, paddingHorizontal: 4, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                Crédito
+                                            </Text>
                                         </View>
-                                        <View style={style.modalEstadisticasTablaSectionWide}>
-                                            <Text style={style.modalEstadisticasTablaHeaderCell}>Total</Text>
+                                        <View style={{ width: 180, paddingVertical: 8, paddingHorizontal: 4, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                Contado
+                                            </Text>
                                         </View>
-                                        <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasCantidadCellWide]}>Cant Ped</Text>
+                                        <View style={{ width: 180, paddingVertical: 8, paddingHorizontal: 4, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                Total
+                                            </Text>
+                                        </View>
+                                        <View style={{ width: 60, paddingVertical: 12, paddingHorizontal: 8 }}>
+                                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: 'white', textAlign: 'center' }}>
+                                                Cant Ped
+                                            </Text>
+                                        </View>
                                     </View>
-                                </ScrollView>
-                            </View>
 
-                            {/* Subheader (Kg / Valor) */}
-                            <View style={style.modalEstadisticasSubHeaderRow}>
-                                <View style={[style.modalEstadisticasPlacaFixedContainer, { backgroundColor: '#0056b3' }]}>
-                                    <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasPlacaFixed]}></Text>
-                                </View>
-                                <ScrollView
-                                    ref={subHeaderScrollRef}
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    scrollEnabled={false}
-                                    scrollEventThrottle={16}
-                                    style={style.modalEstadisticasHeaderScrollContainer}
-                                    nestedScrollEnabled={true}
-                                >
-                                    <View style={style.modalEstadisticasScrollableContent}>
-                                        <View style={style.modalEstadisticasTablaSectionWide}>
-                                            <Text style={style.modalEstadisticasSubHeaderText}>Kg</Text>
-                                            <Text style={style.modalEstadisticasSubHeaderText}>Valor</Text>
+                                    {/* Subheaders */}
+                                    <View style={{ flexDirection: 'row', backgroundColor: '#0056b3' }}>
+                                        <View style={{ width: 90, paddingVertical: 6, paddingHorizontal: 8, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <Text style={{ fontSize: 10, color: 'white', textAlign: 'center' }}></Text>
                                         </View>
-                                        <View style={style.modalEstadisticasTablaSectionWide}>
-                                            <Text style={style.modalEstadisticasSubHeaderText}>Kg</Text>
-                                            <Text style={style.modalEstadisticasSubHeaderText}>Valor</Text>
-                                        </View>
-                                        <View style={style.modalEstadisticasTablaSectionWide}>
-                                            <Text style={style.modalEstadisticasSubHeaderText}>Kg</Text>
-                                            <Text style={style.modalEstadisticasSubHeaderText}>Valor</Text>
-                                        </View>
-                                        <Text style={[style.modalEstadisticasTablaHeaderCell, style.modalEstadisticasCantidadCellWide]}></Text>
-                                    </View>
-                                </ScrollView>
-                            </View>
-
-                            {/* Datos con scroll mejorado para Android */}
-                            {estadisticas.length > 0 ? (
-                                <ScrollView
-                                    style={{ maxHeight: 360 }}
-                                    showsVerticalScrollIndicator={true}
-                                    nestedScrollEnabled={true}
-                                >
-                                    <ScrollView
-                                        horizontal
-                                        showsHorizontalScrollIndicator={true}
-                                        nestedScrollEnabled={true}
-                                    >
-                                        <View style={{ flexDirection: 'row' }}>
-                                            {/* Columna de Placa */}
-                                            <View style={{ width: 90, backgroundColor: '#f8f9fa', borderRightWidth: 2, borderRightColor: '#e0e0e0' }}>
-                                                {estadisticas.map((item, index) => (
-                                                    <View
-                                                        key={`placa-${index}`}
-                                                        style={{
-                                                            paddingVertical: 12,
-                                                            paddingHorizontal: 8,
-                                                            backgroundColor: item.placa === 'TOTAL' ? '#f8f9fa' : 'white',
-                                                            borderBottomWidth: 1,
-                                                            borderBottomColor: '#e0e0e0',
-                                                            borderTopWidth: item.placa === 'TOTAL' ? 2 : 0,
-                                                            borderTopColor: '#007bff'
-                                                        }}
-                                                    >
-                                                        <Text style={{
-                                                            fontSize: 12,
-                                                            fontWeight: item.placa === 'TOTAL' ? 'bold' : '600',
-                                                            color: item.placa === 'TOTAL' ? '#007bff' : '#333',
-                                                            textAlign: 'center'
-                                                        }}>
-                                                            {item.placa}
-                                                        </Text>
-                                                    </View>
-                                                ))}
+                                        <View style={{ width: 180, paddingVertical: 6, paddingHorizontal: 4, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                                                <Text style={{ fontSize: 10, color: 'white', textAlign: 'center', flex: 1 }}>Kg</Text>
+                                                <Text style={{ fontSize: 10, color: 'white', textAlign: 'center', flex: 1 }}>Valor</Text>
                                             </View>
+                                        </View>
+                                        <View style={{ width: 180, paddingVertical: 6, paddingHorizontal: 4, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                                                <Text style={{ fontSize: 10, color: 'white', textAlign: 'center', flex: 1 }}>Kg</Text>
+                                                <Text style={{ fontSize: 10, color: 'white', textAlign: 'center', flex: 1 }}>Valor</Text>
+                                            </View>
+                                        </View>
+                                        <View style={{ width: 180, paddingVertical: 6, paddingHorizontal: 4, borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.3)' }}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                                                <Text style={{ fontSize: 10, color: 'white', textAlign: 'center', flex: 1 }}>Kg</Text>
+                                                <Text style={{ fontSize: 10, color: 'white', textAlign: 'center', flex: 1 }}>Valor</Text>
+                                            </View>
+                                        </View>
+                                        <View style={{ width: 60, paddingVertical: 6, paddingHorizontal: 8 }}>
+                                            <Text style={{ fontSize: 10, color: 'white', textAlign: 'center' }}></Text>
+                                        </View>
+                                    </View>
 
-                                            {/* Columnas de datos */}
-                                            <View>
-                                                {estadisticas.map((item, index) => (
+                                    {/* Datos */}
+                                    {estadisticas.length > 0 ? (
+                                        <ScrollView
+                                            style={{ maxHeight: 300 }}
+                                            showsVerticalScrollIndicator={true}
+                                            nestedScrollEnabled={true}
+                                        >
+                                            {estadisticas.map((item, index) => {
+                                                // Debug log para cada item
+                                                console.log(`🔍 ModalEstadisticas - Item ${index}:`, {
+                                                    placa: item.placa,
+                                                    total_kilos_credito: item.total_kilos_credito,
+                                                    total_valor_credito: item.total_valor_credito,
+                                                    total_kilos_contado: item.total_kilos_contado,
+                                                    total_valor_contado: item.total_valor_contado,
+                                                    total_kilos: item.total_kilos,
+                                                    total_valor: item.total_valor,
+                                                    cantidad_pedidos: item.cantidad_pedidos
+                                                });
+
+                                                return (
                                                     <View
-                                                        key={`data-${index}`}
+                                                        key={`row-${index}`}
                                                         style={{
                                                             flexDirection: 'row',
-                                                            paddingVertical: 12,
-                                                            paddingHorizontal: 8,
-                                                            backgroundColor: item.placa === 'TOTAL' ? '#f8f9fa' : 'white',
+                                                            backgroundColor: item.placa === 'TOTAL' ? '#f8f9fa' : (index % 2 === 0 ? 'white' : '#f8f9fa'),
                                                             borderBottomWidth: 1,
                                                             borderBottomColor: '#e0e0e0',
                                                             borderTopWidth: item.placa === 'TOTAL' ? 2 : 0,
                                                             borderTopColor: '#007bff'
                                                         }}
                                                     >
+                                                        {/* Placa */}
+                                                        <View style={{
+                                                            width: 90,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 8,
+                                                            borderRightWidth: 2,
+                                                            borderRightColor: '#e0e0e0',
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 12,
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : '600',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                textAlign: 'center'
+                                                            }}>
+                                                                {item.placa || 'N/A'}
+                                                            </Text>
+                                                        </View>
+
                                                         {/* Crédito */}
-                                                        <View style={{ width: 180, flexDirection: 'row', justifyContent: 'space-around' }}>
-                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                        <View style={{
+                                                            width: 180,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 4,
+                                                            borderRightWidth: 1,
+                                                            borderRightColor: '#e0e0e0',
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'space-around',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal'
+                                                            }}>
                                                                 {formatKilos(item.total_kilos_credito)} Kg
                                                             </Text>
-                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal'
+                                                            }}>
                                                                 {formatCurrency(item.total_valor_credito || 0, 0)}
                                                             </Text>
                                                         </View>
 
                                                         {/* Contado */}
-                                                        <View style={{ width: 180, flexDirection: 'row', justifyContent: 'space-around' }}>
-                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                        <View style={{
+                                                            width: 180,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 4,
+                                                            borderRightWidth: 1,
+                                                            borderRightColor: '#e0e0e0',
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'space-around',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal'
+                                                            }}>
                                                                 {formatKilos(item.total_kilos_contado)} Kg
                                                             </Text>
-                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal'
+                                                            }}>
                                                                 {formatCurrency(item.total_valor_contado || 0, 0)}
                                                             </Text>
                                                         </View>
 
                                                         {/* Total */}
-                                                        <View style={{ width: 180, flexDirection: 'row', justifyContent: 'space-around' }}>
-                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                        <View style={{
+                                                            width: 180,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 4,
+                                                            borderRightWidth: 1,
+                                                            borderRightColor: '#e0e0e0',
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'space-around',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal'
+                                                            }}>
                                                                 {formatKilos(item.total_kilos)} Kg
                                                             </Text>
-                                                            <Text style={{ fontSize: 10, flex: 1, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal'
+                                                            }}>
                                                                 {formatCurrency(item.total_valor || 0, 0)}
                                                             </Text>
                                                         </View>
 
-                                                        <Text style={{ width: 60, fontSize: 12, textAlign: 'center', color: item.placa === 'TOTAL' ? '#007bff' : '#333', fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal' }}>
-                                                            {item.cantidad_pedidos || 0}
-                                                        </Text>
+                                                        {/* Cantidad Pedidos */}
+                                                        <View style={{
+                                                            width: 60,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 8,
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 12,
+                                                                textAlign: 'center',
+                                                                color: item.placa === 'TOTAL' ? '#007bff' : '#333',
+                                                                fontWeight: item.placa === 'TOTAL' ? 'bold' : 'normal'
+                                                            }}>
+                                                                {item.cantidad_pedidos || 0}
+                                                            </Text>
+                                                        </View>
                                                     </View>
-                                                ))}
-                                            </View>
+                                                );
+                                            })}
+
+                                            {/* Fila de Total General */}
+                                            {estadisticas.length > 0 && (() => {
+                                                const totalKilosCredito = estadisticas.reduce((sum, item) => sum + (parseFloat(item.total_kilos_credito?.toString() || '0') || 0), 0);
+                                                const totalKilosContado = estadisticas.reduce((sum, item) => sum + (parseFloat(item.total_kilos_contado?.toString() || '0') || 0), 0);
+                                                const totalKilosGeneral = estadisticas.reduce((sum, item) => sum + (parseFloat(item.total_kilos?.toString() || '0') || 0), 0);
+                                                const totalValorCredito = estadisticas.reduce((sum, item) => sum + (item.total_valor_credito || 0), 0);
+                                                const totalValorContado = estadisticas.reduce((sum, item) => sum + (item.total_valor_contado || 0), 0);
+                                                const totalValorGeneral = estadisticas.reduce((sum, item) => sum + (item.total_valor || 0), 0);
+                                                const totalPedidos = estadisticas.reduce((sum, item) => sum + (item.cantidad_pedidos || 0), 0);
+
+                                                return (
+                                                    <View
+                                                        style={{
+                                                            flexDirection: 'row',
+                                                            backgroundColor: '#007bff',
+                                                            borderBottomLeftRadius: 8,
+                                                            borderBottomRightRadius: 8,
+                                                            paddingVertical: 12,
+                                                            borderTopWidth: 2,
+                                                            borderTopColor: '#0056b3'
+                                                        }}
+                                                    >
+                                                        {/* Placa Total */}
+                                                        <View style={{
+                                                            width: 90,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 8,
+                                                            borderRightWidth: 2,
+                                                            borderRightColor: 'rgba(255,255,255,0.3)',
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 12,
+                                                                fontWeight: 'bold',
+                                                                color: 'white',
+                                                                textAlign: 'center'
+                                                            }}>
+                                                                TOTAL
+                                                            </Text>
+                                                        </View>
+
+                                                        {/* Crédito Total */}
+                                                        <View style={{
+                                                            width: 180,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 4,
+                                                            borderRightWidth: 1,
+                                                            borderRightColor: 'rgba(255,255,255,0.3)',
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'space-around',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {totalKilosCredito.toFixed(1).replace('.', ',')} Kg
+                                                            </Text>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {formatCurrency(totalValorCredito, 0)}
+                                                            </Text>
+                                                        </View>
+
+                                                        {/* Contado Total */}
+                                                        <View style={{
+                                                            width: 180,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 4,
+                                                            borderRightWidth: 1,
+                                                            borderRightColor: 'rgba(255,255,255,0.3)',
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'space-around',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {totalKilosContado.toFixed(1).replace('.', ',')} Kg
+                                                            </Text>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {formatCurrency(totalValorContado, 0)}
+                                                            </Text>
+                                                        </View>
+
+                                                        {/* Total General */}
+                                                        <View style={{
+                                                            width: 180,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 4,
+                                                            borderRightWidth: 1,
+                                                            borderRightColor: 'rgba(255,255,255,0.3)',
+                                                            flexDirection: 'row',
+                                                            justifyContent: 'space-around',
+                                                            alignItems: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {totalKilosGeneral.toFixed(1).replace('.', ',')} Kg
+                                                            </Text>
+                                                            <Text style={{
+                                                                fontSize: 10,
+                                                                flex: 1,
+                                                                textAlign: 'center',
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {formatCurrency(totalValorGeneral, 0)}
+                                                            </Text>
+                                                        </View>
+
+                                                        {/* Cantidad Pedidos Total */}
+                                                        <View style={{
+                                                            width: 60,
+                                                            paddingVertical: 12,
+                                                            paddingHorizontal: 8,
+                                                            justifyContent: 'center'
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: 12,
+                                                                textAlign: 'center',
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}>
+                                                                {totalPedidos}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                );
+                                            })()}
+                                        </ScrollView>
+                                    ) : (
+                                        <View style={style.modalEstadisticasEmptyContainer}>
+                                            <FontAwesome name="inbox" style={style.modalEstadisticasEmptyIcon} />
+                                            <Text style={style.modalEstadisticasEmptyText}>
+                                                No hay entregas registradas en este periodo
+                                            </Text>
                                         </View>
-                                    </ScrollView>
-                                </ScrollView>
-                            ) : (
-                                <View style={style.modalEstadisticasEmptyContainer}>
-                                    <FontAwesome name="inbox" style={style.modalEstadisticasEmptyIcon} />
-                                    <Text style={style.modalEstadisticasEmptyText}>
-                                        No hay entregas registradas en este periodo
-                                    </Text>
+                                    )}
                                 </View>
-                            )}
+                            </ScrollView>
                         </View>
                     )}
                 </View>

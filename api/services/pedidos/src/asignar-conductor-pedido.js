@@ -16,30 +16,19 @@ module.exports.main = async (event) => {
   const {
     pedidoId,
     carroId,
-    fechaEntrega,
     nPedido
   } = event.pathParameters;
 
   const client = await poolConection.connect();
 
   try {
-    // Convertir la fecha ISO a formato que PostgreSQL pueda entender mejor
-    let fechaFormateada = fechaEntrega;
-    if (fechaEntrega && fechaEntrega.includes('T')) {
-      // Si viene en formato ISO (2025-09-22T05:00:00.000Z), convertir a formato estándar
-      fechaFormateada = fechaEntrega.replace('T', ' ').replace('Z', '');
-      // Remover los milisegundos si están presentes
-      fechaFormateada = fechaFormateada.replace(/\.\d{3}/, '');
-    }
-
     console.log('🔧 [AsignarConductor] Parámetros recibidos:');
     console.log('📋 pedidoId:', pedidoId);
     console.log('🚗 carroId:', carroId);
-    console.log('📅 fechaEntrega original:', fechaEntrega);
-    console.log('📅 fechaEntrega formateada:', fechaFormateada);
     console.log('👤 nPedido (usuarioAsigna):', nPedido);
 
-    const result = await client.query(ASIGNAR_CONDUCTOR_PEDIDO, [pedidoId, carroId, fechaFormateada, nPedido]);
+    // Llamar a la función SQL sin fecha (pasando null)
+    const result = await client.query(ASIGNAR_CONDUCTOR_PEDIDO, [pedidoId, carroId, null, nPedido]);
 
     console.log('✅ [AsignarConductor] Resultado de la función SQL:', result.rows[0]);
 

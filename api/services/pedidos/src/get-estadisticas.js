@@ -16,7 +16,8 @@ const GET_PEDIDOS_CONDUCTOR_DIA = 'SELECT * FROM get_pedidos_conductor_dia($1, $
 module.exports.main = async (event) => {
     const {
         conductorId,
-        periodo
+        periodo,
+        acceso
     } = event.queryStringParameters || {};
 
     // Validar periodo
@@ -24,7 +25,10 @@ module.exports.main = async (event) => {
     const periodoFinal = periodosValidos.includes(periodo) ? periodo : 'dia';
 
     // Si conductorId es 'null' o undefined, enviamos null a la función SQL
-    const conductorIdFinal = conductorId && conductorId !== 'null' ? parseInt(conductorId) : null;
+    // Si acceso es admin, forzamos vista de resumen (conductorId = null)
+    const conductorIdFinal = acceso === 'admin'
+        ? null
+        : (conductorId && conductorId !== 'null' ? parseInt(conductorId) : null);
 
     try {
         const client = await poolConection.connect();
@@ -54,10 +58,10 @@ module.exports.main = async (event) => {
                 estadisticas = rows;
                 tipoVista = 'detalle';
             } else {
-                // Admin: mostrar estadísticas agrupadas por día
-                const { rows } = await client.query(GET_ESTADISTICAS_POR_DIA, [conductorIdFinal, periodoFinal]);
+                // Admin: mostrar estadísticas agrupadas por placa (igual que para día)
+                const { rows } = await client.query(GET_ESTADISTICAS_ADMIN, [conductorIdFinal, periodoFinal]);
                 estadisticas = rows;
-                tipoVista = 'por_dia';
+                tipoVista = 'resumen';
             }
         }
 

@@ -1,22 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { View, Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import configStore from './src/redux/store.js';
 import MainRoutes from './src/routes/MainRoutes';
 import axios from 'axios';
 import { DataProvider } from './src/context/context';
 import Toast from 'react-native-toast-message';
 import pushNotificationService from './src/services/pushNotificationService';
+import remoteConfigService from './src/services/remoteConfigService';
 // import { runAllFirebaseTests } from './TestFirebase';
 import { initializeApp, getApps, getApp } from '@react-native-firebase/app';
 import SplashScreen from './src/components/SplashScreen';
 const store = configStore();
 
-export const URL = 'https://2wea912yue.execute-api.us-east-1.amazonaws.com';
-// export const URL = 'https://appcodegas.com:3131'; //// URL WEB DEV
-// export const URL = 'http://192.168.0.4:4000'; //// URL local para desarrollo (Android usa IP en lugar de localhost)
+// URL y versión de la app
+export let URL = ''; // Se cargará desde Firebase Remote Config
 export const VERSION = '1.0.0';
-axios.defaults.baseURL = URL;
+
+// Función para actualizar la URL desde Remote Config
+export const updateBaseURL = (newURL: string) => {
+  URL = newURL;
+  axios.defaults.baseURL = newURL;
+  console.log('📡 Base URL updated to:', newURL);
+};
 
 function App(): React.JSX.Element {
   const [firebaseInitialized, setFirebaseInitialized] = useState(false);
@@ -27,8 +34,8 @@ function App(): React.JSX.Element {
       try {
         // Initialize Firebase if not already initialized
         if (getApps().length === 0) {
-          await initializeApp();
-        } else {
+          // Firebase se inicializa automáticamente con los archivos de configuración
+          // google-services.json (Android) y GoogleService-Info.plist (iOS)
         }
 
         // Wait to ensure Firebase is fully ready
@@ -41,6 +48,12 @@ function App(): React.JSX.Element {
         } catch (authError) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
+
+        // Initialize Remote Config and get URL_END_POINT
+        console.log('🔧 Initializing Remote Config...');
+        await remoteConfigService.initialize();
+        const endpointUrl = remoteConfigService.getEndpointUrl();
+        updateBaseURL(endpointUrl);
 
         // Mark Firebase as initialized
         setFirebaseInitialized(true);
@@ -93,57 +106,116 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <DataProvider>
-      <Provider store={store}>
-        <MainRoutes />
-        <Toast
-          config={{
-            success: (props) => (
-              <View style={{
-                height: 50,
-                width: '90%',
-                backgroundColor: '#4CAF50',
-                borderRadius: 8,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <Text style={{
-                  color: 'white',
-                  fontSize: 16,
-                  fontWeight: '600',
+    <SafeAreaProvider>
+      <DataProvider>
+        <Provider store={store}>
+          <MainRoutes />
+          <Toast
+            config={{
+              success: (props) => (
+                <View style={{
+                  height: 50,
+                  width: '90%',
+                  backgroundColor: '#4CAF50',
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
-                  {props.text1}
-                </Text>
-              </View>
-            ),
-            error: (props) => (
-              <View style={{
-                height: 50,
-                width: '90%',
-                backgroundColor: '#F44336',
-                borderRadius: 8,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <Text style={{
-                  color: 'white',
-                  fontSize: 16,
-                  fontWeight: '600',
+                  <Text style={{
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '600',
+                  }}>
+                    {props.text1}
+                  </Text>
+                </View>
+              ),
+              error: (props) => (
+                <View style={{
+                  minHeight: 60,
+                  width: '90%',
+                  backgroundColor: '#F44336',
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
                 }}>
-                  {props.text1}
-                </Text>
-              </View>
-            ),
-          }}
-        />
-      </Provider>
-    </DataProvider>
+                  <Text style={{
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '700',
+                    textAlign: 'center',
+                  }}>
+                    {props.text1}
+                  </Text>
+                  {props.text2 && (
+                    <Text style={{
+                      color: 'white',
+                      fontSize: 14,
+                      fontWeight: '400',
+                      textAlign: 'center',
+                      marginTop: 4,
+                      opacity: 0.9,
+                    }}>
+                      {props.text2}
+                    </Text>
+                  )}
+                </View>
+              ),
+              info: (props) => (
+                <View style={{
+                  minHeight: 60,
+                  width: '90%',
+                  backgroundColor: '#2196F3',
+                  borderRadius: 8,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}>
+                  <Text style={{
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '700',
+                    textAlign: 'center',
+                  }}>
+                    {props.text1}
+                  </Text>
+                  {props.text2 && (
+                    <Text style={{
+                      color: 'white',
+                      fontSize: 14,
+                      fontWeight: '400',
+                      textAlign: 'center',
+                      marginTop: 4,
+                      opacity: 0.9,
+                    }}>
+                      {props.text2}
+                    </Text>
+                  )}
+                </View>
+              ),
+            }}
+          />
+        </Provider>
+      </DataProvider>
+    </SafeAreaProvider>
   );
 }
 export default App;

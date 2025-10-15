@@ -34,7 +34,7 @@ provider:
             - 's3:GetObject'
             - 's3:PutObject'
           Resource:
-            - 'arn:aws:s3:::codegas/*'
+            - 'arn:aws:s3:::newcodegas/*'
         # Allow functions to read/write objects in emergencias folder in codegas bucket
         - Effect: Allow
           Action:
@@ -42,7 +42,7 @@ provider:
             - 's3:PutObject'
             - 's3:PutObjectAcl'
           Resource:
-            - 'arn:aws:s3:::codegas/emergencias/*'
+            - 'arn:aws:s3:::newcodegas/emergencias/*'
         - Effect: Allow
           Action:
             - 'ses:SendEmail'
@@ -61,7 +61,7 @@ custom:
     path: .env
   # Variables de entorno temporales
   emailUser: admin@codegascolombia.com
-  emailPass: yecn iasc womb wkri
+  emailPass: hkbi efvr jwua gtkq
   webpack:
     webpackConfig: 'webpack.config.js'
     includeModules: true

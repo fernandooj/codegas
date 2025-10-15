@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react'
-import { View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert, ScrollView, Animated } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert, ScrollView, Animated, Clipboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
@@ -104,6 +104,15 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
     }>({
         show: false,
         pedidos: []
+    });
+
+    // Estado para el modal de error
+    const [errorModal, setErrorModal] = useState<{
+        show: boolean;
+        message: string;
+    }>({
+        show: false,
+        message: ''
     });
 
     useEffect(() => {
@@ -1197,10 +1206,21 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                     : Alert.alert("Error", "tenemos un problema intentalo nuevamente");
                 setState(prev => ({ ...prev, guardando: false }));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error verificando pedido:', error);
             setState(prev => ({ ...prev, guardando: false }));
-            Alert.alert("Error", "No se pudo validar el pedido. Intente nuevamente.");
+
+            // Extraer el mensaje de error del backend
+            const errorMessage = error?.response?.data?.message
+                || error?.response?.data?.error
+                || error?.message
+                || "No se pudo validar el pedido. Intente nuevamente.";
+
+            // Mostrar modal de error con opción de copiar
+            setErrorModal({
+                show: true,
+                message: JSON.stringify(error?.response?.data || error?.message || error, null, 2)
+            });
         }
     };
     const handleSubmit = async (): Promise<void> => {
@@ -1278,6 +1298,144 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                 </KeyboardAwareScrollView>
                 <Footer navigation={navigation} />
             </ImageBackground>
+
+            {/* Modal de Error con opción de copiar */}
+            <Modal
+                visible={errorModal.show}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setErrorModal({ show: false, message: '' })}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 20
+                }}>
+                    <View style={{
+                        backgroundColor: 'white',
+                        borderRadius: 12,
+                        padding: 20,
+                        width: '100%',
+                        maxHeight: '80%',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
+                        elevation: 5
+                    }}>
+                        {/* Header */}
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: 15,
+                            paddingBottom: 15,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#e0e0e0'
+                        }}>
+                            <FontAwesome name="exclamation-circle" style={{ fontSize: 24, color: '#f44336', marginRight: 10 }} />
+                            <Text style={{
+                                fontSize: 18,
+                                fontWeight: 'bold',
+                                color: '#333',
+                                flex: 1
+                            }}>
+                                Error del Backend
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => setErrorModal({ show: false, message: '' })}
+                                style={{
+                                    padding: 5
+                                }}
+                            >
+                                <FontAwesome name="times" style={{ fontSize: 20, color: '#666' }} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Mensaje de error */}
+                        <ScrollView style={{
+                            maxHeight: 400,
+                            marginBottom: 15
+                        }}>
+                            <View style={{
+                                backgroundColor: '#f5f5f5',
+                                padding: 12,
+                                borderRadius: 8,
+                                borderLeftWidth: 4,
+                                borderLeftColor: '#f44336'
+                            }}>
+                                <Text style={{
+                                    fontSize: 13,
+                                    color: '#333',
+                                    fontFamily: 'monospace'
+                                }}>
+                                    {errorModal.message}
+                                </Text>
+                            </View>
+                        </ScrollView>
+
+                        {/* Botones */}
+                        <View style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            gap: 10
+                        }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    Clipboard.setString(errorModal.message);
+                                    Toast.show({
+                                        type: 'success',
+                                        text1: 'Copiado',
+                                        text2: 'Error copiado al portapapeles',
+                                        visibilityTime: 2000
+                                    });
+                                }}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#2196F3',
+                                    paddingVertical: 12,
+                                    paddingHorizontal: 20,
+                                    borderRadius: 8,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <FontAwesome name="copy" style={{ fontSize: 16, color: 'white', marginRight: 8 }} />
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    Copiar
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => setErrorModal({ show: false, message: '' })}
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: '#757575',
+                                    paddingVertical: 12,
+                                    paddingHorizontal: 20,
+                                    borderRadius: 8,
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <Text style={{
+                                    color: 'white',
+                                    fontSize: 16,
+                                    fontWeight: '600'
+                                }}>
+                                    Cerrar
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };

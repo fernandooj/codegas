@@ -30,6 +30,12 @@ export const usePedidoState = () => {
         dispatch(pedidoActions.setOpenModal(true));
         dispatch(pedidoActions.setElevation(0));
         dispatch(pedidoActions.setPedidoData(pedidoData));
+
+        // Si el pedido ya está activo, establecer estadoChangedClicked a true
+        // para que se muestre el botón de asignar vehículo
+        if (pedidoData.estado === 'activo') {
+            dispatch(pedidoActions.setEstadoChangedClicked(true));
+        }
     }, []);
 
     // Función para cerrar modal y resetear datos
@@ -37,6 +43,7 @@ export const usePedidoState = () => {
         dispatch(pedidoActions.setOpenModal(false));
         dispatch(pedidoActions.setElevation(7));
         dispatch(pedidoActions.resetPedidoData());
+        dispatch(pedidoActions.setEstadoChangedClicked(false)); // Resetear el flag
     }, []);
 
     // Función para manejar el teclado

@@ -78,7 +78,7 @@ asignarVehiculoPedido:
   name: ${self:custom.base}-asignar-conductor-pedido
   handler: services/pedidos/src/asignar-conductor-pedido.main
   events:
-    - httpApi: 'GET /ped/pedido/asignarConductor/{pedidoId}/{carroId}/{fechaEntrega}/{nPedido}'
+    - httpApi: 'GET /ped/pedido/asignarConductor/{pedidoId}/{carroId}/{nPedido}'
   package:
     include:
       - services/pedidos/src/asignar-conductor-pedido.js
@@ -109,10 +109,16 @@ novedadPedido:
   handler: services/pedidos/src/novedad-pedido.main
   events:
     - httpApi: 'POST /ped/pedido/novedad'
+  environment:
+    EMAIL_USER: ${self:custom.emailUser}
+    EMAIL_PASS: ${self:custom.emailPass}
   package:
     include:
       - services/pedidos/src/novedad-pedido.js
       - lib/errors/database-error.js
+      - lib/email-novedad-pedido.js
+      - lib/nodemailer-config.js
+      - assets/img/logo.jpg
 
 finalizarPedido:
   name: ${self:custom.base}-finalizar-pedido
@@ -121,7 +127,7 @@ finalizarPedido:
   events:
     - httpApi: 'POST /ped/pedido/finalizar/{idConductor}'
   environment:
-    BUCKET: codegas
+    BUCKET: newcodegas
   package:
     include:
       - services/pedidos/src/finalizar-pedido.js

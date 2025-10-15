@@ -27,6 +27,7 @@ interface EditarPedidoModalProps {
     navigation?: any;
     // Props para CambiarEstadoModal
     modalPerfiles: boolean;
+    estadoChangedClicked?: boolean; // Nuevo prop para rastrear si se hizo click en cambiar estado
     onEstadoChange: (nuevoEstado: EstadoPedido) => void;
     onConfirmStateChange: () => void;
     onCancelStateChange: () => void;
@@ -70,6 +71,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     onResetPedido,
     navigation,
     modalPerfiles,
+    estadoChangedClicked = false,
     onEstadoChange,
     onConfirmStateChange,
     onCancelStateChange,
@@ -136,35 +138,25 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     };
 
     const openInWaze = () => {
-        console.log('🔍 Debug coordenadas pedidoData:', pedidoData);
-        console.log('🔍 Debug coordenadas específicas:', pedidoData.coordenadas);
-
         const { lat, lng } = pedidoData.coordenadas || {};
-        console.log('🔍 Debug lat, lng extraídas (originales):', { lat, lng });
 
         // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
         const realLat = lng; // La latitud real está en el campo lng
         const realLng = lat; // La longitud real está en el campo lat
 
-        console.log('🔍 Debug coordenadas corregidas:', { realLat, realLng });
-
         if (realLat && realLng) {
             const url = `waze://?ll=${realLat},${realLng}&navigate=yes`;
-            console.log('🔍 Debug URL Waze:', url);
 
             Linking.canOpenURL(url).then(supported => {
-                console.log('🔍 Debug Waze soportado:', supported);
                 if (supported) {
                     Linking.openURL(url);
                 } else {
                     // Si Waze no está instalado, abrir en el navegador
                     const webUrl = `https://waze.com/ul?ll=${realLat},${realLng}&navigate=yes`;
-                    console.log('🔍 Debug URL Web Waze:', webUrl);
                     Linking.openURL(webUrl);
                 }
             });
         } else {
-            console.log('❌ Error: Coordenadas no válidas', { realLat, realLng });
             Alert.alert('Error', 'No se encontraron coordenadas válidas para este pedido');
         }
         closeNavigationModal();
@@ -172,20 +164,15 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
 
     const openInGoogleMaps = () => {
         const { lat, lng } = pedidoData.coordenadas || {};
-        console.log('🔍 Debug Google Maps coordenadas originales:', { lat, lng });
 
         // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
         const realLat = lng; // La latitud real está en el campo lng
         const realLng = lat; // La longitud real está en el campo lat
 
-        console.log('🔍 Debug Google Maps coordenadas corregidas:', { realLat, realLng });
-
         if (realLat && realLng) {
             const url = `https://www.google.com/maps/dir/?api=1&destination=${realLat},${realLng}`;
-            console.log('🔍 Debug URL Google Maps:', url);
             Linking.openURL(url);
         } else {
-            console.log('❌ Error Google Maps: Coordenadas no válidas', { realLat, realLng });
             Alert.alert('Error', 'No se encontraron coordenadas válidas para este pedido');
         }
         closeNavigationModal();
@@ -193,25 +180,19 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
 
     const openInAppleMaps = () => {
         const { lat, lng } = pedidoData.coordenadas || {};
-        console.log('🔍 Debug Apple Maps coordenadas originales:', { lat, lng });
 
         // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
         const realLat = lng; // La latitud real está en el campo lng
         const realLng = lat; // La longitud real está en el campo lat
 
-        console.log('🔍 Debug Apple Maps coordenadas corregidas:', { realLat, realLng });
-
         if (realLat && realLng) {
             const url = `http://maps.apple.com/?daddr=${realLat},${realLng}&dirflg=d`;
-            console.log('🔍 Debug URL Apple Maps:', url);
             Linking.openURL(url);
         } else {
-            console.log('❌ Error Apple Maps: Coordenadas no válidas', { realLat, realLng });
             Alert.alert('Error', 'No se encontraron coordenadas válidas para este pedido');
         }
         closeNavigationModal();
     };
-    console.log('pedidoData', pedidoData);
     return (
         <Modal
             transparent={true}
@@ -456,31 +437,33 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                     </View>
                                 </View>
 
-                                {/* Botón para cambiar estado */}
-                                {entregado == true && estado == "activo" ? (
-                                    <View style={style.editarModalEstadoLocked}>
-                                        <FontAwesome name="lock" style={style.editarModalEstadoLockedIcon} />
-                                        <Text style={style.editarModalEstadoLockedText}>
-                                            El pedido está entregado y no se puede modificar
-                                        </Text>
-                                    </View>
-                                ) : (
-                                    <TouchableOpacity
-                                        style={style.editarModalEstadoChangeButton}
-                                        onPress={onChangeState}
-                                        activeOpacity={0.8}
-                                    >
-                                        <FontAwesome name="edit" style={style.editarModalEstadoChangeIcon} />
-                                        <Text style={style.editarModalEstadoChangeText}>
-                                            Cambiar Estado
-                                        </Text>
-                                    </TouchableOpacity>
+                                {/* Botón para cambiar estado - Oculto para despacho */}
+                                {acceso !== "despacho" && (
+                                    entregado == true && estado == "activo" ? (
+                                        <View style={style.editarModalEstadoLocked}>
+                                            <FontAwesome name="lock" style={style.editarModalEstadoLockedIcon} />
+                                            <Text style={style.editarModalEstadoLockedText}>
+                                                El pedido está entregado y no se puede modificar
+                                            </Text>
+                                        </View>
+                                    ) : (
+                                        <TouchableOpacity
+                                            style={style.editarModalEstadoChangeButton}
+                                            onPress={onChangeState}
+                                            activeOpacity={0.8}
+                                        >
+                                            <FontAwesome name="edit" style={style.editarModalEstadoChangeIcon} />
+                                            <Text style={style.editarModalEstadoChangeText}>
+                                                Cambiar Estado
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )
                                 )}
                             </View>
                         )}
 
-                        {/* Renderizar CambiarEstadoModal cuando modalPerfiles es true */}
-                        {(acceso == "admin" || acceso == "solucion" || acceso == "comercial" || acceso == "despacho") && modalPerfiles && (
+                        {/* Renderizar CambiarEstadoModal cuando modalPerfiles es true - Oculto para despacho */}
+                        {(acceso == "admin" || acceso == "solucion" || acceso == "comercial") && modalPerfiles && (
                             <CambiarEstadoModal
                                 visible={modalPerfiles}
                                 estado={estado}
@@ -495,8 +478,9 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                         )}
 
                         {/* Asignar Vehículo y fecha - Mejorado con mejor diseño */}
+                        {/* Solo mostrar si el estado es activo Y se hizo click en cambiar estado */}
                         {
-                            (acceso == "admin" || acceso == "despacho") && (estado == "activo" || estadoEntrega == "asignado")
+                            (acceso == "admin" || acceso == "despacho") && estado == "activo" && estadoChangedClicked
                                 ? <View style={style.contenedorEspera}>
                                     <View style={style.separador}></View>
                                     <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 18, fontWeight: '600' }]}>Asignación de Vehículo</Text>
@@ -532,20 +516,22 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                         </View>
                                     )}
 
-                                    {/* Botón para asignar vehículo */}
+                                    {/* Botón para asignar vehículo - Oculto para despacho */}
                                     {
-                                        entregado == true && estado == "activo"
-                                            ? null
-                                            : <TouchableOpacity
-                                                style={style.editarModalVehiculoButton}
-                                                onPress={onAssignVehicle}
-                                                activeOpacity={0.8}
-                                            >
-                                                <FontAwesome name="truck" style={style.editarModalVehiculoButtonIcon} />
-                                                <Text style={style.editarModalVehiculoButtonText}>
-                                                    {placaPedido ? 'Cambiar Vehículo' : 'Asignar Vehículo'}
-                                                </Text>
-                                            </TouchableOpacity>
+                                        acceso !== "despacho" && (
+                                            entregado == true && estado == "activo"
+                                                ? null
+                                                : <TouchableOpacity
+                                                    style={style.editarModalVehiculoButton}
+                                                    onPress={onAssignVehicle}
+                                                    activeOpacity={0.8}
+                                                >
+                                                    <FontAwesome name="truck" style={style.editarModalVehiculoButtonIcon} />
+                                                    <Text style={style.editarModalVehiculoButtonText}>
+                                                        {placaPedido ? 'Cambiar Vehículo' : 'Asignar Vehículo'}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                        )
                                     }
                                 </View>
                                 : null
@@ -705,8 +691,8 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                             </View>
                         )}
 
-                        {/* Sección de cerrar pedido */}
-                        {(acceso === "admin" || acceso === "conductor" || acceso === "despacho") && fechaEntrega && !entregado && (
+                        {/* Sección de cerrar pedido - Oculto para despacho */}
+                        {(acceso === "admin" || acceso === "conductor") && fechaEntrega && !entregado && (
                             <View style={style.editarModalCerrarSection}>
                                 <View style={style.editarModalCerrarHeader}>
                                     <FontAwesome name="check-circle" style={style.editarModalCerrarIcon} />

@@ -93,6 +93,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         modalCerrarPedido,
         modalOrdenamiento,
         modalResetPedido,
+        estadoChangedClicked,
         terminoBuscador,
         showSearch,
         searchLoading,
@@ -176,19 +177,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         keyboardDidShowListener.current = Keyboard.addListener('keyboardDidShow', _keyboardDidShow);
         keyboardDidHideListener.current = Keyboard.addListener('keyboardDidHide', _keyboardDidHide);
 
-        // Solo cargar pedidos si tenemos los datos necesarios
-        if (idUsuario && acceso) {
-            // Si es conductor, establecer filtro por defecto a "asignado"
-            if (acceso === 'conductor' && estadoFiltro === 'todos') {
-                updateState(actions.setEstadoFiltro('asignado'));
-            }
-
-            // Delay mínimo para evitar cargas múltiples
-            const timeoutId = setTimeout(() => {
-                loadPedidos('load');
-            }, 50);
-
-            return () => clearTimeout(timeoutId);
+        // Si es conductor, establecer filtro por defecto a "asignado"
+        if (idUsuario && acceso === 'conductor' && estadoFiltro === 'todos') {
+            updateState(actions.setEstadoFiltro('asignado'));
         }
 
         return () => {
@@ -294,7 +285,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         };
 
         loadPedidosWithFilters();
-    }, [estadoFiltro, ordenPor, tipoOrden]); // Solo reaccionar a cambios en filtros y ordenamiento
+    }, [idUsuario, acceso, estadoFiltro, ordenPor, tipoOrden]); // Reaccionar a cambios en usuario, acceso, filtros y ordenamiento
 
     useEffect(() => {
         // Cargar vehículos cuando tenemos el idUsuario
@@ -432,6 +423,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
             if (res.status) {
                 if (estado == "activo") {
+                    // Marcar que se hizo click en cambiar estado
+                    updateState(actions.setEstadoChangedClicked(true));
+
                     if (estadoInicial == "innactivo") {
                         updateState(actions.setModalNovedad(true));
                         updateState(actions.setPedidoData({ estadoEntrega: fechaEntrega ? "asignado" : "activo" }));
@@ -703,19 +697,17 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 return;
             }
 
-            // Usar fecha actual si no hay fecha seleccionada
-            const fechaParaAsignar = fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss');
-
-            const response = await asignarConductor(id, finalIdVehiculo, fechaParaAsignar, idUsuario); // Usar idUsuario como usuarioAsigna
+            // Asignar solo vehículo, sin fecha
+            const response = await asignarConductor(id, finalIdVehiculo, idUsuario);
 
             if (response.status) {
-                // Cerrar modal de vehículos
-                updateState(actions.setModalConductor(false));
+                // Mostrar mensaje de éxito
+                Alert.alert('Éxito', `Vehículo ${finalPlaca} asignado correctamente`);
 
-                // Abrir modal de fecha para seleccionar fecha de entrega
-                updateState(actions.setModalFechaEntrega(true));
+                // Cambiar a la pestaña de fecha en lugar de cerrar el modal
+                updateState(actions.setShowCalendar(true));
 
-                // Recargar pedidos
+                // Recargar pedidos en segundo plano
                 dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
             } else {
                 Alert.alert('Error', 'No se pudo asignar el vehículo');
@@ -736,45 +728,30 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 return;
             }
 
-            // Si hay un vehículo asignado, actualizar la asignación con la nueva fecha
-            if (idVehiculo && placa) {
-                const fechaFormatted = moment(fechaAUsar).format('YYYY-MM-DD HH:mm:ss');
+            // Asignar fecha de entrega (con o sin vehículo asignado)
+            const fechaFormatted = moment(fechaAUsar).format('YYYY-MM-DD HH:mm:ss');
+            const seleccionados = [{
+                _id: id,
+                fechaentrega: fechaFormatted
+            }];
 
-                // Llamar al endpoint de asignar conductor con la nueva fecha
-                const response = await asignarConductor(id, idVehiculo, fechaFormatted, idUsuario);
+            const response = await asignarFechaEntrega(seleccionados);
 
-                if (response.status) {
-                    Alert.alert('Éxito', `Vehículo ${placa} asignado para el ${moment(fechaAUsar).format('DD/MM/YYYY')}`);
-
-                    // Cerrar modal
-                    updateState(actions.setModalFechaEntrega(false));
-                    updateState(actions.setShowCalendar(false));
-
-                    // Recargar pedidos
-                    dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+            if (response.status) {
+                if (idVehiculo && placa) {
+                    Alert.alert('Éxito', `Fecha de entrega asignada: ${moment(fechaAUsar).format('DD/MM/YYYY')}\nVehículo: ${placa}`);
                 } else {
-                    Alert.alert('Error', 'No se pudo actualizar la asignación del vehículo');
+                    Alert.alert('Éxito', `Fecha de entrega asignada: ${moment(fechaAUsar).format('DD/MM/YYYY')}`);
                 }
+
+                // Cerrar modal
+                updateState(actions.setModalFechaEntrega(false));
+                updateState(actions.setShowCalendar(false));
+
+                // Recargar pedidos
+                dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
             } else {
-                // Si no hay vehículo asignado, solo asignar la fecha
-                const fechaFormatted = moment(fechaAUsar).format('YYYY-MM-DD HH:mm:ss');
-                const seleccionados = [{
-                    _id: id,
-                    fechaentrega: fechaFormatted
-                }];
-
-                const response = await asignarFechaEntrega(seleccionados);
-
-                if (response.status) {
-                    // Cerrar modal
-                    updateState(actions.setModalFechaEntrega(false));
-                    updateState(actions.setShowCalendar(false));
-
-                    // Recargar pedidos
-                    dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
-                } else {
-                    Alert.alert('Error', 'No se pudo asignar la fecha');
-                }
+                Alert.alert('Error', 'No se pudo asignar la fecha');
             }
         } catch (error) {
             console.error('Error asignando fecha:', error);
@@ -1343,6 +1320,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 }}
                 // Props para CambiarEstadoModal
                 modalPerfiles={modalPerfiles}
+                estadoChangedClicked={estadoChangedClicked}
                 onEstadoChange={handleEstadoChange}
                 onConfirmStateChange={handleConfirmStateChange}
                 onCancelStateChange={cancelarCambioEstado}

@@ -1,13 +1,27 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { style } from './style';
 import axios from 'axios';
 import { DataContext } from '../../context/context';
 
 export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
   const { userId, acceso } = useContext(DataContext)
+  const insets = useSafeAreaInsets();
+
+  // Detectar la ruta actual desde el navigation state
+  const [currentRouteState, setCurrentRouteState] = useState(currentRoute);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('state', (e) => {
+      const currentRouteName = e.data.state?.routes?.[e.data.state?.index]?.name || 'Home';
+      setCurrentRouteState(currentRouteName);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
   const [user, setUser] = useState({});
   const [badgeMessage, setBadgeMessage] = useState(true);
   const [badgeCuenta, setBadgeCuenta] = useState(true);
@@ -64,12 +78,20 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
 
   // Función para determinar si un tab está activo
   const isActiveTab = (tabName) => {
-    return currentRoute === tabName;
+    return currentRouteState === tabName;
+  };
+
+
+  // Crear estilo dinámico que respete las safe areas
+  const dynamicFooterWrapper = {
+    ...style.footerWrapper,
+    marginBottom: -insets.bottom, // Empujar hacia abajo para llegar al borde físico
+    paddingBottom: insets.bottom, // Agregar padding interno para el contenido
   };
 
 
   return (
-    <View style={style.footerWrapper}>
+    <View style={dynamicFooterWrapper}>
 
       {/* Contenedor del footer principal */}
       <View style={style.contenedorFooter}>

@@ -45,20 +45,28 @@ BEGIN
 
     RETURN QUERY
     SELECT 
-        COALESCE(c.placa, 'TOTAL') as placa,
+        /* Normalizar placa: usar placa del carro; usar 'TOTAL' para fila de rollup */
+        COALESCE(
+            NULLIF(c.placa, ''),
+            'TOTAL'
+        )::VARCHAR AS placa,
         -- Crédito
         SUM(CASE 
             WHEN LOWER(p.forma_pago) = 'credito' THEN 
+                /* Limpiar kilos (permitir comas, puntos, signos) */
                 CASE 
-                    WHEN TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC
+                    WHEN REGEXP_REPLACE(TRIM(COALESCE(p.kilos::text, '')), '[^0-9,.-]', '', 'g') ~ '^-?[0-9]+([\.,][0-9]+)?$' 
+                        THEN REPLACE(REGEXP_REPLACE(TRIM(p.kilos::text), '[^0-9,.-]', '', 'g'), ',', '.')::NUMERIC
                     ELSE 0
                 END
             ELSE 0 
         END) as total_kilos_credito,
         SUM(CASE 
             WHEN LOWER(p.forma_pago) = 'credito' THEN 
+                /* Limpiar valor_total (remover símbolos, comas -> punto, soportar negativos) */
                 CASE 
-                    WHEN TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
+                    WHEN REGEXP_REPLACE(TRIM(COALESCE(p.valor_total::text, '')), '[^0-9,.-]', '', 'g') ~ '^-?[0-9]+([\.,][0-9]+)?$' 
+                        THEN REPLACE(REGEXP_REPLACE(TRIM(p.valor_total::text), '[^0-9,.-]', '', 'g'), ',', '.')::NUMERIC
                     ELSE 0
                 END
             ELSE 0 
@@ -67,7 +75,8 @@ BEGIN
         SUM(CASE 
             WHEN LOWER(p.forma_pago) = 'contado' THEN 
                 CASE 
-                    WHEN TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC
+                    WHEN REGEXP_REPLACE(TRIM(COALESCE(p.kilos::text, '')), '[^0-9,.-]', '', 'g') ~ '^-?[0-9]+([\.,][0-9]+)?$' 
+                        THEN REPLACE(REGEXP_REPLACE(TRIM(p.kilos::text), '[^0-9,.-]', '', 'g'), ',', '.')::NUMERIC
                     ELSE 0
                 END
             ELSE 0 
@@ -75,18 +84,21 @@ BEGIN
         SUM(CASE 
             WHEN LOWER(p.forma_pago) = 'contado' THEN 
                 CASE 
-                    WHEN TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
+                    WHEN REGEXP_REPLACE(TRIM(COALESCE(p.valor_total::text, '')), '[^0-9,.-]', '', 'g') ~ '^-?[0-9]+([\.,][0-9]+)?$' 
+                        THEN REPLACE(REGEXP_REPLACE(TRIM(p.valor_total::text), '[^0-9,.-]', '', 'g'), ',', '.')::NUMERIC
                     ELSE 0
                 END
             ELSE 0 
         END) as total_valor_contado,
         -- Total
         SUM(CASE 
-            WHEN TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC
+            WHEN REGEXP_REPLACE(TRIM(COALESCE(p.kilos::text, '')), '[^0-9,.-]', '', 'g') ~ '^-?[0-9]+([\.,][0-9]+)?$' 
+                THEN REPLACE(REGEXP_REPLACE(TRIM(p.kilos::text), '[^0-9,.-]', '', 'g'), ',', '.')::NUMERIC
             ELSE 0
         END) as total_kilos,
         SUM(CASE 
-            WHEN TRIM(p.valor_total) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.valor_total)::NUMERIC
+            WHEN REGEXP_REPLACE(TRIM(COALESCE(p.valor_total::text, '')), '[^0-9,.-]', '', 'g') ~ '^-?[0-9]+([\.,][0-9]+)?$' 
+                THEN REPLACE(REGEXP_REPLACE(TRIM(p.valor_total::text), '[^0-9,.-]', '', 'g'), ',', '.')::NUMERIC
             ELSE 0
         END) as total_valor,
         COUNT(p._id)::INT as cantidad_pedidos

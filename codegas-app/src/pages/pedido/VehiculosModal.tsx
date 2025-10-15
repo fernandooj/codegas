@@ -14,7 +14,7 @@ interface VehiculosModalProps {
     onToggleCalendar: (show: boolean) => void;
     fechaEntrega?: string;
     onDateSelect: (date: string) => void;
-    onSaveDate: () => void;
+    onSaveDate: (fecha?: string) => void;
     idVehiculo?: string;
     placa?: string;
     onVehicleSelect: (vehiculo: Vehiculo) => void;
@@ -210,8 +210,8 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                 marginTop: 2
                             }}>
                                 {!showCalendar ?
-                                    (idVehiculo ? 'Paso 2: Selecciona fecha de entrega' : 'Paso 1: Selecciona un vehículo') :
-                                    'Paso 2: Selecciona fecha de entrega'
+                                    (idVehiculo ? 'Selecciona fecha de entrega' : 'Selecciona un vehículo') :
+                                    (idVehiculo ? 'Selecciona fecha de entrega' : 'Selecciona una fecha')
                                 }
                             </Text>
                         </View>
@@ -346,9 +346,11 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                 onDayPress={(day: CalendarDay) => {
                                     setFechaSeleccionadaLocal(day.dateString);
                                     onDateSelect(day.dateString);
-                                    // Solo llamar onSaveDate, que ahora maneja la asignación completa
+                                    // Pasar la fecha directamente para evitar problemas de sincronización
                                     setTimeout(() => {
-                                        onSaveDate();
+                                        // Formatear la fecha con hora actual
+                                        const fechaConHora = moment(day.dateString).format('YYYY-MM-DD HH:mm:ss');
+                                        onSaveDate(fechaConHora);
                                     }, 300);
                                 }}
                             />
@@ -360,15 +362,25 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                 borderRadius: 8,
                                 marginTop: 15,
                                 flexDirection: 'row',
-                                alignItems: 'center'
+                                alignItems: 'center',
+                                borderLeftWidth: 4,
+                                borderLeftColor: '#007bff'
                             }}>
-                                <FontAwesome name="info-circle" size={14} color="#007bff" style={{ marginRight: 8 }} />
+                                <FontAwesome
+                                    name="info-circle"
+                                    size={14}
+                                    color="#007bff"
+                                    style={{ marginRight: 8 }}
+                                />
                                 <Text style={{
                                     fontSize: 12,
                                     color: '#666',
                                     flex: 1
                                 }}>
-                                    Selecciona la fecha de entrega para completar la asignación
+                                    {!idVehiculo ?
+                                        'Selecciona la fecha de entrega. También puedes seleccionar un vehículo primero.' :
+                                        'Selecciona la fecha de entrega para completar la asignación'
+                                    }
                                 </Text>
                             </View>
                         </View>
@@ -423,7 +435,7 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                                 >
                                                     <FontAwesome name="calendar" style={{ fontSize: 16, color: '#fff', marginRight: 8 }} />
                                                     <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
-                                                        Continuar a selección de fecha
+                                                        Ir a selección de fecha
                                                     </Text>
                                                     <FontAwesome name="arrow-right" style={{ fontSize: 14, color: '#fff', marginLeft: 8 }} />
                                                 </TouchableOpacity>
@@ -450,8 +462,8 @@ const VehiculosModal: React.FC<VehiculosModalProps> = ({
                                                 />
                                                 <Text style={{ color: idVehiculo ? '#2196f3' : '#28a745', fontSize: 14, fontWeight: '500', textAlign: 'center', flex: 1 }}>
                                                     {idVehiculo ?
-                                                        `Vehículo ${placa} seleccionado. Ahora selecciona la fecha.` :
-                                                        'Selecciona un vehículo para continuar'
+                                                        `Vehículo ${placa} seleccionado. También puedes seleccionar una fecha.` :
+                                                        'Selecciona un vehículo. También puedes seleccionar una fecha primero.'
                                                     }
                                                 </Text>
                                             </View>
