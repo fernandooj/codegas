@@ -501,13 +501,11 @@ export interface ScrollEvent {
 // Estadísticas types
 export interface Estadistica {
     placa: string;
-    total_kilos_credito: number;
-    total_valor_credito: number;
-    total_kilos_contado: number;
-    total_valor_contado: number;
-    total_kilos: number;
-    total_valor: number;
     cantidad_pedidos: number;
+    total_kilos: number;
+    total_valor_contado: number;
+    total_valor_credito: number;
+    total_valor: number;
 }
 
 export interface DetallePedido {

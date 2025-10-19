@@ -698,7 +698,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             }
 
             // Asignar solo vehículo, sin fecha
-            const response = await asignarConductor(id, finalIdVehiculo, idUsuario);
+            const fechaParaAsignar = fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss');
+            const response = await asignarConductor(id, finalIdVehiculo,fechaParaAsignar, idUsuario);
 
             if (response.status) {
                 // Mostrar mensaje de éxito

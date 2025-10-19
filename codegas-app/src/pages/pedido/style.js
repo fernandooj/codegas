@@ -2253,38 +2253,38 @@ export const style = MediaQueryStyleSheet.create({
 		textAlign: 'center',
 	},
 	modalEstadisticasRemisionCell: {
-		width: 80,
+		width: 60,
 	},
 	modalEstadisticasPedidoCell: {
-		width: 90,
+		width: 60,
 	},
 	modalEstadisticasCodtCell: {
-		width: 75,
+		width: 40,
 	},
 	modalEstadisticasKilosCell: {
-		width: 95,
+		width: 70,
 	},
 	modalEstadisticasContadoCell: {
-		width: 110,
+		width: 90,
 	},
 	modalEstadisticasValorCell: {
-		width: 110,
+		width: 90,
 	},
 	// Estilos para vista por día
 	modalEstadisticasPorDiaHeaderRow: {
 		flexDirection: 'row',
 		backgroundColor: '#007bff',
-		paddingVertical: 12,
-		paddingHorizontal: 8,
-		borderTopLeftRadius: 8,
-		borderTopRightRadius: 8,
+		paddingVertical: 6,
+		paddingHorizontal: 4,
+		borderTopLeftRadius: 4,
+		borderTopRightRadius: 4,
 		borderBottomWidth: 2,
 		borderBottomColor: '#0056b3',
 	},
 	modalEstadisticasPorDiaHeaderCell: {
 		color: 'white',
 		fontWeight: 'bold',
-		fontSize: 12,
+		fontSize: 11,
 		textAlign: 'center',
 	},
 	modalEstadisticasPorDiaScrollContainer: {
@@ -2301,11 +2301,12 @@ export const style = MediaQueryStyleSheet.create({
 	modalEstadisticasPorDiaCell: {
 		fontSize: 11,
 		color: '#333',
-		textAlign: 'center',
+		textAlign: 'right',
 	},
 	modalEstadisticasFechaCell: {
-		width: 120,
+		width: 100,
 		fontWeight: '500',
+		textAlign: 'center'
 	},
 	modalEstadisticasCantidadCell: {
 		width: 80,

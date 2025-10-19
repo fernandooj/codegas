@@ -40,7 +40,7 @@ BEGIN
     IF _periodo = 'año' THEN
         RETURN QUERY
         SELECT 
-            'TOTAL GENERAL'::TEXT as fechaentrega,
+            'TOTAL GENERALX'::TEXT as fechaentrega,
             COUNT(p._id)::INT as cantidad_pedidos,
             SUM(CASE 
                 WHEN TRIM(p.kilos) ~ '^[0-9]+\.?[0-9]*$' THEN TRIM(p.kilos)::NUMERIC

@@ -252,15 +252,16 @@ const guardarNovedadInactivo = async (pedidoId, novedad, conductorId = null, mot
 };
 
 // Acción para asignar conductor (sin fecha de entrega)
-const asignarConductor = async (id, idVehiculo, usuarioAsigna) => {
+const asignarConductor = async (id, idVehiculo,fechaEntrega, usuarioAsigna) => {
   try {
-    const response = await axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${usuarioAsigna}`);
+    const response = await axios.get(`ped/pedido/asignarConductor/${id}/${idVehiculo}/${fechaEntrega}/${usuarioAsigna}`);
     return response.data;
   } catch (error) {
     console.error('Error en asignarConductor:', {
       function: 'asignarConductor',
       id: id,
       idVehiculo: idVehiculo,
+      fechaEntrega: fechaEntrega,
       usuarioAsigna: usuarioAsigna,
       error: error,
       message: error.message,
