@@ -218,7 +218,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 <View style={style.editarModalHeaderSubtitle}>
                                     <FontAwesome name="hashtag" style={style.editarModalHashtagIcon} />
                                     <Text style={style.editarModalPedidoId}>
-                                        Pedido #{id}
+                                        Pedido {id}
                                     </Text>
                                 </View>
                             </View>
@@ -349,19 +349,6 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                 {pedidoData.punto_celular}
                                             </Text>
                                         )}
-
-                                        {/* Botón de navegación */}
-                                        {pedidoData.coordenadas && (
-                                            <TouchableOpacity
-                                                onPress={openNavigationModal}
-                                                style={style.editarModalNavigateButton}
-                                            >
-                                                <FontAwesome name="map-marker" style={style.editarModalNavigateIcon} />
-                                                <Text style={style.editarModalNavigateText}>
-                                                    Navegar al punto
-                                                </Text>
-                                            </TouchableOpacity>
-                                        )}
                                         {observacion && (
                                             <Text style={style.editarModalAdditionalInfoText}>
                                                 <FontAwesome name="comment" style={style.editarModalAdditionalInfoIcon} />
@@ -377,6 +364,19 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             </Text>
                                         )}
 
+                                        {/* Botón de navegación */}
+                                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                                        {pedidoData.coordenadas && (
+                                            <TouchableOpacity
+                                                onPress={openNavigationModal}
+                                                style={style.editarModalNavigateButton}
+                                            >
+                                                <FontAwesome name="map-marker" style={style.editarModalNavigateIcon} />
+                                                <Text style={style.editarModalNavigateText}>
+                                                    Navega al punto
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
                                         {/* Botón para Reporte de Emergencia */}
                                         <TouchableOpacity
                                             style={style.editarModalEmergencyButton}
@@ -402,16 +402,17 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                 style={style.editarModalEmergencyIcon}
                                             />
                                             <Text style={style.editarModalEmergencyText}>
-                                                Reporte de Emergencia
+                                                Reporte Emergencia
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
+                                </View>
                             )}
-                        </View>
-
+                        
+                        
                         {/* CAMBIAR ESTADO - Mejorado con modal secundario */}
-                        {(acceso == "admin" || acceso == "solucion" || acceso == "comercial" || acceso == "despacho") && !modalPerfiles && (
+                        {(acceso == "admin" || acceso == "solucion" || acceso == "comercial") && !modalPerfiles && (
                             <View style={style.editarModalEstadoSection}>
                                 <Text style={style.editarModalEstadoTitle}>
                                     Gestión de Estado
@@ -420,9 +421,9 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 {/* Estado actual */}
                                 <View style={[
                                     style.editarModalEstadoActual,
-                                    { borderColor: getEstadoColor(estado || "activo") }
+                                    {flexDirection: 'row', gap: 10 , borderColor: getEstadoColor(estado || "activo") }
                                 ]}>
-                                    <Text style={style.editarModalEstadoLabel}>Estado actual:</Text>
+                                    <Text style={style.editarModalEstadoLabel}>Estado actual:  </Text>
                                     <View style={style.editarModalEstadoRow}>
                                         <FontAwesome
                                             name={estado === "activo" ? "check-circle" : estado === "innactivo" ? "times-circle" : "pause-circle"}
@@ -438,12 +439,11 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 </View>
 
                                 {/* Botón para cambiar estado - Oculto para despacho */}
-                                {acceso !== "despacho" && (
-                                    entregado == true && estado == "activo" ? (
+                                {(entregado == true && estado == "activo" ? (
                                         <View style={style.editarModalEstadoLocked}>
                                             <FontAwesome name="lock" style={style.editarModalEstadoLockedIcon} />
                                             <Text style={style.editarModalEstadoLockedText}>
-                                                El pedido está entregado y no se puede modificar
+                                                Pedido entregado, no se puede modificar.
                                             </Text>
                                         </View>
                                     ) : (
@@ -461,7 +461,6 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 )}
                             </View>
                         )}
-
                         {/* Renderizar CambiarEstadoModal cuando modalPerfiles es true - Oculto para despacho */}
                         {(acceso == "admin" || acceso == "solucion" || acceso == "comercial") && modalPerfiles && (
                             <CambiarEstadoModal
@@ -476,14 +475,13 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 onCancel={onCancelStateChange}
                             />
                         )}
-
                         {/* Asignar Vehículo y fecha - Mejorado con mejor diseño */}
                         {/* Solo mostrar si el estado es activo Y se hizo click en cambiar estado */}
                         {
                             (acceso == "admin" || acceso == "despacho") && estado == "activo" && estadoChangedClicked
                                 ? <View style={style.contenedorEspera}>
                                     <View style={style.separador}></View>
-                                    <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 18, fontWeight: '600' }]}>Asignación de Vehículo</Text>
+                                    <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 16, fontWeight: '500' }]}>Asignación de Vehículo</Text>
 
                                     {/* Información del vehículo asignado */}
                                     {placaPedido ? (
@@ -577,17 +575,14 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                     <Text style={style.editarModalEntregadoTitle}>
                                         🎉 Pedido Finalizado
                                     </Text>
-                                    <Text style={style.editarModalEntregadoSubtitle}>
+                                    {estado!="noentregado"&&(<Text style={style.editarModalEntregadoSubtitle}>
                                         Completado y entregado exitosamente
-                                    </Text>
+                                    </Text>)}
                                 </View>
 
                                 {/* Imagen de la factura si existe */}
                                 {pedidoData.imagenCerrar && (
                                     <View style={style.editarModalImageSection}>
-                                        <Text style={style.editarModalImageTitle}>
-                                            📷 Imagen de la Factura
-                                        </Text>
                                         <View style={style.editarModalImageWrapper}>
                                             <Image
                                                 source={{ uri: pedidoData.imagenCerrar }}
@@ -605,8 +600,10 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 )}
 
                                 {/* Cards de información mejoradas */}
+                              
                                 <View style={style.editarModalCardsContainer}>
                                     {/* Card principal con total */}
+                                {estado!="noentregado"&&(
                                     <View style={style.editarModalMainCard}>
                                         <View style={style.editarModalMainCardRow}>
                                             <Text style={style.editarModalMainCardTitle}>
@@ -633,7 +630,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             </View>
                                         )}
                                     </View>
-
+                                    )}
                                     {/* Card de detalles */}
                                     <View style={style.editarModalDetailsCard}>
                                         <Text style={style.editarModalDetailsCardTitle}>
@@ -655,14 +652,14 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                 <View style={style.editarModalDetailsRow}>
                                                     <View style={style.editarModalDetailsRowLeft}>
                                                         <FontAwesome name="file-text" style={style.editarModalDetailsIcon} />
-                                                        <Text style={style.editarModalDetailsLabel}>Factura:</Text>
+                                                        <Text style={style.editarModalDetailsLabel}>Consecutivo:</Text>
                                                     </View>
                                                     <Text style={style.editarModalDetailsValue}>{factura}</Text>
                                                 </View>
                                             )}
                                         </View>
                                     </View>
-
+                                    
                                     {/* Card de información adicional si existen otros campos */}
                                     {(motivo_no_cierre || perfil_novedad) && (
                                         <View style={style.editarModalWarningCard}>
@@ -702,7 +699,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 </View>
 
                                 <Text style={style.editarModalCerrarDescription}>
-                                    Complete la información de entrega para finalizar este pedido.
+                                    Complete la información para finalizar este pedido.
                                 </Text>
 
                                 <TouchableOpacity
@@ -717,7 +714,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 </TouchableOpacity>
                             </View>
                         )}
-
+                     </View>
                     </ScrollView>
                 </Animated.View>
 

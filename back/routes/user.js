@@ -454,7 +454,7 @@ module.exports = function (app, passport) {
                             if (req.session.usuario.acceso == "cliente" && !req.body.editado) {
                                 let text2 = "<img src='https://appcodegas.com/public/uploads/logo.png' width='30'"
                                 let text1 = `hola ${req.body.nombre} <br />Codegas, te da la bienvenida a nuestra APP, ahora tendrás muchos beneficios en la palma de tu mano.`
-                                htmlTemplate(req, req.body, "Bienvenido a Codegas", text1, text2, "Bienvenido a Codegas")
+                                htmlTemplate(req, req.body, "Bienvenido a CODEGAS", text1, text2, "Bienvenido a CODEGAS")
                             }
 
                             if (req.session.usuario.acceso == "cliente") {

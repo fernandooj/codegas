@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions, Platform } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
 let size = Dimensions.get('window');
 
@@ -22,7 +22,7 @@ export const style = MediaQueryStyleSheet.create({
 		paddingTop: 0,
 		paddingBottom: 10,
 		backgroundColor: '#fff',
-		marginBottom: 20,
+		marginBottom: 15,
 		shadowColor: '#000',
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
@@ -35,8 +35,8 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom: 10
 	},
 	welcomeText: {
-		fontSize: 18,
-		fontWeight: '600',
+		fontSize: 12,
+		fontWeight: '500',
 		color: '#002587',
 		textAlign: 'center'
 	},
@@ -59,7 +59,7 @@ export const style = MediaQueryStyleSheet.create({
 	btnContent: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		padding: 20
+		padding: 10
 	},
 	iconContainer: {
 		width: 50,
@@ -71,7 +71,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginRight: 15
 	},
 	iconModerno: {
-		fontSize: 24,
+		fontSize: 22,
 		textAlign: 'center'
 	},
 	textContainer: {
@@ -84,12 +84,12 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom: 4
 	},
 	subtitleModerno: {
-		fontSize: 14,
+		fontSize: 12,
 		color: 'rgba(255, 255, 255, 0.8)',
 		fontWeight: '400'
 	},
 	chevron: {
-		fontSize: 16,
+		fontSize: 14,
 		color: 'rgba(255, 255, 255, 0.7)',
 		textAlign: 'center'
 	},
@@ -109,19 +109,19 @@ export const style = MediaQueryStyleSheet.create({
 	leyendaHeader: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginBottom: 20,
-		paddingBottom: 15,
+		marginBottom: 12,
+		paddingBottom: 12,
 		borderBottomWidth: 1,
 		borderBottomColor: '#e9ecef'
 	},
 	leyendaHeaderIcon: {
-		fontSize: 20,
+		fontSize: 16,
 		marginRight: 10
 	},
 	leyendaTitle: {
-		fontSize: 18,
-		fontWeight: '600',
-		color: '#002587'
+		fontSize: 16,
+		fontWeight: '500',
+		color: '#0A6BB2'
 	},
 	estadosGrid: {
 		flexDirection: 'row',
@@ -129,21 +129,21 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent: 'space-between'
 	},
 	estadoItem: {
-		width: '48%',
+		width: '49%',
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginBottom: 15,
-		padding: 12,
+		marginBottom: 12,
+		padding: 10,
 		backgroundColor: '#f8f9fa',
 		borderRadius: 10
 	},
 	estadoIndicator: {
-		width: 32,
-		height: 32,
+		width: 28,
+		height: 28,
 		borderRadius: 16,
 		alignItems: 'center',
 		justifyContent: 'center',
-		marginRight: 10,
+		marginRight: 8,
 		borderWidth: 1,
 		borderColor: 'rgba(0, 0, 0, 0.1)'
 	},
@@ -152,7 +152,7 @@ export const style = MediaQueryStyleSheet.create({
 		textAlign: 'center'
 	},
 	estadoTexto: {
-		fontSize: 13,
+		fontSize: 12,
 		fontWeight: '500',
 		color: '#495057',
 		flex: 1

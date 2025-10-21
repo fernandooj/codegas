@@ -2,11 +2,8 @@ import React, { useEffect, useContext } from 'react';
 import { View, Text, TouchableOpacity, ImageBackground, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
-import { FontAwesome } from '@react-native-vector-icons/fontawesome';
-
 import Footer from '../components/footer';
 import HeaderLogo from '../../components/HeaderLogo';
-
 import { getVehiculos } from '../../redux/actions/vehiculoActions';
 import { getPedidos } from '../../redux/actions/pedidoActions';
 import { DataContext } from '../../context/context';
@@ -28,8 +25,8 @@ const Home = ({ navigation }) => {
         title: 'NUEVO PEDIDO',
         subtitle: 'Crear un pedido nuevo',
         icon: '➕',
-        color: '#007bff',
-        gradient: ['#007bff', '#0056b3'],
+        color: '#0A6BB2',
+        gradient: ['#0A6BB2', '#0056b3'],
         onPress: () => navigation.navigate(userId ? 'nuevo_pedido' : 'Perfil'),
         show: true
       },
@@ -37,8 +34,8 @@ const Home = ({ navigation }) => {
         title: 'INFORMES',
         subtitle: 'Ver reportes y estadísticas',
         icon: '📊',
-        color: '#28a745',
-        gradient: ['#28a745', '#1e7e34'],
+        color: '#50C7CA',
+        gradient: ['#040505ff', '#0A6BB2'],
         onPress: () => navigation.navigate('chart'),
         show: acceso == 'cliente'
       },
@@ -52,7 +49,7 @@ const Home = ({ navigation }) => {
             key={index}
             style={[style.btnModerno, { backgroundColor: boton.color }]}
             onPress={boton.onPress}
-            activeOpacity={0.8}
+            activeOpacity={0.6}
           >
             <View style={style.btnContent}>
               <View style={style.iconContainer}>

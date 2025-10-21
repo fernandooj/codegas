@@ -77,7 +77,7 @@ const generateWelcomeEmailTemplate = (userData) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Bienvenido a CodeGas Colombia</title>
+        <title>Bienvenido a CODEGAS Colombia</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; line-height: 1.6;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
@@ -90,10 +90,10 @@ const generateWelcomeEmailTemplate = (userData) => {
                             <td style="background-color: #3b82f6; padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
                                 <!-- Logo -->
                                 <div style="margin-bottom: 20px;">
-                                    <img src="cid:logo" alt="CodeGas Colombia" style="max-width: 480px; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" />
+                                    <img src="cid:logo" alt="CODEGAS Colombia" style="max-width: 480px; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" />
                                 </div>
                                 <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">
-                                    🎉 ¡Bienvenido a CodeGas!
+                                    🎉 ¡Bienvenido a CODEGAS!
                                 </h1>
                                 <p style="color: #bfdbfe; margin: 12px 0 0 0; font-size: 16px;">
                                     Tu cuenta ha sido creada exitosamente
@@ -268,7 +268,7 @@ module.exports.main = async (event) => {
       const mailOptions = {
         from: EMAIL_USER,
         to: cleanEmail,
-        subject: '🎉 ¡Bienvenido a CodeGas Colombia! - Tu cuenta ha sido creada',
+        subject: '🎉 ¡Bienvenido a CODEGAS Colombia! - Tu cuenta ha sido creada',
         html: emailHtml,
         attachments: [
           {
@@ -281,7 +281,7 @@ module.exports.main = async (event) => {
         text: `
 Hola ${nombre}, 
 
-¡Bienvenido a CodeGas Colombia!
+¡Bienvenido a CODEGAS Colombia!
 
 Tu cuenta ha sido creada exitosamente. Aquí están tus datos de acceso:
 

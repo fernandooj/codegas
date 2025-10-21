@@ -1,5 +1,5 @@
 export interface TomarFotoProps {
-    source?: string[];
+    source?: string[]|undefined;
     width?: number;
     titulo?: string;
     descripcion?: string;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react'
 import { View, Text, TouchableOpacity, TextInput, Modal, ActivityIndicator, ImageBackground, Image, Alert, ScrollView, Animated, Clipboard } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import Toast from 'react-native-toast-message';
 import axios from 'axios'
@@ -9,10 +8,9 @@ import moment from 'moment'
 import ModalSelector from 'react-native-modal-selector'
 import { Calendar } from 'react-native-calendars';
 import { TextInputMask } from 'react-native-masked-text'
-
 import { useDispatch, useSelector } from "react-redux";
 import { DataContext } from "../../context/context"
-import { getUsuariosAcceso, getUsuarios, getPointsByClient } from '../../redux/actions/usuarioActions'
+import { getUsuarios, getPointsByClient } from '../../redux/actions/usuarioActions'
 import { verificarPedidoHoy, crearPedido } from '../../redux/actions/pedidoActions'
 import Footer from '../components/footer'
 import HeaderLogo from '../../components/HeaderLogo'
@@ -273,7 +271,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                                     style.clienteStatusText,
                                     isInactive ? style.clienteStatusTextInactive : style.clienteStatusTextActive
                                 ]}>
-                                    {isInactive ? 'INACTIVO' : 'ACTIVO'}
+                                    {isInactive ? 'INACTIVOS' : 'ACTIVOS'}
                                 </Text>
                             </View>
                         </View>
@@ -402,7 +400,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                         <View style={style.modalSearchContainer}>
                             <View style={style.modalSearchInputContainer}>
                                 <TextInput
-                                    placeholder="Buscar cliente por nombre o razón social..."
+                                    placeholder="Buscar por nombre o razón social..."
                                     value={terminoBuscador}
                                     style={style.modalSearchInput}
                                     onChangeText={(terminoBuscador) => setState(prev => ({ ...prev, terminoBuscador }))}
@@ -520,7 +518,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                         style={style.btnFormaLlenar}
                     >
                         <Image source={require('../../assets/img/pg3/btn3.png')} style={style.icon} resizeMode={'contain'} />
-                        <Text style={style.textForma}>Cantidad KG</Text>
+                        <Text style={style.textForma}>Cantidad Kg</Text>
                         {forma === "cantidad" && <FontAwesome name="check" style={style.iconCheck} />}
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -602,7 +600,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                             onChange={(option) => {
                                 setState(prev => ({
                                     ...prev,
-                                    frecuencia: option.key,
+                                    frecuencia: option.key as FrecuenciaPedido,
                                     diaSeleccionado1: null,
                                     diaSeleccionado2: null,
                                     franja: null
@@ -621,7 +619,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                                     data={dias}
                                     initValue={"Dia"}
                                     cancelText="Cancelar"
-                                    onChange={(option) => { setState(prev => ({ ...prev, diaSeleccionado1: option.key })) }}
+                                    onChange={(option) => { setState(prev => ({ ...prev, diaSeleccionado1: option.key})) }}
                                     selectStyle={[style.modalSelectorStyle, !diaSeleccionado1 && { borderColor: "rgba(255, 0, 0, 0.22)" }]}
                                     selectTextStyle={style.modalSelectorText}
                                     optionStyle={style.modalSelectorItem}

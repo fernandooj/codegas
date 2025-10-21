@@ -1,16 +1,5 @@
 import React, { useContext, useState, useCallback, useEffect } from 'react';
-import {
-  ScrollView,
-  View,
-  TouchableOpacity,
-  Image,
-  Text,
-  TextInput,
-  ImageBackground,
-  Dimensions,
-  Platform,
-  StatusBar
-} from 'react-native';
+import {ScrollView, View, TouchableOpacity, Image, Text, TextInput, ImageBackground, Dimensions, Platform, StatusBar} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
@@ -20,15 +9,7 @@ import HeaderLogo from '../../components/HeaderLogo';
 import { DataContext } from '../../context/context';
 import Footer from '../components/footer';
 import Toast from 'react-native-toast-message';
-import {
-  PerfilProps,
-  UserData,
-  StoredUserData,
-  UserSearchResponse,
-  ProfileState,
-  DataContextType,
-  UserAccess
-} from './types';
+import { PerfilProps, UserData, StoredUserData, UserSearchResponse, ProfileState, DataContextType, UserAccess} from './types';
 import { getResponsiveValue } from './responsiveStyles';
 import DeleteAccountModal from '../../components/DeleteAccountModal';
 
@@ -83,7 +64,6 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
             email: storedEmail[1],
             avatar: storedAvatar[1]
           };
-
 
           // Actualizar estados locales inmediatamente
           if (newUserData.nombre && newUserData.nombre !== currentNombre) {
@@ -173,7 +153,7 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               <FontAwesome name="user" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#ffffff' }} />
             </View>
           </TouchableOpacity>
-          {(['solucion', 'admin', 'veo'] as UserAccess[]).includes(acceso) && (
+          {(['solucion', 'admin'] as UserAccess[]).includes(acceso) && (
             <TouchableOpacity
               style={style.btnLista}
               onPress={() => navigation.navigate('usuarios')}>
@@ -183,20 +163,6 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           )}
-
-          {/* {(acceso === 'admin' || acceso === 'despacho') && (
-          <TouchableOpacity
-            style={style.btnLista}
-            onPress={() =>
-              navigation.navigate('verPerfil', {tipoAcceso: 'admin'})
-            }>
-            <Text style={style.txtLista}>Crear Usuario</Text>
-            <Image
-              source={require('../../assets/img/pg1/icon1.png')}
-              style={style.icon}
-            />
-          </TouchableOpacity>
-        )} */}
           {(['admin', 'solucion', 'comercial', 'veo', 'despacho'] as UserAccess[]).includes(acceso) && (
             <TouchableOpacity
               style={style.btnLista}
@@ -207,7 +173,7 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           )}
-          {(['admin', 'solucion'] as UserAccess[]).includes(acceso) && (
+          {(['admin', 'comercial'] as UserAccess[]).includes(acceso) && (
             <TouchableOpacity
               style={style.btnLista}
               onPress={() => navigation.navigate('frecuencia')}>
@@ -217,7 +183,6 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           )}
-
           {(acceso === 'admin') && (
             <TouchableOpacity
               style={style.btnLista}

@@ -1,12 +1,5 @@
-import {
-  GET_PERFIL,
-  GET_USUARIOS,
-  GET_USUARIO,
-  GET_USUARIOS_ACCESO,
-} from "./constants/actionsTypes";
+import {GET_PERFIL, GET_USUARIOS, GET_USUARIO} from "./constants/actionsTypes";
 import axios from "axios";
-
-
 
 const getPerfil = data => {
   return dispatch => {

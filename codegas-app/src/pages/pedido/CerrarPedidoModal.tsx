@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    TextInput,
-    ScrollView,
-    Modal,
-    Alert,
-    Keyboard,
-    Dimensions,
-    Image
-} from 'react-native';
+import {View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Alert, Keyboard, Dimensions, Image} from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import TomarFoto from '../components/tomarFoto';
 import { motivoNoCierre } from '../../utils/pedido_info';
@@ -564,7 +553,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                     {/* Sección de foto */}
                                     <TomarFoto
                                         source={imagen ? [{ uri: imagen }] : []}
-                                        titulo="Foto de Factura"
+                                        titulo=''
                                         descripcion="Tome una foto clara de la factura para completar el pedido"
                                         multiple={false}
                                         limiteImagenes={1}
@@ -576,7 +565,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                         {/* Kilos */}
                                         <View>
                                             <Text style={{
-                                                fontSize: 14,
+                                                fontSize: 12,
                                                 fontWeight: '600',
                                                 color: '#333',
                                                 marginBottom: 8
@@ -592,9 +581,9 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                 borderWidth: 1,
                                                 borderColor: '#e9ecef'
                                             }}>
-                                                <FontAwesome name="balance-scale" style={{ fontSize: 16, color: '#666', marginRight: 10 }} />
+                                                <FontAwesome name="balance-scale" style={{ fontSize: 12, color: '#666', marginRight: 8 }} />
                                                 <TextInput
-                                                    placeholder="Ej: 120,5 o 120.5"
+                                                    placeholder="Ej: 120.5"
                                                     placeholderTextColor="#999"
                                                     value={kilos}
                                                     onChangeText={(text) => {
@@ -629,7 +618,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                     keyboardType="numeric"
                                                     style={{
                                                         flex: 1,
-                                                        fontSize: 16,
+                                                        fontSize: 14,
                                                         color: '#333',
                                                         paddingVertical: 12
                                                     }}
@@ -657,15 +646,15 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                 borderWidth: 1,
                                                 borderColor: '#e9ecef'
                                             }}>
-                                                <FontAwesome name="file-text-o" style={{ fontSize: 16, color: '#666', marginRight: 10 }} />
+                                                <FontAwesome name="file-text-o" style={{ fontSize: 12, color: '#666', marginRight: 10 }} />
                                                 <TextInput
-                                                    placeholder="Ej: FAC-001234"
+                                                    placeholder="Ej: 001234"
                                                     placeholderTextColor="#999"
                                                     value={factura}
                                                     onChangeText={setFactura}
                                                     style={{
                                                         flex: 1,
-                                                        fontSize: 16,
+                                                        fontSize: 14,
                                                         color: '#333',
                                                         paddingVertical: 12
                                                     }}
@@ -701,7 +690,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                     keyboardType="numeric"
                                                     style={{
                                                         flex: 1,
-                                                        fontSize: 16,
+                                                        fontSize: 14,
                                                         color: '#333',
                                                         paddingVertical: 12
                                                     }}
@@ -731,14 +720,14 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                             }}>
                                                 <FontAwesome name="truck" style={{ fontSize: 16, color: '#666', marginRight: 10 }} />
                                                 <TextInput
-                                                    placeholder="Ej: FV-162000"
+                                                    placeholder="Ej: FV-135000"
                                                     placeholderTextColor="#999"
                                                     value={remision}
                                                     onChangeText={setRemision}
                                                     keyboardType="numeric"
                                                     style={{
                                                         flex: 1,
-                                                        fontSize: 16,
+                                                        fontSize: 14,
                                                         color: '#333',
                                                         paddingVertical: 12
                                                     }}
@@ -749,17 +738,17 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                         {/* Forma de pago */}
                                         <View>
                                             <Text style={{
-                                                fontSize: 16,
+                                                fontSize: 14,
                                                 fontWeight: '600',
                                                 color: '#333',
                                                 marginBottom: 8
                                             }}>
                                                 Forma de Pago *
-                                            </Text>
-
-                                            <View style={{ gap: 12 }}>
+                                            </Text>      
+                                            <View style={{ flexDirection: 'row', gap: 12 }}> 
                                                 <TouchableOpacity
                                                     style={{
+                                                        flex:1,
                                                         backgroundColor: formaPago === 'Contado' ? '#e3f2fd' : '#f8f9fa',
                                                         borderRadius: 10,
                                                         paddingHorizontal: 16,
@@ -777,7 +766,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                         <FontAwesome
                                                             name="money"
                                                             style={{
-                                                                fontSize: 18,
+                                                                fontSize: 14,
                                                                 color: formaPago === 'Contado' ? '#2196f3' : '#666',
                                                                 marginRight: 12
                                                             }}
@@ -787,19 +776,20 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                             fontWeight: '600',
                                                             color: formaPago === 'Contado' ? '#2196f3' : '#333'
                                                         }}>
-                                                            Pago de Contado
+                                                        Contado
                                                         </Text>
                                                     </View>
                                                     {formaPago === 'Contado' && (
                                                         <FontAwesome
                                                             name="check-circle"
-                                                            style={{ fontSize: 20, color: '#2196f3' }}
+                                                            style={{ fontSize: 14, color: '#2196f3' }}
                                                         />
                                                     )}
                                                 </TouchableOpacity>
 
                                                 <TouchableOpacity
                                                     style={{
+                                                        flex:1,
                                                         backgroundColor: formaPago === 'Credito' ? '#e8f5e8' : '#f8f9fa',
                                                         borderRadius: 10,
                                                         paddingHorizontal: 16,
@@ -827,7 +817,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                             fontWeight: '600',
                                                             color: formaPago === 'Credito' ? '#4caf50' : '#333'
                                                         }}>
-                                                            Pago a Crédito
+                                                        Crédito
                                                         </Text>
                                                     </View>
                                                     {formaPago === 'Credito' && (

@@ -6,7 +6,7 @@ export const style = MediaQueryStyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: '#ffffff',
-		paddingTop: Platform.OS === 'android' ? 10 : 20,
+		paddingTop: Platform.OS === 'android' ? 0 : 10,
 		alignItems: "center",
 		justifyContent: 'center'
 	},
@@ -376,10 +376,10 @@ export const style = MediaQueryStyleSheet.create({
 		fontSize: 31
 	},
 	separador: {
-		width: size.width - 50,
+		width: size.width - 90,
 		backgroundColor: "rgba(0,0,0,.5)",
 		height: 2,
-		marginTop: 15
+		marginTop: 12
 	},
 	tituloModal: {
 		fontFamily: "Comfortaa-Regular",
@@ -590,7 +590,7 @@ export const style = MediaQueryStyleSheet.create({
 	headerContainer: {
 		backgroundColor: '#f8f9fa',
 		paddingHorizontal: 0,
-		paddingBottom: 12,
+		paddingBottom: 8,
 		borderBottomWidth: 1,
 		borderBottomColor: '#e9ecef',
 		width: '100%',
@@ -788,8 +788,8 @@ export const style = MediaQueryStyleSheet.create({
 	///////////				FILTER BUTTONS STYLES
 	//////////////////////////////////////////////////////////////////
 	filterContainer: {
-		marginHorizontal: 20,
-		marginTop: 12,
+		marginHorizontal: 10,
+		marginTop: 10,
 	},
 	filterScrollContent: {
 		paddingHorizontal: 4,
@@ -1175,8 +1175,8 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: 10,
-		paddingHorizontal: 20
+		marginBottom: 5,
+		paddingHorizontal: 10
 	},
 	headerTitleLeft: {
 		flexDirection: 'row',
@@ -1187,13 +1187,13 @@ export const style = MediaQueryStyleSheet.create({
 		flex: 1
 	},
 	headerTitle: {
-		fontSize: 24,
+		fontSize: 20,
 		fontWeight: 'bold',
 		color: '#333',
 		marginBottom: 4
 	},
 	headerSubtitle: {
-		fontSize: 16,
+		fontSize: 12,
 		color: '#666',
 		fontWeight: '500'
 	},
@@ -1227,19 +1227,19 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
-		padding: 20,
+		padding: 16,
 		borderBottomWidth: 1,
 		borderBottomColor: '#e9ecef',
 		backgroundColor: '#f8f9fa',
-		borderTopLeftRadius: 16,
-		borderTopRightRadius: 16,
+		borderTopLeftRadius: 10,
+		borderTopRightRadius: 10,
 	},
 	editarModalHeaderContent: {
 		flex: 1
 	},
 	editarModalHeaderTitle: {
-		fontSize: 18,
-		fontWeight: '700',
+		fontSize: 14,
+		fontWeight: '600',
 		color: '#333',
 		marginBottom: 4,
 	},
@@ -1292,19 +1292,19 @@ export const style = MediaQueryStyleSheet.create({
 		color: '#666'
 	},
 	editarModalBody: {
-		padding: 20
+		padding: 18
 	},
 	editarModalInfoCard: {
 		backgroundColor: '#f8f9fa',
-		padding: 15,
+		padding: 14,
 		borderRadius: 8,
-		marginBottom: 15,
+		marginBottom: 14,
 	},
 	editarModalInfoCardTitle: {
 		fontSize: 16,
 		fontWeight: '600',
 		color: '#333',
-		marginBottom: 10,
+		marginBottom: 8,
 	},
 	editarModalInfoCardContent: {
 		gap: 8
@@ -1370,10 +1370,10 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	editarModalEmergencyButton: {
 		backgroundColor: '#dc3545',
-		paddingVertical: 12,
-		paddingHorizontal: 16,
-		borderRadius: 8,
-		marginTop: 12,
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 6,
+		marginTop: 8,
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -1384,20 +1384,20 @@ export const style = MediaQueryStyleSheet.create({
 		elevation: 3,
 	},
 	editarModalEmergencyIcon: {
+		fontSize: 12,
 		color: '#fff',
-		fontSize: 16,
-		marginRight: 8
+		marginRight: 6
 	},
 	editarModalEmergencyText: {
+		fontSize: 13,
 		color: '#fff',
-		fontWeight: '600',
-		fontSize: 14
+		fontWeight: '600'
 	},
 	editarModalEstadoSection: {
 		backgroundColor: '#f8f9fa',
 		borderRadius: 12,
-		padding: 20,
-		marginTop: 20,
+		padding: 14,
+
 		borderLeftWidth: 4,
 		borderLeftColor: '#007bff',
 		shadowColor: '#000',
@@ -1407,17 +1407,17 @@ export const style = MediaQueryStyleSheet.create({
 		elevation: 3,
 	},
 	editarModalEstadoTitle: {
-		fontSize: 18,
-		fontWeight: '700',
+		fontSize: 16,
+		fontWeight: '600',
 		color: '#333',
-		marginBottom: 16,
+		marginBottom: 14,
 		textAlign: 'center'
 	},
 	editarModalEstadoActual: {
 		backgroundColor: 'white',
-		padding: 15,
+		padding: 14,
 		borderRadius: 10,
-		marginBottom: 20,
+		marginBottom: 8,
 		borderWidth: 1,
 	},
 	editarModalEstadoLabel: {
@@ -1489,7 +1489,7 @@ export const style = MediaQueryStyleSheet.create({
 		borderLeftWidth: 4,
 	},
 	editarModalVehiculoLabel: {
-		fontSize: 14,
+		fontSize: 10,
 		color: '#666',
 		marginBottom: 4
 	},
@@ -1498,12 +1498,12 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems: 'center'
 	},
 	editarModalVehiculoIconAsignado: {
-		fontSize: 16,
+		fontSize: 14,
 		marginRight: 8
 	},
 	editarModalVehiculoTextAsignado: {
-		fontSize: 16,
-		fontWeight: '600',
+		fontSize: 14,
+		fontWeight: '500',
 		color: '#333'
 	},
 	editarModalVehiculoRowNoAsignado: {
@@ -1597,17 +1597,17 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	editarModalEntregadoHeader: {
 		alignItems: 'center',
-		marginBottom: 24,
-		paddingVertical: 20,
+		marginBottom: 12,
+		paddingVertical: 12,
 		backgroundColor: '#f8f9fa',
 		borderRadius: 16,
-		marginHorizontal: 20
+		marginHorizontal: 12
 	},
 	editarModalEntregadoIconContainer: {
 		backgroundColor: '#d4edda',
 		borderRadius: 40,
-		width: 60,
-		height: 60,
+		width: 45,
+		height: 45,
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginBottom: 12,
@@ -1633,8 +1633,8 @@ export const style = MediaQueryStyleSheet.create({
 		textAlign: 'center'
 	},
 	editarModalImageSection: {
-		marginBottom: 20,
-		marginHorizontal: 20,
+		marginBottom: 16,
+		marginHorizontal: 16,
 		alignItems: 'center'
 	},
 	editarModalImageTitle: {
@@ -1655,7 +1655,7 @@ export const style = MediaQueryStyleSheet.create({
 		backgroundColor: '#fff'
 	},
 	editarModalImage: {
-		width: 280,
+		width: 320,
 		height: 200,
 		borderRadius: 12
 	},

@@ -11,7 +11,7 @@ export const style = MediaQueryStyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: 'transparent',
-		paddingTop: Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0,
+		//paddingTop: Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0,
 	},
 	contentBackground: {
 		flex: 1,
@@ -55,10 +55,10 @@ export const style = MediaQueryStyleSheet.create({
 	//////////////////////////////////////////////////////////////////
 	perfilContenedor: {
 		flexDirection: "row",
-		backgroundColor: '#ffffff',
+		backgroundColor: '#f5f3f3ff',
 		marginHorizontal: getResponsivePadding(),
-		marginTop: 15,
-		padding: getResponsiveValue(16, 20, 24),
+		marginTop: 8,
+		padding: getResponsiveValue(12, 16, 20),
 		borderRadius: 12,
 		shadowColor: '#000',
 		shadowOffset: { width: 0, height: 2 },
@@ -70,17 +70,17 @@ export const style = MediaQueryStyleSheet.create({
 	columna1: {
 		alignItems: "center",
 		justifyContent: "center",
-		width: "25%"
+		width: "20%"
 	},
 	columna2: {
 		justifyContent: "center",
 		paddingLeft: getResponsiveValue(20, 25, 30),
-		width: "75%"
+		width: "92%"
 	},
 	columna4: {
 		alignItems: "center",
 		justifyContent: "center",
-		width: "25%"
+		width: "18%"
 	},
 	btnLista: {
 		flexDirection: "row",
@@ -101,7 +101,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	txtLista: {
 		fontFamily: "Comfortaa-Regular",
-		fontSize: getResponsiveFontSize(12),
+		fontSize: getResponsiveFontSize(10),
 		color: '#2c3e50',
 	},
 	avatar: {
@@ -113,19 +113,19 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	nombre: {
 		fontFamily: "Comfortaa-Bold",
-		fontSize: getResponsiveFontSize(16),
+		fontSize: getResponsiveFontSize(14),
 		color: '#2c3e50',
 		marginBottom: 3
 	},
 	email: {
 		fontFamily: "Comfortaa-Light",
-		fontSize: getResponsiveFontSize(13),
+		fontSize: getResponsiveFontSize(12),
 		color: '#7f8c8d',
 		marginBottom: 0
 	},
 	icon: {
-		width: getResponsiveValue(32, 36, 40),
-		height: getResponsiveValue(32, 36, 40),
+		width: getResponsiveValue(24, 28, 32),
+		height: getResponsiveValue(24, 28, 32),
 		backgroundColor: '#007bff',
 		borderRadius: getResponsiveValue(16, 18, 20),
 		justifyContent: 'center',
@@ -222,12 +222,12 @@ export const style = MediaQueryStyleSheet.create({
 			width: "30%"
 		},
 		txtLista: {
-			fontSize: 18,
-			left: 15
+			fontSize: 14,
+			left: 12
 		},
 		icon: {
-			width: 55,
-			height: 55
+			width: 40,
+			height: 40
 		},
 	},
 	"@media (min-device-width: 414)": {
@@ -248,8 +248,8 @@ export const style = MediaQueryStyleSheet.create({
 			fontSize: 14,
 		},
 		avatar: {
-			width: 70,
-			height: 70,
+			width: 60,
+			height: 60,
 			borderRadius: 35,
 		},
 		nombre: {

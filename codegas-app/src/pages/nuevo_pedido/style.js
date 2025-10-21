@@ -74,7 +74,7 @@ export const style = MediaQueryStyleSheet.create({
     },
     iconCheck: {
         color: "#00218b",
-        fontSize: 22
+        fontSize: 20
     },
     input: {
         width: "90%",
@@ -146,14 +146,14 @@ export const style = MediaQueryStyleSheet.create({
     },
     textGuardar: {
         fontFamily: "Comfortaa-Light",
-        color: "#ffffff",
-        fontSize: 16,
+        color: "#fff",
+        fontSize: 14,
         fontWeight: '600'
     },
     textGuardarDisable: {
         fontFamily: "Comfortaa-Light",
         color: "#999",
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600'
     },
     iconGuardar: {
@@ -201,15 +201,15 @@ export const style = MediaQueryStyleSheet.create({
     },
     iconFrecuencia: {
         color: "#00218b",
-        marginRight: 8,
-        fontSize: 16
+        marginRight: 6,
+        fontSize: 14
     },
     contenedorFrecuencia: {
         flexDirection: "row",
     },
     btnFrecuencia: {
-        marginHorizontal: 5,
-        width: 120,
+        marginHorizontal: 4,
+        width: 100,
         height: 50,
     },
     modalSelectorStyle: {
@@ -400,15 +400,15 @@ export const style = MediaQueryStyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 20,
+        padding: 14,
         borderBottomWidth: 1,
         borderBottomColor: '#e9ecef',
         backgroundColor: '#f8f9fa',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
     },
     modalTitle: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#00218b',
         fontFamily: "Comfortaa-Bold",
@@ -451,9 +451,9 @@ export const style = MediaQueryStyleSheet.create({
     },
     modalSearchInput: {
         flex: 1,
-        paddingHorizontal: 15,
+        paddingHorizontal: 12,
         paddingVertical: 12,
-        fontSize: 16,
+        fontSize: 12,
         color: '#333',
         fontFamily: "Comfortaa-Regular",
     },
@@ -489,7 +489,7 @@ export const style = MediaQueryStyleSheet.create({
     },
     modalEmptyIcon: {
         color: '#e9ecef',
-        marginBottom: 16,
+        marginBottom: 14,
     },
     modalEmptyText: {
         fontSize: 18,
@@ -520,7 +520,7 @@ export const style = MediaQueryStyleSheet.create({
     },
     modalCancelText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600',
         fontFamily: "Comfortaa-Bold",
     },
@@ -547,17 +547,17 @@ export const style = MediaQueryStyleSheet.create({
     },
     clienteCardContent: {
         flexDirection: 'row',
-        padding: 15,
+        padding: 12,
         alignItems: 'center',
     },
     clienteAvatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 35,
+        height: 35,
+        borderRadius: 22,
         backgroundColor: '#00218b',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 15,
+        marginRight: 12,
     },
     clienteAvatarInactive: {
         backgroundColor: '#dc3545',
@@ -572,20 +572,20 @@ export const style = MediaQueryStyleSheet.create({
         flex: 1,
     },
     clienteRazonSocial: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#00218b',
         marginBottom: 4,
         fontFamily: "Comfortaa-Bold",
     },
     clienteNombre: {
-        fontSize: 15,
+        fontSize: 11,
         color: '#333',
         marginBottom: 4,
         fontFamily: "Comfortaa-Regular",
     },
     clienteCodt: {
-        fontSize: 13,
+        fontSize: 12,
         color: '#666',
         marginBottom: 8,
         fontFamily: "Comfortaa-Light",
@@ -633,21 +633,21 @@ export const style = MediaQueryStyleSheet.create({
     /////////////////////////////////////////////////////////////////
     puntosEntregaContainer: {
         width: '90%',
-        marginTop: 20,
+        marginTop: 8,
     },
     puntosEntregaTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#00218b',
         textAlign: 'center',
-        marginBottom: 15,
+        marginBottom: 8,
         fontFamily: "Comfortaa-Bold",
     },
     puntoEntregaCard: {
         backgroundColor: '#fff',
-        borderRadius: 15,
+        borderRadius: 14,
         marginVertical: 8,
-        padding: 15,
+        padding: 8,
         shadowColor: 'rgba(0,0,0, .1)',
         shadowOffset: { height: 2, width: 0 },
         shadowOpacity: .3,
@@ -670,8 +670,8 @@ export const style = MediaQueryStyleSheet.create({
         marginBottom: 10,
     },
     puntoEntregaIcon: {
-        width: 40,
-        height: 40,
+        width: 35,
+        height: 35,
         borderRadius: 20,
         backgroundColor: '#00218b',
         justifyContent: 'center',
@@ -683,26 +683,26 @@ export const style = MediaQueryStyleSheet.create({
     },
     puntoEntregaIconImage: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 16,
     },
     puntoEntregaInfo: {
         flex: 1,
     },
     puntoEntregaDireccion: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#333',
         marginBottom: 4,
         fontFamily: "Comfortaa-Bold",
     },
     puntoEntregaCapacidad: {
-        fontSize: 14,
+        fontSize: 12,
         color: '#666',
         marginBottom: 2,
         fontFamily: "Comfortaa-Regular",
     },
     puntoEntregaObservacion: {
-        fontSize: 13,
+        fontSize: 12,
         color: '#999',
         fontStyle: 'italic',
         fontFamily: "Comfortaa-Light",
@@ -725,7 +725,7 @@ export const style = MediaQueryStyleSheet.create({
     },
     puntoEntregaBadgeText: {
         color: '#fff',
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 'bold',
         fontFamily: "Comfortaa-Bold",
     },
@@ -751,12 +751,12 @@ export const style = MediaQueryStyleSheet.create({
         marginBottom: 8,
     },
     pedidoExistenteId: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
         color: '#007bff',
     },
     pedidoExistenteFecha: {
-        fontSize: 14,
+        fontSize: 12,
         color: '#28a745',
         fontWeight: '600',
     },

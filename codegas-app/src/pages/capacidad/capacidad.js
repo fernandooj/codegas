@@ -15,7 +15,6 @@ class Capacidad extends Component {
         super(props);
         this.state = {
             capacidad: "",
-
             capacidades: [],
             top: new Animated.Value(size.height),
         }
@@ -52,7 +51,6 @@ class Capacidad extends Component {
         )
     }
 
-
     renderCapacidad() {
         return this.state.capacidades.map((e, key) => {
             return (
@@ -67,8 +65,6 @@ class Capacidad extends Component {
             )
         })
     }
-
-
 
     render() {
         const { navigation } = this.props

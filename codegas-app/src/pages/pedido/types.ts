@@ -463,11 +463,11 @@ export interface CerrarPedidoModalProps {
     visible: boolean;
     onClose: () => void;
     pedidoId?: string;
-    entregado: boolean;
+    entregado: boolean|undefined;
     imagenCerrar?: string;
-    kilos?: string;
+    kilos?: number;
     factura?: string;
-    valor_total?: string;
+    valor_total?: number;
     remision?: string;
     forma_pago?: string;
     valor_unitario?: string;

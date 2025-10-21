@@ -58,9 +58,13 @@ export interface Cliente {
 export interface PuntoEntrega {
     _id: string;
     direccion: string;
+    email: string;
+    nombre: string;
+    celular: string;
     capacidad: number;
     observacion?: string;
     activo?: boolean;
+    
 }
 
 // Tipos para datos del pedido a crear
