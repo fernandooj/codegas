@@ -85,7 +85,7 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
   // Crear estilo dinámico que respete las safe areas
   const dynamicFooterWrapper = {
     ...style.footerWrapper,
-    marginBottom: -insets.bottom, // Empujar hacia abajo para llegar al borde físico
+    //marginBottom: -insets.bottom,  Empujar hacia abajo para llegar al borde físico
     paddingBottom: insets.bottom, // Agregar padding interno para el contenido
   };
 

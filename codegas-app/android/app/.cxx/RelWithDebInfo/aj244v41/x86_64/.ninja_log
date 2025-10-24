@@ -123,3 +123,10 @@
 24	3840	0	RNDateTimePickerCGen_autolinked_build/CMakeFiles/react_codegen_RNDateTimePickerCGen.dir/react/renderer/components/RNDateTimePickerCGen/RNDateTimePickerCGenJSI-generated.cpp.o	676bc67e65190964
 41	4126	0	ReactNativeBlobUtilSpec_autolinked_build/CMakeFiles/react_codegen_ReactNativeBlobUtilSpec.dir/react/renderer/components/ReactNativeBlobUtilSpec/ReactNativeBlobUtilSpecJSI-generated.cpp.o	3fbf708d727e12f4
 4126	5052	7827309532713604	C:/Users/reine/Proyectos/codegas/codegas-app/android/app/build/intermediates/cxx/RelWithDebInfo/aj244v41/obj/x86_64/libappmodules.so	f67abc521463e122
+5	37	0	C:/Users/reine/Proyectos/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/aj244v41/x86_64/CMakeFiles/cmake.verify_globs	a823c31ff1cfcc13
+32	2058	0	VectorIconsFontAwesome_autolinked_build/CMakeFiles/react_codegen_VectorIconsFontAwesome.dir/react/renderer/components/VectorIconsFontAwesome/VectorIconsFontAwesomeJSI-generated.cpp.o	a431ad2c530ea88d
+45	2433	0	RNCImageCropPickerSpec_autolinked_build/CMakeFiles/react_codegen_RNCImageCropPickerSpec.dir/react/renderer/components/RNCImageCropPickerSpec/RNCImageCropPickerSpecJSI-generated.cpp.o	c406cd8c17c2613a
+24	2436	0	rndocumentpickerCGen_autolinked_build/CMakeFiles/react_codegen_rndocumentpickerCGen.dir/react/renderer/components/rndocumentpickerCGen/rndocumentpickerCGenJSI-generated.cpp.o	98ca0365ebdbc9e5
+18	2440	0	RNDateTimePickerCGen_autolinked_build/CMakeFiles/react_codegen_RNDateTimePickerCGen.dir/react/renderer/components/RNDateTimePickerCGen/RNDateTimePickerCGenJSI-generated.cpp.o	676bc67e65190964
+38	2698	0	ReactNativeBlobUtilSpec_autolinked_build/CMakeFiles/react_codegen_ReactNativeBlobUtilSpec.dir/react/renderer/components/ReactNativeBlobUtilSpec/ReactNativeBlobUtilSpecJSI-generated.cpp.o	3fbf708d727e12f4
+2699	3081	7829818436252342	C:/Users/reine/Proyectos/codegas/codegas-app/android/app/build/intermediates/cxx/RelWithDebInfo/aj244v41/obj/x86_64/libappmodules.so	f67abc521463e122

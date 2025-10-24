@@ -311,7 +311,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             <Text style={style.editarModalAdditionalInfoText}>
                                                 <FontAwesome name="clock-o" style={style.editarModalAdditionalInfoIcon} />
                                                 <Text style={style.editarModalInfoTextBold}>Creado: </Text>
-                                                {moment(creado).format("YYYY-MM-DD")}
+                                                {moment(creado).format("YYYY-MM-DD hh:mm")}
                                             </Text>
                                         )}
                                         {usuarioCrea && (
@@ -325,7 +325,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             <Text style={style.editarModalAdditionalInfoText}>
                                                 <FontAwesome name="database" style={style.editarModalAdditionalInfoIcon} />
                                                 <Text style={style.editarModalInfoTextBold}>Almacenamiento: </Text>
-                                                {capacidad} galones
+                                                {capacidad} Galones
                                             </Text>
                                         )}
                                         {pedidoData.punto_email && (

@@ -33,7 +33,7 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems: 'center'
 	},
 	titulo: {
-		fontSize: 26,
+		fontSize: 22,
 		fontWeight: 'bold',
 		color: '#002587',
 		textAlign: 'center',
@@ -41,7 +41,7 @@ export const style = MediaQueryStyleSheet.create({
 		fontFamily: 'Comfortaa-Bold'
 	},
 	subtitulo: {
-		fontSize: 14,
+		fontSize: 12,
 		color: '#6c757d',
 		textAlign: 'center',
 		fontFamily: 'Comfortaa-Regular'
@@ -49,10 +49,10 @@ export const style = MediaQueryStyleSheet.create({
 	headerStats: {
 		flexDirection: 'row',
 		justifyContent: 'space-around',
-		width: '100%',
+		width: '90%',
 		backgroundColor: '#f8f9fa',
 		borderRadius: 12,
-		paddingVertical: 15,
+		paddingVertical: 10,
 		paddingHorizontal: 10
 	},
 	statItem: {
@@ -60,7 +60,7 @@ export const style = MediaQueryStyleSheet.create({
 		flex: 1
 	},
 	statNumber: {
-		fontSize: 20,
+		fontSize: 18,
 		fontWeight: 'bold',
 		color: '#002587',
 		fontFamily: 'Comfortaa-Bold'
@@ -96,8 +96,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	searchInput: {
 		flex: 1,
-		paddingVertical: 12,
-		fontSize: 16,
+		paddingVertical: 10,
+		fontSize: 12,
 		color: '#212529',
 		fontFamily: 'Comfortaa-Regular'
 	},
@@ -121,7 +121,7 @@ export const style = MediaQueryStyleSheet.create({
 	cardContainer: {
 		backgroundColor: '#fff',
 		borderRadius: 12,
-		marginBottom: 15,
+		marginBottom: 10,
 		shadowColor: '#000',
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
@@ -142,11 +142,11 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom: 10
 	},
 	clienteName: {
-		fontSize: 18,
-		fontWeight: 'bold',
-		color: '#002587',
-		flex: 1,
-		fontFamily: 'Comfortaa-Bold'
+		fontSize: 14,
+		color: '#495057',
+		fontStyle: 'italic',
+		marginBottom: 10,
+		fontFamily: 'Comfortaa-Regular'
 	},
 	codigoText: {
 		fontSize: 14,
@@ -158,11 +158,11 @@ export const style = MediaQueryStyleSheet.create({
 		fontFamily: 'Comfortaa-Regular'
 	},
 	razonSocial: {
-		fontSize: 14,
-		color: '#495057',
-		fontStyle: 'italic',
-		marginBottom: 15,
-		fontFamily: 'Comfortaa-Regular'
+		fontSize: 16,
+		fontWeight: 'bold',
+		color: '#002587',
+		flex: 1,
+		fontFamily: 'Comfortaa-Bold'
 	},
 	cardDetails: {
 		marginTop: 5
@@ -179,7 +179,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginRight: 10
 	},
 	detailText: {
-		fontSize: 14,
+		fontSize: 12,
 		color: '#495057',
 		flex: 1,
 		fontFamily: 'Comfortaa-Regular'

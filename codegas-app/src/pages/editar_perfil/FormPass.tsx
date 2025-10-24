@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    ActivityIndicator,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator} from 'react-native';
 import { style } from './style';
 
 interface FormPassProps {

@@ -64,6 +64,7 @@ export interface Pedido {
     forma_pago?: string;
     imagen?: string;
     imagencerrar?: string;
+    pedidopadre: string;
     motivo_no_cierre?: string;
     perfil_novedad?: string;
     coordenadas?: {

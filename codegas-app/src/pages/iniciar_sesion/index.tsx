@@ -1,18 +1,5 @@
 import React, { useState, useContext } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  ImageBackground,
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  StatusBar,
-  SafeAreaView
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ImageBackground, ActivityIndicator, Alert, Dimensions, StatusBar, SafeAreaView} from 'react-native';
 import Toast from 'react-native-toast-message';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { connect } from "react-redux";
@@ -21,7 +8,8 @@ import { style } from './style'
 import Footer from '../components/footer'
 import HeaderLogo from '../../components/HeaderLogo'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FontAwesome from '@react-native-vector-icons/fontawesome';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,7 +22,7 @@ const IniciarSesion: React.FC<IniciarSesionProps> = ({ navigation }) => {
   const { login, sendFCMTokenToBackend, userId } = useContext(DataContext) as any
 
   const [cargando, setCargando] = useState(false);
-  const [data, setData] = useState({})
+  const [data, setData] = useState({ email: '', password: '' })
   const [email, setEmail] = useState('')
   const [showPassword, setShowPassword] = useState(false);
 
@@ -186,14 +174,12 @@ const IniciarSesion: React.FC<IniciarSesionProps> = ({ navigation }) => {
             style={style.forgotPasswordButton}
             onPress={() => navigation.navigate("recuperar")}>
             <Text style={style.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
-            <Text style={style.versionText}>Ver 11.5.3-1</Text>
+            <Text style={style.versionText}>Ver 11.5.3-2</Text>
           </TouchableOpacity>
         </View>
       </View>
     );
   };
-
-
 
   // const loginExitoso = (user) => {
   //   AsyncStorage.setItem('userId', user._id);
@@ -235,15 +221,10 @@ const IniciarSesion: React.FC<IniciarSesionProps> = ({ navigation }) => {
   //     });
   // };
 
-
-
   const registroExitoso = (email: string, code: string, id: string) => {
     AsyncStorage.setItem('idPerfilregistro', id);
     navigation.navigate("confirmar", { code, email });
   };
-
-
-
   return (
     <SafeAreaView style={style.container}>
       <StatusBar barStyle="light-content" backgroundColor="#00218b" />
@@ -272,13 +253,11 @@ const IniciarSesion: React.FC<IniciarSesionProps> = ({ navigation }) => {
 
 const mapState = (state: any) => {
   return {
-
   };
 };
 
 const mapDispatch = (dispatch: any) => {
   return {
-
   };
 };
 
@@ -286,4 +265,3 @@ export default connect(
   mapState,
   mapDispatch
 )(IniciarSesion);
-

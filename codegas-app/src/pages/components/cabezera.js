@@ -4,7 +4,6 @@ import Icon from 'react-native-fa-icons'
 import { style } from './style'
 import { connect } from 'react-redux'
 
-
 class CabezeraComponent extends Component {
 	constructor(props) {
 		super(props);
@@ -72,5 +71,4 @@ const mapStatetoPros = (state) => {
 		carrito: state.carrito
 	}
 }
-
 export default connect(mapStatetoPros)(CabezeraComponent) 

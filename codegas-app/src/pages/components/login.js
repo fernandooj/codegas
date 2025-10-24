@@ -1,17 +1,10 @@
 import React, { Component } from 'react'
 import { View, Text, TouchableOpacity, TextInput, ScrollView, Button } from 'react-native'
-
-
 import { style } from './style'
 import { connect } from 'react-redux'
-
 import Icon from 'react-native-fa-icons';
 import axios from 'axios'
-
 import CodeInput from 'react-native-confirmation-code-input';
-
-
-
 
 class Login extends Component {
 	constructor(props) {
@@ -25,11 +18,7 @@ class Login extends Component {
 		}
 	}
 	async componentWillMount() {
-
-
 	}
-
-
 
 	renderLogin() {
 		const { usuarioNoExiste, email, password, showPassword, showLoading, alertErrorLogin } = this.state

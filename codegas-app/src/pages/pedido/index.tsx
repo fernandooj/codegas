@@ -373,7 +373,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
         // Si el nuevo estado es "activo", establecer estadoEntrega según si tiene fecha
         if (nuevoEstado === "activo") {
-            updateData.estadoEntrega = fechaEntrega ? "asignado" : "activo";
+            //updateData.estadoEntrega = fechaEntrega ? "asignado" : "activo";
         }
 
         updateState(actions.setPedidoData(updateData));
@@ -1082,7 +1082,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 </View>
 
                 {/* Barra de búsqueda con mejor diseño */}
-                {acceso !== "conductor" && (
+                {/*acceso !== "conductor" && (*/}
                     <View style={style.searchBarContainer}>
                         <View style={[style.searchBar, showSearch && terminoBuscador ? style.searchBarActive : style.searchBarInactive]}>
                             <FontAwesome name='search' style={style.searchIconStyle} />
@@ -1113,7 +1113,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             ) : null}
                         </View>
                     </View>
-                )}
+                {/*)}*/}
 
                 {/* Botones de filtro por estado */}
                 {acceso !== "conductor" && (

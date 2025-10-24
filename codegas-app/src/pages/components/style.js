@@ -130,7 +130,7 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		backgroundColor: "rgba(0, 37, 135, 0.1)",
-		marginBottom: 0,
+		marginBottom: 20,
 	},
 
 	// Estilos de íconos
@@ -142,7 +142,7 @@ export const style = MediaQueryStyleSheet.create({
 
 	// Iconos FontAwesome
 	iconFont: {
-		fontSize: 34,
+		fontSize: 36,
 		color: "#002587",
 		fontWeight: "400",
 	},

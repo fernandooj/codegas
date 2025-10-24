@@ -34,7 +34,8 @@ const FechaEntregaModal: React.FC<FechaEntregaModalProps> = ({
         setTimeout(() => {
             // Pasar la fecha directamente a onSave si es posible
             if (onSave.length > 0) {
-                onSave(day.dateString);
+                //onSave(day.dateString);
+                onSave();
             } else {
                 onSave();
             }

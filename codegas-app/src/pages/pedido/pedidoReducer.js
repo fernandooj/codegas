@@ -136,6 +136,7 @@ export const initialState = {
         cantidad: undefined,
         entregado: undefined,
         imagenCerrar: undefined,
+        pedidopadre: undefined,
         factura: undefined,
         kilos: undefined,
         remision: undefined,

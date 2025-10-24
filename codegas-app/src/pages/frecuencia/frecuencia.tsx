@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    ScrollView,
-    TextInput,
-    ActivityIndicator,
-    Alert,
-    RefreshControl
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert, RefreshControl} from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import Toast from 'react-native-toast-message';
@@ -381,12 +372,12 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                 })}
                             >
                                 <View style={style.cardHeader}>
-                                    <Text style={style.clienteName}>{pedido.nombre}</Text>
-                                    <Text style={style.codigoText}>#{pedido.codt}</Text>
+                                    <Text style={style.razonSocial}>{pedido.razon_social}</Text>
+                                    <Text style={style.codigoText}># {pedido.codt}</Text>
                                 </View>
 
-                                {pedido.razon_social && (
-                                    <Text style={style.razonSocial}>{pedido.razon_social}</Text>
+                                {pedido.nombre && (
+                                    <Text style={style.clienteName}>{pedido.nombre}</Text>
                                 )}
 
                                 <View style={style.cardDetails}>
@@ -442,7 +433,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                         <View style={style.detailRow}>
                                             <FontAwesome name="map-marker" style={style.detailIcon} />
                                             <Text style={style.detailText}>
-                                                📍 {pedido.punto_direccion}
+                                                {pedido.punto_direccion}
                                                 {pedido.punto_capacidad && ` (${pedido.punto_capacidad} kg)`}
                                             </Text>
                                         </View>

@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import {
-    ImageBackground,
-    Alert,
-} from 'react-native';
+import { ImageBackground, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
 import { useSelector, useDispatch } from 'react-redux';

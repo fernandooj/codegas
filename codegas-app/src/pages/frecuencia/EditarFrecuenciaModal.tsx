@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    Modal,
-    TouchableOpacity,
-    TextInput,
-    ScrollView,
-    Alert,
-    ActivityIndicator
-} from 'react-native';
+import { View, Text, Modal, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator} from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import Toast from 'react-native-toast-message';
 import axios from 'axios';

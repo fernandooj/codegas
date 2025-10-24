@@ -194,7 +194,7 @@ BEGIN
             LEFT JOIN users u2 ON p.usuarioCrea = u2._id
             LEFT JOIN carros c ON p.carroId = c._id
             LEFT JOIN users u3 ON p.conductorId = u3._id
-            WHERE p.fechaEntrega > (now() - interval ''1 day'')
+            WHERE (p.fechaEntrega > (now() - interval ''29 hour'') and p.fechaEntrega < (now() - interval ''5 hour''))
             AND p.eliminado = false
             AND p.conductorId = $1
             ' || _search_condition || '
@@ -225,7 +225,7 @@ BEGIN
             LEFT JOIN users u2 ON p.usuarioCrea = u2._id
             LEFT JOIN carros c ON p.carroId = c._id
             LEFT JOIN users u3 ON p.conductorId = u3._id
-            WHERE p.fechaEntrega > (now() - interval ''1 day'')
+            WHERE (p.fechaEntrega > (now() - interval ''29 hour'') and p.fechaEntrega < (now() - interval ''5 hour''))
             AND p.eliminado = false
             AND p.conductorId = $2
             ' || _search_condition || '
