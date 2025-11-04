@@ -234,13 +234,13 @@ const IniciarSesion: React.FC<IniciarSesionProps> = ({ navigation }) => {
           style={style.containerRegistro}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={style.scrollContent}>
-          {renderEmail()}
+          {renderIniciarSesion()}
           <View style={style.elegantSeparator}>
             <View style={style.separatorLine} />
             <Text style={style.separatorText}>o</Text>
             <View style={style.separatorLine} />
           </View>
-          {renderIniciarSesion()}
+          {renderEmail()}
         </KeyboardAwareScrollView>
         <View style={style.footer}>
           <Footer navigation={navigation} />

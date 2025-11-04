@@ -27,7 +27,7 @@ const Home = ({ navigation }) => {
         icon: '➕',
         color: '#0A6BB2',
         gradient: ['#0A6BB2', '#0056b3'],
-        onPress: () => navigation.navigate(userId ? 'nuevo_pedido' : 'Perfil'),
+        onPress: () => navigation.navigate(userId ? 'nuevo_pedido' : 'IniciarSesion'),
         show: true
       },
       {
@@ -119,7 +119,7 @@ const Home = ({ navigation }) => {
         {/* Header con logo */}
         <HeaderLogo
           showWelcome={true}
-          welcomeText={acceso  ? `Bienvenido${nombre ? ` ${nombre}` : ''}` : ''}
+          welcomeText={acceso? `Bienvenido${nombre ? ` ${nombre}` : ''}` : ''}
           subtitle={acceso ? `Acceso: ${acceso}` : ''}
           containerStyle={style.header}
         />

@@ -955,16 +955,14 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                         }}>
                             Pedidos Existentes
                         </Text>
-
                         <Text style={{
-                            fontSize: 14,
+                            fontSize: 13,
                             textAlign: 'center',
                             marginBottom: 20,
                             color: '#666'
                         }}>
-                            Se encontraron pedidos existentes para este cliente
+                           Se encontraron pedidos para este cliente
                         </Text>
-
                         <ScrollView style={{ maxHeight: 300, marginBottom: 20 }}>
                             {modalData.pedidos && modalData.pedidos.length > 0 ? modalData.pedidos.map((pedido: PedidoExistente, index: number) => {
                                 const fechaSolicitud = pedido.fechasolicitud || 'Sin fecha';
@@ -973,7 +971,6 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                                 const cantidadPrecio = pedido.cantidadprecio || 0;
                                 const creadoPor = pedido.nombre_usuario || pedido.razon_social_usuario || 'Usuario';
                                 const fechaCreado = pedido.creado || '';
-
                                 return (
                                     <View key={`pedido-${index}`} style={{
                                         backgroundColor: '#f8f9fa',

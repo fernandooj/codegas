@@ -95,7 +95,6 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
 
       {/* Contenedor del footer principal */}
       <View style={style.contenedorFooter}>
-
         {/* Tab Home */}
         <TouchableOpacity
           style={style.tabContainer}
@@ -121,7 +120,7 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
         {/* Tab Pedidos */}
         <TouchableOpacity
           style={style.tabContainer}
-          onPress={() => navigation.navigate('pedido')}
+          onPress={() => navigation.navigate(userId ? 'pedido' : 'IniciarSesion')}
         >
           <View style={style.iconContainer}>
             <Image

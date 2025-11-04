@@ -81,9 +81,6 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({visible, onClose, 
         return isNaN(num) ? '0,0' : num.toFixed(1).replace('.', ',');
     };
 
-
-
-
     const renderPlacaColumn = (item: Estadistica, isTotal: boolean = false) => (
         <View
             key={`placa-${item.placa}`}
@@ -163,10 +160,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({visible, onClose, 
 
     // Renderizar fila de estadísticas por día
     const renderEstadisticaPorDiaRow = (item: any, index: number) => (
-        <View
-            key={`dia-${item.fechaentrega}-${index}`}
-            style={style.modalEstadisticasPorDiaRow}
-        >
+        <View key={`dia-${item.fechaentrega}-${index}`} style={style.modalEstadisticasPorDiaRow}>
             <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasFechaCell]}>{item.fechaentrega}</Text>
             <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasCantidadCell]}>{item.cantidad_pedidos || 0}</Text>
             <Text style={[style.modalEstadisticasPorDiaCell, style.modalEstadisticasKilosCell]}>{formatKilos(item.total_kilos)}</Text>
@@ -178,13 +172,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({visible, onClose, 
 
     // Renderizar fila de detalle de pedido para conductores
     const renderDetallePedidoRow = (item: DetallePedido, index: number, isTotal: boolean = false) => (
-        <View
-            key={`detalle-${item.remision || 'total'}-${index}`}
-            style={[
-                style.modalEstadisticasDetalleRow,
-                isTotal && style.modalEstadisticasDetalleRowTotal
-            ]}
-        >
+        <View key={`detalle-${item.remision || 'total'}-${index}`} style={[style.modalEstadisticasDetalleRow, isTotal && style.modalEstadisticasDetalleRowTotal]}>
             <Text style={[style.modalEstadisticasDetalleCell, style.modalEstadisticasRemisionCell, isTotal && style.modalEstadisticasTotalText]}>
                 {item.remision}
             </Text>
@@ -241,7 +229,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({visible, onClose, 
                                     style.modalEstadisticasFiltroText,
                                     periodo === p && style.modalEstadisticasFiltroTextActive
                                 ]}>
-                                    {p === 'dia' ? 'Hoy' : p === 'semana' ? 'Semana' : p === 'mes' ? 'Mes' : 'Año'}
+                                {p === 'dia' ? 'Hoy' : p === 'semana' ? 'Semana' : p === 'mes' ? 'Mes' : 'Año'}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -372,10 +360,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({visible, onClose, 
                                     <View style={style.modalEstadisticasPorDiaHeaderRow}>
                                         <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasFechaCell]}>Fecha</Text>
                                         <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasCantidadCell]}>Pedidos</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasKilosCell]}>Total Kilos</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasContadoCell]}>Vlr Contado</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasCreditoCell]}>Vlr Crédito</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasValorCell]}>Valor Total</Text>
+                                        {renderFixedHeaders()}
                                     </View>
 
                                     {/* Datos */}
@@ -413,10 +398,7 @@ const ModalEstadisticas: React.FC<ModalEstadisticasProps> = ({visible, onClose, 
                                     <View style={style.modalEstadisticasPorDiaHeaderRow}>
                                         <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasFechaCell]}>Placa</Text>
                                         <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasCantidadCell]}>Pedidos</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasKilosCell]}>Total Kilos</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasContadoCell]}>Vlr Contado</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasCreditoCell]}>Vlr Crédito</Text>
-                                        <Text style={[style.modalEstadisticasPorDiaHeaderCell, style.modalEstadisticasValorCell]}>Valor Total</Text>
+                                        {renderFixedHeaders()}
                                     </View>
 
                                     {/* Datos */}

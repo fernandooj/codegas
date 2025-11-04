@@ -962,8 +962,8 @@ export const style = MediaQueryStyleSheet.create({
 		borderLeftWidth: 4,
 	},
 	pedidoCardHeader: {
-		marginBottom: 12,
-		paddingBottom: 8,
+		marginBottom: 6,
+		paddingBottom: 4,
 		borderBottomWidth: 1,
 		borderBottomColor: '#e9ecef',
 	},
@@ -979,7 +979,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginTop: 2
 	},
 	pedidoCardCompanyText: {
-		fontSize: 15,
+		fontSize: 13,
 		fontWeight: '600',
 		color: '#333',
 		flex: 1,
@@ -1027,13 +1027,14 @@ export const style = MediaQueryStyleSheet.create({
 		gap: 12
 	},
 	pedidoCardRow: {
-		flexDirection: 'row',
-		gap: 8
+  		flexDirection: 'row',
+  		alignItems: 'center',
 	},
 	pedidoCardFieldSmall: {
-		flex: 1,
+		flex: 0.4,
 		flexDirection: 'row',
-		alignItems: 'center'
+		alignItems: 'center',
+		justifyContent: 'flex-start',
 	},
 	pedidoCardFieldSmallStart: {
 		flex: 1,
@@ -1041,9 +1042,10 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems: 'flex-start'
 	},
 	pedidoCardFieldLarge: {
-		flex: 3,
+		flex: 0.6,
 		flexDirection: 'row',
-		alignItems: 'center'
+		alignItems: 'center',
+		justifyContent: 'flex-start',
 	},
 	pedidoCardFieldLargeStart: {
 		flex: 3,
@@ -1051,7 +1053,9 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems: 'flex-start'
 	},
 	pedidoCardFieldContent: {
-		flex: 1
+		flexShrink: 1,
+		flexDirection: 'column',
+        justifyContent: 'center',
 	},
 	pedidoCardFieldSpacer: {
 		flex: 1
@@ -1069,7 +1073,7 @@ export const style = MediaQueryStyleSheet.create({
 	pedidoCardIconCode: {
 		fontSize: 12,
 		color: '#6f42c1',
-		marginRight: 6,
+		marginRight: 4,
 		marginTop: 2
 	},
 	pedidoCardIconHome: {
@@ -1084,14 +1088,14 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom: 2
 	},
 	pedidoCardValueSmall: {
-		fontSize: 13,
+		fontSize: 12,
 		fontWeight: '600',
-		color: '#333'
+		color: '#333',
 	},
 	pedidoCardValue: {
 		fontSize: 12,
 		fontWeight: '600',
-		color: '#333'
+		color: '#6f42c1'
 	},
 	pedidoCardValueAddress: {
 		fontSize: 12,
@@ -1099,8 +1103,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	pedidoCardInfoPanel: {
 		backgroundColor: '#ffffff',
-		paddingHorizontal: 16,
-		paddingVertical: 12,
+		paddingHorizontal: 12,
+		paddingVertical: 8,
 		marginTop: 12,
 		borderRadius: 8,
 		flexDirection: 'row',
@@ -1143,7 +1147,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	pedidoCardVehicleBox: {
 		backgroundColor: '#e8f5e8',
-		padding: 8,
+		padding: 6,
 		borderRadius: 6,
 		marginTop: 8,
 		flexDirection: 'row',
@@ -1163,7 +1167,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginBottom: 2
 	},
 	pedidoCardVehicleValue: {
-		fontSize: 13,
+		fontSize: 12,
 		fontWeight: '600',
 		color: '#333'
 	},

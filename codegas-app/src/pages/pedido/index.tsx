@@ -1,19 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    Alert,
-    ActivityIndicator,
-    TextInput,
-    ScrollView,
-    Dimensions,
-    Animated,
-    Keyboard,
-    Platform,
-    StatusBar,
-    Modal
-} from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, Dimensions, Animated, Keyboard, Platform, StatusBar, Modal} from 'react-native';
 import moment from 'moment';
 import Toast from 'react-native-toast-message';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
@@ -54,6 +40,7 @@ import NovedadModal from './NovedadModal';
 import CerrarPedidoModal from './CerrarPedidoModal';
 import ModalOrdenamiento from './ModalOrdenamiento';
 import ModalEstadisticas from './ModalEstadisticas';
+import { AppDispatch } from '../../redux/types';
 
 // Configurar el calendario en español
 setupCalendarLocale();
@@ -62,7 +49,7 @@ const size = Dimensions.get('window');
 
 const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     // Redux hooks
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const pedidos = useSelector((state: RootState) => state.pedido.pedidos);
     const vehiculos = useSelector((state: RootState) => state.vehiculo.vehiculos);
 
@@ -871,21 +858,28 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 >
                     {/* Card content */}
                     <View style={style.pedidoCardHeader}>
-                        <View style={style.pedidoCardHeaderRow}>
-                            <FontAwesome name="building" style={style.pedidoCardBuildingIcon} />
-                            <Text style={style.pedidoCardCompanyText}>
-                                {e.razon_social}
-                            </Text>
-                        </View>
-
                         <View style={style.pedidoCardInfoRow}>
+                            <Text style={style.pedidoCardValueSmall}>
+                                {"("}{e._id}{") "}
+                            </Text>
+                            
                             <View style={style.pedidoCardInfoLeft}>
                                 <FontAwesome name="id-card" style={style.pedidoCardIdIcon} />
                                 <Text style={style.pedidoCardCedulaText}>
                                     {e.cedula}
                                 </Text>
                             </View>
-
+                            {e.codt ? (
+                                <View style={style.pedidoCardFieldSmallStart}>
+                                    <FontAwesome name="code" style={style.pedidoCardIconCode}/>
+                                    <Text style={style.pedidoCardLabelText}>CODT:
+                                    <Text style={style.pedidoCardValue}>
+                                    {" "}{e.codt}
+                                    </Text></Text>
+                                </View>
+                                ) : (
+                                <View style={style.pedidoCardFieldSpacer} />
+                            )}
                             <View style={[style.pedidoCardEstadoBadge, { backgroundColor: getEstadoColor(e.estado) }]}>
                                 <FontAwesome
                                     name={e.estado === "activo" ? "check" : e.estado === "innactivo" ? "times" : "pause"}
@@ -900,62 +894,35 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 </Text>
                             </View>
                         </View>
+                        <View style={style.pedidoCardHeaderRow}>
+                            <FontAwesome name="building" style={style.pedidoCardBuildingIcon} />
+                            <Text style={style.pedidoCardCompanyText} numberOfLines={1}>
+                                {e.razon_social}
+                            </Text>
+                        </View>
                     </View>
-
                     {/* Rest of card content */}
                     <View style={style.pedidoCardBody}>
                         {/* Primera fila: N° Pedido (25%) + Zona (75%) */}
                         <View style={style.pedidoCardRow}>
-                            <View style={style.pedidoCardFieldSmall}>
-                                <FontAwesome name="hashtag" style={style.pedidoCardIconHashtag} />
-                                <View style={style.pedidoCardFieldContent}>
-                                    <Text style={style.pedidoCardLabelText}>
-                                        {e.entregado ? 'Remisión' : 'N° Pedido'}
-                                    </Text>
-                                    <Text style={style.pedidoCardValueSmall} numberOfLines={1}>
-                                        {e.entregado ? (e.remision || e._id) : e._id}
-                                    </Text>
-                                </View>
-                            </View>
-                            <View style={style.pedidoCardFieldLarge}>
+                            <View style={style.pedidoCardFieldLargeStart}>
                                 <FontAwesome name="map-marker" style={style.pedidoCardIconMarker} />
                                 <View style={style.pedidoCardFieldContent}>
-                                    <Text style={style.pedidoCardLabelText}>Zona</Text>
-                                    <Text style={style.pedidoCardValueSmall} numberOfLines={2}>
-                                        {e.zona || 'Sin zona'}
-                                    </Text>
+                                    <Text style={style.pedidoCardLabelText} numberOfLines={2}>ZONA:
+                                    <Text style={style.pedidoCardValueAddress} >
+                                        {" "}{e.zona || 'Sin zona'}
+                                    </Text></Text>
                                 </View>
-                            </View>
-                        </View>
-
-                        {/* Segunda fila: CODT (25%) + Dirección (75%) */}
-                        <View style={style.pedidoCardRow}>
-                            {e.codt ? (
-                                <View style={style.pedidoCardFieldSmallStart}>
-                                    <FontAwesome name="code" style={style.pedidoCardIconCode} />
-                                    <View style={style.pedidoCardFieldContent}>
-                                        <Text style={style.pedidoCardLabelText}>CODT</Text>
-                                        <Text style={style.pedidoCardValue} numberOfLines={1}>
-                                            {e.codt}
-                                        </Text>
-                                    </View>
-                                </View>
-                            ) : (
-                                <View style={style.pedidoCardFieldSpacer} />
-                            )}
-                            <View style={style.pedidoCardFieldLargeStart}>
                                 <FontAwesome name="home" style={style.pedidoCardIconHome} />
                                 <View style={style.pedidoCardFieldContent}>
-                                    <Text style={style.pedidoCardLabelText}>Dirección entrega</Text>
-                                    <Text style={style.pedidoCardValueAddress} numberOfLines={2}>
-                                        {e.direccion || "Sin dirección"}
-                                    </Text>
+                                    <Text style={style.pedidoCardLabelText} numberOfLines={2}>DIRECCIÓN:
+                                    <Text style={style.pedidoCardValueAddress} >
+                                        {" "}{e.direccion || "Sin dirección"}
+                                    </Text></Text>
                                 </View>
                             </View>
                         </View>
                     </View>
-
-
                     <View style={style.pedidoCardInfoPanel}>
                         {e.fechasolicitud && (
                             <View style={style.pedidoCardInfoItem}>
@@ -966,11 +933,11 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             </View>
                         )}
 
-                        {e.fechaentrega && (
+                        {(e.fechaentrega && acceso !== "conductor") && (
                             <View style={style.pedidoCardInfoItem}>
                                 <Text style={style.pedidoCardInfoItemLabel}>Entrega</Text>
                                 <Text style={style.pedidoCardInfoItemValueEntrega}>
-                                    {moment(e.fechaentrega).format('DD/MM/YY')}
+                                    {moment.utc(e.fechaentrega).format('DD/MM/YY')}
                                 </Text>
                             </View>
                         )}
@@ -983,7 +950,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 </Text>
                             </View>
                         )}
-
                         {e.capacidad && (
                             <View style={style.pedidoCardInfoItem}>
                                 <Text style={style.pedidoCardInfoItemLabel}>Cantidad</Text>
@@ -992,18 +958,15 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 </Text>
                             </View>
                         )}
-
                         {e.factura && (
                             <View style={style.pedidoCardInfoItem}>
-                                <Text style={style.pedidoCardInfoItemLabel}>Factura</Text>
+                                <Text style={style.pedidoCardInfoItemLabel}>Remisión</Text>
                                 <Text style={style.pedidoCardInfoItemValueFactura}>
-                                    #{e.factura}
+                                    #{e.remision}
                                 </Text>
                             </View>
                         )}
                     </View>
-
-
                     {(e.conductor && acceso !== "conductor") && (
                         <View style={style.pedidoCardVehicleBox}>
                             <FontAwesome name="truck" style={style.pedidoCardVehicleIcon} />
@@ -1028,7 +991,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             }
             return StatusBar.currentHeight || 24;
         };
-
         return (
             <View style={[style.headerContainer, { paddingTop: getStatusBarHeight() }]}>
                 {/* Header con mejor espaciado */}
@@ -1048,7 +1010,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             )}
                         </View>
                     </View>
-
                     <View style={style.headerButtonGroup}>
                         {/* Botón de estadísticas - Solo visible para admin y conductor */}
                         {(acceso === 'admin' || acceso === 'conductor') && (
