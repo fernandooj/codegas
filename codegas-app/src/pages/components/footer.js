@@ -101,7 +101,7 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
           onPress={() => navigation.navigate('Home')}
         >
           <View style={style.iconContainer}>
-            <FontAwesome name="home" style={style.iconFont} />
+            <FontAwesome name="home" style={isActiveTab('Home') ? style.activeIconFont : style.iconFont}/>
           </View>
         </TouchableOpacity>
 
@@ -112,7 +112,7 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
             onPress={() => navigation.navigate(userId ? 'nuevo_pedido' : 'IniciarSesion')}
           >
             <View style={style.iconContainer}>
-              <FontAwesome name="plus" style={style.iconFont} />
+              <FontAwesome name="plus" style={isActiveTab('nuevo_pedido') ? style.activeIconFont : style.iconFont} />
             </View>
           </TouchableOpacity>
         )}
@@ -125,7 +125,7 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
           <View style={style.iconContainer}>
             <Image
               source={require('../../assets/img/footer/img2.png')}
-              style={style.icon}
+              style={isActiveTab('pedido') ? style.activeIcon : style.icon}
               resizeMode={'contain'}
             />
           </View>
@@ -143,7 +143,7 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
           <View style={style.iconContainer}>
             <Image
               source={require('../../assets/img/footer/img4.png')}
-              style={style.icon}
+              style={isActiveTab('Perfil') ? style.activeIcon : style.icon}
               resizeMode={'contain'}
             />
           </View>

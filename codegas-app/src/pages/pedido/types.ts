@@ -154,7 +154,7 @@ export interface SelectedPedidoData {
     email?: string;
     tokenPhone?: string;
     cedula?: string;
-    forma?: 'cantidad' | 'monto';
+    forma?: 'cantidad' | 'monto'| 'lleno';
     cantidad?: number;
     entregado?: boolean;
     imagenCerrar?: string;

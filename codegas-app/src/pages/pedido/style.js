@@ -988,12 +988,13 @@ export const style = MediaQueryStyleSheet.create({
 	pedidoCardInfoRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		justifyContent: 'space-between'
+		justifyContent: 'space-between',
+		paddingLeft: 8,
 	},
 	pedidoCardInfoLeft: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		flex: 1
+		marginHorizontal: 8,
 	},
 	pedidoCardIdIcon: {
 		fontSize: 12,
@@ -1037,9 +1038,9 @@ export const style = MediaQueryStyleSheet.create({
 		justifyContent: 'flex-start',
 	},
 	pedidoCardFieldSmallStart: {
-		flex: 1,
 		flexDirection: 'row',
-		alignItems: 'flex-start'
+		alignItems: 'center',
+		marginHorizontal: 8,
 	},
 	pedidoCardFieldLarge: {
 		flex: 0.6,
@@ -1472,7 +1473,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	editarModalEstadoChangeText: {
 		color: 'white',
-		fontSize: 14,
+		fontSize: 13,
 		fontWeight: '600'
 	},
 	editarModalVehiculoSection: {
@@ -1506,7 +1507,7 @@ export const style = MediaQueryStyleSheet.create({
 		marginRight: 8
 	},
 	editarModalVehiculoTextAsignado: {
-		fontSize: 14,
+		fontSize: 13,
 		fontWeight: '500',
 		color: '#333'
 	},
@@ -1525,7 +1526,7 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	editarModalVehiculoButton: {
 		backgroundColor: '#28a745',
-		paddingVertical: 15,
+		paddingVertical: 12,
 		paddingHorizontal: 20,
 		borderRadius: 8,
 		flexDirection: 'row',
@@ -1865,13 +1866,13 @@ export const style = MediaQueryStyleSheet.create({
 		elevation: 3,
 	},
 	editarModalCerrarButtonIcon: {
-		fontSize: 16,
+		fontSize: 14,
 		color: 'white',
 		marginRight: 10
 	},
 	editarModalCerrarButtonText: {
 		color: 'white',
-		fontSize: 16,
+		fontSize: 14,
 		fontWeight: '600'
 	},
 

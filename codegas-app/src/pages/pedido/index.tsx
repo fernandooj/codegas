@@ -151,6 +151,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     const scrollViewRef = useRef<ScrollView>(null);
     const keyboardDidShowListener = useRef<any>(null);
     const keyboardDidHideListener = useRef<any>(null);
+    const isFirstMount = useRef(true);
+    const loadPedidosTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Keyboard event handlers
     const _keyboardDidShow = () => handleKeyboardShow();
@@ -172,6 +174,10 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         return () => {
             keyboardDidShowListener.current?.remove();
             keyboardDidHideListener.current?.remove();
+            // Limpiar timeout si existe
+            if (loadPedidosTimeoutRef.current) {
+                clearTimeout(loadPedidosTimeoutRef.current);
+            }
         };
     }, [context]);
 
@@ -183,96 +189,137 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
     }, [pedidos, updateState, actions]);
 
-    // Removido - duplicado con el primer useEffect
-
     useEffect(() => {
         if (!terminoBuscador && showSearch) {
             updateState(actions.setShowSearch(false));
         }
     }, [terminoBuscador, showSearch, updateState, actions]);
 
-    // Effect optimizado para búsqueda en tiempo real con debounce
+    // Effect consolidado para carga de pedidos (búsqueda, filtros y ordenamiento)
     useEffect(() => {
-        if (!idUsuario || !acceso) return;
+        // Validar que tengamos los datos necesarios
+        if (!idUsuario || !acceso) {
+            return;
+        }
 
-        // Si hay término de búsqueda, implementar debounce
-        if (terminoBuscador && terminoBuscador.length >= 2) {
-            const searchTimeout = setTimeout(() => {
+        // Limpiar timeout anterior si existe
+        if (loadPedidosTimeoutRef.current) {
+            clearTimeout(loadPedidosTimeoutRef.current);
+        }
+
+        // Si es el primer montaje, marcar como false y cargar datos
+        if (isFirstMount.current) {
+            isFirstMount.current = false;
+            
+            // Mostrar indicador de carga
+            updateState(actions.setShowSpin1(true));
+
+            // Limpiar pedidos primero
+            dispatch({
+                type: 'GET_PEDIDOS',
+                pedidos: []
+            });
+
+            // Reiniciar paginación
+            updateState(actions.setInicio(0));
+            updateState(actions.setFinal(false));
+            updateState(actions.setLimit(10));
+
+            // Cargar pedidos iniciales
+            const loadInitialPedidos = async () => {
+                try {
+                    await dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+                } catch (error) {
+                    console.error('Error cargando pedidos iniciales:', error);
+                } finally {
+                    updateState(actions.setShowSpin1(false));
+                }
+            };
+
+            loadInitialPedidos();
+            return;
+        }
+
+        // Para cambios posteriores al montaje inicial
+        const shouldSearch = terminoBuscador && terminoBuscador.length >= 2;
+        const shouldClearSearch = terminoBuscador === '' && showSearch;
+
+        // Implementar debounce para búsqueda
+        if (shouldSearch) {
+            loadPedidosTimeoutRef.current = setTimeout(() => {
                 updateState(actions.setShowSearch(true));
                 updateState(actions.setSearchLoading(true));
-                // Limpiar pedidos inmediatamente para evitar mostrar resultados antiguos
+                
                 dispatch({
                     type: 'GET_PEDIDOS',
                     pedidos: []
                 });
 
-                // Realizar la búsqueda
                 dispatch(getPedidos(idUsuario, 0, 10, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden))
                     .finally(() => {
                         updateState(actions.setSearchLoading(false));
                     });
-            }, 150); // Debounce optimizado para mejor experiencia
+            }, 300); // Debounce de 300ms para búsqueda
 
-            return () => clearTimeout(searchTimeout);
+            return () => {
+                if (loadPedidosTimeoutRef.current) {
+                    clearTimeout(loadPedidosTimeoutRef.current);
+                }
+            };
         }
-        // Si no hay término de búsqueda y estaba en búsqueda, recargar todos
-        else if (terminoBuscador === '' && showSearch) {
-            updateState(actions.setShowSearch(false));
-            updateState(actions.setSearchLoading(true));
+
+        // Si se limpió la búsqueda o cambiaron filtros/ordenamiento
+        if (shouldClearSearch || !shouldSearch) {
+            // Mostrar indicador de carga solo si no es búsqueda
+            if (!shouldSearch) {
+                updateState(actions.setShowSpin1(true));
+            }
+
+            if (shouldClearSearch) {
+                updateState(actions.setShowSearch(false));
+                updateState(actions.setSearchLoading(true));
+            }
+
             dispatch({
                 type: 'GET_PEDIDOS',
                 pedidos: []
             });
-            dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden))
-                .finally(() => {
-                    updateState(actions.setSearchLoading(false));
-                });
+
+            // Reiniciar paginación
+            updateState(actions.setInicio(0));
+            updateState(actions.setFinal(false));
+            updateState(actions.setLimit(10));
+
+            const loadFilteredPedidos = async () => {
+                try {
+                    await dispatch(getPedidos(
+                        idUsuario, 
+                        0, 
+                        shouldClearSearch ? 20 : 10, 
+                        acceso, 
+                        shouldClearSearch ? undefined : terminoBuscador, 
+                        estadoFiltro, 
+                        ordenPor, 
+                        tipoOrden
+                    ));
+                } catch (error) {
+                    console.error('Error cargando pedidos filtrados:', error);
+                    Alert.alert(
+                        'Error',
+                        'No se pudieron cargar los pedidos. Inténtalo de nuevo.',
+                        [{ text: 'OK' }]
+                    );
+                } finally {
+                    updateState(actions.setShowSpin1(false));
+                    if (shouldClearSearch) {
+                        updateState(actions.setSearchLoading(false));
+                    }
+                }
+            };
+
+            loadFilteredPedidos();
         }
-    }, [terminoBuscador]); // Solo reaccionar a cambios en el término de búsqueda
-
-    // Effect optimizado para filtros y ordenamiento
-    useEffect(() => {
-        if (!idUsuario || !acceso) return;
-
-        // Mostrar indicador de carga
-        updateState(actions.setShowSpin1(true));
-
-        // Limpiar pedidos primero
-        dispatch({
-            type: 'GET_PEDIDOS',
-            pedidos: []
-        });
-
-        // Reiniciar paginación y limpiar estado
-        updateState(actions.setInicio(0));
-        updateState(actions.setFinal(false));
-        updateState(actions.setLimit(10));
-
-        // Cargar pedidos inmediatamente sin delay
-        const loadPedidosWithFilters = async () => {
-            try {
-                await dispatch(getPedidos(idUsuario, 0, 10, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden));
-            } catch (error) {
-                console.error('Error cargando pedidos:', error);
-                Alert.alert(
-                    'Funcionalidad no disponible',
-                    'Los filtros y ordenamiento requieren actualizar el servidor. Mostrando todos los pedidos.',
-                    [{ text: 'OK' }]
-                );
-                // Resetear a valores por defecto
-                updateState(actions.setEstadoFiltro('todos'));
-                updateState(actions.setOrdenPor('fecha_creacion'));
-                updateState(actions.setTipoOrden('DESC'));
-                // Cargar pedidos con valores por defecto
-                await dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, 'todos', 'fecha_creacion', 'DESC'));
-            } finally {
-                // Ocultar indicador de carga
-                updateState(actions.setShowSpin1(false));
-            }
-        };
-
-        loadPedidosWithFilters();
-    }, [idUsuario, acceso, estadoFiltro, ordenPor, tipoOrden]); // Reaccionar a cambios en usuario, acceso, filtros y ordenamiento
+    }, [idUsuario, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden, dispatch]);
 
     useEffect(() => {
         // Cargar vehículos cuando tenemos el idUsuario
@@ -448,7 +495,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Obtener el ID del usuario logueado desde el contexto
             const { userId: usuarioId } = context;
 
-            const res2 = await guardarNovedadInactivo(id, novedad, usuarioId as any, 'inactivo');
+            const res2 = await guardarNovedadInactivo(id, novedad, usuarioId as any, 'inactivo' as any);
             updateState(actions.setModalNovedad(false));
             updateState(actions.setPedidoData({ estadoEntrega: "noentregado" }));
             updateState(actions.setNovedad(""));
@@ -464,7 +511,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
     const cancelarPedidoCliente = async (): Promise<void> => {
         const { nombre: nombreUsuario, user } = context;
-        const nombreFinal = nombreUsuario || user?.nombre || razon_social || 'Usuario';
+        const nombreFinal = nombreUsuario || (user as any)?.nombre || razon_social || 'Usuario';
         const ahora = moment().format('DD/MM/YYYY HH:mm:ss');
         const mensajeCancelacion = `El usuario ${nombreFinal} canceló su pedido el ${ahora}`;
 
@@ -526,7 +573,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
     const handleCerrarPedido = async (data: any, pedidoId?: string): Promise<void> => {
         const { kilos, factura, valor_total, remision, forma_pago, novedad, imagen } = data;
-        const { email, tokenPhone } = context.user || {};
+        const { email, tokenPhone } = (context.user as any) || {};
 
         // Mostrar confirmación
         Alert.alert(
@@ -548,7 +595,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     const confirmarCierrePedido = async (data: any, pedidoId?: string): Promise<void> => {
         try {
             const { kilos, factura, valor_total, remision, forma_pago, novedad, imagen } = data;
-            const { email, tokenPhone } = context.user || {};
+            const { email, tokenPhone } = (context.user as any) || {};
 
             // Usar el pedidoId pasado como parámetro, el pedidoIdParaCerrar, o el id del estado como fallback
             const finalPedidoId = pedidoId || pedidoIdParaCerrar || id;
@@ -653,7 +700,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 pedidoIdFinal, // pedidoId
                 novedad,
                 usuarioId as any, // conductorId (ID del usuario logueado)
-                motivoKey // motivo seleccionado
+                motivoKey as any // motivo seleccionado
             );
 
             if (response.status) {
@@ -860,26 +907,20 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     <View style={style.pedidoCardHeader}>
                         <View style={style.pedidoCardInfoRow}>
                             <Text style={style.pedidoCardValueSmall}>
-                                {"("}{e._id}{") "}
+                                {"("}{e._id}{")"}
                             </Text>
-                            
                             <View style={style.pedidoCardInfoLeft}>
                                 <FontAwesome name="id-card" style={style.pedidoCardIdIcon} />
                                 <Text style={style.pedidoCardCedulaText}>
                                     {e.cedula}
                                 </Text>
                             </View>
-                            {e.codt ? (
                                 <View style={style.pedidoCardFieldSmallStart}>
-                                    <FontAwesome name="code" style={style.pedidoCardIconCode}/>
                                     <Text style={style.pedidoCardLabelText}>CODT:
                                     <Text style={style.pedidoCardValue}>
-                                    {" "}{e.codt}
+                                    {e.codt}
                                     </Text></Text>
                                 </View>
-                                ) : (
-                                <View style={style.pedidoCardFieldSpacer} />
-                            )}
                             <View style={[style.pedidoCardEstadoBadge, { backgroundColor: getEstadoColor(e.estado) }]}>
                                 <FontAwesome
                                     name={e.estado === "activo" ? "check" : e.estado === "innactivo" ? "times" : "pause"}

@@ -26,8 +26,8 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection: "row",
 		width: "100%",
 		height: Platform.OS === 'ios' ? 65 : 60,
-		paddingHorizontal: 15,
-		paddingTop: 15,
+		paddingHorizontal: 25,
+		paddingTop: 25,
 		paddingBottom: Platform.OS === 'ios' ? 15 : 10, // Extra padding for safe area
 		shadowColor: "#000000",
 		shadowOffset: { width: 0, height: -8 },
@@ -114,8 +114,8 @@ export const style = MediaQueryStyleSheet.create({
 	},
 
 	elevatedIconContainer: {
-		width: 70,
-		height: 70,
+		width: 60,
+		height: 60,
 		borderRadius: 35,
 		alignItems: "center",
 		justifyContent: "center",
@@ -126,7 +126,7 @@ export const style = MediaQueryStyleSheet.create({
 	iconContainer: {
 		width: 40,
 		height: 40,
-		borderRadius: 20,
+		borderRadius: 25,
 		alignItems: "center",
 		justifyContent: "center",
 		backgroundColor: "rgba(0, 37, 135, 0.1)",
@@ -135,22 +135,22 @@ export const style = MediaQueryStyleSheet.create({
 
 	// Estilos de íconos
 	icon: {
-		width: 34,
-		height: 34,
+		width: 30,
+		height: 30,
 		tintColor: "#002587",
 	},
 
 	// Iconos FontAwesome
 	iconFont: {
-		fontSize: 36,
+		fontSize: 30,
 		color: "#002587",
 		fontWeight: "400",
 	},
 
 	// Ícono activo
 	activeIcon: {
-		width: 32,
-		height: 32,
+		width: 30,
+		height: 30,
 		tintColor: "#82a9c5ff",
 	},
 

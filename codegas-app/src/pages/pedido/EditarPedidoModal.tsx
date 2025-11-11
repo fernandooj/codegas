@@ -110,7 +110,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
         observacion,
         observacion_pedido,
         estado,
-        estadoEntrega,
+        codt,
         entregado,
         placaPedido,
         conductorPedido,
@@ -258,24 +258,29 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             <Text style={style.editarModalInfoTextBold}>Cédula/NIT: </Text>{cedula}
                                         </Text>
                                     </View>
-
+                                    <View style={style.editarModalInfoRow}>
+                                        <FontAwesome name="code" style={[style.editarModalInfoIcon, style.editarModalInfoIconPurple]} />
+                                        <Text style={style.editarModalInfoText}>
+                                            <Text style={style.editarModalInfoTextBold}>Codt: </Text>{codt}
+                                        </Text>
+                                    </View>
                                     <View style={style.editarModalInfoRow}>
                                         <FontAwesome name="list-alt" style={[style.editarModalInfoIcon, style.editarModalInfoIconGreen]} />
                                         <Text style={style.editarModalInfoText}>
                                             <Text style={style.editarModalInfoTextBold}>Forma: </Text>{forma}
                                         </Text>
                                     </View>
-
+                                    {forma !== "lleno" && (
                                     <View style={style.editarModalInfoRow}>
                                         <FontAwesome name="cubes" style={[style.editarModalInfoIcon, style.editarModalInfoIconPurple]} />
                                         <Text style={style.editarModalInfoText}>
                                             <Text style={style.editarModalInfoTextBold}>
-                                                {forma == "cantidad" ? "Cantidad: " : forma == "monto" ? "Monto: " : "Valor: "}
+                                                {forma == "cantidad" ? "Cantidad Kg: " :  "Monto $: "}
                                             </Text>
-                                            {forma == "cantidad" ? cantidadKl : forma == "monto" ? cantidadPrecio : "N/A"}
+                                            {forma == "cantidad" ? cantidadKl : cantidadPrecio}
                                         </Text>
                                     </View>
-
+                                    )}
                                     {/* Motivo de no cierre */}
                                     {pedidoData.motivo_no_cierre && (
                                         <View style={style.editarModalInfoRow}>
