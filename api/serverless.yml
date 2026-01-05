@@ -62,6 +62,12 @@ custom:
   # Variables de entorno temporales
   emailUser: admin@codegascolombia.com
   emailPass: hkbi efvr jwua gtkq
+<<<<<<< HEAD
+=======
+  # Twilio Configuration (usar variables de entorno en producción)
+  twilioAccountSid: ${env:TWILIO_ACCOUNT_SID}
+  twilioAuthToken: ${env:TWILIO_AUTH_TOKEN}
+  twilioWhatsAppNumber: ${env:TWILIO_WHATSAPP_NUMBER}
   webpack:
     webpackConfig: 'webpack.config.js'
     includeModules: true
