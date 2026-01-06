@@ -7,7 +7,7 @@ const email1 = 'atencionalcliente3@codegascolombia.com'
 const email2 = 'coord.logistica@codegascolombia.com'
 const email3 = 'atencionalcliente4@codegascolombia.com'
 const email4 = 'atencionalcliente2@codegascolombia.com'
-const email5 = 'fernandooj@ymail.com'
+const email5 = 'soluciones@codegascolombia.com'
 
 // Función para generar el template HTML del email
 const generateEmailTemplate = (pedidoData) => {

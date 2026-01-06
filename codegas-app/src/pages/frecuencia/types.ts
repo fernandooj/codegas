@@ -61,3 +61,15 @@ export interface EditarFrecuenciaModalProps {
     frecuencia: PedidoFrecuencia | null;
     onSuccess: (updatedData?: PedidoFrecuencia) => void;
 }
+
+export interface GrupoFrecuencia {
+    _id: number;
+    nombre: string;
+    tipo_frecuencia: 'semanal' | 'mensual';
+    dia_semana?: number; // 1=Lunes, 5=Viernes (solo para semanal)
+    intervalo_semanas?: number; // 1, 2 o 3 semanas (solo para semanal)
+    dia_mes?: number; // 1-31 (solo para mensual)
+    dia_semana_mensual?: number; // 1=Lunes, 5=Viernes (solo para mensual)
+    creado?: string;
+    actualizado?: string;
+}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, Dimensions, Animated, Keyboard, Platform, StatusBar, Modal} from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, TextInput, ScrollView, Dimensions, Animated, Keyboard, Platform, StatusBar, Modal } from 'react-native';
 import moment from 'moment';
 import Toast from 'react-native-toast-message';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import { useSelector, useDispatch } from "react-redux";
+import NetInfo from '@react-native-community/netinfo';
 import Footer from '../components/footer';
 import {
     getPedidos,
@@ -40,10 +41,42 @@ import NovedadModal from './NovedadModal';
 import CerrarPedidoModal from './CerrarPedidoModal';
 import ModalOrdenamiento from './ModalOrdenamiento';
 import ModalEstadisticas from './ModalEstadisticas';
+import DebugPanel from '../../components/DebugPanel';
+import { debugLogger } from '../../components/DebugPanel';
+import { syncQueueService, SyncOperationType } from '../../services/syncQueueService';
+import { useSyncQueue } from '../../hooks/useSyncQueue';
 import { AppDispatch } from '../../redux/types';
 
 // Configurar el calendario en español
 setupCalendarLocale();
+
+// Funciones auxiliares para manejo de errores
+const formatFullError = (err: unknown): string => {
+    try {
+        if (err instanceof Error) {
+            return `${err.message}\n\n${err.stack ?? ''}`.trim();
+        }
+        if (err && typeof err === 'object') {
+            return JSON.stringify(err, null, 2);
+        }
+        return String(err);
+    } catch (_e) {
+        return String(err);
+    }
+};
+
+const copyToClipboard = (text: string) => {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const Clipboard = require('@react-native-clipboard/clipboard');
+        if (Clipboard?.setString) {
+            Clipboard.setString(text);
+            Alert.alert('Copiado', 'El error ha sido copiado al portapapeles');
+        }
+    } catch (_e) {
+        console.error('Error copiando al portapapeles:', _e);
+    }
+};
 
 const size = Dimensions.get('window');
 
@@ -55,6 +88,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
     // Context hook
     const context = useContext(DataContext) as DataContextType;
+
+    // Sync queue hook para obtener items pendientes
+    const { queue, isOnline: isOnlineSync } = useSyncQueue();
 
     // Custom hook para manejar todo el estado
     const {
@@ -127,11 +163,14 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             coordenadas,
             nombre,
             codt,
+            email,
             puntoId,
             valor_unitarioUsuario,
             punto_email,
             punto_celular,
-            punto_nombre
+            punto_nombre,
+            firma_conductor,
+            firma_usuario
         }
     } = state;
 
@@ -142,6 +181,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     const [pedidoIdParaCerrar, setPedidoIdParaCerrar] = useState<string | undefined>(); // Estado para el ID del pedido
     const [valorUnitarioParaCerrar, setValorUnitarioParaCerrar] = useState<string | undefined>(); // Estado para el valor unitario del pedido
     const [modalEstadisticas, setModalEstadisticas] = useState<boolean>(false); // Estado para el modal de estadísticas
+    const [isOnline, setIsOnline] = useState<boolean>(true); // Estado de conexión
+    const [pedidosFromCache, setPedidosFromCache] = useState<boolean>(false); // Indica si los pedidos vienen del cache
+    const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false); // Panel de debug
     const [top] = useState(new Animated.Value(size.height));
     const [modalScale] = useState(new Animated.Value(0));
     const [modalMainScale] = useState(new Animated.Value(0));
@@ -160,6 +202,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
     // Effects
     useEffect(() => {
+        // Inicializar debug logger
+        debugLogger.init();
+
         const { acceso, userId: idUsuario } = context;
         setIdUsuario(idUsuario);
         setAcceso(acceso);
@@ -171,15 +216,77 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             updateState(actions.setEstadoFiltro('asignado'));
         }
 
+        // Escuchar cambios de conectividad
+        const unsubscribeNetInfo = NetInfo.addEventListener(state => {
+            const connected = state.isConnected ?? false;
+            setIsOnline(connected);
+            const logData = {
+                isConnected: state.isConnected,
+                type: state.type,
+                isInternetReachable: state.isInternetReachable,
+                connected: connected
+            };
+            console.log('🌐 [Pedido] Estado de red cambiado:', logData);
+            debugLogger.info('Estado de red cambiado', logData);
+        });
+
+        // Verificar estado inicial de conexión
+        NetInfo.fetch().then(state => {
+            const connected = state.isConnected ?? false;
+            setIsOnline(connected);
+            const logData = {
+                isConnected: state.isConnected,
+                type: state.type,
+                isInternetReachable: state.isInternetReachable,
+                connected: connected
+            };
+            console.log('🌐 [Pedido] Estado inicial de red:', logData);
+            debugLogger.info('Estado inicial de red', logData);
+        });
+
+        // Suscribirse a eventos de sincronización completada para recargar pedidos
+        const unsubscribeSyncComplete = syncQueueService.onSyncComplete(() => {
+            console.log('🔄 [Pedido] Sincronización completada, recargando pedidos...');
+            debugLogger.info('Sincronización completada, recargando pedidos');
+
+            // Recargar pedidos después de sincronizar
+            if (idUsuario && acceso) {
+                // Obtener valores actuales de filtros desde el estado
+                const currentEstadoFiltro = estadoFiltro || 'todos';
+                const currentOrdenPor = ordenPor || 'fecha_creacion';
+                const currentTipoOrden = tipoOrden || 'DESC';
+
+                setTimeout(() => {
+                    updateState(actions.setShowSpin1(true));
+                    // Usar dispatch directamente para recargar pedidos
+                    dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, currentEstadoFiltro, currentOrdenPor, currentTipoOrden))
+                        .then((result: any) => {
+                            setPedidosFromCache(result?.fromCache || false);
+                            updateState(actions.setShowSpin1(false));
+                            console.log('✅ [Pedido] Pedidos recargados después de sincronización');
+                            debugLogger.info('Pedidos recargados después de sincronización', { fromCache: result?.fromCache || false });
+                        })
+                        .catch((error) => {
+                            console.error('❌ [Pedido] Error recargando pedidos después de sync:', error);
+                            debugLogger.error('Error recargando pedidos después de sync', error);
+                            updateState(actions.setShowSpin1(false));
+                        });
+                }, 500); // Pequeño delay para asegurar que el backend procesó todo
+            }
+        });
+
         return () => {
             keyboardDidShowListener.current?.remove();
             keyboardDidHideListener.current?.remove();
+            unsubscribeNetInfo();
+            unsubscribeSyncComplete();
             // Limpiar timeout si existe
             if (loadPedidosTimeoutRef.current) {
                 clearTimeout(loadPedidosTimeoutRef.current);
             }
         };
-    }, [context]);
+    }, [context, idUsuario, acceso]);
+
 
     useEffect(() => {
         updateState(actions.setPedidosFiltro(pedidos));
@@ -210,7 +317,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         // Si es el primer montaje, marcar como false y cargar datos
         if (isFirstMount.current) {
             isFirstMount.current = false;
-            
+
             // Mostrar indicador de carga
             updateState(actions.setShowSpin1(true));
 
@@ -228,9 +335,21 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Cargar pedidos iniciales
             const loadInitialPedidos = async () => {
                 try {
-                    await dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+                    // Verificar estado de conexión antes de cargar
+                    const netInfo = await NetInfo.fetch();
+                    const connected = netInfo.isConnected ?? false;
+                    setIsOnline(connected);
+                    console.log('🌐 [Pedido] Estado de red antes de cargar pedidos iniciales:', connected);
+
+                    const result = await dispatch(getPedidos(idUsuario, 0, 10, acceso, undefined, estadoFiltro, ordenPor, tipoOrden)) as any;
+                    setPedidosFromCache(result?.fromCache || false);
+                    console.log('📦 [Pedido] Resultado de carga inicial:', { fromCache: result?.fromCache, empty: result?.empty });
                 } catch (error) {
                     console.error('Error cargando pedidos iniciales:', error);
+                    // Si hay error, verificar si es por falta de conexión
+                    const netInfo = await NetInfo.fetch();
+                    const connected = netInfo.isConnected ?? false;
+                    setIsOnline(connected);
                 } finally {
                     updateState(actions.setShowSpin1(false));
                 }
@@ -249,13 +368,16 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             loadPedidosTimeoutRef.current = setTimeout(() => {
                 updateState(actions.setShowSearch(true));
                 updateState(actions.setSearchLoading(true));
-                
+
                 dispatch({
                     type: 'GET_PEDIDOS',
                     pedidos: []
                 });
 
                 dispatch(getPedidos(idUsuario, 0, 10, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden))
+                    .then((result: any) => {
+                        setPedidosFromCache(result?.fromCache || false);
+                    })
                     .finally(() => {
                         updateState(actions.setSearchLoading(false));
                     });
@@ -292,16 +414,17 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
             const loadFilteredPedidos = async () => {
                 try {
-                    await dispatch(getPedidos(
-                        idUsuario, 
-                        0, 
-                        shouldClearSearch ? 20 : 10, 
-                        acceso, 
-                        shouldClearSearch ? undefined : terminoBuscador, 
-                        estadoFiltro, 
-                        ordenPor, 
+                    const result = await dispatch(getPedidos(
+                        idUsuario,
+                        0,
+                        shouldClearSearch ? 20 : 10,
+                        acceso,
+                        shouldClearSearch ? undefined : terminoBuscador,
+                        estadoFiltro,
+                        ordenPor,
                         tipoOrden
-                    ));
+                    )) as any;
+                    setPedidosFromCache(result?.fromCache || false);
                 } catch (error) {
                     console.error('Error cargando pedidos filtrados:', error);
                     Alert.alert(
@@ -443,7 +566,19 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             updateState(actions.setShowSpin1(true));
         }
 
-        dispatch(getPedidos(idUsuario, currentStart, currentLimit, acceso, currentTerminoBuscador, estadoFiltro, ordenPor, tipoOrden));
+        dispatch(getPedidos(idUsuario, currentStart, currentLimit, acceso, currentTerminoBuscador, estadoFiltro, ordenPor, tipoOrden))
+            .then((result: any) => {
+                setPedidosFromCache(result?.fromCache || false);
+                if (type === 'load') {
+                    updateState(actions.setShowSpin1(false));
+                }
+            })
+            .catch((error) => {
+                console.error('Error en loadPedidos:', error);
+                if (type === 'load') {
+                    updateState(actions.setShowSpin1(false));
+                }
+            });
     };
 
     const handleSubmit = async (): Promise<void> => {
@@ -571,25 +706,47 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         );
     };
 
-    const handleCerrarPedido = async (data: any, pedidoId?: string): Promise<void> => {
+    const handleCerrarPedido = async (data: any, pedidoId?: string, skipConfirmation?: boolean): Promise<void> => {
         const { kilos, factura, valor_total, remision, forma_pago, novedad, imagen } = data;
         const { email, tokenPhone } = (context.user as any) || {};
 
-        // Mostrar confirmación
-        Alert.alert(
-            'Confirmar cierre de pedido',
-            '¿Está seguro de que desea cerrar este pedido?',
-            [
-                {
-                    text: 'Cancelar',
-                    style: 'cancel'
-                },
-                {
-                    text: 'Confirmar',
-                    onPress: () => confirmarCierrePedido(data, pedidoId)
-                }
-            ]
-        );
+        // Si skipConfirmation es true (viene desde el modal de firmas), cerrar directamente
+        if (skipConfirmation) {
+            // Esperar y propagar el error para que CerrarPedidoModal pueda manejarlo
+            await confirmarCierrePedido(data, pedidoId);
+            return;
+        }
+
+        // Mostrar confirmación con un pequeño delay para asegurar que el modal anterior se haya cerrado
+        setTimeout(() => {
+            Alert.alert(
+                'Confirmar cierre de pedido',
+                '¿Está seguro de que desea cerrar este pedido?',
+                [
+                    {
+                        text: 'Cancelar',
+                        style: 'cancel',
+                        onPress: () => {
+                            // No hacer nada, solo cancelar
+                        }
+                    },
+                    {
+                        text: 'Confirmar',
+                        style: 'default',
+                        onPress: async () => {
+                            try {
+                                await confirmarCierrePedido(data, pedidoId);
+                            } catch (error) {
+                                // El error ya se maneja en confirmarCierrePedido para errores no de red
+                                // Los errores de red se propagan para que CerrarPedidoModal los capture
+                                throw error;
+                            }
+                        }
+                    }
+                ],
+                { cancelable: false } // Evitar que se cierre tocando fuera
+            );
+        }, 300);
     };
 
     const confirmarCierrePedido = async (data: any, pedidoId?: string): Promise<void> => {
@@ -660,9 +817,38 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             } else {
                 Alert.alert('Error', 'Tenemos un problema, inténtelo más tarde');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error cerrando pedido:', error);
-            Alert.alert('Error', 'Ocurrió un error inesperado al cerrar el pedido');
+
+            // Si es un error de red, lanzarlo nuevamente para que el componente padre
+            // (CerrarPedidoModal) pueda capturarlo y guardarlo offline
+            const isNetworkError =
+                (error?.isAxiosError && error?.message === 'Network Error') ||
+                (error?.code === 'ERR_NETWORK') ||
+                /Network Error|Failed to fetch|timeout/i.test(String(error?.message ?? error));
+
+            if (isNetworkError) {
+                console.log('📴 [confirmarCierrePedido] Error de red detectado, lanzando error para manejo offline...');
+                // Lanzar el error para que CerrarPedidoModal lo capture y guarde offline
+                throw error;
+            }
+
+            // Para otros errores (no de red), mostrar alerta como antes
+            const errorText = formatFullError(error);
+            Alert.alert(
+                'Error al cerrar el pedido',
+                errorText,
+                [
+                    {
+                        text: 'Copiar',
+                        onPress: () => {
+                            copyToClipboard(errorText);
+                        }
+                    },
+                    { text: 'OK' }
+                ],
+                { cancelable: true }
+            );
         }
     };
 
@@ -733,7 +919,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
             // Asignar solo vehículo, sin fecha
             const fechaParaAsignar = fechaEntrega || moment().format('YYYY-MM-DD HH:mm:ss');
-            const response = await asignarConductor(id, finalIdVehiculo,fechaParaAsignar, idUsuario);
+            const response = await asignarConductor(id, finalIdVehiculo, fechaParaAsignar, idUsuario);
 
             if (response.status) {
                 // Mostrar mensaje de éxito
@@ -837,7 +1023,51 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
     // Render functions
     const renderPedidos = (): React.JSX.Element[] => {
-        return pedidos.map((e: PedidoType, key: number) => {
+        // Si el usuario es conductor, ordenar pedidos por fechaEntrega y luego por orden (ascendente)
+        let pedidosOrdenados = [...pedidos];
+        if (acceso === 'conductor') {
+            pedidosOrdenados = pedidosOrdenados.sort((a, b) => {
+                // Primero ordenar por fechaEntrega
+                const fechaA = a.fechaentrega || '';
+                const fechaB = b.fechaentrega || '';
+                if (fechaA !== fechaB) {
+                    return fechaA.localeCompare(fechaB);
+                }
+                // Si tienen la misma fechaEntrega, ordenar por orden (ascendente)
+                const ordenA = a.orden || 999999;
+                const ordenB = b.orden || 999999;
+                return ordenA - ordenB;
+            });
+        }
+
+        return pedidosOrdenados.map((e: PedidoType, key: number) => {
+
+            // Verificar si este pedido tiene items pendientes en la cola de sincronización
+            const pedidoId = e._id?.toString();
+            const itemsPendientes = queue.filter(item => {
+                const status = item.status === 'pending' || item.status === 'processing' || item.status === 'failed';
+                if (!status) return false;
+
+                // Comparar pedidoId de diferentes formas posibles según el tipo de operación
+                let itemPedidoId: string | undefined;
+
+                if (item.type === SyncOperationType.CERRAR_PEDIDO) {
+                    // Para CERRAR_PEDIDO, el pedidoId puede estar en data.pedidoId o data.pedidoData._id
+                    itemPedidoId = item.data?.pedidoId?.toString() || item.data?.pedidoData?._id?.toString();
+                } else if (item.type === SyncOperationType.UPDATE_PEDIDO) {
+                    // Para UPDATE_PEDIDO, el pedidoId está en data.pedidoId
+                    itemPedidoId = item.data?.pedidoId?.toString();
+                } else {
+                    // Para otros tipos, intentar obtener el pedidoId de forma genérica
+                    itemPedidoId = item.data?.pedidoId?.toString() || item.data?.pedidoData?._id?.toString();
+                }
+
+                const relacionado = itemPedidoId === pedidoId;
+
+                return relacionado;
+            });
+            const tienePendientes = itemsPendientes.length > 0;
+
             return (
                 <TouchableOpacity
                     key={key}
@@ -900,6 +1130,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             punto_nombre: e.punto_nombre,
                             idVehiculo: e.idVehiculo,
                             placa: e.placa,
+                            firma_conductor: e.firma_conductor,
+                            firma_usuario: e.firma_usuario,
+                            tanques: e.tanques || []
                         });
                     }}
                 >
@@ -909,18 +1142,27 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             <Text style={style.pedidoCardValueSmall}>
                                 {"("}{e._id}{")"}
                             </Text>
+                            {acceso === 'conductor' && e.orden && (
+                                <View style={style.pedidoCardInfoLeft}>
+                                    <Text style={style.pedidoCardLabelText}>Orden:
+                                        <Text style={style.pedidoCardValue}>
+                                            {e.orden}
+                                        </Text>
+                                    </Text>
+                                </View>
+                            )}
                             <View style={style.pedidoCardInfoLeft}>
                                 <FontAwesome name="id-card" style={style.pedidoCardIdIcon} />
                                 <Text style={style.pedidoCardCedulaText}>
                                     {e.cedula}
                                 </Text>
                             </View>
-                                <View style={style.pedidoCardFieldSmallStart}>
-                                    <Text style={style.pedidoCardLabelText}>CODT:
+                            <View style={style.pedidoCardFieldSmallStart}>
+                                <Text style={style.pedidoCardLabelText}>CODT:
                                     <Text style={style.pedidoCardValue}>
-                                    {e.codt}
+                                        {e.codt}
                                     </Text></Text>
-                                </View>
+                            </View>
                             <View style={[style.pedidoCardEstadoBadge, { backgroundColor: getEstadoColor(e.estado) }]}>
                                 <FontAwesome
                                     name={e.estado === "activo" ? "check" : e.estado === "innactivo" ? "times" : "pause"}
@@ -935,6 +1177,24 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 </Text>
                             </View>
                         </View>
+                        {/* Indicador de sincronización pendiente */}
+                        {tienePendientes && (
+                            <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                marginTop: 4,
+                                marginRight: 4,
+                            }}>
+                                <Text style={{
+                                    color: '#dc3545',
+                                    fontSize: 11,
+                                    fontWeight: '600',
+                                }}>
+                                    Sincronizando
+                                </Text>
+                            </View>
+                        )}
                         <View style={style.pedidoCardHeaderRow}>
                             <FontAwesome name="building" style={style.pedidoCardBuildingIcon} />
                             <Text style={style.pedidoCardCompanyText} numberOfLines={1}>
@@ -950,16 +1210,16 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 <FontAwesome name="map-marker" style={style.pedidoCardIconMarker} />
                                 <View style={style.pedidoCardFieldContent}>
                                     <Text style={style.pedidoCardLabelText} numberOfLines={2}>ZONA:
-                                    <Text style={style.pedidoCardValueAddress} >
-                                        {" "}{e.zona || 'Sin zona'}
-                                    </Text></Text>
+                                        <Text style={style.pedidoCardValueAddress} >
+                                            {" "}{e.zona || 'Sin zona'}
+                                        </Text></Text>
                                 </View>
                                 <FontAwesome name="home" style={style.pedidoCardIconHome} />
                                 <View style={style.pedidoCardFieldContent}>
                                     <Text style={style.pedidoCardLabelText} numberOfLines={2}>DIRECCIÓN:
-                                    <Text style={style.pedidoCardValueAddress} >
-                                        {" "}{e.direccion || "Sin dirección"}
-                                    </Text></Text>
+                                        <Text style={style.pedidoCardValueAddress} >
+                                            {" "}{e.direccion || "Sin dirección"}
+                                        </Text></Text>
                                 </View>
                             </View>
                         </View>
@@ -1021,7 +1281,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     )}
                 </TouchableOpacity>
             );
-        })
+        });
     };
 
     const renderCabezera = () => {
@@ -1085,37 +1345,72 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
                 {/* Barra de búsqueda con mejor diseño */}
                 {/*acceso !== "conductor" && (*/}
-                    <View style={style.searchBarContainer}>
-                        <View style={[style.searchBar, showSearch && terminoBuscador ? style.searchBarActive : style.searchBarInactive]}>
-                            <FontAwesome name='search' style={style.searchIconStyle} />
-                            <TextInput
-                                placeholder="Escribir para buscar..."
-                                placeholderTextColor="#999"
-                                autoCapitalize='none'
-                                onChangeText={(terminoBuscador) => updateState(actions.setTerminoBuscador(terminoBuscador))}
-                                value={terminoBuscador}
-                                style={style.searchInputStyle}
-                            />
+                <View style={style.searchBarContainer}>
+                    <View style={[style.searchBar, showSearch && terminoBuscador ? style.searchBarActive : style.searchBarInactive]}>
+                        <FontAwesome name='search' style={style.searchIconStyle} />
+                        <TextInput
+                            placeholder="Escribir para buscar..."
+                            placeholderTextColor="#999"
+                            autoCapitalize='none'
+                            onChangeText={(terminoBuscador) => updateState(actions.setTerminoBuscador(terminoBuscador))}
+                            value={terminoBuscador}
+                            style={style.searchInputStyle}
+                        />
 
-                            {terminoBuscador ? (
-                                <TouchableOpacity
-                                    style={style.searchClearButton}
-                                    onPress={() => {
-                                        updateState(actions.setTerminoBuscador(''));
-                                        updateState(actions.setShowSearch(false));
-                                    }}
-                                    activeOpacity={0.8}
-                                >
-                                    <FontAwesome name='times' style={style.searchClearIcon} />
-                                </TouchableOpacity>
-                            ) : searchLoading ? (
-                                <View style={style.searchLoadingContainer}>
-                                    <ActivityIndicator size="small" color="#007bff" />
-                                </View>
-                            ) : null}
-                        </View>
+                        {terminoBuscador ? (
+                            <TouchableOpacity
+                                style={style.searchClearButton}
+                                onPress={() => {
+                                    updateState(actions.setTerminoBuscador(''));
+                                    updateState(actions.setShowSearch(false));
+                                }}
+                                activeOpacity={0.8}
+                            >
+                                <FontAwesome name='times' style={style.searchClearIcon} />
+                            </TouchableOpacity>
+                        ) : searchLoading ? (
+                            <View style={style.searchLoadingContainer}>
+                                <ActivityIndicator size="small" color="#007bff" />
+                            </View>
+                        ) : null}
                     </View>
+                </View>
                 {/*)}*/}
+
+                {/* Banner de estado offline */}
+                {!isOnline && (
+                    <View style={{
+                        backgroundColor: '#ffc107',
+                        paddingVertical: 10,
+                        paddingHorizontal: 16,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginTop: 8,
+                        marginHorizontal: 16,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: '#ff9800',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 3,
+                        elevation: 3
+                    }}>
+                        <FontAwesome name="exclamation-triangle" style={{ fontSize: 18, color: '#856404', marginRight: 10 }} />
+                        <Text style={{
+                            color: '#856404',
+                            fontSize: 14,
+                            fontWeight: '700',
+                            flex: 1
+                        }}>
+                            {pedidosFromCache && pedidos.length > 0
+                                ? `Modo offline - Mostrando ${pedidos.length} pedidos guardados`
+                                : 'Sin conexión a internet - No hay pedidos guardados'
+                            }
+                        </Text>
+                    </View>
+                )}
 
                 {/* Botones de filtro por estado */}
                 {acceso !== "conductor" && (
@@ -1279,10 +1574,18 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     coordenadas,
                     nombre,
                     codt,
+                    email,
                     puntoId,
                     punto_email,
                     punto_celular,
-                    punto_nombre
+                    punto_nombre,
+                    firma_conductor,
+                    firma_usuario,
+                    tanques: (() => {
+                        // Obtener tanques del pedido actual
+                        const pedidoActual = pedidos.find((p: any) => p._id?.toString() === id?.toString());
+                        return pedidoActual?.tanques || [];
+                    })()
                 }}
                 acceso={acceso}
                 navigation={navigation}
@@ -1499,6 +1802,13 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 acceso={acceso}
             />
 
+            {/* Panel de Debug */}
+            {__DEV__ && (
+                <DebugPanel
+                    visible={showDebugPanel}
+                    onClose={() => setShowDebugPanel(false)}
+                />
+            )}
         </View>
     );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert, RefreshControl} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert, RefreshControl } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import Toast from 'react-native-toast-message';
@@ -9,12 +9,15 @@ import { AppDispatch } from '../../redux/types';
 import { style } from './style';
 import { getFrecuencia } from '../../redux/actions/pedidoActions';
 import Footer from '../components/footer';
-import { FrecuenciaState, PedidoFrecuencia } from './types';
+import { FrecuenciaState, PedidoFrecuencia, GrupoFrecuencia } from './types';
 import EditarFrecuenciaModal from './EditarFrecuenciaModal';
+import CrearGrupoFrecuenciaModal from './CrearGrupoFrecuenciaModal';
+import EditarGrupoFrecuenciaModal from './EditarGrupoFrecuenciaModal';
 
 const Frecuencia: React.FC = ({ navigation }: any) => {
     const dispatch = useDispatch<AppDispatch>();
     const pedidos = useSelector((state: any) => state.pedido.pedidosFrecuencia);
+    const grupos = useSelector((state: any) => state.pedido.gruposFrecuencia || []);
 
     const [isLoadingData, setIsLoadingData] = useState(true);
 
@@ -30,6 +33,11 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         editingFrecuencia: null,
         initialLoading: true
     });
+
+    const [showCreateGrupoModal, setShowCreateGrupoModal] = useState(false);
+    const [showEditGrupoModal, setShowEditGrupoModal] = useState(false);
+    const [editingGrupo, setEditingGrupo] = useState<GrupoFrecuencia | null>(null);
+    const [activeTab, setActiveTab] = useState<'individuales' | 'grupos'>('individuales');
 
     useEffect(() => {
         const loadFrecuencias = async () => {
@@ -80,6 +88,10 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
             setIsLoadingData(false);
         }
     }, [pedidos]);
+
+    // Separar frecuencias con grupo y sin grupo
+    const frecuenciasConGrupo = pedidos.filter((p: PedidoFrecuencia) => (p as any).grupo_id);
+    const frecuenciasSinGrupo = pedidos.filter((p: PedidoFrecuencia) => !(p as any).grupo_id);
 
     const filtrarPedidos = useCallback((termino: string) => {
         if (!termino.trim()) {
@@ -253,6 +265,87 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         }
     };
 
+    const handleCreateGrupoSuccess = async () => {
+        // Recargar frecuencias y grupos
+        await dispatch(getFrecuencia());
+        // Pequeño delay para asegurar que Redux se actualice
+        await new Promise(resolve => setTimeout(resolve, 300));
+    };
+
+    const handleOpenCreateGrupoModal = () => {
+        setShowCreateGrupoModal(true);
+    };
+
+    const handleCloseCreateGrupoModal = () => {
+        setShowCreateGrupoModal(false);
+    };
+
+    const handleEditGrupo = (grupo: GrupoFrecuencia) => {
+        setEditingGrupo(grupo);
+        setShowEditGrupoModal(true);
+    };
+
+    const handleCloseEditGrupoModal = () => {
+        setShowEditGrupoModal(false);
+        setEditingGrupo(null);
+    };
+
+    const handleEditGrupoSuccess = async () => {
+        // Recargar frecuencias y grupos
+        await dispatch(getFrecuencia());
+        // Pequeño delay para asegurar que Redux se actualice
+        await new Promise(resolve => setTimeout(resolve, 300));
+    };
+
+    const eliminarGrupo = (id: number) => {
+        Alert.alert(
+            'Confirmar eliminación',
+            `¿Estás seguro de que deseas eliminar este grupo de frecuencia?`,
+            [
+                {
+                    text: 'Cancelar',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Confirmar',
+                    onPress: () => confirmarEliminacionGrupo(id),
+                    style: 'destructive'
+                }
+            ],
+            { cancelable: false }
+        );
+    };
+
+    const confirmarEliminacionGrupo = async (id: number) => {
+        try {
+            setState(prev => ({ ...prev, loading: true }));
+            const res = await axios.delete(`fre/grupos/${id}`);
+
+            if (res.data.status) {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Grupo Eliminado',
+                    text2: 'El grupo de frecuencia se ha eliminado correctamente'
+                });
+                dispatch(getFrecuencia());
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error al eliminar',
+                    text2: res.data.message || 'Tenemos un problema, inténtalo más tarde'
+                });
+            }
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error de conexión',
+                text2: 'Verifica tu conexión a internet'
+            });
+        } finally {
+            setState(prev => ({ ...prev, loading: false }));
+        }
+    };
+
     const { terminoBuscador, pedidosFiltrados, showSpin, loading, showEditModal, editingFrecuencia } = state;
 
     // Mostrar preloading mientras se cargan los datos
@@ -287,32 +380,132 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
             <View style={style.header}>
                 <View style={style.headerContent}>
                     <View style={style.headerTextContainer}>
-                        <Text style={style.titulo}>Pedidos Frecuentes</Text>
-                        <Text style={style.subtitulo}>
-                            {`${pedidosFiltrados.length} pedidos encontrados`}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={style.titulo}>Pedidos Frecuentes</Text>
+                                <Text style={style.subtitulo}>
+                                    {activeTab === 'individuales'
+                                        ? `${frecuenciasSinGrupo.length} frecuencias individuales`
+                                        : `${grupos.length} grupos de frecuencias`
+                                    }
+                                </Text>
+                            </View>
+                            {activeTab === 'grupos' && (
+                                <TouchableOpacity
+                                    onPress={handleOpenCreateGrupoModal}
+                                    style={{
+                                        backgroundColor: '#002587',
+                                        paddingHorizontal: 16,
+                                        paddingVertical: 10,
+                                        borderRadius: 8,
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginLeft: 10
+                                    }}
+                                >
+                                    <FontAwesome name="plus" style={{ fontSize: 16, color: '#fff', marginRight: 8 }} />
+                                    <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>
+                                        Grupo
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </View>
+                    {activeTab === 'individuales' && (
+                        <View style={style.headerStats}>
+                            <View style={style.statItem}>
+                                <Text style={style.statNumber}>
+                                    {pedidosFiltrados.filter(p => p.frecuencia === 'semanal').length}
+                                </Text>
+                                <Text style={style.statLabel}>Semanal</Text>
+                            </View>
+                            <View style={style.statItem}>
+                                <Text style={style.statNumber}>
+                                    {pedidosFiltrados.filter(p => p.frecuencia === 'quincenal').length}
+                                </Text>
+                                <Text style={style.statLabel}>Quincenal</Text>
+                            </View>
+                            <View style={style.statItem}>
+                                <Text style={style.statNumber}>
+                                    {pedidosFiltrados.filter(p => p.frecuencia === 'mensual').length}
+                                </Text>
+                                <Text style={style.statLabel}>Mensual</Text>
+                            </View>
+                        </View>
+                    )}
+                </View>
+            </View>
+
+            {/* Tabs Navigation */}
+            <View style={{
+                flexDirection: 'row',
+                backgroundColor: '#f8f9fa',
+                borderBottomWidth: 1,
+                borderBottomColor: '#dee2e6',
+                paddingHorizontal: 20,
+                paddingTop: 8
+            }}>
+                <TouchableOpacity
+                    style={{
+                        flex: 1,
+                        paddingVertical: 12,
+                        alignItems: 'center',
+                        borderBottomWidth: 2,
+                        borderBottomColor: activeTab === 'individuales' ? '#002587' : 'transparent',
+                        marginRight: 8
+                    }}
+                    onPress={() => setActiveTab('individuales')}
+                    activeOpacity={0.7}
+                >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <FontAwesome
+                            name="list"
+                            style={{
+                                fontSize: 16,
+                                color: activeTab === 'individuales' ? '#002587' : '#6c757d',
+                                marginRight: 6
+                            }}
+                        />
+                        <Text style={{
+                            fontSize: 14,
+                            fontWeight: activeTab === 'individuales' ? '700' : '500',
+                            color: activeTab === 'individuales' ? '#002587' : '#6c757d'
+                        }}>
+                            Individuales ({frecuenciasSinGrupo.length})
                         </Text>
                     </View>
-                    <View style={style.headerStats}>
-                        <View style={style.statItem}>
-                            <Text style={style.statNumber}>
-                                {pedidosFiltrados.filter(p => p.frecuencia === 'semanal').length}
-                            </Text>
-                            <Text style={style.statLabel}>Semanal</Text>
-                        </View>
-                        <View style={style.statItem}>
-                            <Text style={style.statNumber}>
-                                {pedidosFiltrados.filter(p => p.frecuencia === 'quincenal').length}
-                            </Text>
-                            <Text style={style.statLabel}>Quincenal</Text>
-                        </View>
-                        <View style={style.statItem}>
-                            <Text style={style.statNumber}>
-                                {pedidosFiltrados.filter(p => p.frecuencia === 'mensual').length}
-                            </Text>
-                            <Text style={style.statLabel}>Mensual</Text>
-                        </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={{
+                        flex: 1,
+                        paddingVertical: 12,
+                        alignItems: 'center',
+                        borderBottomWidth: 2,
+                        borderBottomColor: activeTab === 'grupos' ? '#002587' : 'transparent',
+                        marginLeft: 8
+                    }}
+                    onPress={() => setActiveTab('grupos')}
+                    activeOpacity={0.7}
+                >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <FontAwesome
+                            name="users"
+                            style={{
+                                fontSize: 16,
+                                color: activeTab === 'grupos' ? '#002587' : '#6c757d',
+                                marginRight: 6
+                            }}
+                        />
+                        <Text style={{
+                            fontSize: 14,
+                            fontWeight: activeTab === 'grupos' ? '700' : '500',
+                            color: activeTab === 'grupos' ? '#002587' : '#6c757d'
+                        }}>
+                            Grupos ({grupos.length})
+                        </Text>
                     </View>
-                </View>
+                </TouchableOpacity>
             </View>
 
             {/* Buscador mejorado */}
@@ -336,7 +529,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                 )}
             </View>
 
-            {/* Lista mejorada */}
+            {/* Lista mejorada - Separada por tabs */}
             <ScrollView
                 style={style.scrollContainer}
                 onScroll={onScroll}
@@ -349,115 +542,211 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                     />
                 }
             >
-                {pedidosFiltrados.length === 0 ? (
-                    <View style={style.emptyContainer}>
-                        <FontAwesome name="search" style={style.emptyIcon} />
-                        <Text style={style.emptyText}>
-                            {terminoBuscador ? 'No se encontraron resultados' : 'No hay pedidos frecuentes'}
-                        </Text>
-                        {terminoBuscador && (
-                            <Text style={style.emptySubtext}>
-                                Intenta con otros términos de búsqueda
-                            </Text>
-                        )}
-                    </View>
-                ) : (
-                    pedidosFiltrados.map((pedido: PedidoFrecuencia, key: number) => (
-                        <View key={key} style={style.cardContainer}>
-                            <TouchableOpacity
-                                style={style.cardContent}
-                                onPress={() => navigation.navigate("verPerfil", {
-                                    tipoAcceso: "editar",
-                                    idUsuario: pedido.usuarioid
+                {/* Tab de Grupos */}
+                {activeTab === 'grupos' && (
+                    <>
+                        {grupos.length > 0 ? (
+                            <View style={{ marginBottom: 30, paddingTop: 20 }}>
+                                {grupos.map((grupo: GrupoFrecuencia, key: number) => {
+                                    const diaSemanaNames = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+                                    const intervaloText = grupo.intervalo_semanas === 1 ? 'Semanal' : grupo.intervalo_semanas === 2 ? 'Cada 2 semanas' : 'Cada 3 semanas';
+
+                                    return (
+                                        <View key={key} style={[style.cardContainer, { marginHorizontal: 20, marginBottom: 12, backgroundColor: '#e3f2fd', borderLeftWidth: 4, borderLeftColor: '#002587' }]}>
+                                            <View style={style.cardContent}>
+                                                <View style={style.cardHeader}>
+                                                    <Text style={[style.razonSocial, { color: '#002587' }]}>{grupo.nombre}</Text>
+                                                    <View style={{
+                                                        backgroundColor: '#002587',
+                                                        paddingHorizontal: 8,
+                                                        paddingVertical: 4,
+                                                        borderRadius: 6
+                                                    }}>
+                                                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>
+                                                            {grupo.tipo_frecuencia.toUpperCase()}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+
+                                                <View style={style.cardDetails}>
+                                                    {grupo.tipo_frecuencia === 'semanal' && grupo.dia_semana && (
+                                                        <View style={style.detailRow}>
+                                                            <FontAwesome name="calendar" style={style.detailIcon} />
+                                                            <Text style={style.detailText}>
+                                                                {diaSemanaNames[grupo.dia_semana]} - {intervaloText}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                    {grupo.tipo_frecuencia === 'mensual' && grupo.dia_mes && grupo.dia_semana_mensual && (
+                                                        <>
+                                                            <View style={style.detailRow}>
+                                                                <FontAwesome name="calendar" style={style.detailIcon} />
+                                                                <Text style={style.detailText}>
+                                                                    Día del mes: {grupo.dia_mes}
+                                                                </Text>
+                                                            </View>
+                                                            <View style={style.detailRow}>
+                                                                <FontAwesome name="calendar-check-o" style={style.detailIcon} />
+                                                                <Text style={style.detailText}>
+                                                                    Día de la semana: {diaSemanaNames[grupo.dia_semana_mensual]}
+                                                                </Text>
+                                                            </View>
+                                                        </>
+                                                    )}
+                                                </View>
+                                            </View>
+
+                                            <View style={style.cardActions}>
+                                                <TouchableOpacity
+                                                    onPress={() => handleEditGrupo(grupo)}
+                                                    style={style.actionButton}
+                                                >
+                                                    <FontAwesome name="edit" style={style.actionIcon} />
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity
+                                                    onPress={() => eliminarGrupo(grupo._id)}
+                                                    style={[style.actionButton, style.deleteButton]}
+                                                >
+                                                    <FontAwesome name="trash" style={[style.actionIcon, style.deleteIcon]} />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    );
                                 })}
-                            >
-                                <View style={style.cardHeader}>
-                                    <Text style={style.razonSocial}>{pedido.razon_social}</Text>
-                                    <Text style={style.codigoText}># {pedido.codt}</Text>
-                                </View>
-
-                                {pedido.nombre && (
-                                    <Text style={style.clienteName}>{pedido.nombre}</Text>
-                                )}
-
-                                <View style={style.cardDetails}>
-                                    <View style={style.detailRow}>
-                                        <FontAwesome name="file-text-o" style={style.detailIcon} />
-                                        <Text style={style.detailText}>Pedido: {pedido.pedido_id}</Text>
-                                    </View>
-
-                                    <View style={style.detailRow}>
-                                        <FontAwesome name="shopping-cart" style={style.detailIcon} />
-                                        <Text style={style.detailText}>
-                                            {pedido.forma}: {
-                                                pedido.forma === "cantidad"
-                                                    ? `${pedido.cantidadKl} KL`
-                                                    : pedido.forma === "monto"
-                                                        ? `$${pedido.cantidadPrecio}`
-                                                        : pedido.forma
-                                            }
-                                        </Text>
-                                    </View>
-
-                                    <View style={style.detailRow}>
-                                        <FontAwesome name="repeat" style={style.detailIcon} />
-                                        <Text style={style.detailText}>
-                                            Frecuencia: {pedido.frecuencia}
-                                        </Text>
-                                    </View>
-
-                                    {pedido.frecuencia === "semanal" && pedido.dia1 && (
-                                        <View style={style.detailRow}>
-                                            <FontAwesome name="calendar" style={style.detailIcon} />
-                                            <Text style={style.detailText}>Día: {formatDay(pedido.dia1, 'semanal')}</Text>
-                                        </View>
-                                    )}
-
-                                    {pedido.frecuencia === "quincenal" && pedido.dia1 && pedido.dia2 && (
-                                        <View style={style.detailRow}>
-                                            <FontAwesome name="calendar" style={style.detailIcon} />
-                                            <Text style={style.detailText}>
-                                                Días: {formatDay(pedido.dia1, 'quincenal')} - {formatDay(pedido.dia2, 'quincenal')}
-                                            </Text>
-                                        </View>
-                                    )}
-
-                                    {pedido.frecuencia === "mensual" && pedido.dia1 && (
-                                        <View style={style.detailRow}>
-                                            <FontAwesome name="calendar" style={style.detailIcon} />
-                                            <Text style={style.detailText}>Día del mes: {formatDay(pedido.dia1, 'mensual')}</Text>
-                                        </View>
-                                    )}
-
-                                    {pedido.punto_direccion && (
-                                        <View style={style.detailRow}>
-                                            <FontAwesome name="map-marker" style={style.detailIcon} />
-                                            <Text style={style.detailText}>
-                                                {pedido.punto_direccion}
-                                                {pedido.punto_capacidad && ` (${pedido.punto_capacidad} kg)`}
-                                            </Text>
-                                        </View>
-                                    )}
-                                </View>
-                            </TouchableOpacity>
-
-                            <View style={style.cardActions}>
-                                <TouchableOpacity
-                                    onPress={() => handleEditFrecuencia(pedido)}
-                                    style={style.actionButton}
-                                >
-                                    <FontAwesome name="edit" style={style.actionIcon} />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={() => eliminarFrecuencia(pedido.pedido_id)}
-                                    style={[style.actionButton, style.deleteButton]}
-                                >
-                                    <FontAwesome name="trash" style={[style.actionIcon, style.deleteIcon]} />
-                                </TouchableOpacity>
                             </View>
-                        </View>
-                    ))
+                        ) : (
+                            <View style={style.emptyContainer}>
+                                <FontAwesome name="users" style={style.emptyIcon} />
+                                <Text style={style.emptyText}>
+                                    {terminoBuscador ? 'No se encontraron grupos' : 'No hay grupos de frecuencias'}
+                                </Text>
+                                {terminoBuscador && (
+                                    <Text style={style.emptySubtext}>
+                                        Intenta con otros términos de búsqueda
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </>
+                )}
+
+                {/* Tab de Frecuencias Individuales */}
+                {activeTab === 'individuales' && (
+                    <>
+                        {frecuenciasSinGrupo.length > 0 ? (
+                            <View style={{ marginBottom: 30, paddingTop: 20 }}>
+                                {frecuenciasSinGrupo.map((pedido: PedidoFrecuencia, key: number) => (
+                                    <View key={key} style={style.cardContainer}>
+                                        <TouchableOpacity
+                                            style={style.cardContent}
+                                            onPress={() => navigation.navigate("verPerfil", {
+                                                tipoAcceso: "editar",
+                                                idUsuario: pedido.usuarioid
+                                            })}
+                                        >
+                                            <View style={style.cardHeader}>
+                                                <Text style={style.razonSocial}>{pedido.razon_social}</Text>
+                                                <Text style={style.codigoText}># {pedido.codt}</Text>
+                                            </View>
+
+                                            {pedido.nombre && (
+                                                <Text style={style.clienteName}>{pedido.nombre}</Text>
+                                            )}
+
+                                            <View style={style.cardDetails}>
+                                                <View style={style.detailRow}>
+                                                    <FontAwesome name="file-text-o" style={style.detailIcon} />
+                                                    <Text style={style.detailText}>Pedido: {pedido.pedido_id}</Text>
+                                                </View>
+
+                                                <View style={style.detailRow}>
+                                                    <FontAwesome name="shopping-cart" style={style.detailIcon} />
+                                                    <Text style={style.detailText}>
+                                                        {pedido.forma}: {
+                                                            pedido.forma === "cantidad"
+                                                                ? `${pedido.cantidadKl} KL`
+                                                                : pedido.forma === "monto"
+                                                                    ? `$${pedido.cantidadPrecio}`
+                                                                    : pedido.forma
+                                                        }
+                                                    </Text>
+                                                </View>
+
+                                                <View style={style.detailRow}>
+                                                    <FontAwesome name="repeat" style={style.detailIcon} />
+                                                    <Text style={style.detailText}>
+                                                        Frecuencia: {pedido.frecuencia}
+                                                    </Text>
+                                                </View>
+
+                                                {pedido.frecuencia === "semanal" && pedido.dia1 && (
+                                                    <View style={style.detailRow}>
+                                                        <FontAwesome name="calendar" style={style.detailIcon} />
+                                                        <Text style={style.detailText}>Día: {formatDay(pedido.dia1, 'semanal')}</Text>
+                                                    </View>
+                                                )}
+
+                                                {pedido.frecuencia === "quincenal" && pedido.dia1 && pedido.dia2 && (
+                                                    <View style={style.detailRow}>
+                                                        <FontAwesome name="calendar" style={style.detailIcon} />
+                                                        <Text style={style.detailText}>
+                                                            Días: {formatDay(pedido.dia1, 'quincenal')} - {formatDay(pedido.dia2, 'quincenal')}
+                                                        </Text>
+                                                    </View>
+                                                )}
+
+                                                {pedido.frecuencia === "mensual" && pedido.dia1 && (
+                                                    <View style={style.detailRow}>
+                                                        <FontAwesome name="calendar" style={style.detailIcon} />
+                                                        <Text style={style.detailText}>Día del mes: {formatDay(pedido.dia1, 'mensual')}</Text>
+                                                    </View>
+                                                )}
+
+                                                {pedido.punto_direccion && (
+                                                    <View style={style.detailRow}>
+                                                        <FontAwesome name="map-marker" style={style.detailIcon} />
+                                                        <Text style={style.detailText}>
+                                                            {pedido.punto_direccion}
+                                                            {pedido.punto_capacidad && ` (${pedido.punto_capacidad} kg)`}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
+
+                                        <View style={style.cardActions}>
+                                            <TouchableOpacity
+                                                onPress={() => handleEditFrecuencia(pedido)}
+                                                style={style.actionButton}
+                                            >
+                                                <FontAwesome name="edit" style={style.actionIcon} />
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                                onPress={() => eliminarFrecuencia(pedido.pedido_id)}
+                                                style={[style.actionButton, style.deleteButton]}
+                                            >
+                                                <FontAwesome name="trash" style={[style.actionIcon, style.deleteIcon]} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
+                        ) : (
+                            <View style={style.emptyContainer}>
+                                <FontAwesome name="list" style={style.emptyIcon} />
+                                <Text style={style.emptyText}>
+                                    {terminoBuscador ? 'No se encontraron frecuencias' : 'No hay frecuencias individuales'}
+                                </Text>
+                                {terminoBuscador && (
+                                    <Text style={style.emptySubtext}>
+                                        Intenta con otros términos de búsqueda
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </>
                 )}
 
                 {showSpin && (
@@ -477,6 +766,21 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                 onClose={handleCloseEditModal}
                 frecuencia={editingFrecuencia}
                 onSuccess={handleEditSuccess}
+            />
+
+            {/* Modal de crear grupo */}
+            <CrearGrupoFrecuenciaModal
+                visible={showCreateGrupoModal}
+                onClose={handleCloseCreateGrupoModal}
+                onSuccess={handleCreateGrupoSuccess}
+            />
+
+            {/* Modal de editar grupo */}
+            <EditarGrupoFrecuenciaModal
+                visible={showEditGrupoModal}
+                onClose={handleCloseEditGrupoModal}
+                grupo={editingGrupo}
+                onSuccess={handleEditGrupoSuccess}
             />
         </View>
     );

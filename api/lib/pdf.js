@@ -42,7 +42,8 @@ const uploadPDF = async body => {
         Key: key,
         ContentType: body.mime,
         Bucket: BUCKET,
-        ACL: 'public-read',
+        // ACL está deprecado - usar políticas de bucket para acceso público
+        // ACL: 'public-read',
       })
       .promise();
 

@@ -47,10 +47,44 @@ const getRevisionByPunto = (idPunto) => {
 // Obtener tanques por punto
 const getTanquesByPunto = async (puntoId) => {
   try {
+    console.log('[revisionActions] getTanquesByPunto called with:', { puntoId });
     const response = await axios.get(`tan/tanque/byPunto/${puntoId}`);
+    console.log('[revisionActions] getTanquesByPunto response:', {
+      status: response.status,
+      dataCount: response.data?.tanque?.length || 0
+    });
     return response.data;
   } catch (error) {
-    console.error('Error getting tanques by punto:', error);
+    console.error('Error getting tanques by punto:', {
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
+    throw error;
+  }
+};
+
+// Obtener todos los tanques con búsqueda
+const getAllTanques = async (limit = 0, start = 0, search = 'undefined') => {
+  try {
+    const searchParam = search && search.trim().length > 0 ? search.trim() : 'undefined';
+    console.log('[revisionActions] getAllTanques called with:', { limit, start, search: searchParam });
+    const response = await axios.get(`tan/tanque/${limit}/${start}/${searchParam}`);
+    console.log('[revisionActions] getAllTanques response:', {
+      status: response.status,
+      dataCount: response.data?.tanque?.length || 0
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error getting all tanques:', {
+      error: error,
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      url: error.config?.url
+    });
     throw error;
   }
 };
@@ -207,6 +241,7 @@ export {
   getRevisiones,
   getRevisionByPunto,
   getTanquesByPunto,
+  getAllTanques,
   getPuntoById,
   getRevisionById,
   addUserToTanque,

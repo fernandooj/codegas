@@ -33,8 +33,18 @@ const uploadImage = async body => {
         const detectedExt = fileInfo.ext;
         const detectedMime = fileInfo.mime;
 
-        if (detectedMime !== body.mime) {
-            throw new Error('mime types dont match');
+        // Normalizar mime types: 'image/jpg' -> 'image/jpeg'
+        const normalizedBodyMime = body.mime === 'image/jpg' ? 'image/jpeg' : body.mime;
+        const normalizedDetectedMime = detectedMime === 'image/jpg' ? 'image/jpeg' : detectedMime;
+
+        if (normalizedDetectedMime !== normalizedBodyMime) {
+            console.error('Mime type mismatch:', {
+                bodyMime: body.mime,
+                normalizedBodyMime,
+                detectedMime,
+                normalizedDetectedMime
+            });
+            throw new Error(`mime types dont match: expected ${normalizedBodyMime}, got ${normalizedDetectedMime}`);
         }
 
         const name = uuidv4();
@@ -47,7 +57,8 @@ const uploadImage = async body => {
                 Key: key,
                 ContentType: body.mime,
                 Bucket: BUCKET,
-                ACL: 'public-read',
+                // ACL está deprecado - usar políticas de bucket para acceso público
+                // ACL: 'public-read',
             })
             .promise();
 

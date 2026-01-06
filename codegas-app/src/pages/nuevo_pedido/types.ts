@@ -20,11 +20,16 @@ export interface NuevoPedidoState {
     showFrecuencia: boolean;
     showFechaEntrega: boolean;
     showPedidosExistentes: boolean;
+    tipoFrecuencia: 'grupo' | 'manual' | null; // 'grupo' o 'manual'
+    grupoFrecuenciaId: number | null; // ID del grupo seleccionado
     forma: FormaPedido | null;
     cantidad: string;
-    frecuencia: FrecuenciaPedido | null;
-    diaSeleccionado1: DiaSemana | null;
-    diaSeleccionado2: DiaSemana | null;
+    frecuencia: FrecuenciaPedido | null; // 'semanal' o 'mensual' (ya no quincenal)
+    diaSeleccionado1: number | null; // Día de la semana (1-5 para semanal, 1-31 para mensual)
+    diaSeleccionado2: DiaSemana | null; // Ya no se usa
+    intervaloSemanas: number | null; // 1, 2 o 3 semanas (solo para semanal)
+    diaMes: number | null; // Día del mes 1-31 (solo para mensual)
+    diaSemanaMensual: number | null; // Día de la semana 1-5 (solo para mensual)
     franja: string | null;
     idCliente: string | null;
     cliente: string | null;
@@ -64,15 +69,19 @@ export interface PuntoEntrega {
     capacidad: number;
     observacion?: string;
     activo?: boolean;
-    
+
 }
 
 // Tipos para datos del pedido a crear
 export interface PedidoData {
     forma: FormaPedido;
-    dia1?: DiaSemana;
-    dia2?: DiaSemana;
-    frecuencia?: FrecuenciaPedido;
+    dia1?: DiaSemana | number; // Día de la semana (1-7) para semanal o día del mes (1-31) para mensual
+    dia2?: DiaSemana | number; // Día de la semana (1-7) para mensual, donde 1=lunes, 7=domingo
+    frecuencia?: FrecuenciaPedido; // 'semanal' o 'mensual'
+    intervalo_semanas?: number; // 1, 2 o 3 semanas (solo para semanal)
+    dia_mes?: number; // Día del mes 1-31 (solo para mensual)
+    dia_semana_mensual?: number; // Día de la semana 1-5 (solo para mensual)
+    grupo_id?: number | null; // ID del grupo de frecuencia si se seleccionó uno
     puntoId: string;
     fechaSolicitud: string;
     cantidadKl: number;
@@ -123,7 +132,7 @@ export interface PuntosPorClienteResponse {
 export type FormaPedido = 'monto' | 'cantidad' | 'lleno';
 
 // Tipos para frecuencia de pedido
-export type FrecuenciaPedido = 'semanal' | 'mensual' | 'quincenal';
+export type FrecuenciaPedido = 'semanal' | 'mensual' | 'quincenal' | 'tressemanas';
 
 // Tipos para días de la semana
 export type DiaSemana =

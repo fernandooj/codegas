@@ -1028,8 +1028,8 @@ export const style = MediaQueryStyleSheet.create({
 		gap: 12
 	},
 	pedidoCardRow: {
-  		flexDirection: 'row',
-  		alignItems: 'center',
+		flexDirection: 'row',
+		alignItems: 'center',
 	},
 	pedidoCardFieldSmall: {
 		flex: 0.4,
@@ -1056,7 +1056,7 @@ export const style = MediaQueryStyleSheet.create({
 	pedidoCardFieldContent: {
 		flexShrink: 1,
 		flexDirection: 'column',
-        justifyContent: 'center',
+		justifyContent: 'center',
 	},
 	pedidoCardFieldSpacer: {
 		flex: 1
@@ -1394,6 +1394,32 @@ export const style = MediaQueryStyleSheet.create({
 		marginRight: 6
 	},
 	editarModalEmergencyText: {
+		fontSize: 13,
+		color: '#fff',
+		fontWeight: '600'
+	},
+	// Botón de Lista de Chequeo
+	editarModalChecklistButton: {
+		backgroundColor: '#007bff',
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 6,
+		marginTop: 8,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	editarModalChecklistIcon: {
+		fontSize: 12,
+		color: '#fff',
+		marginRight: 6
+	},
+	editarModalChecklistText: {
 		fontSize: 13,
 		color: '#fff',
 		fontWeight: '600'
@@ -2318,5 +2344,301 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	modalEstadisticasCreditoCell: {
 		width: 110,
+	},
+
+	// ========================================
+	// SAFETY CHECKLIST MODAL STYLES
+	// ========================================
+
+	// Modal Overlay & Container
+	checklistModalOverlay: {
+		flex: 1,
+		backgroundColor: 'rgba(0, 0, 0, 0.6)',
+		justifyContent: 'flex-end',
+	},
+	checklistModalContainer: {
+		backgroundColor: '#fff',
+		borderTopLeftRadius: 20,
+		borderTopRightRadius: 20,
+		height: '95%',
+		paddingTop: 20,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: -3 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 10,
+	},
+
+	// Modal Header
+	checklistModalHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingHorizontal: 20,
+		paddingBottom: 15,
+		borderBottomWidth: 2,
+		borderBottomColor: '#007bff',
+	},
+	checklistModalHeaderLeft: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		flex: 1,
+	},
+	checklistModalIcon: {
+		fontSize: 24,
+		color: '#007bff',
+		marginRight: 12,
+	},
+	checklistModalTitle: {
+		fontSize: 18,
+		fontWeight: 'bold',
+		color: '#333',
+		flex: 1,
+	},
+	checklistModalCloseButton: {
+		padding: 8,
+	},
+	checklistModalCloseIcon: {
+		fontSize: 24,
+		color: '#666',
+	},
+
+	// Stats Bar
+	checklistStatsBar: {
+		flexDirection: 'row',
+		justifyContent: 'space-around',
+		paddingVertical: 15,
+		paddingHorizontal: 20,
+		backgroundColor: '#f8f9fa',
+		borderBottomWidth: 1,
+		borderBottomColor: '#e0e0e0',
+	},
+	checklistStat: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	checklistStatIconYes: {
+		fontSize: 20,
+		color: '#28a745',
+		marginRight: 8,
+	},
+	checklistStatIconNo: {
+		fontSize: 20,
+		color: '#dc3545',
+		marginRight: 8,
+	},
+	checklistStatIconTotal: {
+		fontSize: 20,
+		color: '#007bff',
+		marginRight: 8,
+	},
+	checklistStatText: {
+		fontSize: 14,
+		color: '#666',
+	},
+	checklistStatNumber: {
+		fontSize: 18,
+		fontWeight: 'bold',
+		color: '#333',
+	},
+
+	// Progress Bar
+	checklistProgressContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingHorizontal: 20,
+		paddingVertical: 12,
+		backgroundColor: '#fff',
+	},
+	checklistProgressBar: {
+		flex: 1,
+		height: 8,
+		backgroundColor: '#e0e0e0',
+		borderRadius: 4,
+		overflow: 'hidden',
+		marginRight: 12,
+	},
+	checklistProgressFill: {
+		height: '100%',
+		borderRadius: 4,
+	},
+	checklistProgressText: {
+		fontSize: 16,
+		fontWeight: 'bold',
+		color: '#007bff',
+		minWidth: 50,
+		textAlign: 'right',
+	},
+
+	// Questions Container
+	checklistQuestionsContainer: {
+		flex: 1,
+		paddingHorizontal: 16,
+		paddingTop: 10,
+		paddingBottom: 20,
+	},
+
+	// Question Card
+	checklistQuestionCard: {
+		marginBottom: 12,
+		padding: 16,
+		borderRadius: 12,
+		borderWidth: 2,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	checklistQuestionCardChecked: {
+		backgroundColor: '#f0fff4',
+		borderColor: '#28a745',
+	},
+	checklistQuestionCardUnchecked: {
+		backgroundColor: '#fff',
+		borderColor: '#e0e0e0',
+	},
+
+	// Question Header
+	checklistQuestionHeader: {
+		flexDirection: 'row',
+		marginBottom: 12,
+	},
+	checklistQuestionNumberBadge: {
+		width: 28,
+		height: 28,
+		borderRadius: 14,
+		backgroundColor: '#007bff',
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginRight: 12,
+		marginTop: 2,
+	},
+	checklistQuestionNumber: {
+		fontSize: 14,
+		fontWeight: 'bold',
+		color: '#fff',
+	},
+	checklistQuestionText: {
+		flex: 1,
+		fontSize: 14,
+		lineHeight: 20,
+		color: '#333',
+	},
+
+	// Question Actions
+	checklistQuestionActions: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		gap: 12,
+	},
+
+	// Checklist Buttons
+	checklistButton: {
+		flex: 1,
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingVertical: 12,
+		paddingHorizontal: 16,
+		borderRadius: 8,
+		borderWidth: 2,
+	},
+	checklistButtonYesActive: {
+		backgroundColor: '#28a745',
+		borderColor: '#28a745',
+	},
+	checklistButtonYesInactive: {
+		backgroundColor: '#fff',
+		borderColor: '#28a745',
+	},
+	checklistButtonNoActive: {
+		backgroundColor: '#dc3545',
+		borderColor: '#dc3545',
+	},
+	checklistButtonNoInactive: {
+		backgroundColor: '#fff',
+		borderColor: '#e0e0e0',
+	},
+	checklistButtonIcon: {
+		fontSize: 16,
+		marginRight: 6,
+	},
+	checklistButtonIconActive: {
+		color: '#fff',
+	},
+	checklistButtonIconInactive: {
+		color: '#666',
+	},
+	checklistButtonText: {
+		fontSize: 14,
+		fontWeight: '600',
+	},
+	checklistButtonTextActive: {
+		color: '#fff',
+	},
+	checklistButtonTextInactive: {
+		color: '#666',
+	},
+
+	// Modal Footer
+	checklistModalFooter: {
+		flexDirection: 'row',
+		paddingHorizontal: 20,
+		paddingVertical: 16,
+		paddingBottom: 24,
+		borderTopWidth: 1,
+		borderTopColor: '#e0e0e0',
+		backgroundColor: '#fff',
+		gap: 12,
+	},
+	checklistCancelButton: {
+		flex: 1,
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingVertical: 14,
+		borderRadius: 10,
+		backgroundColor: '#f8f9fa',
+		borderWidth: 1,
+		borderColor: '#dee2e6',
+	},
+	checklistCancelIcon: {
+		fontSize: 18,
+		color: '#666',
+		marginRight: 8,
+	},
+	checklistCancelText: {
+		fontSize: 16,
+		fontWeight: '600',
+		color: '#666',
+	},
+	checklistSaveButton: {
+		flex: 2,
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingVertical: 14,
+		borderRadius: 10,
+		backgroundColor: '#007bff',
+		shadowColor: '#007bff',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 6,
+		elevation: 6,
+	},
+	checklistSaveButtonDisabled: {
+		backgroundColor: '#6c757d',
+		opacity: 0.6,
+	},
+	checklistSaveIcon: {
+		fontSize: 18,
+		color: '#fff',
+		marginRight: 8,
+	},
+	checklistSaveText: {
+		fontSize: 16,
+		fontWeight: 'bold',
+		color: '#fff',
 	},
 })

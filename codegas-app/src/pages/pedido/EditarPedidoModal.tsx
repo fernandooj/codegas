@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, ScrollView, Animated, Image, Linking, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Modal, ScrollView, Animated, Image, Linking, Alert, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import moment from 'moment';
 import { style } from './style';
@@ -9,6 +9,12 @@ import CambiarEstadoModal from './CambiarEstadoModal';
 import VehiculosModal from './VehiculosModal';
 import FechaEntregaModal from './FechaEntregaModal';
 import CerrarPedidoModal from './CerrarPedidoModal';
+import LlenadoTanquesModal from './LlenadoTanquesModal';
+import SafetyChecklistModal from './SafetyChecklistModal';
+import { updateLlenadoTanquesHTTP } from '../../redux/actions/pedidoActions';
+import { getTanquesByPunto } from '../../redux/actions/tanqueActions';
+import { tanqueStorageService } from '../../services/tanqueStorageService';
+import NetInfo from '@react-native-community/netinfo';
 
 interface EditarPedidoModalProps {
     visible: boolean;
@@ -123,6 +129,28 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     } = pedidoData;
     // Estado para el modal de navegación
     const [showNavigationModal, setShowNavigationModal] = useState(false);
+    // Estado para el modal de llenado de tanques
+    const [showLlenadoTanquesModal, setShowLlenadoTanquesModal] = useState(false);
+    // Estado para el modal de checklist de seguridad
+    const [showChecklistModal, setShowChecklistModal] = useState(false);
+    // Estado para el modal de selección de tanques
+    const [showTanquesModal, setShowTanquesModal] = useState(false);
+    const [tanques, setTanques] = useState<any[]>([]);
+    const [selectedTanque, setSelectedTanque] = useState<any | null>(null);
+    // Track si el checklist fue abierto desde el modal de tanques
+    const [checklistOpenedFromTanques, setChecklistOpenedFromTanques] = useState(false);
+    // Track si el modal de llenado fue abierto desde el modal de selección de tanques
+    const [llenadoOpenedFromTanques, setLlenadoOpenedFromTanques] = useState(false);
+    // Tanque seleccionado para llenado (puede ser diferente del selectedTanque del modal de selección)
+    const [selectedTanqueForLlenado, setSelectedTanqueForLlenado] = useState<any | null>(null);
+    const [loadingTanques, setLoadingTanques] = useState(false);
+    // Estado local para los datos de tanques (se actualiza cuando se guarda)
+    const [localTanquesData, setLocalTanquesData] = useState<any[]>(pedidoData.tanques || []);
+
+    // Actualizar localTanquesData cuando cambia pedidoData.tanques
+    useEffect(() => {
+        setLocalTanquesData(pedidoData.tanques || []);
+    }, [pedidoData.tanques]);
 
     // Funciones para navegación
     const openNavigationModal = () => {
@@ -193,6 +221,91 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
         }
         closeNavigationModal();
     };
+
+    // Función para cargar tanques
+    const loadTanques = async () => {
+        if (!pedidoData.puntoId) {
+            Alert.alert('Error', 'No se encontró el punto de servicio');
+            return;
+        }
+
+        try {
+            setLoadingTanques(true);
+            const puntoId = pedidoData.puntoId.toString();
+
+            // Primero intentar cargar desde cache
+            try {
+                const cachedTanques = await tanqueStorageService.getTanquesByPunto(puntoId);
+                if (cachedTanques && cachedTanques.length > 0) {
+                    setTanques(cachedTanques);
+                    setLoadingTanques(false);
+
+                    // Verificar conexión para intentar actualizar en segundo plano
+                    const netInfo = await NetInfo.fetch();
+                    const isOnline = netInfo.isConnected ?? false;
+
+                    if (isOnline) {
+                        // Intentar actualizar desde servidor en segundo plano
+                        (async () => {
+                            try {
+                                const response = await getTanquesByPunto(puntoId);
+                                if (response?.tanque && Array.isArray(response.tanque) && response.tanque.length > 0) {
+                                    setTanques(response.tanque);
+                                }
+                            } catch (updateError) {
+                                console.warn('⚠️ Error actualizando tanques desde servidor (no crítico):', updateError);
+                            }
+                        })();
+                    }
+                    return;
+                }
+            } catch (cacheError: any) {
+                console.warn('⚠️ Error cargando desde cache, intentando desde servidor:', cacheError);
+            }
+
+            // Si no hay cache o falló, intentar desde servidor
+            const netInfo = await NetInfo.fetch();
+            const isOnline = netInfo.isConnected ?? false;
+
+            if (!isOnline) {
+                setTanques([]);
+                setLoadingTanques(false);
+                return;
+            }
+
+            // Online: cargar desde servidor
+            const response = await getTanquesByPunto(puntoId);
+
+            if (response?.tanque && Array.isArray(response.tanque)) {
+                setTanques(response.tanque);
+            } else {
+                setTanques([]);
+            }
+        } catch (error: any) {
+            console.error('❌ Error cargando tanques:', error);
+            // Intentar cargar desde cache como último recurso
+            try {
+                const cachedTanques = await tanqueStorageService.getTanquesByPunto(pedidoData.puntoId?.toString() || '');
+                if (cachedTanques && cachedTanques.length > 0) {
+                    setTanques(cachedTanques);
+                    return;
+                }
+            } catch (cacheError: any) {
+                console.error('❌ Error cargando desde cache:', cacheError);
+            }
+            setTanques([]);
+        } finally {
+            setLoadingTanques(false);
+        }
+    };
+
+    // Abrir modal de tanques y cargar
+    const openTanquesModal = () => {
+        setShowTanquesModal(true);
+        setSelectedTanque(null);
+        loadTanques();
+    };
+
     return (
         <Modal
             transparent={true}
@@ -271,15 +384,15 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                         </Text>
                                     </View>
                                     {forma !== "lleno" && (
-                                    <View style={style.editarModalInfoRow}>
-                                        <FontAwesome name="cubes" style={[style.editarModalInfoIcon, style.editarModalInfoIconPurple]} />
-                                        <Text style={style.editarModalInfoText}>
-                                            <Text style={style.editarModalInfoTextBold}>
-                                                {forma == "cantidad" ? "Cantidad Kg: " :  "Monto $: "}
+                                        <View style={style.editarModalInfoRow}>
+                                            <FontAwesome name="cubes" style={[style.editarModalInfoIcon, style.editarModalInfoIconPurple]} />
+                                            <Text style={style.editarModalInfoText}>
+                                                <Text style={style.editarModalInfoTextBold}>
+                                                    {forma == "cantidad" ? "Cantidad Kg: " : "Monto $: "}
+                                                </Text>
+                                                {forma == "cantidad" ? cantidadKl : cantidadPrecio}
                                             </Text>
-                                            {forma == "cantidad" ? cantidadKl : cantidadPrecio}
-                                        </Text>
-                                    </View>
+                                        </View>
                                     )}
                                     {/* Motivo de no cierre */}
                                     {pedidoData.motivo_no_cierre && (
@@ -369,82 +482,98 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             </Text>
                                         )}
 
-                                        {/* Botón de navegación */}
+                                        {/* Botones de navegación y emergencia */}
                                         <View style={{ flexDirection: 'row', gap: 10 }}>
-                                        {pedidoData.coordenadas && (
+                                            {pedidoData.coordenadas && (
+                                                <TouchableOpacity
+                                                    onPress={openNavigationModal}
+                                                    style={style.editarModalNavigateButton}
+                                                >
+                                                    <FontAwesome name="map-marker" style={style.editarModalNavigateIcon} />
+                                                    <Text style={style.editarModalNavigateText}>
+                                                        Navega al punto
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            )}
+                                            {/* Botón para Reporte de Emergencia */}
                                             <TouchableOpacity
-                                                onPress={openNavigationModal}
-                                                style={style.editarModalNavigateButton}
+                                                style={style.editarModalEmergencyButton}
+                                                onPress={() => {
+                                                    // Cerrar el modal actual
+
+                                                    onClose();
+                                                    // Navegar a la página de reporte de emergencia con el ID del pedido
+                                                    if (navigation) {
+                                                        navigation.navigate('nuevoReporteEmergencia', {
+                                                            usuarioId: pedidoData.usuarioId,
+                                                            puntoId: pedidoData.puntoId,
+                                                            codt: pedidoData.codt,
+                                                            razon_social: pedidoData.razon_social,
+                                                            nombre: pedidoData.nombre
+                                                        });
+                                                    } else {
+                                                    }
+                                                }}
                                             >
-                                                <FontAwesome name="map-marker" style={style.editarModalNavigateIcon} />
-                                                <Text style={style.editarModalNavigateText}>
-                                                    Navega al punto
+                                                <FontAwesome
+                                                    name="exclamation-triangle"
+                                                    style={style.editarModalEmergencyIcon}
+                                                />
+                                                <Text style={style.editarModalEmergencyText}>
+                                                    Reporte Emergencia
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        {/* Botón para Tanques - Solo si el pedido está activo y tiene conductor */}
+                                        {(acceso === 'conductor' || acceso === 'admin') && estado === 'activo' && conductorPedido && (
+                                            <TouchableOpacity
+                                                style={style.editarModalChecklistButton}
+                                                onPress={openTanquesModal}
+                                            >
+                                                <FontAwesome
+                                                    name="database"
+                                                    style={style.editarModalChecklistIcon}
+                                                />
+                                                <Text style={style.editarModalChecklistText}>
+                                                    Tanques
                                                 </Text>
                                             </TouchableOpacity>
                                         )}
-                                        {/* Botón para Reporte de Emergencia */}
-                                        <TouchableOpacity
-                                            style={style.editarModalEmergencyButton}
-                                            onPress={() => {
-                                                // Cerrar el modal actual
-
-                                                onClose();
-                                                // Navegar a la página de reporte de emergencia con el ID del pedido
-                                                if (navigation) {
-                                                    navigation.navigate('nuevoReporteEmergencia', {
-                                                        usuarioId: pedidoData.usuarioId,
-                                                        puntoId: pedidoData.puntoId,
-                                                        codt: pedidoData.codt,
-                                                        razon_social: pedidoData.razon_social,
-                                                        nombre: pedidoData.nombre
-                                                    });
-                                                } else {
-                                                }
-                                            }}
-                                        >
-                                            <FontAwesome
-                                                name="exclamation-triangle"
-                                                style={style.editarModalEmergencyIcon}
-                                            />
-                                            <Text style={style.editarModalEmergencyText}>
-                                                Reporte Emergencia
-                                            </Text>
-                                        </TouchableOpacity>
                                     </View>
-                                </View>
                                 </View>
                             )}
-                        
-                        
-                        {/* CAMBIAR ESTADO - Mejorado con modal secundario */}
-                        {(acceso == "admin" || acceso == "solucion" || acceso == "comercial") && !modalPerfiles && (
-                            <View style={style.editarModalEstadoSection}>
-                                <Text style={style.editarModalEstadoTitle}>
-                                    Gestión de Estado
-                                </Text>
 
-                                {/* Estado actual */}
-                                <View style={[
-                                    style.editarModalEstadoActual,
-                                    {flexDirection: 'row', gap: 10 , borderColor: getEstadoColor(estado || "activo") }
-                                ]}>
-                                    <Text style={style.editarModalEstadoLabel}>Estado actual:  </Text>
-                                    <View style={style.editarModalEstadoRow}>
-                                        <FontAwesome
-                                            name={estado === "activo" ? "check-circle" : estado === "innactivo" ? "times-circle" : "pause-circle"}
-                                            style={[
-                                                style.editarModalEstadoIcon,
-                                                { color: getEstadoColor(estado || "activo") }
-                                            ]}
-                                        />
-                                        <Text style={style.editarModalEstadoText}>
-                                            {estado === "activo" ? "Activo" : estado === "innactivo" ? "Inactivo" : estado === "espera" ? "En Espera" : estado}
-                                        </Text>
+
+                            {/* CAMBIAR ESTADO - Mejorado con modal secundario */}
+                            {(acceso == "admin" || acceso == "solucion" || acceso == "comercial") && !modalPerfiles && (
+                                <View style={style.editarModalEstadoSection}>
+                                    <Text style={style.editarModalEstadoTitle}>
+                                        Gestión de Estado
+                                    </Text>
+
+                                    {/* Estado actual */}
+                                    <View style={[
+                                        style.editarModalEstadoActual,
+                                        { flexDirection: 'row', gap: 10, borderColor: getEstadoColor(estado || "activo") }
+                                    ]}>
+                                        <Text style={style.editarModalEstadoLabel}>Estado actual:  </Text>
+                                        <View style={style.editarModalEstadoRow}>
+                                            <FontAwesome
+                                                name={estado === "activo" ? "check-circle" : estado === "innactivo" ? "times-circle" : "pause-circle"}
+                                                style={[
+                                                    style.editarModalEstadoIcon,
+                                                    { color: getEstadoColor(estado || "activo") }
+                                                ]}
+                                            />
+                                            <Text style={style.editarModalEstadoText}>
+                                                {estado === "activo" ? "Activo" : estado === "innactivo" ? "Inactivo" : estado === "espera" ? "En Espera" : estado}
+                                            </Text>
+                                        </View>
                                     </View>
-                                </View>
 
-                                {/* Botón para cambiar estado - Oculto para despacho */}
-                                {(entregado == true && estado == "activo" ? (
+                                    {/* Botón para cambiar estado - Oculto para despacho */}
+                                    {(entregado == true && estado == "activo" ? (
                                         <View style={style.editarModalEstadoLocked}>
                                             <FontAwesome name="lock" style={style.editarModalEstadoLockedIcon} />
                                             <Text style={style.editarModalEstadoLockedText}>
@@ -463,263 +592,344 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             </Text>
                                         </TouchableOpacity>
                                     )
-                                )}
-                            </View>
-                        )}
-                        {/* Renderizar CambiarEstadoModal cuando modalPerfiles es true - Oculto para despacho */}
-                        {(acceso == "admin" || acceso == "solucion" || acceso == "comercial") && modalPerfiles && (
-                            <CambiarEstadoModal
-                                visible={modalPerfiles}
-                                estado={estado}
-                                entregado={entregado}
-                                acceso={acceso}
-                                getEstadoColor={getEstadoColor}
-                                getEstadoBackgroundColor={getEstadoBackgroundColor}
-                                onEstadoChange={onEstadoChange}
-                                onConfirm={onConfirmStateChange}
-                                onCancel={onCancelStateChange}
-                            />
-                        )}
-                        {/* Asignar Vehículo y fecha - Mejorado con mejor diseño */}
-                        {/* Solo mostrar si el estado es activo Y se hizo click en cambiar estado */}
-                        {
-                            (acceso == "admin" || acceso == "despacho") && estado == "activo" && estadoChangedClicked
-                                ? <View style={style.contenedorEspera}>
-                                    <View style={style.separador}></View>
-                                    <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 16, fontWeight: '500' }]}>Asignación de Vehículo</Text>
-
-                                    {/* Información del vehículo asignado */}
-                                    {placaPedido ? (
-                                        <View style={[
-                                            style.editarModalVehiculoAsignado,
-                                            { borderLeftColor: getEstadoColor("activo") }
-                                        ]}>
-                                            <Text style={style.editarModalVehiculoLabel}>Vehículo asignado:</Text>
-                                            <View style={style.editarModalVehiculoRowAsignado}>
-                                                <FontAwesome name="truck" style={[
-                                                    style.editarModalVehiculoIconAsignado,
-                                                    { color: getEstadoColor("activo") }
-                                                ]} />
-                                                <Text style={style.editarModalVehiculoTextAsignado}>
-                                                    {placaPedido} - {conductorPedido}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                    ) : (
-                                        <View style={[
-                                            style.editarModalVehiculoNoAsignado,
-                                            { borderLeftColor: getEstadoColor("espera") }
-                                        ]}>
-                                            <View style={style.editarModalVehiculoRowNoAsignado}>
-                                                <FontAwesome name="exclamation-triangle" style={style.editarModalVehiculoIconNoAsignado} />
-                                                <Text style={style.editarModalVehiculoTextNoAsignado}>
-                                                    Sin vehículo asignado
-                                                </Text>
-                                            </View>
-                                        </View>
                                     )}
+                                </View>
+                            )}
+                            {/* Renderizar CambiarEstadoModal cuando modalPerfiles es true - Oculto para despacho */}
+                            {(acceso == "admin" || acceso == "solucion" || acceso == "comercial") && modalPerfiles && (
+                                <CambiarEstadoModal
+                                    visible={modalPerfiles}
+                                    estado={estado}
+                                    entregado={entregado}
+                                    acceso={acceso}
+                                    getEstadoColor={getEstadoColor}
+                                    getEstadoBackgroundColor={getEstadoBackgroundColor}
+                                    onEstadoChange={onEstadoChange}
+                                    onConfirm={onConfirmStateChange}
+                                    onCancel={onCancelStateChange}
+                                />
+                            )}
+                            {/* Asignar Vehículo y fecha - Mejorado con mejor diseño */}
+                            {/* Solo mostrar si el estado es activo Y se hizo click en cambiar estado */}
+                            {
+                                (acceso == "admin" || acceso == "despacho") && estado == "activo" && estadoChangedClicked
+                                    ? <View style={style.contenedorEspera}>
+                                        <View style={style.separador}></View>
+                                        <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 16, fontWeight: '500' }]}>Asignación de Vehículo</Text>
 
-                                    {/* Botón para asignar vehículo - Oculto para despacho */}
-                                    {
-                                        acceso !== "despacho" && (
-                                            entregado == true && estado == "activo"
-                                                ? null
-                                                : <TouchableOpacity
-                                                    style={style.editarModalVehiculoButton}
-                                                    onPress={onAssignVehicle}
-                                                    activeOpacity={0.8}
-                                                >
-                                                    <FontAwesome name="truck" style={style.editarModalVehiculoButtonIcon} />
-                                                    <Text style={style.editarModalVehiculoButtonText}>
-                                                        {placaPedido ? 'Cambiar Vehículo' : 'Asignar Vehículo'}
+                                        {/* Información del vehículo asignado */}
+                                        {placaPedido ? (
+                                            <View style={[
+                                                style.editarModalVehiculoAsignado,
+                                                { borderLeftColor: getEstadoColor("activo") }
+                                            ]}>
+                                                <Text style={style.editarModalVehiculoLabel}>Vehículo asignado:</Text>
+                                                <View style={style.editarModalVehiculoRowAsignado}>
+                                                    <FontAwesome name="truck" style={[
+                                                        style.editarModalVehiculoIconAsignado,
+                                                        { color: getEstadoColor("activo") }
+                                                    ]} />
+                                                    <Text style={style.editarModalVehiculoTextAsignado}>
+                                                        {placaPedido} - {conductorPedido}
                                                     </Text>
-                                                </TouchableOpacity>
-                                        )
-                                    }
-                                </View>
-                                : null
-                        }
-
-                        {/* Botón de cancelar pedido solo para clientes - Mejorado */}
-                        {acceso === "cliente" && estado && estado !== "innactivo" && !entregado && (
-                            <View style={style.editarModalCancelarSection}>
-                                <View style={style.separador}></View>
-                                <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 18, fontWeight: '600' }]}>Opciones del Cliente</Text>
-
-                                {/* Advertencia antes del botón */}
-                                <View style={style.editarModalCancelarWarning}>
-                                    <View style={style.editarModalCancelarWarningRow}>
-                                        <FontAwesome name="exclamation-triangle" style={style.editarModalCancelarWarningIcon} />
-                                        <Text style={style.editarModalCancelarWarningText}>
-                                            Al cancelar el pedido, no podrá revertir esta acción
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <TouchableOpacity
-                                    style={style.editarModalCancelarButton}
-                                    onPress={onCancelOrder}
-                                    activeOpacity={0.8}
-                                >
-                                    <FontAwesome name="times-circle" style={style.editarModalCancelarButtonIcon} />
-                                    <Text style={style.editarModalCancelarButtonText}>
-                                        Cancelar Pedido
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-
-                        {/* Mostrar información del pedido entregado/cerrado - DISEÑO MEJORADO */}
-                        {entregado && (
-                            <View style={style.editarModalEntregadoContainer}>
-                                {/* Header con icono de éxito */}
-                                <View style={style.editarModalEntregadoHeader}>
-                                    <View style={style.editarModalEntregadoIconContainer}>
-                                        <FontAwesome name="check-circle" style={style.editarModalEntregadoIcon} />
-                                    </View>
-                                    <Text style={style.editarModalEntregadoTitle}>
-                                        🎉 Pedido Finalizado
-                                    </Text>
-                                    {estado!="noentregado"&&(<Text style={style.editarModalEntregadoSubtitle}>
-                                        Completado y entregado exitosamente
-                                    </Text>)}
-                                </View>
-
-                                {/* Imagen de la factura si existe */}
-                                {pedidoData.imagenCerrar && (
-                                    <View style={style.editarModalImageSection}>
-                                        <View style={style.editarModalImageWrapper}>
-                                            <Image
-                                                source={{ uri: pedidoData.imagenCerrar }}
-                                                style={style.editarModalImage}
-                                                resizeMode="cover"
-                                            />
-                                        </View>
-                                        <View style={style.editarModalImageBadge}>
-                                            <FontAwesome name="camera" style={style.editarModalImageBadgeIcon} />
-                                            <Text style={style.editarModalImageBadgeText}>
-                                                Imagen registrada exitosamente
-                                            </Text>
-                                        </View>
-                                    </View>
-                                )}
-
-                                {/* Cards de información mejoradas */}
-                              
-                                <View style={style.editarModalCardsContainer}>
-                                    {/* Card principal con total */}
-                                {estado!="noentregado"&&(
-                                    <View style={style.editarModalMainCard}>
-                                        <View style={style.editarModalMainCardRow}>
-                                            <Text style={style.editarModalMainCardTitle}>
-                                                💰 Total Facturado
-                                            </Text>
-                                            <Text style={style.editarModalMainCardValue}>
-                                                {valor_total ? formatCurrency(valor_total) : 'N/A'}
-                                            </Text>
-                                        </View>
-                                        {forma_pago && (
-                                            <View style={style.editarModalMainCardDivider}>
-                                                <Text style={style.editarModalMainCardLabel}>Forma de pago:</Text>
-                                                <View style={[
-                                                    style.editarModalFormaPagoBadge,
-                                                    forma_pago === 'Contado' ? style.editarModalFormaPagoBadgeContado : style.editarModalFormaPagoBadgeCredito
-                                                ]}>
-                                                    <Text style={[
-                                                        style.editarModalFormaPagoText,
-                                                        forma_pago === 'Contado' ? style.editarModalFormaPagoTextContado : style.editarModalFormaPagoTextCredito
-                                                    ]}>
-                                                        {forma_pago === 'Contado' ? '💵 Contado' : '💳 Crédito'}
+                                                </View>
+                                            </View>
+                                        ) : (
+                                            <View style={[
+                                                style.editarModalVehiculoNoAsignado,
+                                                { borderLeftColor: getEstadoColor("espera") }
+                                            ]}>
+                                                <View style={style.editarModalVehiculoRowNoAsignado}>
+                                                    <FontAwesome name="exclamation-triangle" style={style.editarModalVehiculoIconNoAsignado} />
+                                                    <Text style={style.editarModalVehiculoTextNoAsignado}>
+                                                        Sin vehículo asignado
                                                     </Text>
                                                 </View>
                                             </View>
                                         )}
-                                    </View>
-                                    )}
-                                    {/* Card de detalles */}
-                                    <View style={style.editarModalDetailsCard}>
-                                        <Text style={style.editarModalDetailsCardTitle}>
-                                            📋 Información del Pedido
-                                        </Text>
 
-                                        <View style={style.editarModalDetailsCardContent}>
-                                            {kilos && (
-                                                <View style={style.editarModalDetailsRow}>
-                                                    <View style={style.editarModalDetailsRowLeft}>
-                                                        <FontAwesome name="balance-scale" style={style.editarModalDetailsIcon} />
-                                                        <Text style={style.editarModalDetailsLabel}>Kilos:</Text>
-                                                    </View>
-                                                    <Text style={style.editarModalDetailsValue}>{kilos}</Text>
-                                                </View>
-                                            )}
-
-                                            {factura && (
-                                                <View style={style.editarModalDetailsRow}>
-                                                    <View style={style.editarModalDetailsRowLeft}>
-                                                        <FontAwesome name="file-text" style={style.editarModalDetailsIcon} />
-                                                        <Text style={style.editarModalDetailsLabel}>Consecutivo:</Text>
-                                                    </View>
-                                                    <Text style={style.editarModalDetailsValue}>{factura}</Text>
-                                                </View>
-                                            )}
-                                        </View>
+                                        {/* Botón para asignar vehículo - Oculto para despacho */}
+                                        {
+                                            acceso !== "despacho" && (
+                                                entregado == true && estado == "activo"
+                                                    ? null
+                                                    : <TouchableOpacity
+                                                        style={style.editarModalVehiculoButton}
+                                                        onPress={onAssignVehicle}
+                                                        activeOpacity={0.8}
+                                                    >
+                                                        <FontAwesome name="truck" style={style.editarModalVehiculoButtonIcon} />
+                                                        <Text style={style.editarModalVehiculoButtonText}>
+                                                            {placaPedido ? 'Cambiar Vehículo' : 'Asignar Vehículo'}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                            )
+                                        }
                                     </View>
-                                    
-                                    {/* Card de información adicional si existen otros campos */}
-                                    {(motivo_no_cierre || perfil_novedad) && (
-                                        <View style={style.editarModalWarningCard}>
-                                            <Text style={style.editarModalWarningCardTitle}>
-                                                ℹ️ Información Adicional
+                                    : null
+                            }
+
+                            {/* Botón de cancelar pedido solo para clientes - Mejorado */}
+                            {acceso === "cliente" && estado && estado !== "innactivo" && !entregado && (
+                                <View style={style.editarModalCancelarSection}>
+                                    <View style={style.separador}></View>
+                                    <Text style={[style.tituloModal, { marginBottom: 15, fontSize: 18, fontWeight: '600' }]}>Opciones del Cliente</Text>
+
+                                    {/* Advertencia antes del botón */}
+                                    <View style={style.editarModalCancelarWarning}>
+                                        <View style={style.editarModalCancelarWarningRow}>
+                                            <FontAwesome name="exclamation-triangle" style={style.editarModalCancelarWarningIcon} />
+                                            <Text style={style.editarModalCancelarWarningText}>
+                                                Al cancelar el pedido, no podrá revertir esta acción
                                             </Text>
-                                            {motivo_no_cierre && (
-                                                <View style={style.editarModalWarningRow}>
-                                                    <Text style={style.editarModalWarningLabel}>Motivo no cierre:</Text>
-                                                    <Text style={style.editarModalWarningValue}>
-                                                        {motivo_no_cierre}
-                                                    </Text>
-                                                </View>
-                                            )}
-                                            {perfil_novedad && (
-                                                <View style={style.editarModalWarningRow}>
-                                                    <Text style={style.editarModalWarningLabel}>Perfil novedad:</Text>
-                                                    <Text style={style.editarModalWarningValue}>
-                                                        {perfil_novedad}
-                                                    </Text>
-                                                </View>
-                                            )}
+                                        </View>
+                                    </View>
+
+                                    <TouchableOpacity
+                                        style={style.editarModalCancelarButton}
+                                        onPress={onCancelOrder}
+                                        activeOpacity={0.8}
+                                    >
+                                        <FontAwesome name="times-circle" style={style.editarModalCancelarButtonIcon} />
+                                        <Text style={style.editarModalCancelarButtonText}>
+                                            Cancelar Pedido
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            {/* Mostrar información del pedido entregado/cerrado - DISEÑO MEJORADO */}
+                            {entregado && (
+                                <View style={style.editarModalEntregadoContainer}>
+                                    {/* Header con icono de éxito */}
+                                    <View style={style.editarModalEntregadoHeader}>
+                                        <View style={style.editarModalEntregadoIconContainer}>
+                                            <FontAwesome name="check-circle" style={style.editarModalEntregadoIcon} />
+                                        </View>
+                                        <Text style={style.editarModalEntregadoTitle}>
+                                            🎉 Pedido Finalizado
+                                        </Text>
+                                        {estado != "noentregado" && (<Text style={style.editarModalEntregadoSubtitle}>
+                                            Completado y entregado exitosamente
+                                        </Text>)}
+                                    </View>
+
+                                    {/* Imagen de la factura si existe */}
+                                    {pedidoData.imagenCerrar && (
+                                        <View style={style.editarModalImageSection}>
+                                            <View style={style.editarModalImageWrapper}>
+                                                <Image
+                                                    source={{ uri: pedidoData.imagenCerrar }}
+                                                    style={style.editarModalImage}
+                                                    resizeMode="cover"
+                                                />
+                                            </View>
+                                            <View style={style.editarModalImageBadge}>
+                                                <FontAwesome name="camera" style={style.editarModalImageBadgeIcon} />
+                                                <Text style={style.editarModalImageBadgeText}>
+                                                    Imagen registrada exitosamente
+                                                </Text>
+                                            </View>
                                         </View>
                                     )}
+
+                                    {/* Cards de información mejoradas */}
+
+                                    <View style={style.editarModalCardsContainer}>
+                                        {/* Card principal con total */}
+                                        {estado != "noentregado" && (
+                                            <View style={style.editarModalMainCard}>
+                                                <View style={style.editarModalMainCardRow}>
+                                                    <Text style={style.editarModalMainCardTitle}>
+                                                        💰 Total Facturado
+                                                    </Text>
+                                                    <Text style={style.editarModalMainCardValue}>
+                                                        {valor_total ? formatCurrency(valor_total) : 'N/A'}
+                                                    </Text>
+                                                </View>
+                                                {forma_pago && (
+                                                    <View style={style.editarModalMainCardDivider}>
+                                                        <Text style={style.editarModalMainCardLabel}>Forma de pago:</Text>
+                                                        <View style={[
+                                                            style.editarModalFormaPagoBadge,
+                                                            forma_pago === 'Contado' ? style.editarModalFormaPagoBadgeContado : style.editarModalFormaPagoBadgeCredito
+                                                        ]}>
+                                                            <Text style={[
+                                                                style.editarModalFormaPagoText,
+                                                                forma_pago === 'Contado' ? style.editarModalFormaPagoTextContado : style.editarModalFormaPagoTextCredito
+                                                            ]}>
+                                                                {forma_pago === 'Contado' ? '💵 Contado' : '💳 Crédito'}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        )}
+                                        {/* Card de detalles */}
+                                        <View style={style.editarModalDetailsCard}>
+                                            <Text style={style.editarModalDetailsCardTitle}>
+                                                📋 Información del Pedido
+                                            </Text>
+
+                                            <View style={style.editarModalDetailsCardContent}>
+                                                {kilos && (
+                                                    <View style={style.editarModalDetailsRow}>
+                                                        <View style={style.editarModalDetailsRowLeft}>
+                                                            <FontAwesome name="balance-scale" style={style.editarModalDetailsIcon} />
+                                                            <Text style={style.editarModalDetailsLabel}>Kilos:</Text>
+                                                        </View>
+                                                        <Text style={style.editarModalDetailsValue}>{kilos}</Text>
+                                                    </View>
+                                                )}
+
+                                                {factura && (
+                                                    <View style={style.editarModalDetailsRow}>
+                                                        <View style={style.editarModalDetailsRowLeft}>
+                                                            <FontAwesome name="file-text" style={style.editarModalDetailsIcon} />
+                                                            <Text style={style.editarModalDetailsLabel}>Consecutivo:</Text>
+                                                        </View>
+                                                        <Text style={style.editarModalDetailsValue}>{factura}</Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        </View>
+
+                                        {/* Card de Firmas Digitales */}
+                                        {(pedidoData.firma_conductor || pedidoData.firma_usuario) && (
+                                            <View style={style.editarModalDetailsCard}>
+                                                <Text style={style.editarModalDetailsCardTitle}>
+                                                    ✍️ Firmas Digitales
+                                                </Text>
+
+                                                <View style={style.editarModalDetailsCardContent}>
+                                                    {pedidoData.firma_conductor && (
+                                                        <View style={{ marginBottom: 16 }}>
+                                                            <Text style={[style.editarModalDetailsLabel, { marginBottom: 8 }]}>
+                                                                Firma del Conductor
+                                                            </Text>
+                                                            <View style={{
+                                                                borderRadius: 12,
+                                                                overflow: 'hidden',
+                                                                borderWidth: 2,
+                                                                borderColor: '#007bff',
+                                                                backgroundColor: '#f8f9fa',
+                                                                minHeight: 150
+                                                            }}>
+                                                                <Image
+                                                                    source={{
+                                                                        uri: pedidoData.firma_conductor,
+                                                                        cache: 'force-cache'
+                                                                    }}
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: 150,
+                                                                        resizeMode: 'contain',
+                                                                        backgroundColor: '#fff'
+                                                                    }}
+                                                                    onLoad={() => {
+                                                                        console.log('✅ [EditarPedidoModal] Firma conductor cargada');
+                                                                    }}
+                                                                    onError={(error) => {
+                                                                        console.error('❌ [EditarPedidoModal] Error cargando firma conductor:', error);
+                                                                    }}
+                                                                />
+                                                            </View>
+                                                        </View>
+                                                    )}
+
+                                                    {pedidoData.firma_usuario && (
+                                                        <View>
+                                                            <Text style={[style.editarModalDetailsLabel, { marginBottom: 8 }]}>
+                                                                Firma del Usuario/Cliente
+                                                            </Text>
+                                                            <View style={{
+                                                                borderRadius: 12,
+                                                                overflow: 'hidden',
+                                                                borderWidth: 2,
+                                                                borderColor: '#28a745',
+                                                                backgroundColor: '#f8f9fa',
+                                                                minHeight: 150
+                                                            }}>
+                                                                <Image
+                                                                    source={{
+                                                                        uri: pedidoData.firma_usuario,
+                                                                        cache: 'force-cache'
+                                                                    }}
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: 150,
+                                                                        resizeMode: 'contain',
+                                                                        backgroundColor: '#fff'
+                                                                    }}
+                                                                    onLoad={() => {
+                                                                        console.log('✅ [EditarPedidoModal] Firma usuario cargada');
+                                                                    }}
+                                                                    onError={(error) => {
+                                                                        console.error('❌ [EditarPedidoModal] Error cargando firma usuario:', error);
+                                                                    }}
+                                                                />
+                                                            </View>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        )}
+
+                                        {/* Card de información adicional si existen otros campos */}
+                                        {(motivo_no_cierre || perfil_novedad) && (
+                                            <View style={style.editarModalWarningCard}>
+                                                <Text style={style.editarModalWarningCardTitle}>
+                                                    ℹ️ Información Adicional
+                                                </Text>
+                                                {motivo_no_cierre && (
+                                                    <View style={style.editarModalWarningRow}>
+                                                        <Text style={style.editarModalWarningLabel}>Motivo no cierre:</Text>
+                                                        <Text style={style.editarModalWarningValue}>
+                                                            {motivo_no_cierre}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                                {perfil_novedad && (
+                                                    <View style={style.editarModalWarningRow}>
+                                                        <Text style={style.editarModalWarningLabel}>Perfil novedad:</Text>
+                                                        <Text style={style.editarModalWarningValue}>
+                                                            {perfil_novedad}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        )}
+                                    </View>
                                 </View>
-                            </View>
-                        )}
+                            )}
 
-                        {/* Sección de cerrar pedido - Oculto para despacho */}
-                        {(acceso === "admin" || acceso === "conductor") && fechaEntrega && !entregado && (
-                            <View style={style.editarModalCerrarSection}>
-                                <View style={style.editarModalCerrarHeader}>
-                                    <FontAwesome name="check-circle" style={style.editarModalCerrarIcon} />
-                                    <Text style={style.editarModalCerrarTitle}>
-                                        Finalización del Pedido
+                            {/* Sección de cerrar pedido - Oculto para despacho */}
+                            {(acceso === "admin" || acceso === "conductor") && fechaEntrega && !entregado && (
+                                <View style={style.editarModalCerrarSection}>
+                                    <View style={style.editarModalCerrarHeader}>
+                                        <FontAwesome name="check-circle" style={style.editarModalCerrarIcon} />
+                                        <Text style={style.editarModalCerrarTitle}>
+                                            Finalización del Pedido
+                                        </Text>
+                                    </View>
+
+                                    <Text style={style.editarModalCerrarDescription}>
+                                        Complete la información para finalizar este pedido.
                                     </Text>
+
+                                    <TouchableOpacity
+                                        style={style.editarModalCerrarButton}
+                                        onPress={onClosePedido}
+                                        activeOpacity={0.8}
+                                    >
+                                        <FontAwesome name="edit" style={style.editarModalCerrarButtonIcon} />
+                                        <Text style={style.editarModalCerrarButtonText}>
+                                            Cerrar Pedido
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
-
-                                <Text style={style.editarModalCerrarDescription}>
-                                    Complete la información para finalizar este pedido.
-                                </Text>
-
-                                <TouchableOpacity
-                                    style={style.editarModalCerrarButton}
-                                    onPress={onClosePedido}
-                                    activeOpacity={0.8}
-                                >
-                                    <FontAwesome name="edit" style={style.editarModalCerrarButtonIcon} />
-                                    <Text style={style.editarModalCerrarButtonText}>
-                                        Cerrar Pedido
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                     </View>
+                            )}
+                        </View>
                     </ScrollView>
                 </Animated.View>
 
@@ -747,21 +957,29 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                     onSave={onSaveFecha}
                 />
 
-                <CerrarPedidoModal
-                    visible={modalCerrarPedido}
-                    pedidoId={pedidoData.id}
-                    onClose={onCloseCerrarPedido}
-                    entregado={pedidoData.entregado}
-                    imagenCerrar={pedidoData.imagenCerrar}
-                    kilos={pedidoData.kilos}
-                    factura={pedidoData.factura}
-                    valor_total={pedidoData.valor_total}
-                    remision={undefined}
-                    forma_pago={pedidoData.forma_pago}
-                    valor_unitario={valorUnitario}
-                    onCerrarPedido={onCerrarPedido}
-                    onGuardarNovedad={onGuardarNovedad}
-                />
+                {modalCerrarPedido && (
+                    <CerrarPedidoModal
+                        key={`cerrar-pedido-${pedidoData.id || 'default'}`}
+                        visible={modalCerrarPedido}
+                        pedidoId={pedidoData.id}
+                        onClose={onCloseCerrarPedido}
+                        entregado={pedidoData.entregado}
+                        imagenCerrar={pedidoData.imagenCerrar}
+                        kilos={pedidoData.kilos}
+                        factura={pedidoData.factura}
+                        valor_total={pedidoData.valor_total}
+                        remision={pedidoData.remision}
+                        forma_pago={pedidoData.forma_pago}
+                        valor_unitario={valorUnitario}
+                        firma_conductor={pedidoData.firma_conductor}
+                        firma_usuario={pedidoData.firma_usuario}
+                        puntoId={pedidoData.puntoId?.toString()}
+                        usuarioId={pedidoData.usuarioId?.toString()}
+                        email={pedidoData.email}
+                        onCerrarPedido={onCerrarPedido}
+                        onGuardarNovedad={onGuardarNovedad}
+                    />
+                )}
 
                 {/* Modal de Navegación */}
                 <Modal
@@ -867,6 +1085,426 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                     Cancelar
                                 </Text>
                             </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+
+                {/* Modal de Llenado de Tanques */}
+                <LlenadoTanquesModal
+                    visible={showLlenadoTanquesModal}
+                    onClose={() => {
+                        // Cerrar el modal de llenado
+                        setShowLlenadoTanquesModal(false);
+                        // Si el modal de llenado fue abierto desde el modal de selección, reabrirlo
+                        if (llenadoOpenedFromTanques) {
+                            setLlenadoOpenedFromTanques(false);
+                            setShowTanquesModal(true);
+                        }
+                    }}
+                    pedidoId={id || ''}
+                    tanqueId={selectedTanqueForLlenado?._id || 0}
+                    puntoId={pedidoData.puntoId?.toString()}
+                    usuarioId={pedidoData.usuarioId?.toString()}
+                    email={pedidoData.email}
+                    showSaveButton={true}
+                    showTanqueSelection={false}
+                    tanquesData={localTanquesData}
+                    initialData={(() => {
+                        // Obtener datos del tanque desde el campo tanques del pedido si existe
+                        if (localTanquesData && Array.isArray(localTanquesData) && selectedTanqueForLlenado) {
+                            const tanqueData = localTanquesData.find((t: any) => t.tanque_id === selectedTanqueForLlenado._id);
+                            if (tanqueData) {
+                                return {
+                                    presion_inicial: tanqueData.presion_inicial,
+                                    presion_final: tanqueData.presion_final,
+                                    porcentaje_inicial: tanqueData.porcentaje_inicial,
+                                    porcentaje_final: tanqueData.porcentaje_final,
+                                    estado: tanqueData.estado
+                                };
+                            }
+                        }
+                        return {};
+                    })()}
+                    onSave={async (data) => {
+                        // Actualizar el estado local de tanques con los nuevos datos guardados
+                        if (selectedTanqueForLlenado) {
+                            setLocalTanquesData((prevTanques: any[]) => {
+                                const updatedTanques = [...(prevTanques || [])];
+                                const tanqueIndex = updatedTanques.findIndex((t: any) => t.tanque_id === selectedTanqueForLlenado._id);
+
+                                const updatedTanqueData = {
+                                    tanque_id: selectedTanqueForLlenado._id,
+                                    presion_inicial: data.presion_inicial,
+                                    presion_final: data.presion_final,
+                                    porcentaje_inicial: data.porcentaje_inicial,
+                                    porcentaje_final: data.porcentaje_final,
+                                    estado: data.estado,
+                                    // Mantener otros campos existentes si los hay
+                                    ...(tanqueIndex >= 0 ? {
+                                        tipo_suministro: updatedTanques[tanqueIndex].tipo_suministro,
+                                        observacion: updatedTanques[tanqueIndex].observacion,
+                                        checklist: updatedTanques[tanqueIndex].checklist
+                                    } : {})
+                                };
+
+                                if (tanqueIndex >= 0) {
+                                    // Actualizar tanque existente
+                                    updatedTanques[tanqueIndex] = updatedTanqueData;
+                                } else {
+                                    // Agregar nuevo tanque
+                                    updatedTanques.push(updatedTanqueData);
+                                }
+
+                                return updatedTanques;
+                            });
+                        }
+
+                        // Cerrar el modal de llenado
+                        setShowLlenadoTanquesModal(false);
+                        // Si el modal de llenado fue abierto desde el modal de selección, reabrirlo
+                        if (llenadoOpenedFromTanques) {
+                            setLlenadoOpenedFromTanques(false);
+                            setShowTanquesModal(true);
+                        }
+                    }}
+                />
+
+                {/* Modal de Checklist de Seguridad */}
+                <SafetyChecklistModal
+                    visible={showChecklistModal}
+                    onClose={() => {
+                        setShowChecklistModal(false);
+                        // Si el checklist fue abierto desde el modal de tanques, reabrirlo
+                        if (checklistOpenedFromTanques) {
+                            setChecklistOpenedFromTanques(false);
+                            setShowTanquesModal(true);
+                        }
+                    }}
+                    pedidoId={id || ''}
+                    tanqueId={selectedTanque?._id || 0}
+                    initialChecklist={(() => {
+                        // Obtener checklist del tanque desde el campo tanques del pedido si existe
+                        if (pedidoData.tanques && Array.isArray(pedidoData.tanques) && selectedTanque) {
+                            const tanqueData = pedidoData.tanques.find((t: any) => t.tanque_id === selectedTanque._id);
+                            if (tanqueData && tanqueData.checklist && Array.isArray(tanqueData.checklist)) {
+                                // Convertir del formato [{"pregunta": "...", "respuesta": "Sí/No"}] al formato ChecklistItem[]
+                                return tanqueData.checklist.map((item: any, index: number) => ({
+                                    id: index + 1,
+                                    status: item.respuesta === 'Sí'
+                                }));
+                            }
+                        }
+                        return [];
+                    })()}
+                    initialObservacion={(() => {
+                        // Obtener observación del tanque desde el campo tanques del pedido si existe
+                        if (pedidoData.tanques && Array.isArray(pedidoData.tanques) && selectedTanque) {
+                            const tanqueData = pedidoData.tanques.find((t: any) => t.tanque_id === selectedTanque._id);
+                            return tanqueData?.observacion || null;
+                        }
+                        return null;
+                    })()}
+                    onSave={(checklist, observacion) => {
+                        // Los datos ya se guardaron en el campo tanques desde SafetyChecklistModal
+                        // Cerrar el modal y reabrir tanques si fue abierto desde ahí
+                        setShowChecklistModal(false);
+                        if (checklistOpenedFromTanques) {
+                            setChecklistOpenedFromTanques(false);
+                            setShowTanquesModal(true);
+                        }
+                    }}
+                />
+
+                {/* Modal de Selección de Tanques */}
+                <Modal
+                    transparent={true}
+                    visible={showTanquesModal}
+                    animationType="slide"
+                    onRequestClose={() => {
+                        setShowTanquesModal(false);
+                        setSelectedTanque(null);
+                    }}
+                >
+                    <View style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                        <View style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 20,
+                            width: '90%',
+                            maxHeight: '80%',
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 5 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 10,
+                            elevation: 25
+                        }}>
+                            {/* Header */}
+                            <View style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: 20,
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#e9ecef',
+                                borderTopLeftRadius: 20,
+                                borderTopRightRadius: 20,
+                                backgroundColor: '#f8f9fa'
+                            }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{
+                                        backgroundColor: '#007bff',
+                                        borderRadius: 10,
+                                        padding: 8,
+                                        marginRight: 12
+                                    }}>
+                                        <FontAwesome name="database" style={{ fontSize: 20, color: '#fff' }} />
+                                    </View>
+                                    <View>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>
+                                            Seleccionar Tanque
+                                        </Text>
+                                        <Text style={{ fontSize: 14, color: '#666', marginTop: 2 }}>
+                                            Elige un tanque para continuar
+                                        </Text>
+                                    </View>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setShowTanquesModal(false);
+                                        setSelectedTanque(null);
+                                    }}
+                                    style={{
+                                        backgroundColor: '#f8f9fa',
+                                        borderRadius: 20,
+                                        width: 36,
+                                        height: 36,
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <FontAwesome name="times" style={{ fontSize: 16, color: '#666' }} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Contenido */}
+                            <ScrollView style={{ maxHeight: '60%' }} showsVerticalScrollIndicator={true}>
+                                {loadingTanques ? (
+                                    <View style={{ padding: 40, alignItems: 'center', justifyContent: 'center' }}>
+                                        <ActivityIndicator size="large" color="#007bff" />
+                                        <Text style={{ marginTop: 16, color: '#666', fontSize: 14 }}>
+                                            Cargando tanques...
+                                        </Text>
+                                    </View>
+                                ) : tanques.length === 0 ? (
+                                    <View style={{ padding: 40, alignItems: 'center', justifyContent: 'center' }}>
+                                        <FontAwesome name="exclamation-circle" style={{ fontSize: 48, color: '#ffc107', marginBottom: 16 }} />
+                                        <Text style={{ color: '#666', fontSize: 14, textAlign: 'center' }}>
+                                            No se encontraron tanques para este punto
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <View style={{ padding: 20 }}>
+                                        {tanques.map((tanque) => (
+                                            <TouchableOpacity
+                                                key={tanque._id}
+                                                style={{
+                                                    padding: 18,
+                                                    marginBottom: 12,
+                                                    borderRadius: 14,
+                                                    borderWidth: selectedTanque?._id === tanque._id ? 2.5 : 1.5,
+                                                    borderColor: selectedTanque?._id === tanque._id ? '#007bff' : '#e9ecef',
+                                                    backgroundColor: selectedTanque?._id === tanque._id ? '#e3f2fd' : '#ffffff',
+                                                    shadowColor: selectedTanque?._id === tanque._id ? '#007bff' : '#000',
+                                                    shadowOffset: { width: 0, height: 2 },
+                                                    shadowOpacity: selectedTanque?._id === tanque._id ? 0.15 : 0.05,
+                                                    shadowRadius: 4,
+                                                    elevation: selectedTanque?._id === tanque._id ? 4 : 2
+                                                }}
+                                                onPress={() => setSelectedTanque(tanque)}
+                                                activeOpacity={0.7}
+                                            >
+                                                <View style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'flex-start',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <View style={{ flex: 1, marginRight: 12 }}>
+                                                        <View style={{
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            marginBottom: 8
+                                                        }}>
+                                                            <View style={{
+                                                                backgroundColor: selectedTanque?._id === tanque._id ? '#007bff' : '#6c757d',
+                                                                borderRadius: 6,
+                                                                paddingHorizontal: 8,
+                                                                paddingVertical: 4,
+                                                                marginRight: 10
+                                                            }}>
+                                                                <Text style={{
+                                                                    fontSize: 12,
+                                                                    fontWeight: '700',
+                                                                    color: '#fff'
+                                                                }}>
+                                                                    #{tanque._id}
+                                                                </Text>
+                                                            </View>
+                                                            <Text style={{
+                                                                fontSize: 17,
+                                                                fontWeight: '700',
+                                                                color: selectedTanque?._id === tanque._id ? '#007bff' : '#212529',
+                                                                flex: 1
+                                                            }}>
+                                                                {tanque.codigo_activo || `Tanque ${tanque._id}`}
+                                                            </Text>
+                                                        </View>
+
+                                                        <View style={{
+                                                            backgroundColor: '#f8f9fa',
+                                                            borderRadius: 8,
+                                                            padding: 12,
+                                                            marginTop: 8
+                                                        }}>
+                                                            {tanque.capacidad && (
+                                                                <View style={{
+                                                                    flexDirection: 'row',
+                                                                    alignItems: 'center',
+                                                                    marginBottom: 6
+                                                                }}>
+                                                                    <FontAwesome name="balance-scale" style={{ fontSize: 12, color: '#6c757d', marginRight: 8, width: 16 }} />
+                                                                    <Text style={{ fontSize: 13, color: '#495057', flex: 1 }}>
+                                                                        <Text style={{ fontWeight: '600' }}>Capacidad: </Text>
+                                                                        {tanque.capacidad} Kg
+                                                                    </Text>
+                                                                </View>
+                                                            )}
+                                                            {tanque.fabricante && (
+                                                                <View style={{
+                                                                    flexDirection: 'row',
+                                                                    alignItems: 'center',
+                                                                    marginBottom: 6
+                                                                }}>
+                                                                    <FontAwesome name="industry" style={{ fontSize: 12, color: '#6c757d', marginRight: 8, width: 16 }} />
+                                                                    <Text style={{ fontSize: 13, color: '#495057', flex: 1 }}>
+                                                                        <Text style={{ fontWeight: '600' }}>Fabricante: </Text>
+                                                                        {tanque.fabricante}
+                                                                    </Text>
+                                                                </View>
+                                                            )}
+                                                            {tanque.n_placa && (
+                                                                <View style={{
+                                                                    flexDirection: 'row',
+                                                                    alignItems: 'center'
+                                                                }}>
+                                                                    <FontAwesome name="tag" style={{ fontSize: 12, color: '#6c757d', marginRight: 8, width: 16 }} />
+                                                                    <Text style={{ fontSize: 13, color: '#495057', flex: 1 }}>
+                                                                        <Text style={{ fontWeight: '600' }}>Placa: </Text>
+                                                                        {tanque.n_placa}
+                                                                    </Text>
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                    </View>
+                                                    {selectedTanque?._id === tanque._id && (
+                                                        <View style={{
+                                                            backgroundColor: '#007bff',
+                                                            borderRadius: 20,
+                                                            width: 32,
+                                                            height: 32,
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center',
+                                                            shadowColor: '#007bff',
+                                                            shadowOffset: { width: 0, height: 2 },
+                                                            shadowOpacity: 0.3,
+                                                            shadowRadius: 4,
+                                                            elevation: 4
+                                                        }}>
+                                                            <FontAwesome name="check" size={16} color="#fff" />
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+                            </ScrollView>
+
+                            {/* Botones de acción - Solo se muestran cuando hay un tanque seleccionado */}
+                            {selectedTanque && (
+                                <View style={{
+                                    padding: 20,
+                                    borderTopWidth: 1,
+                                    borderTopColor: '#e9ecef',
+                                    gap: 12
+                                }}>
+                                    <TouchableOpacity
+                                        style={{
+                                            backgroundColor: '#007bff',
+                                            borderRadius: 12,
+                                            paddingVertical: 16,
+                                            alignItems: 'center',
+                                            flexDirection: 'row',
+                                            justifyContent: 'center',
+                                            shadowColor: '#000',
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 4,
+                                            elevation: 3
+                                        }}
+                                        onPress={() => {
+                                            console.log('🔵 [EditarPedidoModal] Abriendo checklist modal, tanque seleccionado:', selectedTanque);
+                                            setChecklistOpenedFromTanques(true);
+                                            // Cerrar temporalmente el modal de tanques para que el checklist se muestre correctamente
+                                            setShowTanquesModal(false);
+                                            // Usar setTimeout para asegurar que el modal de tanques se cierre antes de abrir el checklist
+                                            setTimeout(() => {
+                                                setShowChecklistModal(true);
+                                            }, 100);
+                                        }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <FontAwesome name="shield" style={{ fontSize: 18, color: '#fff', marginRight: 10 }} />
+                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                            Lista de Chequeo de Seguridad
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={{
+                                            backgroundColor: '#28a745',
+                                            borderRadius: 12,
+                                            paddingVertical: 16,
+                                            alignItems: 'center',
+                                            flexDirection: 'row',
+                                            justifyContent: 'center',
+                                            shadowColor: '#000',
+                                            shadowOffset: { width: 0, height: 2 },
+                                            shadowOpacity: 0.1,
+                                            shadowRadius: 4,
+                                            elevation: 3
+                                        }}
+                                        onPress={() => {
+                                            // Al hacer click en "Llenado de Tanques", abrir el modal de llenado
+                                            if (selectedTanque) {
+                                                setLlenadoOpenedFromTanques(true);
+                                                setSelectedTanqueForLlenado(selectedTanque);
+                                                setShowTanquesModal(false);
+                                                setShowLlenadoTanquesModal(true);
+                                            }
+                                        }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <FontAwesome name="tint" style={{ fontSize: 18, color: '#fff', marginRight: 10 }} />
+                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>
+                                            Llenado de Tanques
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                         </View>
                     </View>
                 </Modal>

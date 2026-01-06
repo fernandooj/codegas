@@ -392,6 +392,31 @@ if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/3l3a5j20/x86_64/CMakeFiles/cmake.verify_globs")
 endif()
 
+# react_codegen_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/*.cpp")
+set(OLD_GLOB
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/RNCWebViewSpec-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/3l3a5j20/x86_64/CMakeFiles/cmake.verify_globs")
+endif()
+
+# react_codegen_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/*.cpp")
+set(OLD_GLOB
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/ComponentDescriptors.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/EventEmitters.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/Props.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/RNCWebViewSpecJSI-generated.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/ShadowNodes.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/States.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/3l3a5j20/x86_64/CMakeFiles/cmake.verify_globs")
+endif()
+
 # override_cpp_SRC at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:50 (file)
 # input_SRC at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native/ReactAndroid/cmake-utils/ReactNative-application.cmake:55 (file)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/*.cpp")

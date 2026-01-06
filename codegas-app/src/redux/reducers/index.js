@@ -7,6 +7,7 @@ import revision from "./revision";
 import tanque from "./tanque";
 import zona from "./zona";
 import reporte from "./reporteReducer";
+import planilla from "./planilla";
 
 import { combineReducers } from "redux";
 
@@ -18,7 +19,8 @@ const reducerMap = {
   revision,
   tanque,
   zona,
-  reporte
+  reporte,
+  planilla
 };
 
 export default combineReducers(reducerMap);

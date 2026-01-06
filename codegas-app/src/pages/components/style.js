@@ -26,9 +26,9 @@ export const style = MediaQueryStyleSheet.create({
 		flexDirection: "row",
 		width: "100%",
 		height: Platform.OS === 'ios' ? 65 : 60,
-		paddingHorizontal: 25,
-		paddingTop: 25,
-		paddingBottom: Platform.OS === 'ios' ? 15 : 10, // Extra padding for safe area
+		paddingHorizontal: 15,
+		paddingTop: Platform.OS === 'ios' ? 5 : 15,
+		paddingBottom: Platform.OS === 'ios' ? 15 : 10,
 		shadowColor: "#000000",
 		shadowOffset: { width: 0, height: -8 },
 		shadowOpacity: 0.1,
@@ -36,7 +36,7 @@ export const style = MediaQueryStyleSheet.create({
 		elevation: 20,
 		borderTopLeftRadius: 35,
 		borderTopRightRadius: 35,
-		marginBottom: 0, // Remove bottom margin
+		marginBottom: 0,
 		position: 'relative',
 		overflow: 'visible',
 		borderTopWidth: 1,
@@ -130,7 +130,7 @@ export const style = MediaQueryStyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		backgroundColor: "rgba(0, 37, 135, 0.1)",
-		marginBottom: 14,
+		marginBottom: 0,
 	},
 
 	// Estilos de íconos
@@ -322,12 +322,13 @@ export const style = MediaQueryStyleSheet.create({
 }, {
 	"@media (min-device-height: 812)": {
 		footerWrapper: {
-			height: 110,
+			height: Platform.OS === 'ios' ? 95 : 110,
 		},
 		contenedorFooter: {
-			height: 80,
+			height: Platform.OS === 'ios' ? 70 : 80,
 			marginBottom: 0,
-			paddingBottom: 40,
+			paddingBottom: Platform.OS === 'ios' ? 15 : 40,
+			paddingTop: Platform.OS === 'ios' ? 5 : 15,
 			borderTopLeftRadius: 40,
 			borderTopRightRadius: 40,
 		},

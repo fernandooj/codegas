@@ -18,6 +18,11 @@ provider:
   region: ${opt:region, "us-east-1"}
   httpApi:
     cors: true
+  environment:
+    # Redis Configuration (opcional para tracking)
+    REDIS_ENABLED: ${env:REDIS_ENABLED, 'false'}
+    REDIS_HOST: ${env:REDIS_HOST, ''}
+    REDIS_PORT: ${env:REDIS_PORT, '6379'}
   apiGateway:
       binaryMediaTypes:
           - '*/*'
@@ -62,12 +67,10 @@ custom:
   # Variables de entorno temporales
   emailUser: admin@codegascolombia.com
   emailPass: hkbi efvr jwua gtkq
-<<<<<<< HEAD
-=======
   # Twilio Configuration (usar variables de entorno en producción)
-  twilioAccountSid: ${env:TWILIO_ACCOUNT_SID}
-  twilioAuthToken: ${env:TWILIO_AUTH_TOKEN}
-  twilioWhatsAppNumber: ${env:TWILIO_WHATSAPP_NUMBER}
+  twilioAccountSid: ${env:TWILIO_ACCOUNT_SID, 'AC6459a9e513d5d8ecd3887fd3a95f4556'}
+  twilioAuthToken: ${env:TWILIO_AUTH_TOKEN, 'bbce5c30ce7ac91cf34ca6ee3a3f9fa0'}
+  twilioWhatsAppNumber: ${env:TWILIO_WHATSAPP_NUMBER, 'whatsapp:+14155238886'}
   webpack:
     webpackConfig: 'webpack.config.js'
     includeModules: true
@@ -121,11 +124,13 @@ functions:
   - ${file(./services/zonas/serverless.yml)}
   - ${file(./services/puntos/serverless.yml)}
   - ${file(./services/vehiculos/serverless.yml)}
+  - ${file(./services/tracking/serverless.yml)}
   - ${file(./services/pedidos/serverless.yml)}
   - ${file(./services/tanques/serverless.yml)}
   - ${file(./services/revisiones/serverless.yml)}
   - ${file(./services/alerta-tanque/serverless.yml)}
   - ${file(./services/frecuencias/serverless.yml)}
-  - ${file(./services/informes/serverless.yml)}  
+  # - ${file(./services/informes/serverless.yml)}  
   - ${file(./services/reporte-emergencia/serverless.yml)}
+  - ${file(./services/planillas/serverless.yml)}
   - ${file(./services/upload/serverless.yml)}

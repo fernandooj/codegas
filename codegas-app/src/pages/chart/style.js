@@ -182,6 +182,114 @@ export const style = MediaQueryStyleSheet.create({
 		lineHeight: 24,
 	},
 
+	// Simple chart fallback styles
+	simpleChartContainer: {
+		padding: 20,
+		backgroundColor: '#ffffff',
+		borderRadius: 16,
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+		marginBottom: 10,
+	},
+
+	simpleChartTitle: {
+		fontFamily: "Comfortaa-Bold",
+		fontSize: 18,
+		color: '#2c3e50',
+		textAlign: 'center',
+		marginBottom: 20,
+	},
+
+	simpleChartItem: {
+		marginBottom: 15,
+	},
+
+	simpleChartLabelContainer: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: 8,
+	},
+
+	simpleChartLabel: {
+		fontFamily: "Comfortaa-Regular",
+		fontSize: 14,
+		color: '#495057',
+		flex: 1,
+	},
+
+	simpleChartValue: {
+		fontFamily: "Comfortaa-Bold",
+		fontSize: 14,
+		color: '#4CAF50',
+		textAlign: 'right',
+	},
+
+	simpleChartBarContainer: {
+		height: 8,
+		backgroundColor: '#e9ecef',
+		borderRadius: 4,
+		overflow: 'hidden',
+	},
+
+	simpleChartBar: {
+		height: '100%',
+		backgroundColor: '#4CAF50',
+		borderRadius: 4,
+	},
+
+	// Pie chart styles
+	pieChartContainer: {
+		marginTop: 20,
+		padding: 15,
+		backgroundColor: '#ffffff',
+		borderRadius: 16,
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+		alignItems: 'center',
+	},
+
+	pieChartTitle: {
+		fontFamily: "Comfortaa-Bold",
+		fontSize: 18,
+		color: '#2c3e50',
+		textAlign: 'center',
+		marginBottom: 5,
+	},
+
+	pieChartTotal: {
+		fontFamily: "Comfortaa-Bold",
+		fontSize: 16,
+		color: '#4CAF50',
+		textAlign: 'center',
+		marginBottom: 15,
+	},
+
+	totalTitle: {
+		fontFamily: "Comfortaa-Bold",
+		fontSize: 16,
+		color: '#4CAF50',
+		textAlign: 'center',
+		marginTop: 5,
+	},
+
+	scrollContainer: {
+		flex: 1,
+		paddingBottom: 20,
+	},
+
 	// Legacy styles for compatibility
 	titulo: {
 		fontFamily: "Comfortaa-Bold",

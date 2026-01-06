@@ -2,8 +2,8 @@
   "enabled": true,
   "prefabPath": "/Users/ferortiz/.gradle/caches/modules-2/files-2.1/com.google.prefab/cli/2.1.0/aa32fec809c44fa531f01dcfb739b5b3304d3050/cli-2.1.0-all.jar",
   "packages": [
-    "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab",
-    "/Users/ferortiz/.gradle/caches/8.14.3/transforms/8bd5a1765acbe8bef6b172e1b822d32a/transformed/hermes-android-0.81.1-debug/prefab",
-    "/Users/ferortiz/.gradle/caches/8.14.3/transforms/2585dfa24f5828ef05275b7140a574fb/transformed/fbjni-0.7.0/prefab"
+    "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab",
+    "/Users/ferortiz/.gradle/caches/8.14.3/transforms/846a170e091b2b39eb80661205ec329f/transformed/hermes-android-0.81.1-debug/prefab",
+    "/Users/ferortiz/.gradle/caches/8.14.3/transforms/af58e75fe606d438799bf9a736d10fc4/transformed/fbjni-0.7.0/prefab"
   ]
 }

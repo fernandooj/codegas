@@ -34,11 +34,16 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Esta aplicación necesita acceso a la cámara para tomar fotos de facturas y documentos</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Necesitamos acceder a tu ubicación</string>
+	<string>Codegas necesita tu ubicación para rastrear entregas en tiempo real y optimizar rutas de conductores</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Necesitamos acceder a tu ubicación</string>
+	<string>Necesitamos acceder a tu ubicación en segundo plano para mantener el tracking activo durante las entregas</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Necesitamos tu ubicación para mostrar tu posición en el mapa durante las entregas</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>location</string>
+	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Esta aplicación necesita acceso al micrófono para grabar videos con audio</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -51,10 +56,6 @@
 		<string>Comfortaa-Regular.ttf</string>
 		<string>Comfortaa-Bold.ttf</string>
 		<string>Comfortaa-Light.ttf</string>
-	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

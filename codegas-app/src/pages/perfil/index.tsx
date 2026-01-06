@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback, useEffect } from 'react';
-import {ScrollView, View, TouchableOpacity, Image, Text, TextInput, ImageBackground, Dimensions, Platform, StatusBar} from 'react-native';
+import { ScrollView, View, TouchableOpacity, Image, Text, TextInput, ImageBackground, Dimensions, Platform, StatusBar } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './style';
@@ -9,7 +9,7 @@ import HeaderLogo from '../../components/HeaderLogo';
 import { DataContext } from '../../context/context';
 import Footer from '../components/footer';
 import Toast from 'react-native-toast-message';
-import { PerfilProps, UserData, StoredUserData, UserSearchResponse, ProfileState, DataContextType, UserAccess} from './types';
+import { PerfilProps, UserData, StoredUserData, UserSearchResponse, ProfileState, DataContextType, UserAccess } from './types';
 import { getResponsiveValue } from './responsiveStyles';
 import DeleteAccountModal from '../../components/DeleteAccountModal';
 
@@ -223,7 +223,7 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
           {(['admin', 'comercial', 'depTecnico', 'insSeguridad', 'adminTanque'] as UserAccess[]).includes(acceso) && (
             <TouchableOpacity
               style={style.btnLista}
-              onPress={() => navigation.navigate('revision', { revision: true })}>
+              onPress={() => navigation.navigate('tanques', { revision: true })}>
               <Text style={style.txtLista}>Revisión y control tanques</Text>
               <View style={style.icon}>
                 <FontAwesome name="clipboard" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#ffffff' }} />
@@ -249,6 +249,16 @@ const Perfil: React.FC<PerfilProps> = ({ navigation }) => {
               <Text style={style.txtLista}>Capacidades</Text>
               <View style={style.icon}>
                 <FontAwesome name="database" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#ffffff' }} />
+              </View>
+            </TouchableOpacity>
+          )}
+          {(acceso === 'admin' || acceso === 'conductor') && (
+            <TouchableOpacity
+              style={style.btnLista}
+              onPress={() => navigation.navigate('planillas')}>
+              <Text style={style.txtLista}>Planillas</Text>
+              <View style={style.icon}>
+                <FontAwesome name="file-text" style={{ fontSize: getResponsiveValue(24, 28, 32), color: '#ffffff' }} />
               </View>
             </TouchableOpacity>
           )}

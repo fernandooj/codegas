@@ -8,7 +8,8 @@ module.exports = {
     entry: slsw.lib.entries,
     target: 'node',
     externals: {
-        'aws-sdk': 'commonjs aws-sdk'
+        'aws-sdk': 'commonjs aws-sdk',
+        'pdfkit': 'commonjs pdfkit'
     },
     plugins: [
         new webpack.IgnorePlugin({

@@ -6,8 +6,13 @@ export const forma = [
 
 export const frecuencias = [
   { label: 'Semanal', key: 'semanal' },
-  { label: 'Quincenal', key: 'quincenal' },
   { label: 'Mensual', key: 'mensual' },
+];
+
+export const intervalosSemanas = [
+  { label: 'Semanal', key: 1 },
+  { label: 'Cada 2 semanas', key: 2 },
+  { label: 'Cada 3 semanas', key: 3 },
 ];
 
 export const diasN = [];

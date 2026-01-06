@@ -8,7 +8,7 @@ interface RemoteConfigValues {
 class RemoteConfigService {
     private initialized: boolean = false;
     private configValues: RemoteConfigValues = {
-        URL_END_POINT: 'https://jl80ynfaa9.execute-api.us-east-1.amazonaws.com' // Valor por defecto
+        URL_END_POINT: 'https://yqs62j7239.execute-api.us-east-1.amazonaws.com' // Valor por defecto
     };
 
     /**
@@ -29,7 +29,7 @@ class RemoteConfigService {
 
             // Configurar valores por defecto
             await remoteConfig().setDefaults({
-                URL_END_POINT: 'https://jl80ynfaa9.execute-api.us-east-1.amazonaws.com'
+                URL_END_POINT: 'https://yqs62j7239.execute-api.us-east-1.amazonaws.com'
             });
 
             // Configurar el intervalo mínimo de fetch (en desarrollo: 0, en producción: 3600)

@@ -29,16 +29,17 @@ import puntosComponent from '../pages/puntos/puntos';
 // import verCalificacionComponent from '../pages/calificacion/verCalificacion';
 // import privacidadComponent 		from '../pages/privacidad/privacidad';
 import frecuenciaComponent from '../pages/frecuencia/frecuencia';
-// import tanquesComponent 		from '../pages/tanques/tanques';
-// import nuevoTanqueComponent 	from '../pages/tanques/nuevoTanques';
-import revisionComponent from '../pages/revision/revision';
-import nuevaRevisionComponent from '../pages/revision/nuevaRevision';
+import tanquesComponent from '../pages/tanques/tanque';
+import nuevoTanqueComponent from '../pages/tanques/nuevoTanque';
+// import revisionComponent from '../pages/revision/revision';
+// import nuevaRevisionComponent from '../pages/revision/_nuevaRevision';
 import chartComponent from '../pages/chart/chart';
 // import cerrarRevisionComponent 	from '../pages/revision/cerrarRevision';
 // import cerrarSeguridadComponent from '../pages/revision/cerrarSeguridad';
 // import cerrarTanqueComponent 	from '../pages/tanques/cerrarTanque';
 import reporteEmergenciaComponent from '../pages/reporteEmergencia/reporteEmergencia';
 import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoReporteEmergencia';
+import planillasComponent from '../pages/planillas';
 import pdfComponent from '../pages/pdf/pdf';
 
 const Stack = createNativeStackNavigator();
@@ -75,12 +76,12 @@ function AppNavigator() {
         <Stack.Screen name="verCalificacion" component={verCalificacionComponent} />
         */}
 				<Stack.Screen name="frecuencia" component={frecuenciaComponent} />
-				{/* 
-        <Stack.Screen name="tanques" component={tanquesComponent} />
-        <Stack.Screen name="nuevoTanque" component={nuevoTanqueComponent} />
-        */}
-				<Stack.Screen name="revision" component={revisionComponent} />
-				<Stack.Screen name="nuevaRevision" component={nuevaRevisionComponent} />
+
+				<Stack.Screen name="tanques" component={tanquesComponent} />
+				<Stack.Screen name="nuevoTanque" component={nuevoTanqueComponent} />
+
+				{/* <Stack.Screen name="revision" component={revisionComponent} />
+				<Stack.Screen name="nuevaRevision" component={nuevaRevisionComponent} /> */}
 				<Stack.Screen name="chart" component={chartComponent} />
 				{/* 
         <Stack.Screen name="cambiar" component={cambiarComponent} />
@@ -90,6 +91,7 @@ function AppNavigator() {
         */}
 				<Stack.Screen name="reporteEmergencia" component={reporteEmergenciaComponent} />
 				<Stack.Screen name="nuevoReporteEmergencia" component={nuevoReporteEmergenciaComponent} />
+				<Stack.Screen name="planillas" component={planillasComponent} />
 				<Stack.Screen name="pdf" component={pdfComponent} />
 			</Stack.Navigator>
 		</NavigationContainer>

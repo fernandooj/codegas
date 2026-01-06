@@ -1,673 +1,806 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react'
-import { View, Text, TouchableOpacity, Switch, TextInput, Platform, Image, Dimensions, Alert, ActivityIndicator } from 'react-native'
-import Geolocation from '@react-native-community/geolocation';
-import Toast from 'react-native-toast-message';
-import ModalFilterPicker from 'react-native-modal-filter-picker'
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
+import {
+    View,
+    Text,
+    ScrollView,
+    TextInput,
+    TouchableOpacity,
+    Modal,
+    Alert,
+    ActivityIndicator,
+    SafeAreaView
+} from 'react-native';
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
-import TomarFoto from "../components/tomarFoto";
-import SubirDocumento from "../components/subirDocumento";
-import { useSelector, useDispatch } from "react-redux";
-import { getUsuariosAcceso, getUsuarios, getUserById } from '../../redux/actions/usuarioActions'
-import { getVehiculos } from '../../redux/actions/vehiculoActions'
-import { getTanques } from '../../redux/actions/tanqueActions'
+import { useDispatch, useSelector } from 'react-redux';
+import TomarFoto from '../components/tomarFoto';
+import SubirDocumento from '../components/subirDocumento';
+import { DataContext } from '../../context/context';
+import { getUsuarios, getPointsByClient } from '../../redux/actions/usuarioActions';
+import { createRevision } from '../../redux/actions/revisionActions';
 import {
-    getTanquesByPunto,
-    getPuntoById,
-    getRevisionById,
-    addUserToTanque,
-    sendNotificationDesvincularUsuario,
-    getDepartamentos,
-    getCiudades,
-    getPoblados,
-    sendSolicitudServicio,
-    createRevision,
-    updateRevision,
-    updateRevisionInstalacion,
-    updateRevisionCoordenadas,
-    addImagesToRevision
-} from '../../redux/actions/revisionActions'
-import Footer from '../components/footer'
-import { style } from './style'
-import { DataContext } from "../../context/context"
-import { images, sectores, ubicaciones, propiedades, m3s } from '../../utils/constants'
-import useRevisionSteps from './RevisionSteps'
+    TANQUE_FIELDS,
+    MEDIA_IMAGE_FIELDS,
+    MEDIA_DOC_FIELDS,
+    cardShadow,
+    YEAR_OPTIONS
+} from './nuevaRevision.constants';
+import { style } from './style';
+import type {
+    NuevaRevisionProps,
+    RootState,
+    TanqueForm,
+    MediaState,
+    TanqueFieldKey,
+    MediaKey,
+    ClienteItem,
+    PuntoItem,
+    TanqueFieldConfig,
+    TanqueFieldOption
+} from './nuevaRevision.types';
 
-const NuevaRevision = ({ navigation, route }: any) => {
-    const { acceso: accesoPerfil, userId: idUsuario } = useContext(DataContext) as any;
+const AnyProgressStep = ProgressStep as unknown as React.ComponentType<any>;
+
+const NuevaRevision: React.FC<NuevaRevisionProps> = ({ navigation }) => {
+    const { acceso, userId } = useContext(DataContext) as any;
     const dispatch = useDispatch();
-    const tanques = useSelector((state: any) => state.tanque.tanques || []);
-    const conductores = useSelector((state: any) => state.usuario.usuariosAcceso || []);
-    const vehiculos = useSelector((state: any) => state.vehiculo.vehiculos || []);
 
-    const [state, setState] = useState({
-        modalCliente: false,
-        modalSectores: false,
-        modalZona: false,
-        modalDpto: false,
-        modalCiudad: false,
-        modalPoblado: false,
-        modalPropiedad: false,
-        modalUbicacion: false,
-        modalM3: false,
-        modalPlacas: false,
-        modalCapacidad: false,
-        modalAlerta: false,
-        extintores: false,
-        avisos: false,
-        distancias: false,
-        electricas: false,
-        accesorios: false,
-        clientes: [],
-        puntos: [],
-        placas: [],
-        imgIsometrico: [],
-        imgOtrosComodato: [],
-        imgSoporteEntrega: [],
-        imgAlerta: [],
-        imgDepTecnico: [],
-        imgNMedidor: [],
-        imgNComodato: [],
-        otrosComodato: [],
-        imgOtrosSi: [],
-        soporteEntrega: [],
-        imgPuntoConsumo: [],
-        imgProtocoloLlenado: [],
-        imgHojaSeguridad: [],
-        imgVisual: [],
-        tanqueArray: [],
-        tanqueIdArray: [],
-        dptos: [{ key: "", label: "" }],
-        ciudades: [{ key: "", label: "" }],
-        poblados: [{ key: "", label: "" }],
-        lat: 4.597825,
-        lng: -74.0755723,
-        revisionId: null,
-        puntoId: null,
-        usuarioId: null,
-        accesoPerfil,
-        idUsuario,
-        loading: false,
-        // Additional properties
-        nControl: "",
-        capacidad: "",
-        fabricante: "",
-        barrio: "",
-        sector: "",
-        m3: "",
-        usuariosAtendidos: "",
-        propiedad: "",
-        nMedidorText: "",
-        ubicacion: "",
-        nComodatoText: "",
-        cedulaCliente: "",
-        codtCliente: "",
-        razon_socialCliente: "",
-        direccion_facturaCliente: "",
-        nombreCliente: "",
-        celularCliente: "",
-        emailCliente: "",
-        direccion: "",
-        observacion: "",
-        zonaId: "",
-        observaciones: "",
-        estado: "",
-        solicitudServicio: "",
-        alertaText: "",
-        alertaFecha: "",
-        nActa: "",
-        depTecnicoText: "",
-        depTecnicoEstado: "",
-        poblado: "",
-        ciudad: "",
-        dpto: "",
-        cliente: "",
-        idCliente: "",
-        placaText: "",
-        tanques: []
+    const clientesRedux = useSelector((state: RootState) => state.usuario.usuarios || []);
+
+    const [tanqueForm, setTanqueForm] = useState<TanqueForm>(() =>
+        TANQUE_FIELDS.reduce((acc, field) => {
+            acc[field.key] = '';
+            return acc;
+        }, {} as TanqueForm)
+    );
+
+    const [media, setMedia] = useState<MediaState>(() =>
+        MEDIA_IMAGE_FIELDS.concat(MEDIA_DOC_FIELDS).reduce((acc, field) => {
+            acc[field.key] = [];
+            return acc;
+        }, {} as MediaState)
+    );
+
+    const [clienteModalVisible, setClienteModalVisible] = useState(false);
+    const [clienteSearch, setClienteSearch] = useState('');
+    const [selectedCliente, setSelectedCliente] = useState<ClienteItem | null>(null);
+    const [puntosCliente, setPuntosCliente] = useState<PuntoItem[]>([]);
+    const [loadingPuntos, setLoadingPuntos] = useState(false);
+    const [selectedPunto, setSelectedPunto] = useState<PuntoItem | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [pickerConfig, setPickerConfig] = useState<{
+        field: TanqueFieldKey | null;
+        options: TanqueFieldOption[];
+        title: string;
+    }>({
+        field: null,
+        options: [],
+        title: ''
     });
 
-    const updateState = useCallback((updates: any) => {
-        setState(prevState => ({ ...prevState, ...updates }));
-    }, []);
+    const [currentStep, setCurrentStep] = useState(0);
+    const [tanqueId, setTanqueId] = useState<string | null>(null);
+    const [stepOneSaving, setStepOneSaving] = useState(false);
+    const [stepOneBlock, setStepOneBlock] = useState(true);
+    const [stepTwoSaving, setStepTwoSaving] = useState(false);
+    const [stepTwoBlock, setStepTwoBlock] = useState(true);
+    const [mediaDirty, setMediaDirty] = useState(false);
+    const [tanqueLinked, setTanqueLinked] = useState(false);
+
+    const imageFieldKeys = useMemo<MediaKey[]>(() => MEDIA_IMAGE_FIELDS.map(field => field.key), []);
+    const documentFieldKeys = useMemo<MediaKey[]>(() => MEDIA_DOC_FIELDS.map(field => field.key), []);
 
     useEffect(() => {
-        dispatch(getTanques(0, 10, undefined) as any);
-
-        const params = route?.params || navigation?.state?.params || {};
-        const { revisionId, puntoId, clienteId } = params;
-        updateState({ revisionId, puntoId, usuarioId: clienteId });
-
-        if (clienteId) {
-            filtroClientes(clienteId);
+        if (acceso !== 'cliente') {
+            dispatch(getUsuarios(25, 0, 'cliente', '', userId) as any);
+        } else if (userId) {
+            const autoCliente: ClienteItem = { _id: userId };
+            setSelectedCliente(autoCliente);
+            loadPuntos(autoCliente._id);
         }
-
-        if (puntoId) {
-            getTanquesByPunto(puntoId)
-                .then(res => {
-                    const tanqueIdArray = res.tanque.map((e: any) => e._id);
-                    updateState({ tanqueArray: res.tanque, tanqueIdArray });
-                })
-                .catch(error => {
-                    console.error('Error getting tanques by punto:', error);
-                });
-
-            getPuntoById(puntoId)
-                .then(res => {
-                    const { capacidad, direccion, observacion } = res.punto;
-                    updateState({ capacidad, direccion, observacion });
-                })
-                .catch(error => {
-                    console.error('Error getting punto by id:', error);
-                });
-        }
-
-        buscarRevision();
-        buscarDepto();
-    }, []);
+    }, [acceso, dispatch, userId]);
 
     useEffect(() => {
-        if (tanques.length > 0) {
-            let placas = tanques.map((e: any) => {
-                return {
-                    key: e._id,
-                    label: e.placaText
-                }
-            })
-            updateState({ placas });
+        if (clienteSearch.trim().length === 0) {
+            return;
         }
-    }, [tanques]);
 
-    const buscarRevision = useCallback(() => {
-        const params = route?.params || navigation?.state?.params || {};
-        let revisionId = params.revisionId || state.revisionId;
+        const timeout = setTimeout(() => {
+            dispatch(getUsuarios(25, 0, 'cliente', clienteSearch.trim(), userId) as any);
+        }, 400);
 
-        if (revisionId) {
-            getRevisionById(revisionId)
-                .then(res => {
-                    const { revision } = res
+        return () => clearTimeout(timeout);
+    }, [clienteSearch, dispatch, userId]);
 
-                    let tanqueIdArray: string[] = []
-                    revision.tanqueid.map((e: any) => {
-                        tanqueIdArray.push(e._id)
-                    })
+    const filteredClientes = useMemo(() => {
+        if (!clienteSearch) return clientesRedux;
+        const needle = clienteSearch.toLowerCase();
+        return clientesRedux.filter(cliente =>
+            [cliente.razon_social, cliente.nombre, cliente.codt, cliente.email]
+                .filter(Boolean)
+                .some(value => (value ?? '').toLowerCase().includes(needle))
+        );
+    }, [clienteSearch, clientesRedux]);
 
-                    updateState({
-                        revisionId: revision._id,
-                        poblado: revision.poblado,
-                        tanqueArray: revision.tanqueid,
-                        tanqueIdArray,
-                        nControl: revision.nControl ? revision.nControl : "",
-                        capacidad: revision.capacidad ? revision.capacidad : "",
-                        fabricante: revision.fabricante ? revision.fabricante : "",
-                        barrio: revision.barrio ? revision.barrio : "",
-                        sector: revision.sector ? revision.sector : "",
-                        m3: revision.m3 ? revision.m3 : "",
-                        usuariosAtendidos: revision.usuariosAtendidos ? revision.usuariosAtendidos : "",
-                        propiedad: revision.propiedad ? revision.propiedad : "",
-                        nMedidorText: revision.nMedidorText ? revision.nMedidorText : "",
-                        ubicacion: revision.ubicacion ? revision.ubicacion : "",
-                        nComodatoText: revision.nComodatoText ? revision.nComodatoText : "",
-                        usuarioId: revision._id,
-                        cedulaCliente: revision.razon_social,
-                        codtCliente: revision.codt,
-                        razon_socialCliente: revision.cedula,
-                        direccion_facturaCliente: revision.direccion_factura,
-                        nombreCliente: revision.nombre,
-                        celularCliente: revision.celular,
-                        emailCliente: revision.email,
-                        puntos: revision.puntoId ? [revision.puntoId] : [],
-                        direccion: revision.puntoId ? revision.puntoId.direccion : null,
-                        puntoId: revision.puntoId ? revision.puntoId._id : null,
-                        zonaId: revision.zonaId ? revision.zonaId._id : null,
-                        observaciones: revision.observaciones ? revision.observaciones : "",
-                        estado: revision.estado ? revision.estado : "",
-                        solicitudServicio: revision.solicitudServicio ? revision.solicitudServicio : "",
-                        imgAlerta: revision.alerta ? revision.alerta : [],
-                        alertaText: revision.alertaText ? revision.alertaText : "",
-                        alertaFecha: revision.alertaFecha ? revision.alertaFecha : "",
-                        nActa: revision.nActa ? revision.nActa : "",
-                        avisos: revision.avisos ? revision.avisos : false,
-                        extintores: revision.extintores ? revision.extintores : false,
-                        distancias: revision.distancias ? revision.distancias : false,
-                        electricas: revision.electricas ? revision.electricas : false,
-                        accesorios: revision.accesorios ? revision.accesorios : false,
-                        imgDepTecnico: revision.depTecnico ? revision.depTecnico : [],
-                        depTecnicoText: revision.depTecnicoText ? revision.depTecnicoText : "",
-                        depTecnicoEstado: revision.depTecnicoEstado ? revision.depTecnicoEstado : "",
-                        imgSoporteEntrega: revision.soporteentrega ? revision.soporteentrega : [],
-                        imgPuntoConsumo: revision.puntoconsumo ? revision.puntoconsumo : [],
-                        imgVisual: revision.visual ? revision.visual : [],
-                        imgNComodato: revision.nCcmodato ? revision.ncomodato : [],
-                        imgIsometrico: revision.isometrico ? revision.isometrico : [],
-                        imgOtrosComodato: revision.otroscomodato ? revision.otroscomodato : [],
-                        imgProtocoloLlenado: revision.protocolollenado ? revision.protocolollenado : [],
-                        imgHojaSeguridad: revision.hojaseguridad ? revision.hojaseguridad : [],
-                        imgOtrosSi: revision.otrossi ? revision.otrossi : [],
-                    })
+    const requiredFieldsFilled = useMemo(() => {
+        return TANQUE_FIELDS.every(field => {
+            const value = tanqueForm[field.key];
+            return value !== undefined && value.toString().trim().length > 0;
+        });
+    }, [tanqueForm]);
 
-                    Geolocation.getCurrentPosition(e => {
-                        let lat = parseFloat(e.coords.latitude.toString())
-                        let lng = parseFloat(e.coords.longitude.toString())
-                        lat = revision.coordenadas ? revision.coordenadas.coordinates[1] : lat;
-                        lng = revision.coordenadas ? revision.coordenadas.coordinates[0] : lng;
-                        updateState({ lat, lng })
-                    }, (error) => Geolocation.watchPosition(e => {
-                        let lat = parseFloat(e.coords.latitude.toString())
-                        let lng = parseFloat(e.coords.longitude.toString())
-                        lat = revision.coordenadas ? revision.coordenadas.coordinates[1] : lat;
-                        lng = revision.coordenadas ? revision.coordenadas.coordinates[0] : lng;
-                        updateState({ lat, lng })
-                    },
-                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 })
-                    )
-                })
-                .catch(error => {
-                    console.error('Error getting revision by id:', error);
-                })
+    const stepTwoReady = useMemo(
+        () => media.placa.length > 0 && media.visual.length > 0,
+        [media.placa.length, media.visual.length]
+    );
+
+    const stepThreeReady = selectedCliente !== null && selectedPunto !== null && Boolean(tanqueId);
+
+    const handleTanqueChange = (key: TanqueFieldKey, value: string) => {
+        setTanqueForm(prev => ({ ...prev, [key]: value }));
+        if (!stepOneBlock) {
+            setStepOneBlock(true);
         }
-    }, [state.revisionId, route?.params, navigation?.state?.params, updateState]);
+        setTanqueLinked(false);
+    };
 
-    const filtroClientes = useCallback((idCliente: any) => {
-        // Usar getUserById para obtener el usuario específico
-        getUserById(idCliente)
-            .then((res: any) => {
-                if (res && res.user) {
-                    const user = res.user;
-                    const cliente = {
-                        key: user._id,
-                        label: user.cedula ? user.razon_social + " | " + user.cedula + " | " + user.codt : user.razon_social,
-                        email: user.email,
-                        direccion_factura: user.direccion_factura,
-                        nombre: user.nombre,
-                        razon_social: user.razon_social,
-                        cedula: user.cedula,
-                        celular: user.celular,
-                        codt: user.codt
+    const handleMediaChange = (key: MediaKey, value: any[]) => {
+        setMedia(prev => ({ ...prev, [key]: value }));
+        setMediaDirty(true);
+        setStepTwoBlock(true);
+    };
+
+    const loadPuntos = async (clienteId: string) => {
+        try {
+            setLoadingPuntos(true);
+            const response = await getPointsByClient(clienteId);
+            const puntos = response?.puntos || [];
+            setPuntosCliente(puntos);
+            const defaultPunto = puntos.length === 1 ? puntos[0] : null;
+            setSelectedPunto(defaultPunto);
+            setTanqueLinked(false);
+        } catch (error) {
+            Alert.alert('Error', 'No pudimos cargar los puntos del cliente.');
+        } finally {
+            setLoadingPuntos(false);
+        }
+    };
+
+    const handleSelectCliente = (cliente: ClienteItem) => {
+        setSelectedCliente(cliente);
+        setSelectedPunto(null);
+        setClienteModalVisible(false);
+        loadPuntos(cliente._id);
+        setTanqueLinked(false);
+    };
+
+    const handleSelectPunto = (punto: PuntoItem) => {
+        setSelectedPunto(punto);
+        setTanqueLinked(false);
+    };
+
+    const openPicker = (config: TanqueFieldConfig) => {
+        let options: TanqueFieldOption[] = [];
+        if (config.inputType === 'year') {
+            options = YEAR_OPTIONS;
+        } else if (config.options) {
+            options = config.options;
+        }
+
+        setPickerConfig({
+            field: config.key,
+            options,
+            title: config.label
+        });
+    };
+
+    const closePicker = () => {
+        setPickerConfig({ field: null, options: [], title: '' });
+    };
+
+    const handlePickerSelect = (value: string) => {
+        if (pickerConfig.field) {
+            handleTanqueChange(pickerConfig.field, value);
+        }
+        closePicker();
+    };
+
+    const sanitizeString = (value: string | null | undefined) => {
+        if (value === undefined || value === null) {
+            return null;
+        }
+        const trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : null;
+    };
+
+    const toNullableNumber = (value: string | undefined) => {
+        if (!value) {
+            return null;
+        }
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const handleStepOneNext = async () => {
+        if (stepOneSaving) {
+            return;
+        }
+
+        if (tanqueId && !stepOneBlock) {
+            setCurrentStep(1);
+            return;
+        }
+
+        if (!requiredFieldsFilled) {
+            Alert.alert('Información incompleta', 'Completa todos los campos obligatorios del tanque.');
+            return;
+        }
+
+        try {
+            setStepOneSaving(true);
+            const payload = {
+                capacidad: toNullableNumber(tanqueForm.capacidad),
+                placaText: sanitizeString(tanqueForm.placaText),
+                fabricante: sanitizeString(tanqueForm.fabricante),
+                registroOnac: sanitizeString(tanqueForm.registroOnac),
+                fechaUltimaRev: sanitizeString(tanqueForm.fechaUltimaRev),
+                nPlaca: sanitizeString(tanqueForm.nPlaca),
+                codigoActivo: sanitizeString(tanqueForm.codigoActivo),
+                serie: sanitizeString(tanqueForm.serie),
+                anoFabricacion: sanitizeString(tanqueForm.anoFabricacion),
+                existeTanque: sanitizeString(tanqueForm.existeTanque),
+                ultimRevTotal: sanitizeString(tanqueForm.ultimRevTotal),
+                propiedad: sanitizeString(tanqueForm.propiedad),
+                usuarioCrea: userId
+            };
+
+            const { data } = await axios.post('/tan/tanque', payload);
+
+            if (!data?.status) {
+                throw new Error('No se pudo crear el tanque');
+            }
+
+            const newTanqueId = data.code ?? data.tanqueId ?? data.id;
+
+            if (newTanqueId === undefined || newTanqueId === null) {
+                throw new Error('No se recibió el identificador del tanque');
+            }
+
+            setTanqueId(String(newTanqueId));
+            setStepOneBlock(false);
+            setStepTwoBlock(true);
+            setMediaDirty(false);
+            setTanqueLinked(false);
+            setCurrentStep(1);
+        } catch (error) {
+            console.error('Error creando tanque:', error);
+            Alert.alert('Error', 'No pudimos guardar la información del tanque. Intenta nuevamente.');
+        } finally {
+            setStepOneSaving(false);
+        }
+    };
+
+    const handleStepTwoNext = async () => {
+        if (stepTwoSaving) {
+            return;
+        }
+
+        if (!tanqueId) {
+            Alert.alert('Tanque pendiente', 'Primero guarda la información del tanque para continuar.');
+            setCurrentStep(0);
+            return;
+        }
+
+        if (!stepTwoBlock && !mediaDirty) {
+            setCurrentStep(2);
+            return;
+        }
+
+        const uploads: Array<{
+            key: MediaKey;
+            payload: Array<{ imagen: string; mime: string; name: string }>;
+        }> = [];
+
+        [...imageFieldKeys, ...documentFieldKeys].forEach(key => {
+            const items = media[key];
+            if (!Array.isArray(items) || items.length === 0) {
+                return;
+            }
+
+            const isDocument = documentFieldKeys.includes(key);
+            const payload = items
+                .map((item, index) => {
+                    const rawBase64 = isDocument
+                        ? item?.imagen ?? item?.base64
+                        : item?.base64 ?? item?.imagen;
+
+                    if (!rawBase64 || typeof rawBase64 !== 'string') {
+                        return null;
+                    }
+
+                    const mime = isDocument
+                        ? 'application/pdf'
+                        : (typeof item?.mime === 'string' && item.mime.length > 0 ? item.mime : 'image/jpeg');
+
+                    const normalized = rawBase64.startsWith('data:')
+                        ? rawBase64
+                        : `data:${mime};base64,${rawBase64}`;
+
+                    return {
+                        imagen: normalized,
+                        mime,
+                        name: item?.name || `${key}-${index}.${isDocument ? 'pdf' : 'jpg'}`
                     };
+                })
+                .filter((value): value is { imagen: string; mime: string; name: string } => Boolean(value));
 
-                    updateState({
-                        cliente: cliente.label,
-                        idCliente,
-                        cedulaCliente: cliente.cedula,
-                        codtCliente: cliente.codt,
-                        emailCliente: cliente.email,
-                        razon_socialCliente: cliente.razon_social,
-                        direccion_facturaCliente: cliente.direccion_factura,
-                        celularCliente: cliente.celular,
-                        nombreCliente: cliente.nombre,
-                        modalCliente: false
-                    });
-                }
-            })
-            .catch((error: any) => {
-                console.error('Error getting usuario by id:', error);
-            })
-    }, [updateState]);
+            if (payload.length > 0) {
+                uploads.push({ key, payload });
+            }
+        });
 
-    const buscarTanque = useCallback((id: any) => {
-        const { tanqueArray, tanqueIdArray, usuarioId, puntoId } = state
-        const tanque = tanques.filter(({ _id }: any) => {
-            return _id === id.key
-        })
-        if ((tanqueIdArray as any[]).includes(tanque[0]._id)) {
-            Alert.alert("Error", "Este tanque ya esta agregado")
-        } else {
-            Alert.alert(
-                `Asignar tanque`,
-                `Seguro desea agregar este tanque a este usuario?`,
-                [
-                    { text: 'Confirmar', onPress: () => confirmar() },
-                ],
-                { cancelable: false },
-            )
-            const confirmar = () => {
-                const data = {
-                    tanqueId: id.key,
-                    usuarioId: usuarioId,
-                    puntoId: puntoId
+        if (uploads.length === 0) {
+            setStepTwoBlock(false);
+            setMediaDirty(false);
+            setCurrentStep(2);
+            return;
+        }
+
+        try {
+            setStepTwoSaving(true);
+            for (const upload of uploads) {
+                await axios.put(`/tan/tanque/images/${tanqueId}/${upload.key}`, {
+                    images: upload.payload
+                });
+            }
+            setStepTwoBlock(false);
+            setMediaDirty(false);
+            setCurrentStep(2);
+        } catch (error) {
+            console.error('Error cargando medios del tanque:', error);
+            Alert.alert('Error', 'No pudimos subir las imágenes o documentos del tanque. Intenta nuevamente.');
+        } finally {
+            setStepTwoSaving(false);
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!selectedCliente || !selectedPunto) {
+            Alert.alert('Información incompleta', 'Selecciona un cliente y un punto de servicio.');
+            return;
+        }
+
+        try {
+            setSubmitting(true);
+            if (!tanqueId) {
+                Alert.alert('Tanque pendiente', 'Crea el tanque antes de finalizar la revisión.');
+                setSubmitting(false);
+                setCurrentStep(0);
+                return;
+            }
+
+            if (!tanqueLinked) {
+                const asignacion = {
+                    usuarioId: selectedCliente._id,
+                    puntoId: selectedPunto._id,
+                    tanqueId
                 };
 
-                addUserToTanque(data)
-                    .then((e: any) => {
-                        if (e.status) {
-                            const newTanqueArray = [...tanqueArray, tanque[0]]
-                            const newTanqueIdArray = [...tanqueIdArray, tanque[0]._id]
-                            updateState({ tanqueArray: newTanqueArray, tanqueIdArray: newTanqueIdArray, modalPlacas: false })
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error adding user to tanque:', error);
-                    })
+                const { data } = await axios.put('/tan/tanque/add-user', asignacion);
+
+                if (!data?.status) {
+                    throw new Error('No se pudo asignar el tanque al cliente');
+                }
+
+                setTanqueLinked(true);
             }
+
+            const payload = {
+                usuarioId: selectedCliente._id,
+                puntoId: selectedPunto._id,
+                usuarioCrea: userId,
+                tanque: tanqueForm,
+                media
+            };
+
+            await createRevision(payload);
+
+            Alert.alert(
+                'Revisión creada',
+                'Se guardó la información de la revisión correctamente.',
+                [{ text: 'OK', onPress: () => navigation.goBack() }]
+            );
+        } catch (error) {
+            console.error('Error creando revisión:', error);
+            Alert.alert('Error', 'No pudimos crear la revisión. Intenta nuevamente.');
+        } finally {
+            setSubmitting(false);
         }
-    }, [state.tanqueArray, state.tanqueIdArray, state.usuarioId, state.puntoId, tanques, updateState]);
-
-    const alertaEliminarTanque = useCallback((placaText: any, codt: any, razon_social: any) => {
-        Alert.alert(
-            `Vas a enviar una notificacion, para eliminar este tanque a este usuario`,
-            `${placaText}`,
-            [
-                { text: 'Confirmar', onPress: () => confirmar() },
-            ],
-            { cancelable: false },
-        )
-        const confirmar = () => {
-            sendNotificationDesvincularUsuario(placaText, codt, razon_social)
-                .then((res: any) => {
-                    if (res.status) {
-                        Alert.alert("Éxito", "Notificacion enviada")
-                    }
-                })
-                .catch(error => {
-                    console.error('Error sending notification:', error);
-                })
-        }
-    }, []);
-
-    const buscarDepto = useCallback(() => {
-        getDepartamentos()
-            .then((res: any) => {
-                let dptos = res
-                dptos = dptos.map((e: any) => {
-                    return {
-                        key: e.name,
-                        label: e.name
-                    }
-                })
-                updateState({ dptos })
-            })
-            .catch(error => {
-                console.error('Error getting departamentos:', error);
-            })
-    }, [updateState]);
-
-    const buscarCiudad = useCallback((ciudad: any) => {
-        getCiudades()
-            .then((res: any) => {
-                let ciudades = res
-                ciudades = ciudades.filter((e: any) => {
-                    return ciudad === e.dpto
-                })
-                ciudades = ciudades.map((e: any) => {
-                    return {
-                        key: e.ciudad,
-                        label: e.ciudad
-                    }
-                })
-                updateState({ dpto: ciudad, ciudades, modalDpto: false })
-            })
-            .catch(error => {
-                console.error('Error getting ciudades:', error);
-            })
-    }, [updateState]);
-
-    const buscarPoblado = useCallback((ciudad: any) => {
-        getPoblados()
-            .then((res: any) => {
-                let poblados = res
-                poblados = poblados.filter((e: any) => {
-                    return ciudad === e.ciudad
-                })
-                poblados = poblados.map((e: any) => {
-                    return {
-                        key: e.codigo,
-                        label: e.poblado
-                    }
-                })
-                updateState({ ciudad: ciudad, poblados, modalCiudad: false })
-            })
-            .catch(error => {
-                console.error('Error getting poblados:', error);
-            })
-    }, [updateState]);
-
-    const solicitudServicio = useCallback(() => {
-        const { solicitudServicio, revisionId, nControl, codtCliente, direccion, razon_socialCliente } = state
-        sendSolicitudServicio(revisionId, { solicitudServicio, nControl, codtCliente, direccion, razon_socialCliente })
-            .then((res: any) => {
-                if (res.status) {
-                    Toast.show({ type: 'success', text1: 'Solicitud enviada' })
-                    updateState({ modalAlerta: false, solicitudServicio: "" })
-                } else {
-                    Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                }
-            })
-            .catch(error => {
-                console.error('Error sending solicitud servicio:', error);
-                Toast.show({ type: 'error', text1: 'Error al enviar solicitud' })
-            })
-    }, [state.solicitudServicio, state.revisionId, state.nControl, state.codtCliente, state.direccion, state.razon_socialCliente, updateState]);
-
-    const uploadImagen = useCallback((imagen: any, type: any, mime: any) => {
-        updateState({ loading: true })
-        const { revisionId } = state
-
-        const data = {
-            mime,
-            imagen: imagen.imagen,
-            revisionId,
-            type,
-            name: imagen.name
-        }
-        addImagesToRevision(data)
-            .then((res: any) => {
-                if (res.status) {
-                    buscarRevision()
-                    updateState({ loading: false })
-                    Toast.show({ type: 'success', text1: 'Imagen Subida' })
-                } else {
-                    Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                }
-            })
-            .catch(error => {
-                console.error('Error uploading image:', error);
-                updateState({ loading: false })
-                Toast.show({ type: 'error', text1: 'Error al subir imagen' })
-            })
-    }, [state.revisionId, buscarRevision, updateState]);
-
-    const crearStep1 = useCallback(() => {
-        const { tanqueIdArray, tanqueArray, idUsuario, usuarioId, puntoId } = state
-
-        createRevision({ tanqueId: tanqueIdArray, usuarioId, puntoId, usuarioCrea: idUsuario })
-            .then((res: any) => {
-                if (res.status) {
-                    updateState({ revisionId: res.revision._id, nControl: res.revision.nControl })
-                    let totalCapacidad: any[] = []
-                    tanqueArray.map((e: any) => {
-                        e.capacidad = e.capacidad.replace(/^\D+/g, '');
-                        e.capacidad = parseInt(e.capacidad)
-                        totalCapacidad.push(e.capacidad)
-                    })
-                    totalCapacidad = totalCapacidad.reduce((a, b) => a + b)
-
-                    updateState({ capacidad: totalCapacidad })
-                } else {
-                    Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                }
-            })
-            .catch(error => {
-                console.error('Error creating revision:', error);
-                Toast.show({ type: 'error', text1: 'Error al crear revisión' })
-            })
-    }, [state.tanqueIdArray, state.tanqueArray, state.idUsuario, state.usuarioId, state.puntoId, updateState]);
-
-    const editarStep1 = useCallback(() => {
-        const { sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion, tanqueArray } = state
-        updateRevision(revisionId, { tanqueId: tanqueIdArray, sector, barrio, usuariosAtendidos, m3, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion })
-            .then((res: any) => {
-                if (res.status) {
-                    let totalCapacidad: any[] = []
-                    tanqueArray.map((e: any) => {
-                        e.capacidad = e.capacidad.replace(/^\D+/g, '');
-                        e.capacidad = parseInt(e.capacidad)
-                        totalCapacidad.push(e.capacidad)
-                    })
-                    totalCapacidad = totalCapacidad.reduce((a, b) => a + b)
-
-                    updateState({ capacidad: totalCapacidad })
-                } else {
-                    Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                }
-            })
-            .catch(error => {
-                console.error('Error updating revision step 1:', error);
-                Toast.show({ type: 'error', text1: 'Error al actualizar revisión' })
-            })
-    }, [state.sector, state.barrio, state.usuariosAtendidos, state.m3, state.revisionId, state.tanqueIdArray, state.zonaId, state.usuarioId, state.puntoId, state.nComodatoText, state.nMedidorText, state.ubicacion, state.tanqueArray, updateState]);
-
-    const editarStep2 = useCallback(() => {
-        const { zonaId, usuarioId, puntoId, sector, barrio, usuariosAtendidos, m3, revisionId, tanqueIdArray, nComodatoText, nMedidorText, ubicacion, capacidad } = state
-
-        updateRevision(revisionId, { sector, barrio, usuariosAtendidos, m3, tanqueId: tanqueIdArray, zonaId, usuarioId, puntoId, nComodatoText, nMedidorText, ubicacion })
-            .then((res: any) => {
-                if (res.status) {
-                    // Handle success
-                } else {
-                    Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                }
-            })
-            .catch(error => {
-                console.error('Error updating revision step 2:', error);
-                Toast.show({ type: 'error', text1: 'Error al actualizar revisión' })
-            })
-    }, [state.zonaId, state.usuarioId, state.puntoId, state.sector, state.barrio, state.usuariosAtendidos, state.m3, state.revisionId, state.tanqueIdArray, state.nComodatoText, state.nMedidorText, state.ubicacion, state.capacidad, updateState]);
-
-    const editarStep3 = useCallback(() => {
-        const { observaciones, avisos, extintores, distancias, electricas, accesorios, revisionId } = state
-        let data = new FormData();
-
-        data.append('observaciones', observaciones);
-        data.append('avisos', avisos);
-        data.append('extintores', extintores);
-        data.append('distancias', distancias);
-        data.append('electricas', electricas);
-        data.append('accesorios', accesorios);
-
-        updateRevisionInstalacion(revisionId, data)
-            .then((res: any) => {
-                // Handle success
-            })
-            .catch(err => {
-                updateState({ cargando: false })
-            })
-    }, [state.observaciones, state.avisos, state.extintores, state.distancias, state.electricas, state.accesorios, state.revisionId, updateState]);
-
-    const editarStep5 = useCallback(() => {
-        let { lat, lng, revisionId, poblado, ciudad, dpto } = state
-        lat = lat ? lat : 4.597825;
-        lng = lng ? lng : -74.0755723;
-
-        updateRevisionCoordenadas(revisionId, { lat, lng, poblado, ciudad, dpto })
-            .then((res: any) => {
-                if (res.status) {
-                    Alert.alert("Éxito", "Revisión Guardada")
-                    // navigation.navigate("Home")
-                } else {
-                    Toast.show({ type: 'error', text1: 'Tenemos un problema, intentelo mas tarde' })
-                }
-            })
-            .catch(error => {
-                console.error('Error updating revision coordinates:', error);
-                Toast.show({ type: 'error', text1: 'Error al guardar revisión' })
-            })
-    }, [state.lat, state.lng, state.revisionId, state.poblado, state.ciudad, state.dpto, updateState]);
-
-
-
-
-    const renderModalAlerta = useCallback(() => {
-        const { solicitudServicio: solicitudServicioText } = state
-        return (
-            <View style={style.modal}>
-                <View style={style.subContenedorModal}>
-                    <TouchableOpacity activeOpacity={1} onPress={() => updateState({ modalAlerta: false })} style={style.btnModalClose}>
-                        <FontAwesome name={'times-circle'} style={style.iconCerrar} />
-                    </TouchableOpacity>
-                    <TextInput
-                        placeholder="Solicitud Servicio"
-                        style={style.inputAlerta}
-                        value={solicitudServicioText}
-                        onChangeText={(solicitudServicio: string) => updateState({ solicitudServicio })}
-                    />
-                    <TouchableOpacity style={style.nuevaAlerta} onPress={() => solicitudServicio()}>
-                        <Text style={style.textGuardar}>Enviar Alerta</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        )
-    }, [state.solicitudServicio, updateState, solicitudServicio]);
-
-    const steps = useRevisionSteps({
-        state,
-        updateState,
-        buscarTanque,
-        alertaEliminarTanque,
-        filtroClientes,
-        buscarCiudad,
-        buscarPoblado,
-        solicitudServicio,
-        uploadImagen,
-        navigation,
-        renderModalAlerta
-    });
-
-    const renderSteps = useCallback(() => {
-        const { tanqueArray, revisionId, modalAlerta } = state;
-
-        return (
-            <ProgressSteps activeStepIconBorderColor="#002587" progressBarColor="#002587" activeLabelColor="#002587" >
-                <ProgressStep label="Datos" onNext={() => revisionId ? editarStep1() : crearStep1()}>
-                    <View style={{ alignItems: 'center' }}>
-                        {steps.step1()}
-                    </View>
-                </ProgressStep>
-                <ProgressStep label="Información" onNext={() => editarStep2()}>
-                    <View style={{ alignItems: 'center' }}>
-                        {steps.step2()}
-                    </View>
-                </ProgressStep>
-                <ProgressStep label="Instalación" onNext={() => editarStep3()}>
-                    <View style={{ alignItems: 'center' }}>
-                        {modalAlerta && renderModalAlerta()}
-                        {steps.step3()}
-                    </View>
-                </ProgressStep>
-                <ProgressStep label="Doc. adicionales">
-                    <View style={{ alignItems: 'center' }}>
-                        {steps.step4()}
-                    </View>
-                </ProgressStep>
-                <ProgressStep label="Coordenadas" onSubmit={() => editarStep5()}>
-                    <View style={{ alignItems: 'center' }}>
-                        {steps.step5()}
-                    </View>
-                </ProgressStep>
-            </ProgressSteps>
-        )
-    }, [state, steps, renderModalAlerta, editarStep1, crearStep1, editarStep2, editarStep3, editarStep5]);
-
-    const addTanque = useCallback((nombre: any, cantidad: any) => {
-        let tanques = state.tanques.filter((e: any) => {
-            if (e.nombre == nombre) e.cantidad = e.cantidad + cantidad
-            return e
-        })
-        updateState({ tanques })
-    }, [state.tanques, updateState]);
+    };
 
     return (
-        <>
-            <View style={style.container}>
-                {renderSteps()}
-                {state.loading && <View style={style.loadingContain}>
-                    <ActivityIndicator color="#00218b" size={'large'} />
-                </View>}
+        <SafeAreaView style={style.screen}>
+            <View style={style.header}>
+                <View style={[style.headerCard, cardShadow]}>
+                    <FontAwesome name="cubes" style={style.headerIcon} />
+                    <View>
+                        <Text style={style.headerTitle}>Nueva revisión</Text>
+                        <Text style={style.headerSubtitle}>
+                            Completa los datos del tanque y adjunta la evidencia.
+                        </Text>
+                    </View>
+                </View>
             </View>
-            <Footer navigation={navigation} />
-            <Toast />
-        </>
+
+            <View style={style.stepsWrapper}>
+                <ProgressSteps
+                    activeStep={currentStep}
+                    activeStepIconBorderColor="#002587"
+                    completedProgressBarColor="#002587"
+                    activeLabelColor="#002587"
+                    labelColor="#adb5bd"
+                    topOffset={12}
+                >
+                    <AnyProgressStep
+                        label="Datos del tanque"
+                        nextBtnText={stepOneSaving ? 'Guardando...' : 'Siguiente'}
+                        nextBtnStyle={[style.stepButton, (!requiredFieldsFilled || stepOneSaving) && style.stepButtonDisabled]}
+                        nextBtnTextStyle={style.stepButtonText}
+                        previousBtnStyle={style.hiddenButton}
+                        nextBtnDisabled={!requiredFieldsFilled || stepOneSaving}
+                        onNext={handleStepOneNext}
+                        errors={stepOneBlock}
+                    >
+                        <ScrollView contentContainerStyle={style.stepContent}>
+                            <View style={[style.card, cardShadow]}>
+                                <Text style={style.cardTitle}>Información básica</Text>
+                                <Text style={style.cardDescription}>
+                                    Registra la información principal del tanque. Todos los campos son obligatorios.
+                                </Text>
+
+                                <View style={style.fieldsGrid}>
+                                    {TANQUE_FIELDS.map(field => (
+                                        <View key={field.key} style={style.inputGroup}>
+                                            <Text style={style.inputLabel}>{field.label}</Text>
+                                            {field.inputType === 'select' || field.inputType === 'year' ? (
+                                                <TouchableOpacity
+                                                    style={style.selectorButton}
+                                                    onPress={() => openPicker(field)}
+                                                >
+                                                    <Text
+                                                        style={
+                                                            tanqueForm[field.key]
+                                                                ? style.selectorValue
+                                                                : style.selectorPlaceholder
+                                                        }
+                                                    >
+                                                        {(() => {
+                                                            const value = tanqueForm[field.key];
+                                                            const options =
+                                                                field.inputType === 'year'
+                                                                    ? YEAR_OPTIONS
+                                                                    : field.options || [];
+                                                            const selected = options.find(
+                                                                option => option.value === value
+                                                            );
+                                                            if (selected) {
+                                                                return selected.label;
+                                                            }
+                                                            return value ? value : field.placeholder;
+                                                        })()}
+                                                    </Text>
+                                                    <FontAwesome
+                                                        name="chevron-down"
+                                                        style={style.selectorIcon}
+                                                    />
+                                                </TouchableOpacity>
+                                            ) : (
+                                                <View style={style.inputWrapper}>
+                                                    <TextInput
+                                                        style={style.input}
+                                                        placeholder={field.placeholder}
+                                                        placeholderTextColor="#adb5bd"
+                                                        value={tanqueForm[field.key]}
+                                                        onChangeText={value => handleTanqueChange(field.key, value)}
+                                                        keyboardType={field.keyboardType ?? 'default'}
+                                                        underlineColorAndroid="transparent"
+                                                    />
+                                                </View>
+                                            )}
+                                        </View>
+                                    ))}
+                                </View>
+                            </View>
+                        </ScrollView>
+                    </AnyProgressStep>
+
+                    <AnyProgressStep
+                        label="Soporte visual"
+                        nextBtnText={stepTwoSaving ? 'Subiendo...' : 'Siguiente'}
+                        previousBtnText="Atrás"
+                        nextBtnStyle={[style.stepButton, (!stepTwoReady || stepTwoSaving) && style.stepButtonDisabled]}
+                        nextBtnTextStyle={style.stepButtonText}
+                        previousBtnStyle={style.stepButtonAlt}
+                        previousBtnTextStyle={style.stepButtonAltText}
+                        nextBtnDisabled={!stepTwoReady || stepTwoSaving}
+                        onNext={handleStepTwoNext}
+                        onPrevious={() => setCurrentStep(0)}
+                        errors={stepTwoBlock}
+                    >
+                        <ScrollView contentContainerStyle={style.stepContent}>
+                            <View style={[style.card, cardShadow]}>
+                                <Text style={style.cardTitle}>Fotografíasss</Text>
+
+                            </View>
+
+                            {MEDIA_IMAGE_FIELDS.map(field => (
+                                <View key={field.key} style={[style.card, cardShadow]}>
+                                    <Text style={style.cardTitle}>{field.title}</Text>
+                                    <Text style={style.cardDescription}>{field.helper}</Text>
+                                    <TomarFoto
+                                        titulo="Agregar fotos"
+                                        source={media[field.key]}
+                                        multiple
+                                        limiteImagenes={5}
+                                        imagenes={imagenes => handleMediaChange(field.key, imagenes)}
+                                    />
+                                </View>
+                            ))}
+
+                            <View style={[style.card, cardShadow]}>
+                                <Text style={style.cardTitle}>Documentos</Text>
+                                <Text style={style.cardDescription}>
+                                    Adjunta los documentos técnicos en formato PDF. Los archivos se almacenan en la nube automáticamente.
+                                </Text>
+                            </View>
+
+                            {MEDIA_DOC_FIELDS.map(field => (
+                                <View key={field.key} style={[style.card, cardShadow]}>
+                                    <Text style={style.cardTitle}>{field.title}</Text>
+                                    <Text style={style.cardDescription}>{field.helper}</Text>
+                                    <SubirDocumento
+                                        titulo="Adjuntar documento"
+                                        limiteImagenes={field.limit}
+                                        source={media[field.key]}
+                                        imagenes={(docs: any[]) => handleMediaChange(field.key, docs)}
+                                    />
+                                </View>
+                            ))}
+                        </ScrollView>
+                    </AnyProgressStep>
+
+                    <AnyProgressStep
+                        label="Asignación"
+                        previousBtnText="Atrás"
+                        finishBtnText={submitting ? 'Guardando...' : 'Finalizar'}
+                        previousBtnStyle={style.stepButtonAlt}
+                        previousBtnTextStyle={style.stepButtonAltText}
+                        nextBtnStyle={[style.stepButton, !stepThreeReady && style.stepButtonDisabled]}
+                        nextBtnTextStyle={style.stepButtonText}
+                        nextBtnDisabled={!stepThreeReady || submitting}
+                        onPrevious={() => setCurrentStep(1)}
+                        onSubmit={handleSubmit}
+                    >
+                        <ScrollView contentContainerStyle={style.stepContent}>
+                            <View style={[style.card, cardShadow]}>
+                                <Text style={style.cardTitle}>Cliente</Text>
+                                <Text style={style.cardDescription}>
+                                    Selecciona el cliente al que corresponde la revisión. Si eres cliente se muestra tu información.
+                                </Text>
+
+                                {selectedCliente ? (
+                                    <View style={style.selectedClientCard}>
+                                        <View style={style.selectedClientHeader}>
+                                            <View style={style.avatar}>
+                                                <FontAwesome name="user" style={style.avatarIcon} />
+                                            </View>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={style.selectedClientName}>
+                                                    {selectedCliente.razon_social || selectedCliente.nombre || 'Cliente'}
+                                                </Text>
+                                                {selectedCliente.codt && (
+                                                    <Text style={style.selectedClientSub}>CODT: {selectedCliente.codt}</Text>
+                                                )}
+                                                {selectedCliente.email && (
+                                                    <Text style={style.selectedClientSub}>{selectedCliente.email}</Text>
+                                                )}
+                                            </View>
+                                            {acceso !== 'cliente' && (
+                                                <TouchableOpacity
+                                                    style={style.changeButton}
+                                                    onPress={() => setClienteModalVisible(true)}
+                                                >
+                                                    <FontAwesome name="exchange" style={style.changeButtonIcon} />
+                                                    <Text style={style.changeButtonText}>Cambiar</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+                                    </View>
+                                ) : (
+                                    acceso !== 'cliente' && (
+                                        <TouchableOpacity
+                                            style={[style.stepButton, style.fullWidth]}
+                                            onPress={() => setClienteModalVisible(true)}
+                                        >
+                                            <FontAwesome name="search" style={style.stepButtonText} />
+                                            <Text style={style.stepButtonText}>Buscar cliente</Text>
+                                        </TouchableOpacity>
+                                    )
+                                )}
+                            </View>
+
+                            <View style={[style.card, cardShadow]}>
+                                <Text style={style.cardTitle}>Punto de servicio</Text>
+                                <Text style={style.cardDescription}>
+                                    Elige el punto donde se realizará la revisión y se encuentra el tanque.
+                                </Text>
+
+                                {loadingPuntos ? (
+                                    <View style={style.loading}>
+                                        <ActivityIndicator color="#002587" />
+                                        <Text style={style.loadingText}>Cargando puntos...</Text>
+                                    </View>
+                                ) : puntosCliente.length === 0 ? (
+                                    <View style={style.emptyState}>
+                                        <FontAwesome name="map-marker" style={style.emptyStateIcon} />
+                                        <Text style={style.emptyStateTitle}>Sin puntos disponibles</Text>
+                                        <Text style={style.emptyStateText}>
+                                            Selecciona un cliente para ver los puntos registrados.
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    puntosCliente.map(punto => {
+                                        const isSelected = punto._id === selectedPunto?._id;
+                                        return (
+                                            <TouchableOpacity
+                                                key={punto._id}
+                                                style={[
+                                                    style.pointCard,
+                                                    cardShadow,
+                                                    isSelected && style.pointCardSelected
+                                                ]}
+                                                onPress={() => handleSelectPunto(punto)}
+                                            >
+                                                <View style={style.pointHeader}>
+                                                    <View style={style.pointIcon}>
+                                                        <FontAwesome name="map" style={style.pointIconSymbol} />
+                                                    </View>
+                                                    <View style={{ flex: 1 }}>
+                                                        <Text style={style.pointTitle}>{punto.direccion}</Text>
+                                                        {punto.capacidad && (
+                                                            <Text style={style.pointMeta}>
+                                                                Capacidad: {punto.capacidad} Kg
+                                                            </Text>
+                                                        )}
+                                                        {punto.nombre && (
+                                                            <Text style={style.pointMeta}>Encargado: {punto.nombre}</Text>
+                                                        )}
+                                                        {punto.celular && (
+                                                            <Text style={style.pointMeta}>Celular: {punto.celular}</Text>
+                                                        )}
+                                                    </View>
+                                                    {isSelected && (
+                                                        <FontAwesome name="check-circle" style={style.pointSelectedIcon} />
+                                                    )}
+                                                </View>
+                                                {punto.observacion && (
+                                                    <Text style={style.pointObservation}>{punto.observacion}</Text>
+                                                )}
+                                            </TouchableOpacity>
+                                        );
+                                    })
+                                )}
+                            </View>
+                        </ScrollView>
+                    </AnyProgressStep>
+                </ProgressSteps>
+            </View>
+
+            <Modal
+                visible={clienteModalVisible}
+                animationType="slide"
+                onRequestClose={() => setClienteModalVisible(false)}
+            >
+                <SafeAreaView style={style.modalContainer}>
+                    <View style={style.modalHeader}>
+                        <Text style={style.modalTitle}>Buscar cliente</Text>
+                        <TouchableOpacity onPress={() => setClienteModalVisible(false)}>
+                            <FontAwesome name="times" style={style.modalCloseIcon} />
+                        </TouchableOpacity>
+                    </View>
+                    <TextInput
+                        style={style.modalInput}
+                        placeholder="Nombre, razón social, CODT o correo…"
+                        placeholderTextColor="#adb5bd"
+                        value={clienteSearch}
+                        onChangeText={setClienteSearch}
+                        autoFocus
+                    />
+                    <ScrollView>
+                        {filteredClientes.length === 0 ? (
+                            <View style={style.emptyState}>
+                                <FontAwesome name="search" style={style.emptyStateIcon} />
+                                <Text style={style.emptyStateTitle}>Sin resultados</Text>
+                                <Text style={style.emptyStateText}>Intenta con otro término de búsqueda.</Text>
+                            </View>
+                        ) : (
+                            filteredClientes.map(cliente => (
+                                <TouchableOpacity
+                                    key={cliente._id}
+                                    style={style.modalItem}
+                                    onPress={() => handleSelectCliente(cliente)}
+                                >
+                                    <View style={style.modalAvatar}>
+                                        ർഷ
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={style.modalItemTitle}>
+                                            {cliente.razon_social || cliente.nombre || 'Cliente'}
+                                        </Text>
+                                        {cliente.codt && (
+                                            <Text style={style.modalItemSub}>CODT: {cliente.codt}</Text>
+                                        )}
+                                        {cliente.email && (
+                                            <Text style={style.modalItemSub}>{cliente.email}</Text>
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+                            ))
+                        )}
+                    </ScrollView>
+                </SafeAreaView>
+            </Modal>
+
+            <Modal visible={pickerConfig.field !== null} animationType="slide" onRequestClose={closePicker}>
+                <SafeAreaView style={style.pickerModalContainer}>
+                    <View style={style.modalHeader}>
+                        <Text style={style.modalTitle}>{pickerConfig.title}</Text>
+                        <TouchableOpacity onPress={closePicker}>
+                            <FontAwesome name="times" style={style.modalCloseIcon} />
+                        </TouchableOpacity>
+                    </View>
+                    <ScrollView>
+                        {pickerConfig.options.map(option => {
+                            const isSelected =
+                                pickerConfig.field !== null &&
+                                tanqueForm[pickerConfig.field] === option.value;
+                            return (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    style={[
+                                        style.pickerOption,
+                                        isSelected && style.pickerOptionSelected
+                                    ]}
+                                    onPress={() => handlePickerSelect(option.value)}
+                                >
+                                    <Text
+                                        style={[
+                                            style.pickerOptionText,
+                                            isSelected && style.pickerOptionTextSelected
+                                        ]}
+                                    >
+                                        {option.label}
+                                    </Text>
+                                    {isSelected && (
+                                        <FontAwesome
+                                            name="check"
+                                            style={style.pickerOptionIconSelected}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </ScrollView>
+                    <TouchableOpacity style={style.pickerCancelButton} onPress={closePicker}>
+                        <Text style={style.pickerCancelText}>Cancelar</Text>
+                    </TouchableOpacity>
+                </SafeAreaView>
+            </Modal>
+        </SafeAreaView>
     );
 };
 
 export default NuevaRevision;
+
+

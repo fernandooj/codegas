@@ -796,4 +796,91 @@ export const style = MediaQueryStyleSheet.create({
         fontWeight: '500',
     },
 
+    // Estilos para frecuencia manual (similar a frecuencia.tsx)
+    fieldContainer: {
+        marginBottom: 20
+    },
+    fieldLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#002587',
+        marginBottom: 12,
+        fontFamily: 'Comfortaa-Bold'
+    },
+    fieldSubLabel: {
+        fontSize: 14,
+        color: '#6c757d',
+        marginBottom: 15,
+        fontFamily: 'Comfortaa-Regular'
+    },
+    // Radio buttons
+    radioContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8
+    },
+    radioButton: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: '#e9ecef',
+        marginBottom: 8,
+        flex: 1,
+        minWidth: 100
+    },
+    radioButtonSelected: {
+        backgroundColor: '#e3f2fd',
+        borderColor: '#2196f3'
+    },
+    radioText: {
+        fontSize: 12,
+        color: '#495057',
+        textAlign: 'center',
+        fontFamily: 'Comfortaa-Regular'
+    },
+    radioTextSelected: {
+        color: '#2196f3',
+        fontWeight: '600'
+    },
+    // Days selection
+    daysContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        marginBottom: 15
+    },
+    dayButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e9ecef',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10
+    },
+    dayButtonSelected: {
+        backgroundColor: '#2196f3',
+        borderColor: '#2196f3'
+    },
+    dayText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#495057',
+        fontFamily: 'Comfortaa-Bold'
+    },
+    dayTextSelected: {
+        color: '#fff'
+    },
+    daySelectedText: {
+        fontSize: 14,
+        color: '#6c757d',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        fontFamily: 'Comfortaa-Regular'
+    },
+
 })

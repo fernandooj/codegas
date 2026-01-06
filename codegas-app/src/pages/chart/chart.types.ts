@@ -24,7 +24,10 @@ export interface ChartState {
     conductores: any[];
     fechas: string[];
     total: number[];
+    valores: number[];
     pedidos: any[];
+    totalKilosGeneral?: number;
+    totalValorGeneral?: number;
     loading: boolean;
     error: string | null;
 }

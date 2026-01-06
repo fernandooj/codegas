@@ -6,10 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { style } from './style';
 import axios from 'axios';
 import { DataContext } from '../../context/context';
+import { useSyncQueue } from '../../hooks/useSyncQueue';
 
 export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
   const { userId, acceso } = useContext(DataContext)
   const insets = useSafeAreaInsets();
+  const { isOnline, pendingCount } = useSyncQueue();
 
   // Detectar la ruta actual desde el navigation state
   const [currentRouteState, setCurrentRouteState] = useState(currentRoute);
@@ -83,16 +85,16 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
 
 
   // Crear estilo dinámico que respete las safe areas
+  const extraSpace = insets.bottom > 0 ? insets.bottom : 12;
   const dynamicFooterWrapper = {
     ...style.footerWrapper,
-    //marginBottom: -insets.bottom,  Empujar hacia abajo para llegar al borde físico
-    paddingBottom: insets.bottom, // Agregar padding interno para el contenido
+    paddingBottom: extraSpace,
+    bottom: -insets.bottom,
   };
 
 
   return (
     <View style={dynamicFooterWrapper}>
-
       {/* Contenedor del footer principal */}
       <View style={style.contenedorFooter}>
         {/* Tab Home */}
@@ -101,7 +103,7 @@ export default function FooterComponent({ navigation, currentRoute = 'Home' }) {
           onPress={() => navigation.navigate('Home')}
         >
           <View style={style.iconContainer}>
-            <FontAwesome name="home" style={isActiveTab('Home') ? style.activeIconFont : style.iconFont}/>
+            <FontAwesome name="home" style={isActiveTab('Home') ? style.activeIconFont : style.iconFont} />
           </View>
         </TouchableOpacity>
 

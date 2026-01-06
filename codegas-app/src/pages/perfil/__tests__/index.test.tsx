@@ -226,7 +226,7 @@ describe('Perfil Component', () => {
 
             fireEvent.press(screen.getByText('Revisión y control tanques'));
 
-            expect(mockNavigation.navigate).toHaveBeenCalledWith('revision', { revision: true });
+            expect(mockNavigation.navigate).toHaveBeenCalledWith('tanques', { revision: true });
         });
 
         it('should navigate to reporte emergencia when reporte emergencia button is pressed', () => {

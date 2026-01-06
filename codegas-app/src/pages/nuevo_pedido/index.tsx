@@ -15,8 +15,10 @@ import { verificarPedidoHoy, crearPedido } from '../../redux/actions/pedidoActio
 import Footer from '../components/footer'
 import HeaderLogo from '../../components/HeaderLogo'
 import { style } from './style'
+import SeleccionarGrupoFrecuenciaModal from './SeleccionarGrupoFrecuenciaModal'
+import { GrupoFrecuencia } from '../frecuencia/types'
 
-import { frecuencias, dias, diasN, dia1, dia2 } from '../../utils/pedido_info'
+import { frecuencias, dias, diasN, dia1, dia2, intervalosSemanas } from '../../utils/pedido_info'
 import {
     NuevoPedidoProps,
     NuevoPedidoState,
@@ -76,11 +78,16 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
         showClientes: false,
         showFrecuencia: false,
         showFechaEntrega: false,
+        tipoFrecuencia: null, // 'grupo' o 'manual'
+        grupoFrecuenciaId: null,
         forma: null,
         cantidad: '',
         frecuencia: null,
         diaSeleccionado1: null,
         diaSeleccionado2: null,
+        intervaloSemanas: null,
+        diaMes: null,
+        diaSemanaMensual: null,
         franja: null,
         idCliente: null,
         cliente: null,
@@ -112,6 +119,11 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
         show: false,
         message: ''
     });
+
+    // Estado para grupos de frecuencias
+    const [gruposFrecuencias, setGruposFrecuencias] = useState<any[]>([]);
+    const [showSelectGrupoModal, setShowSelectGrupoModal] = useState(false);
+    const [grupoSeleccionado, setGrupoSeleccionado] = useState<GrupoFrecuencia | null>(null);
 
     useEffect(() => {
         if (!nombre && idUsuario) {
@@ -503,6 +515,19 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
             <View style={style.subContainerNuevo}>
                 {showClientes && modalCliente()}
                 {modalData.show && modalPedidosExistentes()}
+                <SeleccionarGrupoFrecuenciaModal
+                    visible={showSelectGrupoModal}
+                    onClose={() => setShowSelectGrupoModal(false)}
+                    onSelect={(grupo) => {
+                        setGrupoSeleccionado(grupo);
+                        setState(prev => ({
+                            ...prev,
+                            grupoFrecuenciaId: grupo._id,
+                            frecuencia: grupo.tipo_frecuencia
+                        }));
+                    }}
+                    grupoSeleccionado={grupoSeleccionado}
+                />
                 <View style={style.contenedorMonto}>
                     <Text style={style.tituloForm}>Realice su pedido</Text>
                     <TouchableOpacity
@@ -567,14 +592,22 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                     showFrecuencia ? (
                         <TouchableOpacity
                             style={style.eliminarFrecuencia}
-                            onPress={() => setState(prev => ({
-                                ...prev,
-                                showFrecuencia: false,
-                                frecuencia: null,
-                                diaSeleccionado1: null,
-                                diaSeleccionado2: null,
-                                franja: null
-                            }))}
+                            onPress={() => {
+                                setState(prev => ({
+                                    ...prev,
+                                    showFrecuencia: false,
+                                    tipoFrecuencia: null,
+                                    grupoFrecuenciaId: null,
+                                    frecuencia: null,
+                                    diaSeleccionado1: null,
+                                    diaSeleccionado2: null,
+                                    intervaloSemanas: null,
+                                    diaMes: null,
+                                    diaSemanaMensual: null,
+                                    franja: null
+                                }));
+                                setGrupoSeleccionado(null);
+                            }}
                         >
                             <FontAwesome name="minus" style={style.iconFrecuencia} />
                             <Text style={style.textGuardar}>Frecuencia pedido</Text>
@@ -592,92 +625,467 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
 
                 {showFrecuencia && acceso !== "veo" && (
                     <View style={style.contenedorFrecuencia}>
-                        <ModalSelector
-                            style={style.btnFrecuencia}
-                            data={frecuencias}
-                            initValue="Frecuencia"
-                            cancelText="Cancelar"
-                            onChange={(option) => {
-                                setState(prev => ({
-                                    ...prev,
-                                    frecuencia: option.key as FrecuenciaPedido,
-                                    diaSeleccionado1: null,
-                                    diaSeleccionado2: null,
-                                    franja: null
-                                }));
-                            }}
-                            selectStyle={[style.modalSelectorStyle, !frecuencia && { borderColor: "rgba(255, 0, 0, 0.22)" }]}
-                            selectTextStyle={style.modalSelectorText}
-                            optionStyle={style.modalSelectorItem}
-                            optionTextStyle={style.modalSelectorItemText}
-                            listStyle={style.modalSelectorList}
-                        />
-                        {frecuencia ? (
-                            frecuencia === "semanal" ? (
-                                <ModalSelector
-                                    style={style.btnFrecuencia}
-                                    data={dias}
-                                    initValue={"Dia"}
-                                    cancelText="Cancelar"
-                                    onChange={(option) => { setState(prev => ({ ...prev, diaSeleccionado1: option.key})) }}
-                                    selectStyle={[style.modalSelectorStyle, !diaSeleccionado1 && { borderColor: "rgba(255, 0, 0, 0.22)" }]}
-                                    selectTextStyle={style.modalSelectorText}
-                                    optionStyle={style.modalSelectorItem}
-                                    optionTextStyle={style.modalSelectorItemText}
-                                    listStyle={style.modalSelectorList}
-                                />
-                            ) : frecuencia === "mensual" ? (
-                                <ModalSelector
-                                    style={style.btnFrecuencia}
-                                    data={diasN}
-                                    initValue={"Dia"}
-                                    cancelText="Cancelar"
-                                    onChange={(option) => { setState(prev => ({ ...prev, diaSeleccionado1: option.key })) }}
-                                    selectStyle={[style.modalSelectorStyle, !diaSeleccionado1 && { borderColor: "rgba(255, 0, 0, 0.22)" }]}
-                                    selectTextStyle={style.modalSelectorText}
-                                    optionStyle={style.modalSelectorItem}
-                                    optionTextStyle={style.modalSelectorItemText}
-                                    listStyle={style.modalSelectorList}
-                                />
-                            ) : (
-                                <View style={style.contenedorFrecuencia}>
-                                    <ModalSelector
-                                        style={style.btnFrecuencia}
-                                        data={dia1}
-                                        initValue={"Dia 1"}
-                                        cancelText="Cancelar"
-                                        onChange={(option) => { setState(prev => ({ ...prev, diaSeleccionado1: option.key })) }}
-                                        selectStyle={[style.modalSelectorStyle, !diaSeleccionado1 && { borderColor: "rgba(255, 0, 0, 0.22)" }]}
-                                        selectTextStyle={style.modalSelectorText}
-                                        optionStyle={style.modalSelectorItem}
-                                        optionTextStyle={style.modalSelectorItemText}
-                                        listStyle={style.modalSelectorList}
-                                    />
-                                    <ModalSelector
-                                        style={style.btnFrecuencia}
-                                        data={dia2}
-                                        initValue={"Dia 2"}
-                                        cancelText="Cancelar"
-                                        onChange={(option) => { setState(prev => ({ ...prev, diaSeleccionado2: option.key })) }}
-                                        selectStyle={[style.modalSelectorStyle, !diaSeleccionado2 && { borderColor: "rgba(255, 0, 0, 0.22)" }]}
-                                        selectTextStyle={style.modalSelectorText}
-                                        optionStyle={style.modalSelectorItem}
-                                        optionTextStyle={style.modalSelectorItemText}
-                                        listStyle={style.modalSelectorList}
-                                    />
+                        {/* Selector de tipo de frecuencia: Grupo o Manual */}
+                        {!state.tipoFrecuencia && (
+                            <View style={{ marginBottom: 16 }}>
+                                <Text style={{
+                                    fontSize: 15,
+                                    fontWeight: '700',
+                                    color: '#212529',
+                                    marginBottom: 12
+                                }}>
+                                    Tipo de frecuencia
+                                </Text>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    gap: 12,
+                                    justifyContent: 'space-between'
+                                }}>
+                                    <TouchableOpacity
+                                        style={{
+                                            flex: 1,
+                                            flexDirection: 'row',
+                                            padding: 12,
+                                            borderRadius: 12,
+                                            borderWidth: 2,
+                                            borderColor: '#002587',
+                                            backgroundColor: '#fff',
+                                            alignItems: 'center',
+                                            shadowColor: 'rgba(0,0,0, .2)',
+                                            shadowOffset: { height: 2, width: 0 },
+                                            shadowOpacity: .3,
+                                            shadowRadius: 4,
+                                            elevation: 4
+                                        }}
+                                        onPress={() => setState(prev => ({ ...prev, tipoFrecuencia: 'grupo' }))}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: 20,
+                                            backgroundColor: '#002587',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            marginRight: 12
+                                        }}>
+                                            <FontAwesome name="users" style={{
+                                                fontSize: 20,
+                                                color: '#fff'
+                                            }} />
+                                        </View>
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: '700',
+                                            color: '#002587',
+                                            fontFamily: 'Comfortaa-Bold',
+                                            flex: 1
+                                        }}>
+                                            Por Grupo
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={{
+                                            flex: 1,
+                                            flexDirection: 'row',
+                                            padding: 12,
+                                            borderRadius: 12,
+                                            borderWidth: 2,
+                                            borderColor: '#28a745',
+                                            backgroundColor: '#fff',
+                                            alignItems: 'center',
+                                            shadowColor: 'rgba(0,0,0, .2)',
+                                            shadowOffset: { height: 2, width: 0 },
+                                            shadowOpacity: .3,
+                                            shadowRadius: 4,
+                                            elevation: 4
+                                        }}
+                                        onPress={() => setState(prev => ({ ...prev, tipoFrecuencia: 'manual' }))}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: 20,
+                                            backgroundColor: '#28a745',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            marginRight: 12
+                                        }}>
+                                            <FontAwesome name="edit" style={{
+                                                fontSize: 20,
+                                                color: '#fff'
+                                            }} />
+                                        </View>
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: '700',
+                                            color: '#28a745',
+                                            fontFamily: 'Comfortaa-Bold',
+                                            flex: 1
+                                        }}>
+                                            Manual
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
-                            )
-                        ) : null}
-                        {/* {
-                            frecuencia
-                            &&<ModalSelector
-                                style={style.btnFrecuencia}
-                                data={franjas}
-                                initValue={"Franja Horaria"}
-                                onChange={(option)=>{ setState(prev => ({ ...prev, franja: option.key })) }} 
-                                selectStyle={!franja &&{borderColor:"rgba(255, 0, 0, 0.22)"}}
-                            />
-                        } */}
+                            </View>
+                        )}
+
+                        {/* Si se seleccionó grupo */}
+                        {state.tipoFrecuencia === 'grupo' && (
+                            <View>
+                                {grupoSeleccionado ? (
+                                    <TouchableOpacity
+                                        style={{
+                                            backgroundColor: '#e3f2fd',
+                                            borderRadius: 12,
+                                            padding: 16,
+                                            borderWidth: 2,
+                                            borderColor: '#002587',
+                                            marginBottom: 12
+                                        }}
+                                        onPress={() => setShowSelectGrupoModal(true)}
+                                    >
+                                        <View style={{
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{
+                                                    fontSize: 16,
+                                                    fontWeight: '700',
+                                                    color: '#002587',
+                                                    marginBottom: 4
+                                                }}>
+                                                    {grupoSeleccionado.nombre}
+                                                </Text>
+                                                <View style={{
+                                                    backgroundColor: '#002587',
+                                                    alignSelf: 'flex-start',
+                                                    paddingHorizontal: 8,
+                                                    paddingVertical: 4,
+                                                    borderRadius: 6,
+                                                    marginBottom: 4
+                                                }}>
+                                                    <Text style={{
+                                                        color: '#fff',
+                                                        fontSize: 12,
+                                                        fontWeight: '600'
+                                                    }}>
+                                                        {grupoSeleccionado.tipo_frecuencia.toUpperCase()}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                            <FontAwesome name="chevron-right" style={{
+                                                fontSize: 18,
+                                                color: '#002587'
+                                            }} />
+                                        </View>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity
+                                        style={{
+                                            backgroundColor: '#fff',
+                                            borderRadius: 12,
+                                            padding: 16,
+                                            borderWidth: 2,
+                                            borderColor: !state.grupoFrecuenciaId ? '#dc3545' : '#dee2e6',
+                                            borderStyle: 'dashed',
+                                            alignItems: 'center',
+                                            marginBottom: 12
+                                        }}
+                                        onPress={() => setShowSelectGrupoModal(true)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <FontAwesome name="plus-circle" style={{
+                                            fontSize: 32,
+                                            color: '#002587',
+                                            marginBottom: 8
+                                        }} />
+                                        <Text style={{
+                                            fontSize: 14,
+                                            fontWeight: '600',
+                                            color: '#002587'
+                                        }}>
+                                            Seleccionar Grupo
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                                <TouchableOpacity
+                                    style={{
+                                        marginTop: 8,
+                                        paddingVertical: 8,
+                                        paddingHorizontal: 12,
+                                        alignSelf: 'flex-start'
+                                    }}
+                                    onPress={() => {
+                                        setState(prev => ({
+                                            ...prev,
+                                            tipoFrecuencia: null,
+                                            grupoFrecuenciaId: null,
+                                            frecuencia: null
+                                        }));
+                                        setGrupoSeleccionado(null);
+                                    }}
+                                >
+                                    <Text style={{
+                                        color: '#007bff',
+                                        fontSize: 13,
+                                        fontWeight: '600'
+                                    }}>
+                                        Cambiar tipo
+                                    </Text>
+                                </TouchableOpacity>
+
+                                {/* Botón para cambiar de grupo si ya hay uno seleccionado */}
+                                {grupoSeleccionado && (
+                                    <TouchableOpacity
+                                        style={{
+                                            marginTop: 8,
+                                            paddingVertical: 8,
+                                            paddingHorizontal: 12,
+                                            alignSelf: 'flex-start'
+                                        }}
+                                        onPress={() => setShowSelectGrupoModal(true)}
+                                    >
+                                        <Text style={{
+                                            color: '#28a745',
+                                            fontSize: 13,
+                                            fontWeight: '600'
+                                        }}>
+                                            Cambiar grupo
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        )}
+
+                        {/* Si se seleccionó manual */}
+                        {state.tipoFrecuencia === 'manual' && (
+                            <View>
+                                {/* Tipo de frecuencia */}
+                                <View style={style.fieldContainer}>
+                                    <Text style={style.fieldLabel}>Tipo de Frecuencia *</Text>
+                                    <View style={style.radioContainer}>
+                                        <TouchableOpacity
+                                            style={[
+                                                style.radioButton,
+                                                frecuencia === 'semanal' && style.radioButtonSelected
+                                            ]}
+                                            onPress={() => {
+                                                setState(prev => ({
+                                                    ...prev,
+                                                    frecuencia: 'semanal' as FrecuenciaPedido,
+                                                    diaSeleccionado1: null,
+                                                    intervaloSemanas: null,
+                                                    diaMes: null,
+                                                    diaSemanaMensual: null
+                                                }));
+                                            }}
+                                        >
+                                            <Text style={[
+                                                style.radioText,
+                                                frecuencia === 'semanal' && style.radioTextSelected
+                                            ]}>
+                                                Semanal
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[
+                                                style.radioButton,
+                                                frecuencia === 'mensual' && style.radioButtonSelected
+                                            ]}
+                                            onPress={() => {
+                                                setState(prev => ({
+                                                    ...prev,
+                                                    frecuencia: 'mensual' as FrecuenciaPedido,
+                                                    diaSeleccionado1: null,
+                                                    intervaloSemanas: null,
+                                                    diaMes: null,
+                                                    diaSemanaMensual: null
+                                                }));
+                                            }}
+                                        >
+                                            <Text style={[
+                                                style.radioText,
+                                                frecuencia === 'mensual' && style.radioTextSelected
+                                            ]}>
+                                                Mensual
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                {/* Campos para frecuencia semanal */}
+                                {frecuencia === "semanal" && (
+                                    <>
+                                        <View style={style.fieldContainer}>
+                                            <Text style={style.fieldLabel}>Día de la Semana *</Text>
+                                            <Text style={style.fieldSubLabel}>Selecciona el día de la semana (Lunes a Domingo)</Text>
+                                            <View style={style.daysContainer}>
+                                                {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((dia, index) => {
+                                                    const dayNumber = index + 1;
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index}
+                                                            style={[
+                                                                style.dayButton,
+                                                                diaSeleccionado1 === dayNumber && style.dayButtonSelected
+                                                            ]}
+                                                            onPress={() => {
+                                                                setState(prev => ({ ...prev, diaSeleccionado1: dayNumber }));
+                                                            }}
+                                                        >
+                                                            <Text style={[
+                                                                style.dayText,
+                                                                diaSeleccionado1 === dayNumber && style.dayTextSelected
+                                                            ]}>
+                                                                {dia.charAt(0)}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    );
+                                                })}
+                                            </View>
+                                            <Text style={style.daySelectedText}>
+                                                Día seleccionado: {diaSeleccionado1 ? (['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as any[])[diaSeleccionado1] || 'Ninguno' : 'Ninguno'}
+                                            </Text>
+                                        </View>
+
+                                        <View style={style.fieldContainer}>
+                                            <Text style={style.fieldLabel}>Intervalo de Semanas *</Text>
+                                            <View style={style.radioContainer}>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        style.radioButton,
+                                                        state.intervaloSemanas === 1 && style.radioButtonSelected
+                                                    ]}
+                                                    onPress={() => {
+                                                        setState(prev => ({ ...prev, intervaloSemanas: 1 }));
+                                                    }}
+                                                >
+                                                    <Text style={[
+                                                        style.radioText,
+                                                        state.intervaloSemanas === 1 && style.radioTextSelected
+                                                    ]}>
+                                                        Semanal
+                                                    </Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        style.radioButton,
+                                                        state.intervaloSemanas === 2 && style.radioButtonSelected
+                                                    ]}
+                                                    onPress={() => {
+                                                        setState(prev => ({ ...prev, intervaloSemanas: 2 }));
+                                                    }}
+                                                >
+                                                    <Text style={[
+                                                        style.radioText,
+                                                        state.intervaloSemanas === 2 && style.radioTextSelected
+                                                    ]}>
+                                                        Cada 2 Semanas
+                                                    </Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        style.radioButton,
+                                                        state.intervaloSemanas === 3 && style.radioButtonSelected
+                                                    ]}
+                                                    onPress={() => {
+                                                        setState(prev => ({ ...prev, intervaloSemanas: 3 }));
+                                                    }}
+                                                >
+                                                    <Text style={[
+                                                        style.radioText,
+                                                        state.intervaloSemanas === 3 && style.radioTextSelected
+                                                    ]}>
+                                                        Cada 3 Semanas
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    </>
+                                )}
+
+                                {/* Campos para frecuencia mensual */}
+                                {frecuencia === "mensual" && (
+                                    <>
+                                        <View style={style.fieldContainer}>
+                                            <Text style={style.fieldLabel}>Día del Mes *</Text>
+                                            <Text style={style.fieldSubLabel}>Selecciona el día del mes (1-31)</Text>
+                                            <View style={style.daysContainer}>
+                                                {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
+                                                    <TouchableOpacity
+                                                        key={dia}
+                                                        style={[
+                                                            style.dayButton,
+                                                            state.diaMes === dia && style.dayButtonSelected
+                                                        ]}
+                                                        onPress={() => {
+                                                            if (state.diaMes === dia) {
+                                                                setState(prev => ({ ...prev, diaMes: null }));
+                                                            } else {
+                                                                setState(prev => ({ ...prev, diaMes: dia }));
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Text style={[
+                                                            style.dayText,
+                                                            state.diaMes === dia && style.dayTextSelected
+                                                        ]}>
+                                                            {dia}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                            <Text style={style.daySelectedText}>
+                                                Día seleccionado: {state.diaMes || 'Ninguno'}
+                                            </Text>
+                                        </View>
+
+                                        <View style={style.fieldContainer}>
+                                            <Text style={style.fieldLabel}>Día de la Semana (Mensual) *</Text>
+                                            <Text style={style.fieldSubLabel}>Selecciona el día de la semana para frecuencia mensual</Text>
+                                            <View style={style.daysContainer}>
+                                                {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((dia, index) => {
+                                                    const dayNumber = index + 1;
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={index}
+                                                            style={[
+                                                                style.dayButton,
+                                                                state.diaSemanaMensual === dayNumber && style.dayButtonSelected
+                                                            ]}
+                                                            onPress={() => {
+                                                                setState(prev => ({ ...prev, diaSemanaMensual: dayNumber }));
+                                                            }}
+                                                        >
+                                                            <Text style={[
+                                                                style.dayText,
+                                                                state.diaSemanaMensual === dayNumber && style.dayTextSelected
+                                                            ]}>
+                                                                {dia.charAt(0)}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    );
+                                                })}
+                                            </View>
+                                            <Text style={style.daySelectedText}>
+                                                Día seleccionado: {state.diaSemanaMensual ? (['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as any[])[state.diaSemanaMensual] || 'Ninguno' : 'Ninguno'}
+                                            </Text>
+                                        </View>
+                                    </>
+                                )}
+
+                                <TouchableOpacity
+                                    style={{ marginTop: 8, paddingVertical: 8, paddingHorizontal: 12, alignSelf: 'flex-start' }}
+                                    onPress={() => setState(prev => ({ ...prev, tipoFrecuencia: null, frecuencia: null, diaSeleccionado1: null, intervaloSemanas: null, diaMes: null, diaSemanaMensual: null }))}
+                                >
+                                    <Text style={{ color: '#007bff', fontSize: 13, fontWeight: '600' }}>Cambiar tipo</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
                     </View>
                 )}
                 {acceso !== "cliente" && renderCliente()}
@@ -839,7 +1247,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                 {solicitud ? (
                     <TouchableOpacity
                         style={style.eliminarFrecuencia}
-                        onPress={() => setState(prev => ({ ...prev, solicitud: null }))}
+                        onPress={() => setState(prev => ({ ...prev, solicitud: false, fechaSolicitud: '' }))}
                     >
                         <FontAwesome name="minus" style={style.iconFrecuencia} />
                         <Text style={style.textGuardar}>{fechaSolicitud}</Text>
@@ -878,10 +1286,16 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta una cantidad' });
                         } else if (forma === "cantidad" && parseInt(cantidad) < 10) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta una cantidad' });
-                        } else if ((frecuencia === "semanal" || frecuencia === "mensual") && !diaSeleccionado1) {
-                            Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta un dia de frecuencia' });
-                        } else if (frecuencia === "quincenal" && (!diaSeleccionado1 || !diaSeleccionado2)) {
-                            Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta los dias de frecuencia' });
+                        } else if (showFrecuencia && !state.tipoFrecuencia) {
+                            Toast.show({ position: 'bottom', type: 'info', text1: 'Selecciona el tipo de frecuencia (Grupo o Manual)' });
+                        } else if (showFrecuencia && state.tipoFrecuencia === 'grupo' && !state.grupoFrecuenciaId) {
+                            Toast.show({ position: 'bottom', type: 'info', text1: 'Selecciona un grupo de frecuencia' });
+                        } else if (showFrecuencia && state.tipoFrecuencia === 'manual' && !frecuencia) {
+                            Toast.show({ position: 'bottom', type: 'info', text1: 'Selecciona el tipo de frecuencia (Semanal o Mensual)' });
+                        } else if (showFrecuencia && state.tipoFrecuencia === 'manual' && frecuencia === "semanal" && (!diaSeleccionado1 || !state.intervaloSemanas)) {
+                            Toast.show({ position: 'bottom', type: 'info', text1: 'Completa los datos de frecuencia semanal' });
+                        } else if (showFrecuencia && state.tipoFrecuencia === 'manual' && frecuencia === "mensual" && (!state.diaMes || !state.diaSemanaMensual)) {
+                            Toast.show({ position: 'bottom', type: 'info', text1: 'Completa los datos de frecuencia mensual' });
                         } else if (!fechaSolicitud) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta una fecha de Entrega' });
                         } else if (!guardando) {
@@ -961,7 +1375,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                             marginBottom: 20,
                             color: '#666'
                         }}>
-                           Se encontraron pedidos para este cliente
+                            Se encontraron pedidos para este cliente
                         </Text>
                         <ScrollView style={{ maxHeight: 300, marginBottom: 20 }}>
                             {modalData.pedidos && modalData.pedidos.length > 0 ? modalData.pedidos.map((pedido: PedidoExistente, index: number) => {
@@ -1219,16 +1633,29 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
         }
     };
     const handleSubmit = async (): Promise<void> => {
-        const { forma, cantidad, idCliente, diaSeleccionado1, diaSeleccionado2, frecuencia, novedad: observacion, puntoId, fechaSolicitud, idUsuario } = state;
+        const {
+            forma,
+            cantidad,
+            idCliente,
+            tipoFrecuencia,
+            grupoFrecuenciaId,
+            diaSeleccionado1,
+            diaSeleccionado2,
+            frecuencia,
+            intervaloSemanas,
+            diaMes,
+            diaSemanaMensual,
+            novedad: observacion,
+            puntoId,
+            fechaSolicitud,
+            idUsuario
+        } = state;
 
         const cantidadKl = forma === "cantidad" ? cantidad : 0;
         const cantidadPrecio = forma === "monto" ? (campoMonto.current?.getRawValue() || 0) : 0;
 
         const data: PedidoData = {
             forma: forma!,
-            ...(diaSeleccionado1 !== undefined && { dia1: diaSeleccionado1 }),
-            ...(diaSeleccionado2 !== undefined && { dia2: diaSeleccionado2 }),
-            ...(frecuencia !== undefined && { frecuencia }),
             puntoId: puntoId!,
             fechaSolicitud,
             cantidadKl: typeof cantidadKl === 'string' ? parseInt(cantidadKl) : cantidadKl,
@@ -1237,6 +1664,45 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
             usuarioId: idCliente!,
             observacion
         };
+
+        // Si se seleccionó un grupo, agregar grupo_id
+        if (tipoFrecuencia === 'grupo' && grupoFrecuenciaId) {
+            data.grupo_id = grupoFrecuenciaId;
+        }
+
+        // Si es frecuencia manual
+        if (tipoFrecuencia === 'manual' && frecuencia) {
+            if (frecuencia === 'semanal') {
+                // Para semanal: dia1 es el día de la semana, intervalo_semanas es el intervalo
+                if (diaSeleccionado1 !== undefined && diaSeleccionado1 !== null) {
+                    data.dia1 = diaSeleccionado1;
+                }
+                if (intervaloSemanas !== undefined && intervaloSemanas !== null) {
+                    data.intervalo_semanas = intervaloSemanas;
+                    // Mapear intervalo de semanas a frecuencia
+                    if (intervaloSemanas === 2) {
+                        data.frecuencia = 'quincenal';
+                    } else if (intervaloSemanas === 3) {
+                        data.frecuencia = 'tressemanas';
+                    } else {
+                        data.frecuencia = 'semanal';
+                    }
+                } else {
+                    data.frecuencia = frecuencia;
+                }
+            } else if (frecuencia === 'mensual') {
+                data.frecuencia = 'mensual';
+                // Para mensual: dia1 es el día del mes (1-31) y dia2 es el día de la semana (1-7)
+                if (diaMes !== undefined && diaMes !== null) {
+                    data.dia1 = diaMes; // Día del mes (1-31)
+                    data.dia_mes = diaMes; // Mantener compatibilidad con backend
+                }
+                if (diaSemanaMensual !== undefined && diaSemanaMensual !== null) {
+                    data.dia2 = diaSemanaMensual; // Día de la semana (1-7, donde 1=lunes, 7=domingo)
+                    data.dia_semana_mensual = diaSemanaMensual; // Mantener compatibilidad con backend
+                }
+            }
+        }
 
         try {
             const response = await crearPedido(data) as CrearPedidoResponse;
@@ -1262,15 +1728,22 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                 puntos: [],
                 puntoId: null,
                 cantidad: '',
+                tipoFrecuencia: null,
+                grupoFrecuenciaId: null,
                 frecuencia: null,
                 diaSeleccionado1: null,
                 diaSeleccionado2: null,
+                intervaloSemanas: null,
+                diaMes: null,
+                diaSemanaMensual: null,
                 novedad: '',
                 fechaSolicitud: '',
                 terminoBuscador: '',
                 showRenderUsuarios: false,
-                showClientes: false
+                showClientes: false,
+                showFrecuencia: false
             }));
+            setGrupoSeleccionado(null);
 
             // Limpiar también el estado de Redux de clientes
             dispatch({ type: 'CLEAR_USUARIOS_SEARCH' });

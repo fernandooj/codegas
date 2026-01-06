@@ -80,6 +80,23 @@ export interface Pedido {
     punto_nombre?: string;
     // Campo del vehículo
     idVehiculo?: string;
+    // Campo orden (para ordenar pedidos por fechaEntrega)
+    orden?: number;
+    // Campos de firmas digitales (para cerrar pedido)
+    firma_conductor?: string;
+    firma_usuario?: string;
+    // Campo tanques (JSONB array)
+    tanques?: Array<{
+        tanque_id: number;
+        tipo_suministro?: string | null;
+        presion_inicial?: number | null;
+        presion_final?: number | null;
+        porcentaje_inicial?: number | null;
+        porcentaje_final?: number | null;
+        observacion?: string | null;
+        checklist?: Array<{ pregunta: string; respuesta: string }>;
+        estado?: string | null;
+    }>;
 }
 
 export interface Novedad {
@@ -154,7 +171,7 @@ export interface SelectedPedidoData {
     email?: string;
     tokenPhone?: string;
     cedula?: string;
-    forma?: 'cantidad' | 'monto'| 'lleno';
+    forma?: 'cantidad' | 'monto' | 'lleno';
     cantidad?: number;
     entregado?: boolean;
     imagenCerrar?: string;
@@ -195,6 +212,21 @@ export interface SelectedPedidoData {
     punto_email?: string;
     punto_celular?: string;
     punto_nombre?: string;
+    // Firmas digitales (para cerrar pedido)
+    firma_conductor?: string;
+    firma_usuario?: string;
+    // Campo tanques (JSONB array)
+    tanques?: Array<{
+        tanque_id: number;
+        tipo_suministro?: string | null;
+        presion_inicial?: number | null;
+        presion_final?: number | null;
+        porcentaje_inicial?: number | null;
+        porcentaje_final?: number | null;
+        observacion?: string | null;
+        checklist?: Array<{ pregunta: string; respuesta: string }>;
+        estado?: string | null;
+    }>;
 }
 
 // Action Types para el reducer
@@ -464,7 +496,7 @@ export interface CerrarPedidoModalProps {
     visible: boolean;
     onClose: () => void;
     pedidoId?: string;
-    entregado: boolean|undefined;
+    entregado: boolean | undefined;
     imagenCerrar?: string;
     kilos?: number;
     factura?: string;
@@ -472,7 +504,12 @@ export interface CerrarPedidoModalProps {
     remision?: string;
     forma_pago?: string;
     valor_unitario?: string;
-    onCerrarPedido: (data: CerrarPedidoData, pedidoId?: string) => void;
+    firma_conductor?: string;
+    firma_usuario?: string;
+    puntoId?: string;
+    usuarioId?: string;
+    email?: string; // Email del cliente para enviar la factura
+    onCerrarPedido: (data: CerrarPedidoData, pedidoId?: string, skipConfirmation?: boolean) => void;
     onGuardarNovedad: (novedad: string, pedidoId?: string, motivoKey?: string) => void;
 }
 

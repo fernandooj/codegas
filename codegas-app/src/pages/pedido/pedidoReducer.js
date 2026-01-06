@@ -166,6 +166,18 @@ export const initialState = {
         perfil: undefined,
         idZona: undefined,
         coordenadas: undefined,
+        punto_email: undefined,
+        punto_celular: undefined,
+        punto_nombre: undefined,
+        checklist: [],
+        firma_conductor: undefined,
+        firma_usuario: undefined,
+        firma_conductor_checklist: undefined,
+        firma_usuario_checklist: undefined,
+        presion_inicial: undefined,
+        presion_final: undefined,
+        porcentaje_inicial: undefined,
+        porcentaje_final: undefined,
     }
 };
 

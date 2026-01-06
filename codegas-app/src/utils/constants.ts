@@ -1,3 +1,5 @@
+import type { ChecklistQuestion } from './constants.types';
+
 export const accesos = [
     { label: 'Administrador', value: 'admin', key: 'administrador' },
     { label: 'Solución Cliente', value: 'solucion', key: 'solucion' },
@@ -30,4 +32,52 @@ export const images = [
     { title: 'Otros Si', type: 'otrosSi', mime: 'application/pdf', source: 'imgOtrosSi' },
     { title: 'Documento', type: 'documento', mime: 'application/pdf', source: 'imgDocumento' },
     { title: 'Dep. Tecnico', type: 'depTecnico', mime: 'application/pdf', source: 'imgDepTecnico' }
-]
+];
+
+// Safety Checklist Questions
+export const safetyChecklistQuestions: ChecklistQuestion[] = [
+    {
+        id: 1,
+        question: "¿Verificó visualmente la zona alrededor, entre el tanque y la planta móvil que estén libres de fuentes de ignición, hojarasca o cualquier situación de riesgo?"
+    },
+    {
+        id: 2,
+        question: "¿Verificó visualmente la hermeticidad de las mangueras, conexiones y de los empaques?"
+    },
+    {
+        id: 3,
+        question: "¿Revisó las válvulas del tanque estacionario, incluyendo indicador del nivel antes del llenado?"
+    },
+    {
+        id: 4,
+        question: "¿Utilizó el indicador fijo de nivel (grifo), o el día del flotador, para evitar sobrellenados?"
+    },
+    {
+        id: 5,
+        question: "¿Ubicó los extintores del carro?"
+    },
+    {
+        id: 6,
+        question: "¿Ubicó los conos?"
+    },
+    {
+        id: 7,
+        question: "¿Estableció la distancia mínima de 3m?"
+    },
+    {
+        id: 8,
+        question: "¿Utilizó adecuadamente los implementos personales de seguridad (la tripulación)?"
+    },
+    {
+        id: 9,
+        question: "¿Verificó que no haya personal cerca, no autorizado para realizar la operación?"
+    },
+    {
+        id: 10,
+        question: "¿Verificó que al conectar la manguera de suministro no quedó escapes?"
+    },
+    {
+        id: 11,
+        question: "¿Verificó que durante y después del suministro no hayan quedado fugas en la válvula de llenado y/o accesorios?"
+    }
+];

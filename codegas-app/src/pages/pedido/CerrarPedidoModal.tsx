@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import {View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Alert, Keyboard, Dimensions, Image} from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Modal, Alert, Keyboard, Dimensions, Image, ActivityIndicator } from 'react-native';
+import { syncQueueService, SyncOperationType } from '../../services/syncQueueService';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import TomarFoto from '../components/tomarFoto';
+import FirmaModal from './FirmaModal';
 import { motivoNoCierre } from '../../utils/pedido_info';
 import { CerrarPedidoModalProps, CerrarPedidoData } from './types';
+import { guardarFirmas, sendFacturaEmail } from '../../redux/actions/pedidoActions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,14 +22,14 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     remision: remisionProps,
     forma_pago: formaPagoProps,
     valor_unitario,
+    firma_conductor,
+    firma_usuario,
+    puntoId,
+    usuarioId,
+    email,
     onCerrarPedido,
     onGuardarNovedad
 }) => {
-    // Debug para ver qué pedidoId recibe el modal
-
-    // Monitorear cambios en pedidoId
-    useEffect(() => {
-    }, [pedidoId]);
 
     // Limpiar campos cuando el modal se abre
     useEffect(() => {
@@ -39,6 +42,10 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             setFormaPago('');
             setNovedad('');
             setImagen(undefined);
+            // Resetear el flag de confirmación cuando se abre el modal
+            confirmacionAlertShownRef.current = false;
+            // Resetear el estado de loading
+            setIsClosing(false);
         }
     }, [visible]);
 
@@ -53,6 +60,22 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     const [imagen, setImagen] = useState<string | undefined>(imagenCerrar);
     const [showMotivoModal, setShowMotivoModal] = useState(false);
     const [motivoSeleccionado, setMotivoSeleccionado] = useState<string>('');
+
+    // Estados para las firmas
+    const [showFirmasModal, setShowFirmasModal] = useState(false);
+    const [firmaConductor, setFirmaConductor] = useState<string | null>(null);
+    const [firmaUsuario, setFirmaUsuario] = useState<string | null>(null);
+    const [dataCierrePendiente, setDataCierrePendiente] = useState<any>(null);
+    const [firmasGuardadas, setFirmasGuardadas] = useState<{
+        firmaConductor: string | null;
+        firmaUsuario: string | null;
+    } | null>(null);
+
+    // Ref para evitar que el Alert de confirmación se muestre dos veces
+    const confirmacionAlertShownRef = useRef(false);
+    
+    // Estado para controlar el preloader durante el cierre
+    const [isClosing, setIsClosing] = useState(false);
 
     const convertImageToBase64 = async (imageUri: string): Promise<string | null> => {
         try {
@@ -116,7 +139,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                         {
                             text: 'Sí, cerrar',
                             style: 'destructive',
-                            onPress: () => procederConCierre()
+                            onPress: () => prepararParaFirmas()
                         }
                     ]
                 );
@@ -124,29 +147,334 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             }
         }
 
-        // Si no hay diferencia significativa, proceder directamente
-        procederConCierre();
+        // Si no hay diferencia significativa, abrir modal de firmas
+        prepararParaFirmas();
     };
 
-    const procederConCierre = async () => {
+    const prepararParaFirmas = async () => {
         // Convertir imagen a base64 antes de enviar
         let imagenBase64: string | null = null;
         if (imagen) {
             imagenBase64 = await convertImageToBase64(imagen);
         }
 
-        // Llamar a la función de cierre
-        onCerrarPedido({
+        // Guardar datos del cierre para enviar después de las firmas
+        setDataCierrePendiente({
             kilos,
             factura,
-            valor_total: valorTotalRaw, // Enviar solo números al backend
+            valor_total: valorTotalRaw,
             remision,
             forma_pago: formaPago,
             novedad,
-            imagen: imagenBase64 || undefined // Enviar imagen en base64
-        }, pedidoId); // Pasar el pedidoId como segundo parámetro
+            imagen: imagenBase64 || undefined,
+            email: email || undefined // Incluir email para enviar factura después
+        });
 
-        // NO limpiar campos aquí - se limpiarán solo cuando el modal se cierre exitosamente
+        // Abrir modal de firmas
+        setShowFirmasModal(true);
+    };
+
+    const handleFirmasGuardadas = async (firmaConductorData: string | null, firmaUsuarioData: string | null) => {
+        console.log('✍️ Firmas recibidas - Conductor:', !!firmaConductorData, 'Usuario:', !!firmaUsuarioData);
+
+        // Protección contra llamadas duplicadas
+        if (confirmacionAlertShownRef.current) {
+            console.log('⚠️ [CerrarPedidoModal] Ya se está procesando el cierre, ignorando llamada duplicada');
+            return;
+        }
+
+        setShowFirmasModal(false);
+
+        // Guardar las firmas temporalmente
+        const firmasData = {
+            firmaConductor: firmaConductorData,
+            firmaUsuario: firmaUsuarioData
+        };
+        setFirmasGuardadas(firmasData);
+
+        // Marcar que se está procesando
+        confirmacionAlertShownRef.current = true;
+        
+        // Activar preloader
+        setIsClosing(true);
+
+        // Cerrar el pedido directamente sin mostrar otro Alert de confirmación
+        // La confirmación ya se hizo en el modal de firmas
+        // Pasar las firmas directamente para evitar problemas de timing con setState
+        setTimeout(() => {
+            if (dataCierrePendiente) {
+                cerrarPedidoConFirmasYLlenado(dataCierrePendiente, firmasData);
+            } else {
+                Alert.alert('Error', 'No hay datos pendientes para cerrar');
+                confirmacionAlertShownRef.current = false;
+                setIsClosing(false);
+            }
+        }, 300);
+    };
+
+
+    const cerrarPedidoConFirmasYLlenado = async (datosCierre: any, firmasPasadas?: { firmaConductor: string | null; firmaUsuario: string | null } | null) => {
+        // Usar las firmas pasadas como parámetro o las del estado como fallback
+        // Definir fuera del try para que esté disponible en el catch
+        const firmasAUsar = firmasPasadas || firmasGuardadas;
+        
+        try {
+            
+            console.log('🔍 [CerrarPedidoModal] Iniciando cierre de pedido:', {
+                pedidoId,
+                email,
+                tieneFirmas: !!(firmasAUsar && (firmasAUsar.firmaConductor || firmasAUsar.firmaUsuario)),
+                firmasPasadas: !!firmasPasadas,
+                firmasGuardadas: !!firmasGuardadas
+            });
+
+            // 1. Primero cerrar el pedido con los datos completos
+            // Pasar skipConfirmation=true porque ya se confirmó en el modal de firmas
+            await onCerrarPedido(datosCierre, pedidoId, true);
+
+            // 2. Luego guardar las firmas
+            if (firmasAUsar && (firmasAUsar.firmaConductor || firmasAUsar.firmaUsuario)) {
+                console.log('💾 Guardando firmas en el backend...');
+                const response = await guardarFirmas(
+                    pedidoId || '',
+                    firmasAUsar.firmaConductor,
+                    firmasAUsar.firmaUsuario
+                );
+
+                if (response.status) {
+                    console.log('✅ Firmas guardadas correctamente');
+                } else {
+                    console.warn('⚠️ Pedido cerrado pero error guardando firmas');
+                }
+            }
+
+            // 3. Enviar email con factura PDF después de cerrar el pedido
+            if (email && pedidoId) {
+                try {
+                    console.log('📧 [CerrarPedidoModal] Enviando email con factura a:', email, 'para pedido:', pedidoId);
+                    await sendFacturaEmail(pedidoId, email);
+                    console.log('✅ [CerrarPedidoModal] Email con factura enviado exitosamente');
+                } catch (emailError: any) {
+                    // Silenciar el error para evitar que se muestre el Toast duplicado
+                    // No bloquear el flujo si falla el email, solo loguear el error
+                    console.error('❌ [CerrarPedidoModal] Error enviando email con factura (silenciado):', emailError);
+                }
+            }
+
+            // Desactivar preloader antes de mostrar el Alert
+            setIsClosing(false);
+
+            // 4. Mostrar mensaje de éxito
+            const mensajeExito = firmasGuardadas && (firmasGuardadas.firmaConductor || firmasGuardadas.firmaUsuario)
+                ? 'El pedido se ha cerrado correctamente. Las firmas se han guardado y el email con la factura ha sido enviado.'
+                : 'El pedido se ha cerrado correctamente. El email con la factura ha sido enviado.';
+
+            Alert.alert(
+                '✅ Pedido Cerrado',
+                mensajeExito,
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => {
+                            // Limpiar estados
+                            setDataCierrePendiente(null);
+                            setFirmaConductor(null);
+                            setFirmaUsuario(null);
+                            setFirmasGuardadas(null);
+                            confirmacionAlertShownRef.current = false;
+                            onClose();
+                        }
+                    }
+                ]
+            );
+        } catch (error: any) {
+            console.error('❌ Error en el proceso de cierre:', error);
+            // Desactivar preloader en caso de error
+            setIsClosing(false);
+
+            // Si es un error de red, guardamos en cola offline directamente sin mostrar error
+            const isNetworkError =
+                (error?.isAxiosError && error?.message === 'Network Error') ||
+                /Network Error|Failed to fetch|timeout/i.test(String(error?.message ?? error));
+
+            if (isNetworkError && dataCierrePendiente) {
+                // Guardar offline directamente sin mostrar el error
+                console.log('📴 [CerrarPedidoModal] Error de red detectado, guardando offline automáticamente...');
+                try {
+                    // Incluir solo la imagen de cerrar pedido en imageUris
+                    // Las firmas se guardan como base64 en data.firmas y las subirá guardarFirmas
+                    const imageUris: string[] = [];
+
+                    // Solo la imagen de cerrar pedido (necesita subirse antes de cerrar el pedido)
+                    if (imagen) {
+                        if (imagen.startsWith('data:')) {
+                            imageUris.push(imagen);
+                        } else {
+                            // Si ya es una URI local, también incluirla
+                            imageUris.push(imagen);
+                        }
+                    }
+
+                    // Las firmas se mantienen como base64 en data.firmas
+                    // El backend guardarFirmas las subirá a S3 automáticamente
+                    console.log(`💾 [CerrarPedidoModal] Guardando offline: ${imageUris.length} imagen(es) de cerrar pedido + firmas base64`);
+
+                    const pedidoDataCompleto = {
+                        ...dataCierrePendiente,
+                        // Incluir idUsuario si está disponible
+                        idUsuario: usuarioId ? parseInt(usuarioId.toString()) : 1,
+                        // Incluir email si está disponible para enviar factura después
+                        email: email || dataCierrePendiente?.email || null
+                    };
+
+                    console.log(`💾 [CerrarPedidoModal] Guardando offline con datos completos:`, {
+                        pedidoId,
+                        dataCierrePendiente: dataCierrePendiente
+                    });
+
+                    // Usar las firmas pasadas como parámetro o las del estado como fallback
+                    // En el catch, firmasAUsar puede no estar definido, así que usamos firmasGuardadas
+                    const firmasParaCola = firmasAUsar || firmasGuardadas;
+                    
+                    console.log('💾 [CerrarPedidoModal] Agregando a cola offline:', {
+                        pedidoId: pedidoId,
+                        pedidoIdType: typeof pedidoId,
+                        pedidoIdString: pedidoId?.toString(),
+                        tienePedidoData: !!pedidoDataCompleto,
+                        tieneFirmas: !!(firmasParaCola && (firmasParaCola.firmaConductor || firmasParaCola.firmaUsuario)),
+                        tieneConductor: !!(firmasParaCola?.firmaConductor),
+                        tieneUsuario: !!(firmasParaCola?.firmaUsuario),
+                        imageUrisCount: imageUris.length
+                    });
+                    
+                    console.log('💾 [CerrarPedidoModal] Agregando firmas a cola:', {
+                        tieneFirmasParaCola: !!firmasParaCola,
+                        tieneConductor: !!(firmasParaCola?.firmaConductor),
+                        tieneUsuario: !!(firmasParaCola?.firmaUsuario)
+                    });
+                    
+                    await syncQueueService.addToQueue(
+                        SyncOperationType.CERRAR_PEDIDO,
+                        {
+                            pedidoId: pedidoId?.toString(), // Asegurar que sea string
+                            pedidoData: pedidoDataCompleto,
+                            firmas: firmasParaCola ? {
+                                conductor: firmasParaCola.firmaConductor,
+                                usuario: firmasParaCola.firmaUsuario
+                            } : undefined,
+                        },
+                        imageUris.length > 0 ? imageUris : undefined
+                    );
+                    
+                    console.log('✅ [CerrarPedidoModal] Item agregado a la cola exitosamente');
+
+                    // Desactivar preloader antes de mostrar el Alert
+                    setIsClosing(false);
+                    
+                    // Cerrar el modal de firmas si aún está abierto (aunque debería estar cerrado)
+                    setShowFirmasModal(false);
+                    
+                    // Mostrar mensaje de "Pedido cerrado" como antes funcionaba
+                    Alert.alert(
+                        '✅ Pedido Cerrado',
+                        'El pedido se ha guardado offline y se sincronizará automáticamente al recuperar internet.',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    // Limpiar estados
+                                    setDataCierrePendiente(null);
+                                    setFirmaConductor(null);
+                                    setFirmaUsuario(null);
+                                    setFirmasGuardadas(null);
+                                    confirmacionAlertShownRef.current = false;
+                                    // Cerrar ambos modales: el de cerrar pedido y el de firmas
+                                    onClose();
+                                }
+                            }
+                        ],
+                        { cancelable: true }
+                    );
+                    return;
+                } catch (queueErr: any) {
+                    console.error('❌ Error agregando a cola offline:', queueErr);
+                    const queueErrorText = formatFullError(queueErr);
+
+                    // Desactivar preloader en caso de error
+                    setIsClosing(false);
+
+                    // Limpiar estados
+                    setDataCierrePendiente(null);
+                    setFirmaConductor(null);
+                    setFirmaUsuario(null);
+                    setFirmasGuardadas(null);
+                    confirmacionAlertShownRef.current = false;
+
+                    Alert.alert(
+                        'Error al guardar offline',
+                        `No se pudo agregar a la cola de sincronización:\n\n${queueErrorText}`,
+                        [
+                            {
+                                text: 'Copiar',
+                                onPress: () => {
+                                    copyToClipboard(`Error al guardar offline:\n${queueErrorText}`);
+                                }
+                            },
+                            { text: 'OK' }
+                        ],
+                        { cancelable: true }
+                    );
+                    return;
+                }
+            }
+
+            // Solo mostrar error si NO es un error de red (otros errores del servidor, validaciones, etc.)
+            const errorText = formatFullError(error);
+
+            // Limpiar estados en caso de error
+            setDataCierrePendiente(null);
+            setFirmaConductor(null);
+            setFirmaUsuario(null);
+            setFirmasGuardadas(null);
+
+            Alert.alert(
+                'Error al cerrar el pedido',
+                errorText,
+                [
+                    {
+                        text: 'Copiar',
+                        onPress: () => {
+                            copyToClipboard(errorText);
+                        }
+                    },
+                    { text: 'OK' }
+                ],
+                { cancelable: true }
+            );
+        }
+    };
+
+    const formatFullError = (err: unknown): string => {
+        try {
+            if (err instanceof Error) {
+                return `${err.message}\n\n${err.stack ?? ''}`.trim();
+            }
+            return JSON.stringify(err, null, 2);
+        } catch (_e) {
+            return String(err);
+        }
+    };
+
+    const copyToClipboard = (text: string) => {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            const Clipboard = require('@react-native-clipboard/clipboard');
+            if (Clipboard?.setString) {
+                Clipboard.setString(text);
+            }
+        } catch (_e) {
+            // No-op if library is not available
+        }
     };
 
     const handleGuardarNovedad = () => {
@@ -215,10 +543,14 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
         }
     };
 
-    if (!visible) return null;
+    // No renderizar nada si no está visible
+    if (!visible) {
+        return null;
+    }
 
     return (
         <Modal
+            key={`cerrar-pedido-modal-${pedidoId || 'default'}`}
             animationType="slide"
             transparent={true}
             visible={visible}
@@ -233,6 +565,53 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                 zIndex: 99999,
                 elevation: 20,
             }}>
+                {/* Overlay de preloader durante el cierre */}
+                {isClosing && (
+                    <View style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 100000,
+                        elevation: 30,
+                    }}>
+                        <View style={{
+                            backgroundColor: '#fff',
+                            borderRadius: 20,
+                            padding: 30,
+                            alignItems: 'center',
+                            minWidth: 200,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 5 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 10,
+                            elevation: 25,
+                        }}>
+                            <ActivityIndicator size="large" color="#007bff" />
+                            <Text style={{
+                                marginTop: 20,
+                                fontSize: 16,
+                                fontWeight: '600',
+                                color: '#333',
+                                textAlign: 'center',
+                            }}>
+                                Cerrando pedido...
+                            </Text>
+                            <Text style={{
+                                marginTop: 8,
+                                fontSize: 14,
+                                color: '#666',
+                                textAlign: 'center',
+                            }}>
+                                Por favor espere
+                            </Text>
+                        </View>
+                    </View>
+                )}
                 <View style={{
                     backgroundColor: '#fff',
                     borderRadius: 20,
@@ -305,8 +684,9 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                     {/* Contenido del modal */}
                     <ScrollView
                         style={{ maxHeight: height * 0.7 }}
-                        showsVerticalScrollIndicator={false}
+                        showsVerticalScrollIndicator={true}
                         nestedScrollEnabled={true}
+                        contentContainerStyle={{ paddingBottom: 20 }}
                     >
                         <View style={{ padding: 20 }}>
                             {entregado ? (
@@ -744,11 +1124,11 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                 marginBottom: 8
                                             }}>
                                                 Forma de Pago *
-                                            </Text>      
-                                            <View style={{ flexDirection: 'row', gap: 12 }}> 
+                                            </Text>
+                                            <View style={{ flexDirection: 'row', gap: 12 }}>
                                                 <TouchableOpacity
                                                     style={{
-                                                        flex:1,
+                                                        flex: 1,
                                                         backgroundColor: formaPago === 'Contado' ? '#e3f2fd' : '#f8f9fa',
                                                         borderRadius: 10,
                                                         paddingHorizontal: 16,
@@ -776,7 +1156,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                             fontWeight: '600',
                                                             color: formaPago === 'Contado' ? '#2196f3' : '#333'
                                                         }}>
-                                                        Contado
+                                                            Contado
                                                         </Text>
                                                     </View>
                                                     {formaPago === 'Contado' && (
@@ -789,7 +1169,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
 
                                                 <TouchableOpacity
                                                     style={{
-                                                        flex:1,
+                                                        flex: 1,
                                                         backgroundColor: formaPago === 'Credito' ? '#e8f5e8' : '#f8f9fa',
                                                         borderRadius: 10,
                                                         paddingHorizontal: 16,
@@ -817,7 +1197,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                             fontWeight: '600',
                                                             color: formaPago === 'Credito' ? '#4caf50' : '#333'
                                                         }}>
-                                                        Crédito
+                                                            Crédito
                                                         </Text>
                                                     </View>
                                                     {formaPago === 'Credito' && (
@@ -1163,6 +1543,18 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                     </View>
                 </View>
             </Modal>
+
+            {/* Modal de Firmas Digitales */}
+            <FirmaModal
+                visible={showFirmasModal}
+                onClose={() => {
+                    setShowFirmasModal(false);
+                    setDataCierrePendiente(null);
+                }}
+                onSave={handleFirmasGuardadas}
+                pedidoId={pedidoId || ''}
+            />
+
         </Modal>
     );
 };

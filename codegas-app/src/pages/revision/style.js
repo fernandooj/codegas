@@ -1,332 +1,392 @@
-import {StyleSheet, Dimensions, Platform} from 'react-native';
+import { Platform } from 'react-native';
 import { MediaQueryStyleSheet } from "react-native-responsive";
-let Width = Dimensions.get('window').width;
-let Height = Dimensions.get('window').height;
 
 export const style = MediaQueryStyleSheet.create({
-  container:{
-		flex:.95,
-		backgroundColor:'#ffffff',
-		paddingTop:Platform.OS==='android' ?10 :35,
-		alignItems:"center",
+	screen: {
+		flex: 1,
+		backgroundColor: '#f1f3f5'
+	},
+	header: {
+		paddingHorizontal: 20,
+		paddingTop: Platform.OS === 'ios' ? 12 : 20,
+		marginBottom: 18
+	},
+	headerCard: {
+		backgroundColor: '#fff',
+		borderRadius: 16,
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingVertical: 14,
+		paddingHorizontal: 16,
+		gap: 12,
+		marginHorizontal: 20,
+		shadowColor: 'rgba(0,0,0,0.05)',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 1,
+		shadowRadius: 8,
+		elevation: 3
+	},
+	headerIcon: {
+		fontSize: 28,
+		color: '#002587'
+	},
+	headerTitle: {
+		fontSize: 18,
+		fontWeight: '700',
+		color: '#1c335f'
+	},
+	headerSubtitle: {
+		fontSize: 13,
+		color: '#6c757d',
+		marginTop: 2
+	},
+	stepContent: {
+		paddingHorizontal: 20,
+		paddingBottom: 32,
+		gap: 16
+	},
+	stepsWrapper: {
+		flex: 1
+	},
+	card: {
+		backgroundColor: '#fff',
+		borderRadius: 16,
+		padding: 18,
+		gap: 16,
+		shadowColor: 'rgba(0,0,0,0.05)',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 1,
+		shadowRadius: 8,
+		elevation: 3
+	},
+	cardTitle: {
+		fontSize: 16,
+		fontWeight: '700',
+		color: '#1c335f'
+	},
+	cardDescription: {
+		fontSize: 13,
+		color: '#6c757d',
+		lineHeight: 18
+	},
+	fieldsGrid: {
+		gap: 12
+	},
+	inputGroup: {
+		gap: 6
+	},
+	inputLabel: {
+		fontSize: 13,
+		fontWeight: '600',
+		color: '#495057'
+	},
+	inputWrapper: {
+		borderWidth: 1,
+		borderColor: '#dee2e6',
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		marginBottom: 12,
+		alignSelf: 'stretch',
+		overflow: 'hidden'
+	},
+	input: {
+		fontSize: 14,
+		color: '#212529',
+		paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+		paddingHorizontal: 16,
+		backgroundColor: 'transparent',
+		borderWidth: 0
+	},
+	selectorButton: {
+		borderWidth: 1,
+		borderColor: '#dee2e6',
+		backgroundColor: '#fff',
+		borderRadius: 12,
+		paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+		paddingHorizontal: 16,
+		marginBottom: 12,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between'
+	},
+	selectorValue: {
+		fontSize: 14,
+		color: '#1c335f',
+		fontWeight: '600'
+	},
+	selectorPlaceholder: {
+		fontSize: 14,
+		color: '#adb5bd'
+	},
+	selectorIcon: {
+		fontSize: 14,
+		color: '#6c757d'
+	},
+	stepButton: {
+		backgroundColor: '#002587',
+		paddingVertical: 12,
+		paddingHorizontal: 24,
+		borderRadius: 12,
+		alignItems: 'center',
 		justifyContent: 'center'
 	},
-	
-	nuevaFrecuencia:{
-		flexDirection:"row",
-		backgroundColor:"#002587",
-		textAlign:"center",
-		alignItems:"center",
-		justifyContent:"center",
-		marginVertical:10,
-		width:Width-60,
-		left:20,
-		padding:10,
-	}, 
-	iconFrecuencia:{
-		color:"#ffffff",
-		top:1,
-		marginRight:10
+	stepButtonText: {
+		color: '#fff',
+		fontSize: 15,
+		fontWeight: '700'
 	},
-	textGuardar:{
-		color:"#ffffff"
+	stepButtonDisabled: {
+		opacity: 0.4
 	},
-	input:{
-		borderWidth:1,
-		width:Width-30,
-		marginVertical:5,
-		paddingVertical:4,
-		fontSize:10,
-		borderColor:"rgba(20,20,20,.1)"
+	stepButtonAlt: {
+		backgroundColor: '#fff',
+		borderWidth: 1,
+		borderColor: '#ced4da',
+		paddingVertical: 12,
+		paddingHorizontal: 24,
+		borderRadius: 12
 	},
-	filterText:{
-		fontFamily: "Comfortaa-Regular",
-		fontSize:15
+	stepButtonAltText: {
+		color: '#495057',
+		fontSize: 15,
+		fontWeight: '600'
 	},
-	contenedorUsuario:{
-		width:Width-30,
-		borderWidth:1,
-		borderRadius:5,
-		marginVertical:5,
-		borderColor:"rgba(0,0,0,.1)"
+	hiddenButton: {
+		display: 'none'
 	},
-	subContenedorUsuario:{
-		flexDirection:"row",
-		alignItems:"center",
-		marginVertical:3,
-		paddingHorizontal:5,
+	fullWidth: {
+		width: '100%'
 	},
-	iconTrash:{
-
+	selectedClientCard: {
+		backgroundColor: '#f1f3ff',
+		borderRadius: 16,
+		padding: 16,
+		gap: 12
 	},
-	row1:{
-		fontFamily: "Comfortaa-Regular",
-		width:"30%",
-		fontSize:13
+	selectedClientHeader: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 12
 	},
-	row2:{
-		fontFamily: "Comfortaa-Regular",
-		alignItems:"flex-start",
-		fontSize:13,
-		flex: 1, 
-		flexWrap: 'wrap'
-	},
-	btnZona:{
-		marginVertical:3,
-		flexDirection:"row",
-		alignItems:"center",
-		borderWidth:1,
-		borderColor:"rgba(100,100,100,.2)"
-	},
-	icon:{
-		width:20,
-		height:20,
-	},
-	btnZonaActiva:{
-		marginVertical:5,
-		flexDirection:"row",
-		alignItems:"center",
-		borderWidth:1,
-		backgroundColor:"rgba(100,100,100,.1)",
-		borderColor:"rgba(100,100,100,.2)"
-	},
-
-	//// STEP 2
-	contenedorSetp2:{
-		flexDirection:"row",
-		alignItems:"center",
-		width:Width-20
-	},
-	row1Step2:{
-		fontFamily: "Comfortaa-Regular",
-		width:Width/2.5,
-	},
-	row1Step3:{
-		fontFamily: "Comfortaa-Regular",
-		width:Width/1.5,
-	},
-	inputStep2:{
-		fontFamily: "Comfortaa-Regular",
-		borderWidth:1,
-		width:Width/1.8,
-		marginVertical:5,
-		paddingVertical:Platform.OS==='android' ?4 :10,
-		paddingRight:12,
-		fontSize:10,
-		borderColor:"rgba(20,20,20,.1)"
-	},
-	btnMultiple:{
-		borderWidth:1,
-		width:Width/1.8,
-		marginVertical:5,
-		paddingVertical:10,
-		alignItems: 'flex-start',
-		borderColor:"rgba(20,20,20,.1)"
-	},
-	btnDate:{
-		marginVertical:5,
-		alignItems: 'flex-start',
-		borderColor:"rgba(20,20,20,.1)"
-	},
-	btnDate2:{
-		width:Width/1.7,
-	},
-	textBtn:{
-		fontFamily: "Comfortaa-Regular",
-		color:"rgba(0,0,0,.4)",
-		fontSize:10,
-		paddingLeft:5
-	},
-	textBtnActive:{
-		fontFamily: "Comfortaa-Regular",
-		color:"rgba(0,0,0,1)",
-		fontSize:10,
-		paddingLeft:5
-	},
-
-	//// STEP 3
-	contenedorSetp3:{
-		flexDirection:"row",
-		alignItems:"center",
-		marginVertical:5
-	},
-	btnSign:{
-		backgroundColor:"rgba(100,100,100,.5)",
-		paddingVertical:6,
-		paddingHorizontal:8,
-		borderRadius:15
-		
-	},
-	iconSign:{
-		fontSize:15,
-		color:"rgba(255,255,255,.9)",
-	},
-	textStep3:{
-		fontFamily: "Comfortaa-Regular",
-		marginHorizontal:10,
-		width:100,
-		fontSize:13,
-		textAlign:"center"
-	},
-	textStep3Cantidad:{
-		fontFamily: "Comfortaa-Regular",
-		marginHorizontal:10,
-		width:100,
-		fontSize:10,
-		textAlign:"center"
-	},
-	
-	//// STEP 3
-	switchEnableBorder: {
-		borderColor: '#8e0303',
-		borderWidth: 1
-	},
-		
-	switchDisableBorder: {
-		borderColor: '#f2f2f2',
-		borderWidth: 1,  
-	},
-
-	//// STEP 4
-	inputStep4:{
-		fontFamily: "Comfortaa-Regular",
-		textAlignVertical: 'top',
-		borderColor:"rgba(20,20,20,.1)",
-		backgroundColor:"#ffffff",
-		borderWidth:1,
-		width:Width/1.7,
-		marginVertical:5,
-		paddingVertical:4,
-		fontSize:10,
-		height:100,
-	},
-	separador:{
-		width:Width,
-		height:1,
-		marginVertical:10,
-		backgroundColor:"rgba(50,50,50,.1)"
-	},
- 
-	containerTanque:{
-		flex:1,
-		backgroundColor:'#ffffff',
-		paddingTop:Platform.OS==='android' ?10 :35,
-		alignItems:"center",
+	avatar: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
+		backgroundColor: '#002587',
+		alignItems: 'center',
 		justifyContent: 'center'
 	},
-	contenedorRevisiones:{
-		paddingVertical:10,
-		paddingLeft:10,
-		backgroundColor:'#ffffff',
-		shadowColor: 'rgba(0,0,0, .7)', // IOS
-		borderColor:"rgba(0,0,0,0)",
-		shadowOffset: { height: 2, width: 2 }, // IOS
-		shadowOpacity: .5, // IOS
-		shadowRadius: 5, //IOS
+	avatarIcon: {
+		fontSize: 20,
+		color: '#fff'
+	},
+	selectedClientName: {
+		fontSize: 16,
+		fontWeight: '700',
+		color: '#1c335f'
+	},
+	selectedClientSub: {
+		fontSize: 13,
+		color: '#495057'
+	},
+	changeButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
 		backgroundColor: '#fff',
-		elevation: 5, // Android
-		marginLeft:5,
-		marginTop:10,
-		marginBottom:10,
-		borderRadius:5,
-		textAlignVertical:"center",
-		width:"97%"
+		borderRadius: 12,
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderWidth: 1,
+		borderColor: '#ced4da',
+		gap: 6
 	},
-	inputCabezera:{
-		position:"relative",
-		zIndex:0,
-		width:"82%",
-		marginRight:10,
-		shadowColor: 'rgba(0,0,0, .4)', // IOS
-		borderColor:"rgba(0,0,0,0)",
-		shadowOffset: { height: 2, width: 2 }, // IOS
-		shadowOpacity: .5, // IOS
-		shadowRadius: 5, //IOS
+	changeButtonIcon: {
+		color: '#002587',
+		fontSize: 16
+	},
+	changeButtonText: {
+		color: '#002587',
+		fontWeight: '700'
+	},
+	loading: {
+		alignItems: 'center',
+		gap: 8,
+		paddingVertical: 16
+	},
+	loadingText: {
+		color: '#495057',
+		fontSize: 13
+	},
+	emptyState: {
+		backgroundColor: '#f8f9fa',
+		borderRadius: 16,
+		padding: 24,
+		alignItems: 'center',
+		gap: 8
+	},
+	emptyStateIcon: {
+		fontSize: 28,
+		color: '#adb5bd'
+	},
+	emptyStateTitle: {
+		fontSize: 15,
+		fontWeight: '700',
+		color: '#495057'
+	},
+	emptyStateText: {
+		fontSize: 13,
+		color: '#6c757d',
+		textAlign: 'center'
+	},
+	pointCard: {
 		backgroundColor: '#fff',
-		paddingLeft:10,
-		elevation:4,
-		marginBottom:10,
-		borderRadius:5,
-		paddingVertical:2,
-		height:Platform.OS==="ios" ?30 :30
+		borderRadius: 16,
+		padding: 16,
+		gap: 12,
+		marginBottom: 12,
+		shadowColor: 'rgba(0,0,0,0.03)',
+		shadowOffset: { width: 0, height: 3 },
+		shadowOpacity: 1,
+		shadowRadius: 6,
+		elevation: 2
 	},
-	iconAdd:{
-		fontSize:20,
-		top:5,
-		color:"#002587",
+	pointCardSelected: {
+		borderWidth: 2,
+		borderColor: '#51cf66',
+		backgroundColor: '#f1faf3'
 	},
-	//////////////////////////////////////////////////////////////////		
-	///////////				MODAL ALERTA
-	//////////////////////////////////////////////////////////////////
-	modal:{
-		position:Platform.OS==='android' ?"absolute" :"absolute",
-		backgroundColor:"#ffffff",
-		zIndex:100,
-		width:Width,
-		height:Height,
+	pointHeader: {
+		flexDirection: 'row',
+		alignItems: 'flex-start',
+		gap: 12
 	},
-	subContenedorModal:{
-		backgroundColor:"#e3e3e3",
-		marginHorizontal:12,
-        marginTop:40,
-        marginBottom:125,
-		width:"92%"
+	pointIcon: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		backgroundColor: '#e7f5ff',
+		alignItems: 'center',
+		justifyContent: 'center'
 	},
-	btnModalClose:{
-		position:"absolute",
-		zIndex:100,
-		right:3,
-		top:3
-	},	
-	iconCerrar:{
-		fontSize:30
+	pointIconSymbol: {
+		fontSize: 18,
+		color: '#1c7ed6'
 	},
-	inputAlerta:{
-		fontFamily: "Comfortaa-Regular",
-		textAlignVertical: 'top',
-		borderColor:"rgba(20,20,20,.1)",
-		backgroundColor:"#ffffff",
-		borderWidth:1,
-		width:"100%",
-		marginVertical:2,
-		paddingVertical:4,
-		fontSize:10,
-		height:140,
+	pointTitle: {
+		fontSize: 15,
+		fontWeight: '700',
+		color: '#1c335f'
 	},
-	nuevaAlerta:{
-		flexDirection:"row",
-		backgroundColor:"#002587",
-		textAlign:"center",
-		alignItems:"center",
-		justifyContent:"center",
-		marginTop:10,
-		width:"100%",
-		padding:10,
-	}, 
-
-	//////////////////////////////////////////////////////////////////		
-	///////////				CERRAR
-	//////////////////////////////////////////////////////////////////
-	cabezera1:{
-		width:Width,
-		height:110
-	},  
-	textCerrar:{
-		fontFamily: "Comfortaa-Regular",
-		marginVertical:2,
-		fontSize:15,
-		textAlign:"center"
+	pointMeta: {
+		fontSize: 13,
+		color: '#495057'
 	},
-	loadingContain:{
-		position:"absolute",
-		backgroundColor:"rgba(100,100,100,.1)",
-		justifyContent:"center",
-		width:"100%",
-		height:"100%",
-		zIndex:100,
+	pointSelectedIcon: {
+		fontSize: 20,
+		color: '#2b8a3e'
 	},
-	row1Step2Cerrar:{
-		fontFamily: "Comfortaa-Regular",
-		width:Width/1.3,
+	pointObservation: {
+		fontSize: 12,
+		color: '#6c757d'
+	},
+	modalContainer: {
+		flex: 1,
+		backgroundColor: '#fff',
+		paddingTop: Platform.OS === 'ios' ? 24 : 16,
+		paddingHorizontal: 24,
+		paddingBottom: Platform.OS === 'ios' ? 32 : 24
+	},
+	modalHeader: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		marginBottom: 16
+	},
+	modalTitle: {
+		fontSize: 18,
+		fontWeight: '700',
+		color: '#1c335f'
+	},
+	modalCloseIcon: {
+		fontSize: 22,
+		color: '#adb5bd'
+	},
+	modalInput: {
+		borderWidth: 1,
+		borderColor: '#dee2e6',
+		borderRadius: 12,
+		paddingHorizontal: 14,
+		paddingVertical: 12,
+		fontSize: 14,
+		backgroundColor: '#f8f9fa',
+		color: '#212529',
+		marginBottom: 16
+	},
+	modalItem: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 16,
+		paddingVertical: 14,
+		borderBottomWidth: 1,
+		borderBottomColor: '#f1f3f5'
+	},
+	modalAvatar: {
+		width: 36,
+		height: 36,
+		borderRadius: 18,
+		backgroundColor: '#eef2ff',
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	modalAvatarIcon: {
+		color: '#002587',
+		fontSize: 16
+	},
+	modalItemTitle: {
+		fontSize: 15,
+		fontWeight: '700',
+		color: '#1c335f'
+	},
+	modalItemSub: {
+		fontSize: 13,
+		color: '#495057'
+	},
+	pickerModalContainer: {
+		flex: 1,
+		backgroundColor: '#fff',
+		paddingTop: Platform.OS === 'ios' ? 24 : 16,
+		paddingHorizontal: 24,
+		paddingBottom: Platform.OS === 'ios' ? 32 : 24
+	},
+	pickerOption: {
+		paddingVertical: 14,
+		borderBottomWidth: 1,
+		borderBottomColor: '#f1f3f5',
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between'
+	},
+	pickerOptionSelected: {
+		backgroundColor: '#e7f5ff'
+	},
+	pickerOptionText: {
+		fontSize: 15,
+		color: '#1c335f'
+	},
+	pickerOptionTextSelected: {
+		fontWeight: '700'
+	},
+	pickerOptionIconSelected: {
+		fontSize: 16,
+		color: '#002587'
+	},
+	pickerCancelButton: {
+		marginTop: 16,
+		alignItems: 'center'
+	},
+	pickerCancelText: {
+		fontSize: 15,
+		fontWeight: '600',
+		color: '#002587'
 	}
 })

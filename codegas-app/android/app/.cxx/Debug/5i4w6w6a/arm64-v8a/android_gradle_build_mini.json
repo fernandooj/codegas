@@ -13,6 +13,7 @@
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt"
   ],
   "cleanCommandsComponents": [
@@ -40,13 +41,18 @@
       "abi": "arm64-v8a",
       "output": "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/build/intermediates/cxx/Debug/5i4w6w6a/obj/arm64-v8a/libreact_codegen_safeareacontext.so",
       "runtimeFiles": [
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/2585dfa24f5828ef05275b7140a574fb/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so"
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/af58e75fe606d438799bf9a736d10fc4/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so"
       ]
     },
     "react_codegen_RNCImageCropPickerSpec::@702b02f8d2524609d414": {
       "artifactName": "react_codegen_RNCImageCropPickerSpec",
+      "abi": "arm64-v8a",
+      "runtimeFiles": []
+    },
+    "react_codegen_RNCWebViewSpec::@eb48929f9f7453740a6c": {
+      "artifactName": "react_codegen_RNCWebViewSpec",
       "abi": "arm64-v8a",
       "runtimeFiles": []
     },
@@ -68,9 +74,9 @@
         "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/build/intermediates/cxx/Debug/5i4w6w6a/obj/arm64-v8a/libreact_codegen_rnpicker.so",
         "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/build/intermediates/cxx/Debug/5i4w6w6a/obj/arm64-v8a/libreact_codegen_safeareacontext.so",
         "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/build/intermediates/cxx/Debug/5i4w6w6a/obj/arm64-v8a/libreact_codegen_rnscreens.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/2585dfa24f5828ef05275b7140a574fb/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so"
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/af58e75fe606d438799bf9a736d10fc4/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so"
       ]
     },
     "react_codegen_ReactNativeBlobUtilSpec::@7d3cc6108106e04bb830": {
@@ -103,9 +109,9 @@
       "abi": "arm64-v8a",
       "output": "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/build/intermediates/cxx/Debug/5i4w6w6a/obj/arm64-v8a/libreact_codegen_rnscreens.so",
       "runtimeFiles": [
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/2585dfa24f5828ef05275b7140a574fb/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so"
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/af58e75fe606d438799bf9a736d10fc4/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so"
       ]
     },
     "react_codegen_VectorIconsFontAwesome::@f56ae3024d8db5b6b904": {
@@ -118,9 +124,9 @@
       "abi": "arm64-v8a",
       "output": "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/build/intermediates/cxx/Debug/5i4w6w6a/obj/arm64-v8a/libreact_codegen_rnpicker.so",
       "runtimeFiles": [
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/274c566710456cf595eaae12534bd6e7/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
-        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/2585dfa24f5828ef05275b7140a574fb/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so"
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/1e40ac9d5426d181131b67f5d140c91d/transformed/react-android-0.81.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
+        "/Users/ferortiz/.gradle/caches/8.14.3/transforms/af58e75fe606d438799bf9a736d10fc4/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so"
       ]
     }
   }
