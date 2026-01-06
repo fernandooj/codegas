@@ -22,9 +22,9 @@ module.exports.main = async (event) => {
   const { centro, bodega, placa, capacidad = 0, activo = true } = body;
 
   const EDIT_CAR = 'SELECT edit_carros($1, $2, $3, $4, $5, $6) as result';
-  const client = await poolConection.connect();
-
+  let client;
   try {
+    client = await poolConection.connect();
     const { rows } = await client.query(EDIT_CAR, [_id, centro, bodega, placa, capacidad, activo]);
 
     if (rows[0].result === null) {
@@ -42,6 +42,8 @@ module.exports.main = async (event) => {
     console.log(error);
     throw new DatabaseError(error);
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 };

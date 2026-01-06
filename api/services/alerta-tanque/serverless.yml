@@ -54,7 +54,7 @@ CerrarAlertaTanque:
   events:
     - httpApi: 'PUT /ale/alertaTanque/cerrar/{idTanque}'
   environment:
-    BUCKET: codegas
+    BUCKET: newcodegas
   package:
     include:
       - services/alerta-tanque/src/cerrar.js

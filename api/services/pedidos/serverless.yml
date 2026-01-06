@@ -128,12 +128,17 @@ finalizarPedido:
     - httpApi: 'POST /ped/pedido/finalizar/{idConductor}'
   environment:
     BUCKET: newcodegas
+    TWILIO_ACCOUNT_SID: ${self:custom.twilioAccountSid}
+    TWILIO_AUTH_TOKEN: ${self:custom.twilioAuthToken}
+    TWILIO_WHATSAPP_NUMBER: ${self:custom.twilioWhatsAppNumber}
   package:
     include:
       - services/pedidos/src/finalizar-pedido.js
       - lib/errors/database-error.js
       - lib/image.js
       - lib/responses.js
+      - lib/twilio-config.js
+      - lib/whatsapp-pedido-entregado.js
 
 resetPedido:
   name: ${self:custom.base}-reset-pedido
@@ -145,6 +150,36 @@ resetPedido:
       - services/pedidos/src/reset-pedido.js
       - lib/errors/database-error.js
 
+desasignarVehiculoPedido:
+  name: ${self:custom.base}-desasignar-vehiculo-pedido
+  handler: services/pedidos/src/desasignar-vehiculo-pedido.main
+  events:
+    - httpApi: 'POST /ped/pedido/desasignarVehiculo/{pedidoId}'
+  package:
+    include:
+      - services/pedidos/src/desasignar-vehiculo-pedido.js
+      - lib/errors/database-error.js
+
+getEstadisticasDia:
+  name: ${self:custom.base}-get-estadisticas-dia
+  handler: services/pedidos/src/get-estadisticas-dia.main
+  events:
+    - httpApi: 'GET /ped/pedido/estadisticas/dia'
+  package:
+    include:
+      - services/pedidos/src/get-estadisticas-dia.js
+      - lib/errors/database-error.js
+
+getPedidosEnGestion:
+  name: ${self:custom.base}-get-pedidos-en-gestion
+  handler: services/pedidos/src/get-pedidos-en-gestion.main
+  events:
+    - httpApi: 'GET /ped/pedido/en-gestion'
+  package:
+    include:
+      - services/pedidos/src/get-pedidos-en-gestion.js
+      - lib/errors/database-error.js
+
 getEstadisticas:
   name: ${self:custom.base}-get-estadisticas
   handler: services/pedidos/src/get-estadisticas.main
@@ -154,3 +189,117 @@ getEstadisticas:
     include:
       - services/pedidos/src/get-estadisticas.js
       - lib/errors/database-error.js
+
+updateChecklist:
+  name: ${self:custom.base}-update-checklist
+  handler: services/pedidos/src/update-checklist.updateChecklist
+  events:
+    - httpApi: 'PUT /ped/pedido/{id}/checklist'
+  package:
+    include:
+      - services/pedidos/src/update-checklist.js
+      - lib/errors/database-error.js
+
+getChecklist:
+  name: ${self:custom.base}-get-checklist
+  handler: services/pedidos/src/update-checklist.getChecklist
+  events:
+    - httpApi: 'GET /ped/pedido/{id}/checklist'
+  package:
+    include:
+      - services/pedidos/src/update-checklist.js
+      - lib/errors/database-error.js
+
+updateLlenadoTanques:
+  name: ${self:custom.base}-update-llenado-tanques
+  handler: services/pedidos/src/update-llenado-tanques.updateLlenadoTanques
+  events:
+    - httpApi: 'PUT /ped/pedido/{id}/llenado-tanques'
+  package:
+    include:
+      - services/pedidos/src/update-llenado-tanques.js
+      - lib/errors/database-error.js
+
+updateTanques:
+  name: ${self:custom.base}-update-tanques
+  handler: services/pedidos/src/update-tanques.updateTanques
+  events:
+    - httpApi: 'PUT /ped/pedido/{id}/tanques'
+  package:
+    include:
+      - services/pedidos/src/update-tanques.js
+      - lib/errors/database-error.js
+
+getTanques:
+  name: ${self:custom.base}-get-tanques
+  handler: services/pedidos/src/update-tanques.getTanques
+  events:
+    - httpApi: 'GET /ped/pedido/{id}/tanques'
+  package:
+    include:
+      - services/pedidos/src/update-tanques.js
+      - lib/errors/database-error.js
+
+guardarFirmas:
+  name: ${self:custom.base}-guardar-firmas
+  handler: services/pedidos/src/guardar-firmas.main
+  events:
+    - httpApi: 'POST /ped/pedido/{pedidoId}/firmas'
+  package:
+    include:
+      - services/pedidos/src/guardar-firmas.js
+      - lib/errors/database-error.js
+      - lib/image.js
+
+getFirmas:
+  name: ${self:custom.base}-get-firmas
+  handler: services/pedidos/src/guardar-firmas.getFirmas
+  events:
+    - httpApi: 'GET /ped/pedido/{pedidoId}/firmas'
+  package:
+    include:
+      - services/pedidos/src/guardar-firmas.js
+      - lib/errors/database-error.js
+
+generateFacturaPDF:
+  name: ${self:custom.base}-generate-factura-pdf
+  handler: services/pedidos/src/generate-factura-pdf.main
+  events:
+    - httpApi: 'GET /ped/pedido/{id}/factura-pdf'
+  environment:
+    BUCKET: newcodegas
+  package:
+    include:
+      - services/pedidos/src/generate-factura-pdf.js
+      - lib/errors/database-error.js
+      - lib/pdf.js
+      - lib/connection-pg.js
+
+sendFacturaEmail:
+  name: ${self:custom.base}-send-factura-email
+  handler: services/pedidos/src/send-factura-email.main
+  events:
+    - httpApi: 'POST /ped/pedido/{id}/send-factura-email'
+  environment:
+    EMAIL_USER: ${self:custom.emailUser}
+    EMAIL_PASS: ${self:custom.emailPass}
+    BUCKET: newcodegas
+  package:
+    include:
+      - services/pedidos/src/send-factura-email.js
+      - services/pedidos/src/generate-factura-pdf.js
+      - lib/errors/database-error.js
+      - lib/nodemailer-config.js
+      - lib/pdf.js
+      - lib/connection-pg.js
+
+editarOrdenConFechaEntrega:
+  name: ${self:custom.base}-editar-orden-con-fecha-entrega
+  handler: services/pedidos/src/editar-orden-con-fecha-entrega.main
+  events:
+    - httpApi: 'PUT /ped/pedido/editarOrdenConFechaEntrega'
+  package:
+    include:
+      - services/pedidos/src/editar-orden-con-fecha-entrega.js
+      - lib/errors/database-error.js
+      - lib/connection-pg.js

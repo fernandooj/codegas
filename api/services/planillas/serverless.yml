@@ -1,0 +1,60 @@
+createPlanilla:
+  name: ${self:custom.base}-create-planilla
+  handler: services/planillas/src/create-planilla.main
+  events:
+    - httpApi: 'POST /pla/planilla'
+  package:
+    include:
+      - services/planillas/src/create-planilla.js
+      - lib/errors/database-error.js
+
+getPlanillas:
+  name: ${self:custom.base}-get-planillas
+  handler: services/planillas/src/get-planillas.main
+  events:
+    - httpApi: 'GET /pla/planilla/{userId}/{acceso}'
+  package:
+    include:
+      - services/planillas/src/get-planillas.js
+      - lib/errors/database-error.js
+
+getPlanillaById:
+  name: ${self:custom.base}-get-planilla-by-id
+  handler: services/planillas/src/get-planilla-by-id.main
+  events:
+    - httpApi: 'GET /pla/planilla/byId/{_id}'
+  package:
+    include:
+      - services/planillas/src/get-planilla-by-id.js
+      - lib/errors/database-error.js
+
+updatePlanilla:
+  name: ${self:custom.base}-update-planilla
+  handler: services/planillas/src/update-planilla.main
+  events:
+    - httpApi: 'PUT /pla/planilla/{_id}'
+  package:
+    include:
+      - services/planillas/src/update-planilla.js
+      - lib/errors/database-error.js
+
+deletePlanilla:
+  name: ${self:custom.base}-delete-planilla
+  handler: services/planillas/src/delete-planilla.main
+  events:
+    - httpApi: 'DELETE /pla/planilla/{_id}'
+  package:
+    include:
+      - services/planillas/src/delete-planilla.js
+      - lib/errors/database-error.js
+
+getPedidosConductorDia:
+  name: ${self:custom.base}-get-pedidos-conductor-dia
+  handler: services/planillas/src/get-pedidos-conductor-dia.main
+  events:
+    - httpApi: 'GET /pla/pedidos-conductor-dia/{conductorId}'
+  package:
+    include:
+      - services/planillas/src/get-pedidos-conductor-dia.js
+      - lib/errors/database-error.js
+

@@ -45,7 +45,7 @@ addImages:
   events:
     - httpApi: 'PUT /rev/revision/add-images'
   environment:
-    BUCKET: codegas
+    BUCKET: newcodegas
   package:
     include:
       - services/revisiones/src/add-images.js
@@ -60,7 +60,7 @@ addImages:
 #   events:
 #     - httpApi: 'PUT /tan/tanque/images/{idTanque}/{type}'
 #   environment:
-#     BUCKET: codegas
+#     BUCKET: newcodegas
 #   package:
 #     include:
 #       - services/revisiones/src/remove-images.js

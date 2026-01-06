@@ -22,15 +22,18 @@ module.exports.main = async (event) => {
   const {
     centro, bodega, placa, conductor, usuarioCrea, capacidad = 0
   } = body;
-  const client = await poolConection.connect();
-
+  let client;
   try {
-
+    client = await poolConection.connect();
     const { rows } = await client.query(SAVE_CAR, [centro, bodega, placa, conductor, usuarioCrea, capacidad])
     return {
       status: !!rows[0].save_carros
     }
   } catch (error) {
     throw JSON.stringify(error);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 };

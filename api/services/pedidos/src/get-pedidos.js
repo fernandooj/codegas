@@ -25,17 +25,28 @@ module.exports.main = async (event) => {
   const newEstado = estado == 'undefined' || estado == undefined ? 'todos' : estado;
   const newOrdenPor = ordenPor == 'undefined' || ordenPor == undefined ? 'fecha_creacion' : ordenPor;
   const newTipoOrden = tipoOrden == 'undefined' || tipoOrden == undefined ? 'DESC' : tipoOrden;
+  const client = await poolConection.connect();
   try {
-    const client = await poolConection.connect();
     const { rows: pedido } = await client.query(GET_PEDIDOS, [usuarioId, limit, start, acceso, newSearch, newEstado, newOrdenPor, newTipoOrden])
+
+    // El total viene en cada fila de la función SQL, extraerlo de la primera fila
+    // Si no hay resultados, el total es 0
+    // Si hay resultados pero total es undefined/null, usar el conteo de resultados como fallback
+    let total = 0;
+    if (pedido.length > 0) {
+      // El campo total viene de la función SQL y está disponible en cada fila
+      total = pedido[0].total !== undefined && pedido[0].total !== null ? pedido[0].total : pedido.length;
+    }
 
     return {
       status: true,
-      total: pedido.length,
+      total: total,
       pedido
     }
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
+  } finally {
+    client.release();
   }
 };

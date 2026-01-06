@@ -1,0 +1,40 @@
+updateLocation:
+  name: ${self:custom.base}-update-location
+  handler: services/tracking/src/update-location.main
+  events:
+    - httpApi: 'POST /trk/tracking/update-location'
+  package:
+    include:
+      - services/tracking/src/update-location.js
+      - lib/errors/database-error.js
+
+getVehiculosActivos:
+  name: ${self:custom.base}-get-vehiculos-activos
+  handler: services/tracking/src/get-vehiculos-activos.main
+  events:
+    - httpApi: 'GET /trk/tracking/vehiculos-activos'
+  package:
+    include:
+      - services/tracking/src/get-vehiculos-activos.js
+      - lib/errors/database-error.js
+
+getUbicacionVehiculo:
+  name: ${self:custom.base}-get-ubicacion-vehiculo
+  handler: services/tracking/src/get-ubicacion-vehiculo.main
+  events:
+    - httpApi: 'GET /trk/tracking/vehiculo/{carroId}'
+  package:
+    include:
+      - services/tracking/src/get-ubicacion-vehiculo.js
+      - lib/errors/database-error.js
+
+getHistorialVehiculo:
+  name: ${self:custom.base}-get-historial-vehiculo
+  handler: services/tracking/src/get-historial-vehiculo.main
+  events:
+    - httpApi: 'GET /trk/tracking/historial/{carroId}'
+  package:
+    include:
+      - services/tracking/src/get-historial-vehiculo.js
+      - lib/errors/database-error.js
+

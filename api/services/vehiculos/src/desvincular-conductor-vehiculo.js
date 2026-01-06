@@ -19,9 +19,9 @@ module.exports.main = async (event) => {
   } = event.pathParameters;
   
   const CHANGE_STATE = 'UPDATE carros SET conductor = null WHERE _id = $1';
-  const client = await poolConection.connect();
-
+  let client;
   try {
+    client = await poolConection.connect();
     await client.query(CHANGE_STATE, [_id])
     return {
       status: true
@@ -29,5 +29,9 @@ module.exports.main = async (event) => {
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 };

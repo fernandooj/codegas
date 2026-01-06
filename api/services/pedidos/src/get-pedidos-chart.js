@@ -15,8 +15,8 @@ module.exports.main = async (event) => {
     usuarioId,
   } = event.pathParameters;
 
+  const client = await poolConection.connect();
   try {
-    const client = await poolConection.connect();
     const  { rows: pedido } = await client.query(GET_PEDIDOS_CHART, [usuarioId])
     
     return {
@@ -27,5 +27,7 @@ module.exports.main = async (event) => {
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
+  } finally {
+    client.release();
   }
 };

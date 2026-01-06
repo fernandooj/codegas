@@ -8,6 +8,16 @@ createVehiculo:
       - services/vehiculos/src/create-vehiculo.js
       - lib/errors/database-error.js
 
+getVehiculosActivosNoEliminados:
+  name: ${self:custom.base}-get-vehiculo-activos-no-eliminados
+  handler: services/vehiculos/src/get-vehiculo-activos.main
+  events:
+    - httpApi: 'GET /veh/vehiculo/no_eliminados/{limit}'
+  package:
+    include:
+      - services/vehiculos/src/get-vehiculo-activos.js
+      - lib/errors/database-error.js
+
 getVehiculos:
   name: ${self:custom.base}-get-vehiculos
   handler: services/vehiculos/src/get-vehiculos.main
@@ -16,16 +26,6 @@ getVehiculos:
   package:
     include:
       - services/vehiculos/src/get-vehiculos.js
-      - lib/errors/database-error.js
-
-getVehiculosActivos:
-  name: ${self:custom.base}-get-vehiculo-activos
-  handler: services/vehiculos/src/get-vehiculo-activos.main
-  events:
-    - httpApi: 'GET /veh/vehiculo/no_eliminados/{limit}'
-  package:
-    include:
-      - services/vehiculos/src/get-vehiculo-activos.js
       - lib/errors/database-error.js
 
 editVehiculo:
@@ -96,4 +96,36 @@ getVehiculoByUser:
   package:
     include:
       - services/vehiculos/src/get-vehiculo-by-user.js
+      - lib/errors/database-error.js
+
+getVehiculosUbicaciones:
+  name: ${self:custom.base}-get-vehiculos-ubicaciones
+  handler: services/vehiculos/src/get-vehiculos-ubicaciones.main
+  events:
+    - httpApi: 'GET /veh/vehiculo/ubicaciones'
+  package:
+    include:
+      - services/vehiculos/src/get-vehiculos-ubicaciones.js
+      - lib/errors/database-error.js
+
+getVehiculosConPedidosDia:
+  name: ${self:custom.base}-get-vehiculos-con-pedidos-dia
+  handler: services/vehiculos/src/get-vehiculos-con-pedidos-dia.main
+  timeout: 30
+  events:
+    - httpApi: 'GET /veh/vehiculo/con-pedidos-dia'
+  package:
+    include:
+      - services/vehiculos/src/get-vehiculos-con-pedidos-dia.js
+      - lib/errors/database-error.js
+
+getEstadisticasVehiculosDia:
+  name: ${self:custom.base}-get-estadisticas-vehiculos-dia
+  handler: services/vehiculos/src/get-estadisticas-vehiculos-dia.main
+  timeout: 30
+  events:
+    - httpApi: 'GET /veh/vehiculo/estadisticas-dia'
+  package:
+    include:
+      - services/vehiculos/src/get-estadisticas-vehiculos-dia.js
       - lib/errors/database-error.js

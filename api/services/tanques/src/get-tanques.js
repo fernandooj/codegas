@@ -1,6 +1,6 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
- 
+
 /**
  * get a car in the database.
  *
@@ -8,7 +8,7 @@ const DatabaseError = require('../../../lib/errors/database-error');
  * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
  * @throws {string} - Throws a string with an error message if the operation fails.
  */
- const GET_TANQUES = 'SELECT * FROM get_tanques($1, $2, $3)';
+const GET_TANQUES = 'SELECT * FROM get_tanques($1, $2, $3)';
 
 module.exports.main = async (event) => {
   const {
@@ -16,11 +16,24 @@ module.exports.main = async (event) => {
     start,
     busqueda
   } = event.pathParameters;
-  const newSearch = busqueda == 'undefined' ||  busqueda == undefined ? '' :busqueda
+
+  const parseNumericParam = value => {
+    if (value === undefined || value === null) return null;
+    if (typeof value === 'string' && value.toLowerCase() === 'all') return 0;
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  const limitValue = parseNumericParam(limit);
+  const startValue = parseNumericParam(start);
+  const safeLimit = limitValue === null ? 0 : limitValue;
+  const safeStart = startValue === null ? 0 : Math.max(0, startValue);
+
+  const newSearch = busqueda == 'undefined' || busqueda == undefined ? '' : busqueda
   try {
     const client = await poolConection.connect();
-    const  { rows: tanque } = await client.query(GET_TANQUES, [limit, start, newSearch])
-    
+    const { rows: tanque } = await client.query(GET_TANQUES, [safeLimit, safeStart, newSearch])
+
     return {
       status: true,
       tanque

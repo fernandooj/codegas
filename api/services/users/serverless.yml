@@ -103,6 +103,47 @@ changeValorUnitarioAll:
       - services/users/src/change-valor-unitario-todos.js
       - lib/errors/database-error.js
 
+changeValorUnitario2:
+  name: ${self:custom.base}-change-valor-unitario-2
+  handler: services/users/src/change-valor-unitario-2.main
+  events:
+    - httpApi: 'GET /users/cambiarValor2/{valorunitario2}/{_id}'
+  package:
+    include:
+      - services/users/src/change-valor-unitario-2.js
+      - lib/errors/database-error.js
+
+changeFechaExpiracion:
+  name: ${self:custom.base}-change-fecha-expiracion
+  handler: services/users/src/change-fecha-expiracion.main
+  events:
+    - httpApi: 'GET /users/cambiarFechaExpiracion/{fecha_expiracion}/{_id}'
+  package:
+    include:
+      - services/users/src/change-fecha-expiracion.js
+      - lib/errors/database-error.js
+
+aplicarFechaValor:
+  name: ${self:custom.base}-aplicar-fecha-valor
+  handler: services/users/src/aplicar-fecha-valor.main
+  events:
+    - httpApi: 'POST /users/aplicar-fecha-valor'
+  package:
+    include:
+      - services/users/src/aplicar-fecha-valor.js
+      - lib/errors/database-error.js
+
+ejecutarFechaValor:
+  name: ${self:custom.base}-ejecutar-fecha-valor
+  handler: services/users/src/ejecutar-fecha-valor.main
+  events:
+    - schedule: cron(0 6 * * ? *)
+    - httpApi: 'GET /users/ejecutar-fecha-valor'
+  package:
+    include:
+      - services/users/src/ejecutar-fecha-valor.js
+      - lib/errors/database-error.js
+
 sendPassword:
   name: ${self:custom.base}-send-pass
   handler: services/users/src/send-pass.main
@@ -161,4 +202,14 @@ updateUserActive:
   package:
     include:
       - services/users/src/update-user-active.js
+      - lib/errors/database-error.js
+
+importUsers:
+  name: ${self:custom.base}-import-users
+  handler: services/users/src/import-users.main
+  events:
+    - httpApi: 'POST /users/import'
+  package:
+    include:
+      - services/users/src/import-users.js
       - lib/errors/database-error.js

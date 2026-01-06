@@ -1,27 +1,44 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
- 
+
 /**
- * get a car in the database.
+ * Obtener vehículos no eliminados con límite
  *
- * @param {object} car - Object containing the data of the zona to deactivate.
- * @returns {Promise<object>} - Promise that resolves with an object indicating whether the operation was successful.
- * @throws {string} - Throws a string with an error message if the operation fails.
+ * @param {object} event - Evento de API Gateway con limit en pathParameters
+ * @returns {Promise<object>} - Promise que resuelve con la lista de vehículos
+ * @throws {DatabaseError} - Lanza un error si la operación falla
  */
- const GET_CAR_S = 'SELECT * FROM get_data_carro_user($1)';
+const GET_CAR_S = 'SELECT * FROM get_data_carro_user($1)';
 
 module.exports.main = async (event) => {
-  const _id = null  
+  let client;
   try {
-    const client = await poolConection.connect();
-    const  { rows: carro } = await client.query(GET_CAR_S, [_id])
-    
+    client = await poolConection.connect();
+    const { limit } = event.pathParameters || {};
+    const _id = null; // null para obtener todos los vehículos
+
+    const { rows: carro } = await client.query(GET_CAR_S, [_id]);
+
+    // Aplicar límite si se proporciona
+    let resultado = carro;
+    if (limit) {
+      const limitNum = parseInt(limit, 10);
+      if (!isNaN(limitNum) && limitNum > 0) {
+        resultado = carro.slice(0, limitNum);
+      }
+    }
+
     return {
       status: true,
-      carro
-    }
+      carro: resultado
+    };
   } catch (error) {
-    console.log(error)
+    console.error('Error obteniendo vehículos activos:', error);
     throw new DatabaseError(error);
+  } finally {
+    // Asegurar que la conexión se libere siempre, incluso si hay un error
+    if (client) {
+      client.release();
+    }
   }
 };

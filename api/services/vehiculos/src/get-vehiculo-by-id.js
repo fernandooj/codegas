@@ -18,10 +18,10 @@ module.exports.main = async (event) => {
     } = event.pathParameters;
   
   const GET_PUNTO = 'SELECT * FROM carros WHERE _id = $1';
-  const client = await poolConection.connect();
-
+  let client;
   try {
-    const { rows } =await client.query(GET_PUNTO, [_id])
+    client = await poolConection.connect();
+    const { rows } = await client.query(GET_PUNTO, [_id])
     return {
       status: true,
       punto: rows[0]
@@ -29,5 +29,9 @@ module.exports.main = async (event) => {
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 };

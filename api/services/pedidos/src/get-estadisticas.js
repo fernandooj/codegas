@@ -30,9 +30,8 @@ module.exports.main = async (event) => {
         ? null
         : (conductorId && conductorId !== 'null' ? parseInt(conductorId) : null);
 
+    const client = await poolConection.connect();
     try {
-        const client = await poolConection.connect();
-
         let estadisticas;
         let tipoVista;
 
@@ -65,8 +64,6 @@ module.exports.main = async (event) => {
             }
         }
 
-        client.release();
-
         return {
             status: true,
             estadisticas: estadisticas,
@@ -77,5 +74,7 @@ module.exports.main = async (event) => {
     } catch (error) {
         console.log(error)
         throw new DatabaseError(error);
+    } finally {
+        client.release();
     }
 };

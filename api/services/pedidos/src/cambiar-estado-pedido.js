@@ -16,8 +16,8 @@ module.exports.main = async (event) => {
     seleccionados
   } = body;
 
+  const client = await poolConection.connect();
   try {
-    const client = await poolConection.connect();
     await client.query(CHANGE_STATUS, [JSON.stringify(seleccionados)])
     return {
       status: true
@@ -25,5 +25,7 @@ module.exports.main = async (event) => {
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
+  } finally {
+    client.release();
   }
 };

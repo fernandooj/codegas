@@ -16,14 +16,19 @@ module.exports.main = async (event) => {
     type,
     search,
   } = event.pathParameters;
-  const newSearch = search == 'undefined' ||  search == undefined ? '' :search
+  // Convertir 'empty', 'undefined' o valores undefined a cadena vacía
+  const newSearch = (search == 'undefined' || search == undefined || search == 'empty') ? '' : search
+
+  console.log('📥 [get-user-with-zonas] Parámetros recibidos:', { limit, start, idZona, type, search, newSearch });
 
   try {
     const client  = await poolConection.connect();
     const {rows} = await client.query(GET_USERS_ZONAS, [limit, start, idZona, type, newSearch])
+    client.release(); // Liberar la conexión
+    console.log('✅ [get-user-with-zonas] Resultados obtenidos:', rows.length, 'filas');
     return rows
   } catch (error) { 
-    console.log(error)
+    console.error('❌ [get-user-with-zonas] Error:', error);
     throw new DatabaseError(error);
   }
 }; 

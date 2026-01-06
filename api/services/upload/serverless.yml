@@ -4,7 +4,7 @@ uploadS3:
   events:
     - httpApi: 'POST /upload/s3'
   environment:
-    BUCKET: codegas
+    BUCKET: newcodegas
   package:
     include:
       - services/upload/src/upload-s3.js

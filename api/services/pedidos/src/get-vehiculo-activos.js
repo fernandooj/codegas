@@ -11,9 +11,9 @@ const DatabaseError = require('../../../lib/errors/database-error');
  const GET_CAR_BY_USER = 'SELECT * FROM get_data_carro_user($1)';
 
 module.exports.main = async (event) => {
-  const _id = null  
+  const _id = null;
+  const client = await poolConection.connect();
   try {
-    const client = await poolConection.connect();
     const  { rows: carro } = await client.query(GET_CAR_BY_USER, [_id])
     
     return {
@@ -23,5 +23,7 @@ module.exports.main = async (event) => {
   } catch (error) {
     console.log(error)
     throw new DatabaseError(error);
+  } finally {
+    client.release();
   }
 };

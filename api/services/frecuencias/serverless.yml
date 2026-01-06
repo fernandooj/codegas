@@ -31,6 +31,17 @@ createFrecuenciaMensual:
       - services/frecuencias/src/crear-frecuencia-mensual.js
       - lib/errors/database-error.js
 
+crearPedidosFrecuencia:
+  name: ${self:custom.base}-crear-pedidos-frecuencia
+  handler: services/frecuencias/src/crear-pedidos-frecuencia.main
+  events:
+    - schedule: cron(0 6 * * ? *)
+    - httpApi: 'GET /fre/crear-pedidos-frecuencia'
+  package:
+    include:
+      - services/frecuencias/src/crear-pedidos-frecuencia.js
+      - lib/errors/database-error.js
+
 getFrecuencias:
   name: ${self:custom.base}-get-frecuencias
   handler: services/frecuencias/src/get-frecuencias.main
@@ -81,4 +92,44 @@ notificarPedidos3Dias:
   package:
     include:
       - services/frecuencias/src/notificar-pedidos-3-dias.js
+      - lib/errors/database-error.js
+
+getGruposFrecuencias:
+  name: ${self:custom.base}-get-grupos-frecuencias
+  handler: services/frecuencias/src/get-grupos-frecuencias.main
+  events:
+    - httpApi: 'GET /fre/grupos'
+  package:
+    include:
+      - services/frecuencias/src/get-grupos-frecuencias.js
+      - lib/errors/database-error.js
+
+createGrupoFrecuencia:
+  name: ${self:custom.base}-create-grupo-frecuencia
+  handler: services/frecuencias/src/create-grupo-frecuencia.main
+  events:
+    - httpApi: 'POST /fre/grupos'
+  package:
+    include:
+      - services/frecuencias/src/create-grupo-frecuencia.js
+      - lib/errors/database-error.js
+
+updateGrupoFrecuencia:
+  name: ${self:custom.base}-update-grupo-frecuencia
+  handler: services/frecuencias/src/update-grupo-frecuencia.main
+  events:
+    - httpApi: 'PUT /fre/grupos/{id}'
+  package:
+    include:
+      - services/frecuencias/src/update-grupo-frecuencia.js
+      - lib/errors/database-error.js
+
+deleteGrupoFrecuencia:
+  name: ${self:custom.base}-delete-grupo-frecuencia
+  handler: services/frecuencias/src/delete-grupo-frecuencia.main
+  events:
+    - httpApi: 'DELETE /fre/grupos/{id}'
+  package:
+    include:
+      - services/frecuencias/src/delete-grupo-frecuencia.js
       - lib/errors/database-error.js

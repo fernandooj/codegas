@@ -10,6 +10,8 @@ createReporteEmergencia:
     include:
       - services/reporte-emergencia/src/create-reporte-emergencia.js
       - lib/errors/database-error.js
+      - lib/email-reporte-emergencia.js
+      - lib/nodemailer-config.js
       - assets/img/logo.jpg
 
 getReporteEmergencia:
@@ -39,7 +41,7 @@ addImageReporteEmergencia:
   events:
     - httpApi: 'PUT /rep/reporte-emergencia/add-images-reporte-emergencia'
   environment:
-    BUCKET: codegas
+    BUCKET: newcodegas
   package:
     include:
       - services/reporte-emergencia/src/add-images-reporte-emergencia.js

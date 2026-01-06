@@ -32,14 +32,13 @@ module.exports.main = async (event) => {
 
     console.log('✅ [AsignarConductor] Resultado de la función SQL:', result.rows[0]);
 
-    client.release();
-
     return {
       status: true
     }
   } catch (error) {
     console.log(error)
-    client.release();
     throw new DatabaseError(error);
+  } finally {
+    client.release();
   }
 };

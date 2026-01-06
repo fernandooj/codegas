@@ -28,14 +28,14 @@ getTanqueByPunto:
       - services/tanques/src/get-tanque-by-punto.js
       - lib/errors/database-error.js
 
-addImages:
-  name: ${self:custom.base}-add-images
+addImagesTanques:
+  name: ${self:custom.base}-add-images-tanques
   handler: services/tanques/src/add-images.main
   timeout: 25
   events:
-    - httpApi: 'PUT /tan/tanque/images/{idTanque}/{type}'
+    - httpApi: 'PUT /tan/tanque/add-images'
   environment:
-    BUCKET: codegas
+    BUCKET: newcodegas
   package:
     include:
       - services/tanques/src/add-images.js
