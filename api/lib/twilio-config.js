@@ -12,16 +12,24 @@ const twilio = require('twilio');
 let twilioClient = null;
 
 const getTwilioClient = () => {
-  console.log('🔧 [TwilioConfig] Configuración de Twilio:');
-  console.log('TWILIO_ACCOUNT_SID:', process.env.TWILIO_ACCOUNT_SID);
-  console.log('TWILIO_AUTH_TOKEN:', process.env.TWILIO_AUTH_TOKEN);
-  console.log('TWILIO_WHATSAPP_NUMBER:', process.env.TWILIO_WHATSAPP_NUMBER);
   if (!twilioClient) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER;
+
+    // Log de configuración sin exponer credenciales sensibles
+    console.log('🔧 [TwilioConfig] Configuración de Twilio:');
+    console.log('TWILIO_ACCOUNT_SID:', accountSid ? `${accountSid.substring(0, 4)}...${accountSid.substring(accountSid.length - 4)}` : '❌ No configurado');
+    console.log('TWILIO_AUTH_TOKEN:', authToken ? '✅ Configurado' : '❌ No configurado');
+    console.log('TWILIO_WHATSAPP_NUMBER:', whatsappNumber || '❌ No configurado');
 
     if (!accountSid || !authToken) {
       throw new Error('Twilio credentials not configured. Please set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.');
+    }
+
+    // Validar formato del Account SID (debe empezar con AC)
+    if (!accountSid.startsWith('AC')) {
+      console.warn('⚠️ [TwilioConfig] El Account SID no tiene el formato correcto (debe empezar con AC)');
     }
 
     twilioClient = twilio(accountSid, authToken);
@@ -70,7 +78,21 @@ const sendWhatsAppMessage = async (to, message) => {
       status: messageResult.status
     };
   } catch (error) {
-    console.error('❌ Error sending WhatsApp message:', error);
+    console.error('❌ Error sending WhatsApp message:', error.message);
+
+    // Proporcionar información más útil según el tipo de error
+    if (error.status === 401 || error.code === 20003) {
+      console.error('🔐 [TwilioConfig] Error de autenticación. Verifica que:');
+      console.error('   1. TWILIO_ACCOUNT_SID sea correcto');
+      console.error('   2. TWILIO_AUTH_TOKEN sea correcto y no haya expirado');
+      console.error('   3. Las credenciales estén activas en tu cuenta de Twilio');
+      console.error('   Más info: https://www.twilio.com/docs/errors/20003');
+    } else if (error.code === 21211) {
+      console.error('📱 [TwilioConfig] Número de destino inválido:', to);
+    } else if (error.code === 21608) {
+      console.error('📱 [TwilioConfig] El número de origen no está verificado para WhatsApp');
+    }
+
     throw error;
   }
 };

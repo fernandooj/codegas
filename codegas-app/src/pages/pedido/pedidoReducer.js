@@ -93,7 +93,7 @@ export const initialState = {
     // Pagination states
     inicio: 0,
     final: false,
-    limit: 10,
+    limit: 100,
 
     // Data states
     pedidosFiltro: [],

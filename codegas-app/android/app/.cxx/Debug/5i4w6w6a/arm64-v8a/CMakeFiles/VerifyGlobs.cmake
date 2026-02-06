@@ -326,11 +326,15 @@ endif()
 # LIB_CUSTOM_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt:23 (file)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/*.cpp")
 set(OLD_GLOB
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSBottomTabsAccessoryShadowNode.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSBottomTabsShadowNode.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSBottomTabsState.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSFullWindowOverlayShadowNode.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSModalScreenShadowNode.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSSafeAreaViewShadowNode.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSSafeAreaViewState.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenShadowNode.cpp"
+  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenShadowNodeCommitHook.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenStackHeaderConfigShadowNode.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenStackHeaderConfigState.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/../../../../common/cpp/react/renderer/components/rnscreens/RNSScreenStackHeaderSubviewShadowNode.cpp"
@@ -386,31 +390,6 @@ set(OLD_GLOB
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/RNVectorIconsSpecJSI-generated.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/ShadowNodes.cpp"
   "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/react/renderer/components/RNVectorIconsSpec/States.cpp"
-  )
-if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
-  message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/CMakeFiles/cmake.verify_globs")
-endif()
-
-# react_codegen_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
-file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/*.cpp")
-set(OLD_GLOB
-  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/RNCWebViewSpec-generated.cpp"
-  )
-if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
-  message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/arm64-v8a/CMakeFiles/cmake.verify_globs")
-endif()
-
-# react_codegen_SRCS at /Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
-file(GLOB NEW_GLOB LIST_DIRECTORIES true "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/*.cpp")
-set(OLD_GLOB
-  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/ComponentDescriptors.cpp"
-  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/EventEmitters.cpp"
-  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/Props.cpp"
-  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/RNCWebViewSpecJSI-generated.cpp"
-  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/ShadowNodes.cpp"
-  "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/react/renderer/components/RNCWebViewSpec/States.cpp"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")

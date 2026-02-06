@@ -57,7 +57,6 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86/safeareacontext_autolinked_build/cmake_install.cmake")
   include("/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86/rnscreens_autolinked_build/cmake_install.cmake")
   include("/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86/RNVectorIconsSpec_autolinked_build/cmake_install.cmake")
-  include("/Users/ferortiz/Documents/proyects/codegas/codegas-app/android/app/.cxx/Debug/5i4w6w6a/x86/RNCWebViewSpec_autolinked_build/cmake_install.cmake")
 
 endif()
 

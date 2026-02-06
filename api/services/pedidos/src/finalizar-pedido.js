@@ -60,10 +60,12 @@ module.exports.main = async (event) => {
       const { rows } = await client.query(GET_PEDIDO_CLIENTE, [_id]);
       if (rows && rows.length > 0) {
         const pedidoData = rows[0];
+        console.log("pedidoData")
+        console.log(pedidoData)
         // TEMPORAL PARA PRUEBAS: Enviar solo al número de prueba
         // TODO: Después de pruebas, cambiar para usar el número del cliente
-        const numeroTelefono = 'whatsapp:+573162479980'; // Número de prueba
-        // const numeroTelefono = pedidoData.punto_celular || pedidoData.cliente_celular; // Código original
+        // const numeroTelefono = 'whatsapp:+573162479980'; // Número de prueba
+        const numeroTelefono = pedidoData.punto_celular || pedidoData.cliente_celular; // Código original
 
         if (numeroTelefono) {
           console.log('📱 [PRUEBAS] Enviando WhatsApp de pedido entregado a:', numeroTelefono);

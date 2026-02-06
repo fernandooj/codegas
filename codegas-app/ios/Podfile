@@ -5,7 +5,10 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+# Usar CDN de CocoaPods (más rápido que clonar el repo completo)
+source 'https://cdn.cocoapods.org/'
+
+platform :ios, '15.1'
 use_modular_headers!
 
 # Disable the new architecture for compatibility
@@ -24,17 +27,26 @@ target 'codegas' do
   use_frameworks! :linkage => :static
   $RNFirebaseAsStaticFramework = true
   
+  # Permitir versiones de Firebase 12.x (evita forzar una versión específica)
+  # Esto permite que CocoaPods use la versión disponible en el CDN
+  pod 'Firebase/CoreOnly', '~> 12.0'
+  pod 'Firebase/Auth', '~> 12.0'
+  pod 'Firebase/Messaging', '~> 12.0'
+  pod 'Firebase/RemoteConfig', '~> 12.0'
+  
   config = use_native_modules!
   
   # Handle case where use_native_modules! returns nil
-  if config.nil?
+  if config.nil? || !config.is_a?(Hash)
     config = {
       :reactNativePath => "../node_modules/react-native"
     }
   end
 
+  react_native_path = config[:reactNativePath] || "../node_modules/react-native"
+  
   use_react_native!(
-    :path => config[:reactNativePath],
+    :path => react_native_path,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
@@ -44,9 +56,10 @@ target 'codegas' do
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    react_native_path = config && config[:reactNativePath] ? config[:reactNativePath] : "../node_modules/react-native"
     react_native_post_install(
       installer,
-      config[:reactNativePath],
+      react_native_path,
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
@@ -54,6 +67,9 @@ target 'codegas' do
     # Flipper configuration fixes
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
+        # Asegurar que todos los pods usen el mismo deployment target
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+        
         # Fix for Flipper compilation issues
         if target.name == 'Flipper-Folly'
           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
