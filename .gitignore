@@ -133,6 +133,7 @@ api/*/node_modules/
 
 # Serverless
 api/.serverless/
+api/.webpack/
 api/serverless.yml.backup
 
 # Environment files
