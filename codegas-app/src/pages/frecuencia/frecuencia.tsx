@@ -13,6 +13,7 @@ import { FrecuenciaState, PedidoFrecuencia, GrupoFrecuencia } from './types';
 import EditarFrecuenciaModal from './EditarFrecuenciaModal';
 import CrearGrupoFrecuenciaModal from './CrearGrupoFrecuenciaModal';
 import EditarGrupoFrecuenciaModal from './EditarGrupoFrecuenciaModal';
+import VerPedidosGrupoModal from './VerPedidosGrupoModal';
 
 const Frecuencia: React.FC = ({ navigation }: any) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -36,7 +37,9 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
 
     const [showCreateGrupoModal, setShowCreateGrupoModal] = useState(false);
     const [showEditGrupoModal, setShowEditGrupoModal] = useState(false);
+    const [showVerPedidosModal, setShowVerPedidosModal] = useState(false);
     const [editingGrupo, setEditingGrupo] = useState<GrupoFrecuencia | null>(null);
+    const [viewingGrupo, setViewingGrupo] = useState<GrupoFrecuencia | null>(null);
     const [activeTab, setActiveTab] = useState<'individuales' | 'grupos'>('individuales');
 
     useEffect(() => {
@@ -297,6 +300,16 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         await new Promise(resolve => setTimeout(resolve, 300));
     };
 
+    const handleVerPedidosGrupo = (grupo: GrupoFrecuencia) => {
+        setViewingGrupo(grupo);
+        setShowVerPedidosModal(true);
+    };
+
+    const handleCloseVerPedidosModal = () => {
+        setShowVerPedidosModal(false);
+        setViewingGrupo(null);
+    };
+
     const eliminarGrupo = (id: number) => {
         Alert.alert(
             'Confirmar eliminación',
@@ -388,6 +401,9 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                         ? `${frecuenciasSinGrupo.length} frecuencias individuales`
                                         : `${grupos.length} grupos de frecuencias`
                                     }
+                                    {activeTab === 'grupos' && grupos.length > 0 && (
+                                        ` • ${grupos.reduce((total: number, grupo: GrupoFrecuencia) => total + (grupo.total_pedidos || 0), 0)} pedidos totales`
+                                    )}
                                 </Text>
                             </View>
                             {activeTab === 'grupos' && (
@@ -555,7 +571,18 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                         <View key={key} style={[style.cardContainer, { marginHorizontal: 20, marginBottom: 12, backgroundColor: '#e3f2fd', borderLeftWidth: 4, borderLeftColor: '#002587' }]}>
                                             <View style={style.cardContent}>
                                                 <View style={style.cardHeader}>
-                                                    <Text style={[style.razonSocial, { color: '#002587' }]}>{grupo.nombre}</Text>
+                                                    <View style={{ flex: 1 }}>
+                                                        <Text style={[style.razonSocial, { color: '#002587' }]}>{grupo.nombre}</Text>
+                                                        {grupo.total_pedidos !== undefined && (
+                                                            <Text style={{
+                                                                fontSize: 12,
+                                                                color: '#666',
+                                                                marginTop: 4
+                                                            }}>
+                                                                {grupo.total_pedidos} {grupo.total_pedidos === 1 ? 'pedido asignado' : 'pedidos asignados'}
+                                                            </Text>
+                                                        )}
+                                                    </View>
                                                     <View style={{
                                                         backgroundColor: '#002587',
                                                         paddingHorizontal: 8,
@@ -597,6 +624,13 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                             </View>
 
                                             <View style={style.cardActions}>
+                                                <TouchableOpacity
+                                                    onPress={() => handleVerPedidosGrupo(grupo)}
+                                                    style={[style.actionButton, { backgroundColor: '#28a745' }]}
+                                                >
+                                                    <FontAwesome name="list" style={[style.actionIcon, { color: '#fff' }]} />
+                                                </TouchableOpacity>
+
                                                 <TouchableOpacity
                                                     onPress={() => handleEditGrupo(grupo)}
                                                     style={style.actionButton}
@@ -781,6 +815,18 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                 onClose={handleCloseEditGrupoModal}
                 grupo={editingGrupo}
                 onSuccess={handleEditGrupoSuccess}
+            />
+
+            {/* Modal de ver pedidos del grupo */}
+            <VerPedidosGrupoModal
+                visible={showVerPedidosModal}
+                onClose={handleCloseVerPedidosModal}
+                grupo={viewingGrupo}
+                pedidos={pedidos}
+                onPedidoRemoved={async () => {
+                    // Recargar frecuencias y grupos para actualizar los conteos
+                    await dispatch(getFrecuencia());
+                }}
             />
         </View>
     );

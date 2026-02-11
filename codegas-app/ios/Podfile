@@ -44,7 +44,7 @@ target 'codegas' do
   end
 
   react_native_path = config[:reactNativePath] || "../node_modules/react-native"
-  
+
   use_react_native!(
     :path => react_native_path,
     # An absolute path to your application root.

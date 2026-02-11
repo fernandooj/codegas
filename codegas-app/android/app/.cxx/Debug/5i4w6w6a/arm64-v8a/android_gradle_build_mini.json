@@ -13,6 +13,7 @@
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native-webview/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/Users/ferortiz/Documents/proyects/codegas/codegas-app/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt"
   ],
   "cleanCommandsComponents": [
@@ -47,6 +48,11 @@
     },
     "react_codegen_RNCImageCropPickerSpec::@702b02f8d2524609d414": {
       "artifactName": "react_codegen_RNCImageCropPickerSpec",
+      "abi": "arm64-v8a",
+      "runtimeFiles": []
+    },
+    "react_codegen_RNCWebViewSpec::@eb48929f9f7453740a6c": {
+      "artifactName": "react_codegen_RNCWebViewSpec",
       "abi": "arm64-v8a",
       "runtimeFiles": []
     },

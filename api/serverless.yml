@@ -14,6 +14,9 @@ plugins:
 provider:
   name: aws
   runtime: nodejs16.x
+  # Desactivar creación de versiones de Lambda para reducir recursos de CloudFormation
+  # Esto ayuda a evitar el límite de 500 recursos por stack.
+  versionFunctions: false
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, "us-east-1"}
   httpApi:
@@ -79,10 +82,12 @@ custom:
   n: my-app:${self:provider.stage}:${self:provider.region}:api
   base: ${self:service}-${self:provider.stage}
   splitStacks:
-    perFunction: false
+    # Estrategia agresiva: dividir por función y tipo, con umbral bajo
+    perFunction: true
     perType: true
     perGroupFunction: false
-    stackConcurrency: 10
+    stackConcurrency: 3
+    stackThreshold: 100
 
 package:
   individually: true

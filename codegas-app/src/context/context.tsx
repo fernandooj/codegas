@@ -26,11 +26,20 @@ const DataProvider = ({ children }: any) => {
     try {
       const userData = await getUserByUid(uid);
 
+      // Si getUserByUid retorna null (error de red o usuario no encontrado), intentar cargar desde AsyncStorage
+      if (!userData) {
+        console.warn('⚠️ No se pudo obtener información del usuario desde el backend, intentando cargar desde AsyncStorage');
+        await loadFromAsyncStorage();
+        return;
+      }
+
       const { _id, acceso, nombre, email: newEmail, avatar } = userData || {};
 
       // Validar que _id existe antes de proceder
       if (!_id) {
         console.error('No se pudo obtener el ID del usuario');
+        // Intentar cargar desde AsyncStorage como fallback
+        await loadFromAsyncStorage();
         return;
       }
 
@@ -66,6 +75,12 @@ const DataProvider = ({ children }: any) => {
       }
     } catch (error) {
       console.error('Error obteniendo información del usuario:', error);
+      // En caso de error, intentar cargar desde AsyncStorage como fallback
+      try {
+        await loadFromAsyncStorage();
+      } catch (storageError) {
+        console.error('Error cargando desde AsyncStorage como fallback:', storageError);
+      }
     }
   };
   const onAuthStateChanged = async (user: any) => {

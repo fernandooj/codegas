@@ -7,12 +7,12 @@ CREATE TABLE IF NOT EXISTS grupos_frecuencias (
     tipo_frecuencia VARCHAR(20) NOT NULL CHECK (tipo_frecuencia IN ('semanal', 'mensual')),
     
     -- Campos para frecuencia semanal
-    dia_semana INT CHECK (dia_semana >= 1 AND dia_semana <= 5), -- 1=Lunes, 5=Viernes
+    dia_semana INT CHECK (dia_semana IS NULL OR (dia_semana >= 1 AND dia_semana <= 7)), -- 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo
     intervalo_semanas INT DEFAULT 1 CHECK (intervalo_semanas IN (1, 2, 3)), -- Cada 1, 2 o 3 semanas
     
     -- Campos para frecuencia mensual
     dia_mes INT CHECK (dia_mes >= 1 AND dia_mes <= 31), -- Día del mes (1-31)
-    dia_semana_mensual INT CHECK (dia_semana_mensual >= 1 AND dia_semana_mensual <= 5), -- Día de la semana (1=Lunes, 5=Viernes)
+    dia_semana_mensual INT CHECK (dia_semana_mensual IS NULL OR (dia_semana_mensual >= 1 AND dia_semana_mensual <= 7)), -- Día de la semana (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo)
     
     -- Metadatos
     creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -50,8 +50,8 @@ END $$;
 COMMENT ON TABLE grupos_frecuencias IS 'Tabla que almacena grupos de frecuencias reutilizables';
 COMMENT ON COLUMN grupos_frecuencias.nombre IS 'Nombre descriptivo del grupo de frecuencia';
 COMMENT ON COLUMN grupos_frecuencias.tipo_frecuencia IS 'Tipo de frecuencia: semanal o mensual';
-COMMENT ON COLUMN grupos_frecuencias.dia_semana IS 'Día de la semana para frecuencia semanal (1=Lunes, 5=Viernes)';
+COMMENT ON COLUMN grupos_frecuencias.dia_semana IS 'Día de la semana para frecuencia semanal (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo)';
 COMMENT ON COLUMN grupos_frecuencias.intervalo_semanas IS 'Cada cuántas semanas se repite (1, 2 o 3 semanas)';
 COMMENT ON COLUMN grupos_frecuencias.dia_mes IS 'Día del mes para frecuencia mensual (1-31)';
-COMMENT ON COLUMN grupos_frecuencias.dia_semana_mensual IS 'Día de la semana para frecuencia mensual (1=Lunes, 5=Viernes)';
+COMMENT ON COLUMN grupos_frecuencias.dia_semana_mensual IS 'Día de la semana para frecuencia mensual (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo)';
 

@@ -966,6 +966,11 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
     // Función para crear usuario en Firebase Authentication
     const createFirebaseUser = async (email: string, password: string, displayName: string) => {
         try {
+            // Guardar información del usuario actual antes de crear el nuevo
+            const currentUser = auth().currentUser;
+            const currentUserEmail = currentUser?.email || null;
+            const currentUserUid = currentUser?.uid || null;
+
             const userCredential = await auth().createUserWithEmailAndPassword(email, password);
             await userCredential.user.updateProfile({
                 displayName: displayName,
@@ -979,6 +984,16 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 console.error('⚠️ Error al actualizar UID en la base de datos:', uidError);
                 // No fallar la creación si no se puede actualizar el UID
             }
+
+            // IMPORTANTE: Siempre cerrar sesión del nuevo usuario creado
+            // createUserWithEmailAndPassword automáticamente inicia sesión con el nuevo usuario,
+            // lo cual activa onAuthStateChanged y puede interferir con la sesión del usuario original
+            await auth().signOut();
+
+            // Si había un usuario original autenticado, necesitamos restaurar su sesión
+            // Sin embargo, no tenemos su contraseña, así que el usuario original necesitará
+            // volver a iniciar sesión manualmente si es necesario para funcionalidades de Firebase
+            // Pero esto NO afecta el inicio de sesión normal del sistema principal
 
             return {
                 success: true,

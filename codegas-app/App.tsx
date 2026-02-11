@@ -21,10 +21,10 @@ export const VERSION = '1.0.0';
 // Función para actualizar la URL desde Remote Config
 export const updateBaseURL = (newURL: string) => {
   URL = newURL;
-  // Para desarrollo local, usar localhost (127.0.0.1)
-  // Si necesitas usar la IP de red local (ej: 192.168.1.x), cámbiala aquí
-  axios.defaults.baseURL = "http://127.0.0.1:4000";
-  console.log('📡 Base URL updated to:', newURL);
+  // Configurar axios con la nueva URL base desde Remote Config
+  axios.defaults.baseURL = newURL;
+  // Para desarrollo local, descomenta la siguiente línea y comenta la anterior:
+  // axios.defaults.baseURL = "http://127.0.0.1:4000";
 };
 
 function App(): React.JSX.Element {

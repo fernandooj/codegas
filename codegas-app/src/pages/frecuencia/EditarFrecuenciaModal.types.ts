@@ -15,6 +15,7 @@ export interface PedidoFrecuencia {
     punto_direccion?: string;
     punto_capacidad?: string;
     puntoId?: number;
+    grupo_id?: number; // ID del grupo de frecuencia al que pertenece
 }
 
 export interface FrecuenciaEditData {

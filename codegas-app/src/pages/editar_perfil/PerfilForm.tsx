@@ -522,7 +522,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
 
                 {/* BOTONES DE ESTADO Y ACCIONES */}
                 {
-                    (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho"))
+                    (tipoAcceso === "editar" && (accesoPerfil === "admin" || accesoPerfil === "despacho" || accesoPerfil === "comercial"))
                     && <View style={style.actionButtonsContainer}>
                         {/* BOTON CAMBIAR ESTADO */}
                         <TouchableOpacity

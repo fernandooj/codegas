@@ -46,7 +46,7 @@ getFrecuencias:
   name: ${self:custom.base}-get-frecuencias
   handler: services/frecuencias/src/get-frecuencias.main
   events:
-    - schedule: cron(15 7 * * ? *)
+    - schedule: cron(0 10 * * ? *)  # 5:00 AM hora de Bogotá (UTC-5) = 10:00 AM UTC
     - httpApi: 'GET /fre/frecuencia'
   package:
     include:
@@ -132,4 +132,24 @@ deleteGrupoFrecuencia:
   package:
     include:
       - services/frecuencias/src/delete-grupo-frecuencia.js
+      - lib/errors/database-error.js
+
+getPedidosPorGrupo:
+  name: ${self:custom.base}-get-pedidos-por-grupo
+  handler: services/frecuencias/src/get-pedidos-por-grupo.main
+  events:
+    - httpApi: 'GET /fre/grupos/{grupoId}/pedidos'
+  package:
+    include:
+      - services/frecuencias/src/get-pedidos-por-grupo.js
+      - lib/errors/database-error.js
+
+removerPedidoDeGrupo:
+  name: ${self:custom.base}-remover-pedido-de-grupo
+  handler: services/frecuencias/src/remover-pedido-de-grupo.main
+  events:
+    - httpApi: 'DELETE /fre/grupos/pedidos/{pedidoId}'
+  package:
+    include:
+      - services/frecuencias/src/remover-pedido-de-grupo.js
       - lib/errors/database-error.js

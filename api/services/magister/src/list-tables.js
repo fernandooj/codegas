@@ -9,12 +9,12 @@ const { queryMagister } = require('../../../lib/magister-db');
  */
 module.exports.main = async () => {
     const connectionMode = process.env.MAGISTER_CONNECTION_MODE || 'api';
-    
+
     try {
         if (connectionMode === 'direct') {
             console.log('🔍 [magister-list-tables] Modo: Conexión DIRECTA a Firebird');
             console.log(`🔍 [magister-list-tables] Host: ${process.env.MAGISTER_DB_HOST}:${process.env.MAGISTER_DB_PORT}`);
-            
+
             // Conexión directa a Firebird
             const sql = `
                 SELECT RDB$RELATION_NAME as table_name
@@ -23,7 +23,7 @@ module.exports.main = async () => {
                 ORDER BY RDB$RELATION_NAME
             `;
             const rows = await queryMagister(sql);
-            
+
             return {
                 status: true,
                 mode: 'direct',
@@ -33,10 +33,10 @@ module.exports.main = async () => {
         } else {
             console.log('🔍 [magister-list-tables] Modo: API REST intermedia');
             console.log(`🔍 [magister-list-tables] URL: ${process.env.MAGISTER_API_URL}`);
-            
+
             // Conexión vía API REST
             const rows = await listTablesApi();
-            
+
             return {
                 status: true,
                 mode: 'api',
@@ -47,7 +47,7 @@ module.exports.main = async () => {
     } catch (error) {
         console.error(`❌ [magister-list-tables] Error (modo: ${connectionMode}):`, error.message);
         console.error('❌ [magister-list-tables] Stack:', error.stack);
-        
+
         return {
             status: false,
             mode: connectionMode,

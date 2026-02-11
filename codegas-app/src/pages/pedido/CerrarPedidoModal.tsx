@@ -60,6 +60,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     const [imagen, setImagen] = useState<string | undefined>(imagenCerrar);
     const [showMotivoModal, setShowMotivoModal] = useState(false);
     const [motivoSeleccionado, setMotivoSeleccionado] = useState<string>('');
+    const [imagenExpandida, setImagenExpandida] = useState(false);
 
     // Estados para las firmas
     const [showFirmasModal, setShowFirmasModal] = useState(false);
@@ -746,15 +747,19 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                             }}>
                                                 📷 Foto de la Factura
                                             </Text>
-                                            <View style={{
-                                                borderRadius: 12,
-                                                overflow: 'hidden',
-                                                shadowColor: '#000',
-                                                shadowOffset: { width: 0, height: 4 },
-                                                shadowOpacity: 0.1,
-                                                shadowRadius: 8,
-                                                elevation: 4
-                                            }}>
+                                            <TouchableOpacity
+                                                activeOpacity={0.8}
+                                                onPress={() => setImagenExpandida(true)}
+                                                style={{
+                                                    borderRadius: 12,
+                                                    overflow: 'hidden',
+                                                    shadowColor: '#000',
+                                                    shadowOffset: { width: 0, height: 4 },
+                                                    shadowOpacity: 0.1,
+                                                    shadowRadius: 8,
+                                                    elevation: 4
+                                                }}
+                                            >
                                                 <Image
                                                     source={{ uri: imagenCerrar }}
                                                     style={{
@@ -764,7 +769,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                     }}
                                                     resizeMode="cover"
                                                 />
-                                            </View>
+                                            </TouchableOpacity>
                                             <View style={{
                                                 backgroundColor: '#e8f5e8',
                                                 borderRadius: 8,
@@ -778,8 +783,70 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                     Imagen registrada correctamente
                                                 </Text>
                                             </View>
+                                            <Text style={{
+                                                color: '#666',
+                                                fontSize: 12,
+                                                marginTop: 8,
+                                                textAlign: 'center',
+                                                fontStyle: 'italic'
+                                            }}>
+                                                Toca la imagen para expandir
+                                            </Text>
                                         </View>
                                     )}
+
+                                    {/* Modal para imagen expandida */}
+                                    <Modal
+                                        visible={imagenExpandida}
+                                        transparent={true}
+                                        animationType="fade"
+                                        onRequestClose={() => setImagenExpandida(false)}
+                                    >
+                                        <View style={{
+                                            flex: 1,
+                                            backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}>
+                                            <TouchableOpacity
+                                                activeOpacity={1}
+                                                onPress={() => setImagenExpandida(false)}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 40,
+                                                    right: 20,
+                                                    zIndex: 10,
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                                                    borderRadius: 20,
+                                                    width: 40,
+                                                    height: 40,
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                <FontAwesome name="times" style={{ fontSize: 24, color: '#fff' }} />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                activeOpacity={1}
+                                                onPress={() => setImagenExpandida(false)}
+                                                style={{
+                                                    width: width,
+                                                    height: height,
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                <Image
+                                                    source={{ uri: imagenCerrar }}
+                                                    style={{
+                                                        width: width * 0.95,
+                                                        height: height * 0.8,
+                                                    }}
+                                                    resizeMode="contain"
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </Modal>
 
                                     {/* Información del pedido en cards */}
                                     <View style={{ gap: 16 }}>

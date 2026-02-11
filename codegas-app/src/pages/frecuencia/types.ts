@@ -15,6 +15,7 @@ export interface PedidoFrecuencia {
     punto_direccion?: string;
     punto_capacidad?: string;
     puntoId?: number;
+    grupo_id?: number; // ID del grupo de frecuencia al que pertenece
 }
 
 export interface FrecuenciaState {
@@ -72,4 +73,5 @@ export interface GrupoFrecuencia {
     dia_semana_mensual?: number; // 1=Lunes, 5=Viernes (solo para mensual)
     creado?: string;
     actualizado?: string;
+    total_pedidos?: number; // Total de pedidos asignados al grupo
 }

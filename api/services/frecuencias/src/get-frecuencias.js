@@ -2,9 +2,10 @@ const nodemailer = require('nodemailer');
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
 
-const GET_FRECUENCIAL_SEMANAL = 'SELECT * FROM get_frecuencias_semanal($1)';
-const GET_FRECUENCIAL_QUINCENAL = 'SELECT * FROM get_frecuencias_quincenal($1)';
-const GET_FRECUENCIAL_MENSUAL = 'SELECT * FROM get_frecuencias_mensual($1)';
+// Usar create_frecuencias_* para crear los pedidos automáticamente
+const CREATE_FRECUENCIAL_SEMANAL = 'SELECT * FROM create_frecuencias_semanal($1)';
+const CREATE_FRECUENCIAL_QUINCENAL = 'SELECT * FROM create_frecuencias_quincenal($1)';
+const CREATE_FRECUENCIAL_MENSUAL = 'SELECT * FROM create_frecuencias_mensual($1)';
 
 const TYPE_SEMANAL = 'semanal'
 const TYPE_QUINCENAL = 'quincenal'
@@ -14,26 +15,27 @@ const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS
-  }
+    service: 'gmail',
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    }
 });
 
 const recipients = [
-  'gestioncalidad@codegascolombia.com',
-  'coord.logistica@codegascolombia.com',
-  'gerencia@codegascolombia.com',
-  'fernandooj@ymail.com'
+    'gestioncalidad@codegascolombia.com',
+    'coord.logistica@codegascolombia.com',
+    'gerencia@codegascolombia.com',
+    'fernandooj@ymail.com'
 ];
+
 
 /**
  * Genera una tabla HTML estilizada para mostrar los datos
  */
 const generateTable = (data, title, color) => {
-  if (!data || data.length === 0) {
-    return `
+    if (!data || data.length === 0) {
+        return `
             <div class="section">
                 <h3 style="color: ${color}; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">
                     📊 ${title}
@@ -43,11 +45,11 @@ const generateTable = (data, title, color) => {
                 </div>
             </div>
         `;
-  }
+    }
 
-  const headers = Object.keys(data[0]);
+    const headers = Object.keys(data[0]);
 
-  return `
+    return `
         <div class="section">
             <h3 style="color: ${color}; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">
                 📊 ${title} (${data.length} registros)
@@ -83,16 +85,28 @@ const generateTable = (data, title, color) => {
 /**
  * Genera el HTML completo del email con diseño moderno
  */
-const generateEmailHTML = (semanal, quincenal, mensual) => {
-  const currentDate = new Date().toLocaleDateString('es-CO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+const generateEmailHTML = (semanal, quincenal, mensual, grupos = []) => {
+    const currentDate = new Date().toLocaleDateString('es-CO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 
-  return `
+    // Distribuir pedidos de grupos según su intervalo_semanas
+    const gruposSemanal = grupos.filter(g => g.grupo_intervalo_semanas === 1 || !g.grupo_intervalo_semanas);
+    const gruposQuincenal = grupos.filter(g => g.grupo_intervalo_semanas === 2);
+    const gruposTresSemanas = grupos.filter(g => g.grupo_intervalo_semanas === 3);
+    const gruposMensual = grupos.filter(g => g.grupo_tipo_frecuencia === 'mensual');
+
+    // Combinar pedidos individuales con pedidos de grupos
+    const semanalCombinado = [...semanal, ...gruposSemanal];
+    const quincenalCombinado = [...quincenal, ...gruposQuincenal];
+    const tresSemanasCombinado = gruposTresSemanas;
+    const mensualCombinado = [...mensual, ...gruposMensual];
+
+    return `
         <!DOCTYPE html>
         <html lang="es">
         <head>
@@ -118,17 +132,22 @@ const generateEmailHTML = (semanal, quincenal, mensual) => {
                     <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
                         <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); border-left: 4px solid #28a745; text-align: center;">
                             <h4 style="margin: 0 0 10px 0; color: #28a745; font-size: 16px; font-weight: 600;">Semanal</h4>
-                            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #28a745;">${semanal.length}</p>
+                            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #28a745;">${semanalCombinado.length}</p>
                             <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">pedidos</p>
                         </div>
                         <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); border-left: 4px solid #ffc107; text-align: center;">
-                            <h4 style="margin: 0 0 10px 0; color: #ffc107; font-size: 16px; font-weight: 600;">Quincenal</h4>
-                            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #ffc107;">${quincenal.length}</p>
+                            <h4 style="margin: 0 0 10px 0; color: #ffc107; font-size: 16px; font-weight: 600;">Cada 2 semanas</h4>
+                            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #ffc107;">${quincenalCombinado.length}</p>
+                            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">pedidos</p>
+                        </div>
+                        <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); border-left: 4px solid #fd7e14; text-align: center;">
+                            <h4 style="margin: 0 0 10px 0; color: #fd7e14; font-size: 16px; font-weight: 600;">Cada 3 semanas</h4>
+                            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #fd7e14;">${tresSemanasCombinado.length}</p>
                             <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">pedidos</p>
                         </div>
                         <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); border-left: 4px solid #17a2b8; text-align: center;">
                             <h4 style="margin: 0 0 10px 0; color: #17a2b8; font-size: 16px; font-weight: 600;">Mensual</h4>
-                            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #17a2b8;">${mensual.length}</p>
+                            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #17a2b8;">${mensualCombinado.length}</p>
                             <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">pedidos</p>
                         </div>
                     </div>
@@ -136,9 +155,10 @@ const generateEmailHTML = (semanal, quincenal, mensual) => {
 
                 <!-- Data Tables -->
                 <div style="padding: 30px;">
-                    ${generateTable(semanal, 'Pedidos Semanales', '#28a745')}
-                    ${generateTable(quincenal, 'Pedidos Quincenales', '#ffc107')}
-                    ${generateTable(mensual, 'Pedidos Mensuales', '#17a2b8')}
+                    ${generateTable(semanalCombinado, 'Pedidos Semanales', '#28a745')}
+                    ${generateTable(quincenalCombinado, 'Pedidos Cada 2 Semanas', '#ffc107')}
+                    ${generateTable(tresSemanasCombinado, 'Pedidos Cada 3 Semanas', '#fd7e14')}
+                    ${generateTable(mensualCombinado, 'Pedidos Mensuales', '#17a2b8')}
                 </div>
 
                 <!-- Footer -->
@@ -161,51 +181,285 @@ const generateEmailHTML = (semanal, quincenal, mensual) => {
  * Función principal para enviar el reporte de frecuencias
  */
 module.exports.main = async (event) => {
-  let client;
+    let client;
 
-  try {
-    client = await poolConection.connect();
+    try {
+        client = await poolConection.connect();
 
-    // Obtener datos de las consultas
-    const { rows: semanal } = await client.query(GET_FRECUENCIAL_SEMANAL, [TYPE_SEMANAL]);
-    const { rows: quincenal } = await client.query(GET_FRECUENCIAL_QUINCENAL, [TYPE_QUINCENAL]);
-    const { rows: mensual } = await client.query(GET_FRECUENCIAL_MENSUAL, [TYPE_MENSUAL]);
+        // Crear pedidos automáticamente basándose en las frecuencias
+        // Estas funciones crean los pedidos y retornan los datos
+        const { rows: semanal } = await client.query(CREATE_FRECUENCIAL_SEMANAL, [TYPE_SEMANAL]);
+        const { rows: quincenal } = await client.query(CREATE_FRECUENCIAL_QUINCENAL, [TYPE_QUINCENAL]);
+        const { rows: mensual } = await client.query(CREATE_FRECUENCIAL_MENSUAL, [TYPE_MENSUAL]);
 
-    // Configurar el email
-    const mailOptions = {
-      from: {
-        name: 'CodeGas Colombia - Sistema Automático',
-        address: EMAIL_USER
-      },
-      to: recipients,
-      subject: `📊 Reporte de Pedidos Frecuencias - ${new Date().toLocaleDateString('es-CO')}`,
-      html: generateEmailHTML(semanal, quincenal, mensual),
-      attachments: []
-    };
+        // ============================================
+        // PROCESAR GRUPOS DE FRECUENCIAS
+        // ============================================
+        // Obtener fecha actual y de mañana en zona horaria de Bogotá
+        await client.query("SET TIME ZONE 'America/Bogota'");
+        const { rows: fechaInfo } = await client.query(`
+            SELECT 
+                CURRENT_DATE as fecha_hoy,
+                CURRENT_DATE + INTERVAL '1 day' as fecha_manana,
+                CURRENT_DATE + INTERVAL '2 days' as fecha_lunes,
+                EXTRACT(ISODOW FROM CURRENT_DATE) as dia_semana_hoy,
+                EXTRACT(ISODOW FROM CURRENT_DATE + INTERVAL '1 day') as dia_semana_manana,
+                EXTRACT(ISODOW FROM CURRENT_DATE + INTERVAL '2 days') as dia_semana_lunes,
+                EXTRACT(DAY FROM CURRENT_DATE) as dia_mes_hoy,
+                EXTRACT(DAY FROM CURRENT_DATE + INTERVAL '1 day') as dia_mes_manana,
+                EXTRACT(DAY FROM CURRENT_DATE + INTERVAL '2 days') as dia_mes_lunes
+        `);
 
-    // Enviar el email
-    const info = await transporter.sendMail(mailOptions);
+        const fechaHoy = fechaInfo[0].fecha_hoy;
+        const fechaManana = fechaInfo[0].fecha_manana;
+        const fechaLunes = fechaInfo[0].fecha_lunes;
+        const diaSemanaHoy = parseInt(fechaInfo[0].dia_semana_hoy);
+        const diaSemanaManana = parseInt(fechaInfo[0].dia_semana_manana);
+        const diaSemanaLunes = parseInt(fechaInfo[0].dia_semana_lunes);
+        const diaMesHoy = parseInt(fechaInfo[0].dia_mes_hoy);
+        const diaMesManana = parseInt(fechaInfo[0].dia_mes_manana);
+        const diaMesLunes = parseInt(fechaInfo[0].dia_mes_lunes);
 
-    console.log('Email enviado exitosamente:', info.messageId);
+        // Para grupos: determinar qué día buscar y qué fecha usar
+        // Regla especial: Si hoy es sábado, buscar grupos para lunes y crear con fecha lunes (2 días después)
+        // Para todos los demás días, buscar grupos para mañana y crear con fecha mañana (1 día después)
+        let diaSemanaActual;
+        let diaMesActual;
+        let fechaSolicitud;
 
-    return {
-      status: true,
-      message: 'Email enviado exitosamente',
-      messageId: info.messageId,
-      totalSemanal: semanal.length,
-      totalQuincenal: quincenal.length,
-      totalMensual: mensual.length,
-      semanal,
-      quincenal,
-      mensual
-    };
+        if (diaSemanaHoy === 6) {
+            // Si hoy es sábado, buscar grupos para lunes
+            diaSemanaActual = 1; // Lunes
+            diaMesActual = diaMesLunes;
+            fechaSolicitud = fechaLunes; // Fecha de solicitud = lunes
+        } else {
+            // Para otros días, buscar grupos para mañana (1 día antes)
+            diaSemanaActual = diaSemanaManana;
+            diaMesActual = diaMesManana;
+            fechaSolicitud = fechaManana; // Fecha de solicitud = mañana
+        }
 
-  } catch (error) {
-    console.error('Error al enviar el email:', error);
-    throw new DatabaseError(error);
-  } finally {
-    if (client) {
-      client.release();
+        // 1. Obtener todos los grupos de frecuencias
+        const GET_GRUPOS = `
+            SELECT 
+                _id,
+                nombre,
+                tipo_frecuencia,
+                dia_semana,
+                intervalo_semanas,
+                dia_mes,
+                dia_semana_mensual,
+                creado
+            FROM grupos_frecuencias
+            WHERE eliminado = FALSE
+        `;
+
+        const { rows: todosGrupos } = await client.query(GET_GRUPOS);
+
+        // 2. Filtrar grupos que deben crear pedidos HOY
+        const gruposQueDebenCrear = [];
+        const gruposDetalle = [];
+
+        for (const grupo of todosGrupos) {
+            let debeCrear = false;
+            let razon = '';
+
+            if (grupo.tipo_frecuencia === 'semanal') {
+                // Verificar si el día de la semana coincide
+                if (grupo.dia_semana === diaSemanaActual) {
+                    razon = `Día coincide (${grupo.dia_semana})`;
+
+                    if (grupo.intervalo_semanas === 1) {
+                        // Cada semana: si el día coincide, se crea (sin importar fecha de creación)
+                        debeCrear = true;
+                        razon += `, Intervalo 1 semana (semanal)`;
+                    } else {
+                        // Para intervalos mayores a 1: calcular días desde la creación del grupo
+                        const fechaCreacionGrupo = new Date(grupo.creado);
+                        const fechaHoyDate = new Date(fechaHoy);
+                        const diffTime = fechaHoyDate.getTime() - fechaCreacionGrupo.getTime();
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                        if (grupo.intervalo_semanas === 2) {
+                            // Cada 2 semanas: verificar que hayan pasado múltiplos de 14 días desde la creación
+                            debeCrear = diffDays >= 0 && diffDays % 14 === 0;
+                            razon += `, Intervalo 2 semanas (quincenal), ${diffDays} días desde creación`;
+                        } else if (grupo.intervalo_semanas === 3) {
+                            // Cada 3 semanas: verificar que hayan pasado múltiplos de 21 días desde la creación
+                            debeCrear = diffDays >= 0 && diffDays % 21 === 0;
+                            razon += `, Intervalo 3 semanas, ${diffDays} días desde creación`;
+                        } else {
+                            // Para otros intervalos (4, 5, etc.): múltiplos de (intervalo * 7) días
+                            const diasIntervalo = grupo.intervalo_semanas * 7;
+                            debeCrear = diffDays >= 0 && diffDays % diasIntervalo === 0;
+                            razon += `, Intervalo ${grupo.intervalo_semanas} semanas, ${diffDays} días desde creación`;
+                        }
+                    }
+                }
+            } else if (grupo.tipo_frecuencia === 'mensual') {
+                // Verificar si el día del mes coincide
+                if (grupo.dia_mes === diaMesActual) {
+                    debeCrear = true;
+                    razon = `Día del mes coincide (${grupo.dia_mes})`;
+                }
+            }
+
+            if (debeCrear) {
+                gruposQueDebenCrear.push(grupo._id);
+                gruposDetalle.push({
+                    grupo_id: grupo._id,
+                    nombre: grupo.nombre,
+                    tipo_frecuencia: grupo.tipo_frecuencia,
+                    razon: razon
+                });
+            }
+        }
+
+        // 3. Buscar todos los pedidos que pertenecen a esos grupos
+        let pedidosGrupos = [];
+
+        if (gruposQueDebenCrear.length > 0) {
+            const GET_PEDIDOS_POR_GRUPOS = `
+                SELECT 
+                    p._id as pedido_id,
+                    p.forma,
+                    p.cantidadkl,
+                    p.cantidadprecio,
+                    p.frecuencia,
+                    p.dia1,
+                    p.dia2,
+                    p.usuarioid,
+                    p.usuariocrea,
+                    p.puntoid,
+                    p.grupo_id,
+                    p.creado,
+                    p.observacion,
+                    u.nombre,
+                    u.razon_social,
+                    u.codt,
+                    u.valorunitario,
+                    pt.direccion as punto_direccion,
+                    pt.capacidad as punto_capacidad,
+                    g.nombre as grupo_nombre,
+                    g.tipo_frecuencia as grupo_tipo_frecuencia,
+                    g.dia_semana as grupo_dia_semana,
+                    g.intervalo_semanas as grupo_intervalo_semanas,
+                    g.dia_mes as grupo_dia_mes
+                FROM pedidos p
+                JOIN users u ON u._id = p.usuarioid
+                LEFT JOIN puntos pt ON pt._id = p.puntoid
+                JOIN grupos_frecuencias g ON g._id = p.grupo_id
+                WHERE p.grupo_id = ANY($1::int[])
+                    AND p.eliminado = FALSE
+                ORDER BY g.nombre ASC, u.razon_social ASC, u.nombre ASC
+            `;
+
+            const { rows: pedidosEncontrados } = await client.query(GET_PEDIDOS_POR_GRUPOS, [gruposQueDebenCrear]);
+            pedidosGrupos = pedidosEncontrados;
+        }
+
+        // 4. Crear los pedidos de grupos
+        let pedidosGruposCreados = 0;
+        const pedidosGruposCreadosIds = [];
+
+        if (pedidosGrupos.length > 0) {
+            const INSERT_PEDIDO_GRUPO = `
+                INSERT INTO pedidos (
+                    forma,
+                    cantidadkl,
+                    cantidadprecio,
+                    valorunitario,
+                    observacion,
+                    pedidopadre,
+                    estado,
+                    fechasolicitud,
+                    usuarioid,
+                    puntoid,
+                    usuariocrea,
+                    grupo_id
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                RETURNING _id
+            `;
+
+            for (const pedido of pedidosGrupos) {
+                try {
+                    const usuarioIdValue = pedido.usuarioid;
+                    const puntoIdValue = pedido.puntoid;
+                    const usuarioCreaValue = pedido.usuariocrea || pedido.usuarioid;
+
+                    const { rows: nuevoPedido } = await client.query(INSERT_PEDIDO_GRUPO, [
+                        pedido.forma,
+                        pedido.cantidadkl,
+                        pedido.cantidadprecio,
+                        pedido.valorunitario,
+                        pedido.observacion || null,
+                        pedido.pedido_id,
+                        'espera',
+                        fechaSolicitud,
+                        usuarioIdValue,
+                        puntoIdValue,
+                        usuarioCreaValue,
+                        null
+                    ]);
+
+                    pedidosGruposCreados++;
+                    pedidosGruposCreadosIds.push(nuevoPedido[0]._id);
+                } catch (error) {
+                    // Error silencioso, continuar con el siguiente pedido
+                }
+            }
+        }
+
+        const totalPedidosCreados = semanal.length + quincenal.length + mensual.length + pedidosGruposCreados;
+
+        // Configurar el email
+        const mailOptions = {
+            from: {
+                name: 'CodeGas Colombia - Sistema Automático',
+                address: EMAIL_USER
+            },
+            to: recipients,
+            subject: `📊 Reporte de Pedidos Frecuencias - ${new Date().toLocaleDateString('es-CO')}`,
+            html: generateEmailHTML(semanal, quincenal, mensual, pedidosGrupos),
+            attachments: []
+        };
+
+        // Enviar el email
+        const info = await transporter.sendMail(mailOptions);
+
+        return {
+            status: true,
+            message: 'Pedidos creados y email enviado exitosamente',
+            messageId: info.messageId,
+            totalPedidosCreados: totalPedidosCreados,
+            totalSemanal: semanal.length,
+            totalQuincenal: quincenal.length,
+            totalMensual: mensual.length,
+            totalGruposListados: pedidosGrupos.length,
+            totalGruposCreados: pedidosGruposCreados,
+            gruposQueDebenCrear: gruposQueDebenCrear,
+            gruposDetalle: gruposDetalle,  // Detalle de grupos que deben crear
+            fechaActual: fechaHoy,
+            fechaManana: fechaManana,
+            fechaSolicitud: fechaSolicitud,  // Fecha para la cual se crearán los pedidos (mañana o lunes si hoy es sábado)
+            diaSemanaHoy: diaSemanaHoy,
+            diaSemanaManana: diaSemanaManana,
+            diaSemanaActual: diaSemanaActual,  // Día de la semana usado para comparar grupos
+            diaMesHoy: diaMesHoy,
+            diaMesManana: diaMesManana,
+            diaMesActual: diaMesActual,  // Día del mes usado para comparar grupos mensuales
+            pedidosGruposCreadosIds: pedidosGruposCreadosIds,  // IDs de los pedidos creados
+            semanal,
+            quincenal,
+            mensual,
+            grupos: pedidosGrupos  // Lista de pedidos que pertenecen a grupos (ya creados)
+        };
+
+    } catch (error) {
+        throw new DatabaseError(error);
+    } finally {
+        if (client) {
+            client.release();
+        }
     }
-  }
 };

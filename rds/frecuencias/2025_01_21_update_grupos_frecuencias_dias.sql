@@ -16,5 +16,5 @@ ALTER TABLE grupos_frecuencias
     CHECK (dia_semana_mensual IS NULL OR (dia_semana_mensual >= 1 AND dia_semana_mensual <= 7));
 
 -- Actualizar comentarios en la documentación
-COMMENT ON COLUMN grupos_frecuencias.dia_semana IS 'Día de la semana para frecuencia semanal (1=Lunes, 5=Viernes, 6=Sábado, 7=Domingo)';
-COMMENT ON COLUMN grupos_frecuencias.dia_semana_mensual IS 'Día de la semana para frecuencia mensual (1=Lunes, 5=Viernes, 6=Sábado, 7=Domingo)';
+COMMENT ON COLUMN grupos_frecuencias.dia_semana IS 'Día de la semana para frecuencia semanal (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo)';
+COMMENT ON COLUMN grupos_frecuencias.dia_semana_mensual IS 'Día de la semana para frecuencia mensual (1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo)';

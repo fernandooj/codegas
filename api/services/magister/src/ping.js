@@ -9,15 +9,15 @@ const { queryMagister } = require('../../../lib/magister-db');
  */
 module.exports.main = async () => {
     const connectionMode = process.env.MAGISTER_CONNECTION_MODE || 'api';
-    
+
     try {
         if (connectionMode === 'direct') {
             console.log('🔍 [magister-ping] Modo: Conexión DIRECTA a Firebird');
             console.log(`🔍 [magister-ping] Host: ${process.env.MAGISTER_DB_HOST}:${process.env.MAGISTER_DB_PORT}`);
-            
+
             // Conexión directa a Firebird
             const result = await queryMagister('SELECT 1 AS ok FROM RDB$DATABASE');
-            
+
             return {
                 status: true,
                 mode: 'direct',
@@ -26,10 +26,10 @@ module.exports.main = async () => {
         } else {
             console.log('🔍 [magister-ping] Modo: API REST intermedia');
             console.log(`🔍 [magister-ping] URL: ${process.env.MAGISTER_API_URL}`);
-            
+
             // Conexión vía API REST
             const result = await pingApi();
-            
+
             return {
                 status: true,
                 mode: 'api',
