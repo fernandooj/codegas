@@ -37,6 +37,7 @@ module.exports.main = async (event) => {
                 p.usuarioId as usuarioid,
                 p.puntoId as puntoId,
                 p.grupo_id,
+                p.creado as fecha_creacion,
                 u.nombre,
                 u.razon_social,
                 u.codt,

@@ -19,6 +19,7 @@ const DataProvider = ({ children }: any) => {
   const [_acceso, setAcceso] = useState();
   const [_email, setEmail] = useState();
   const [_avatar, setAvatar] = useState();
+  const [_cedula, setCedula] = useState();
   const [initializing, setInitializing] = useState(true);
   const [fcmToken, setFcmToken] = useState();
 
@@ -33,7 +34,7 @@ const DataProvider = ({ children }: any) => {
         return;
       }
 
-      const { _id, acceso, nombre, email: newEmail, avatar } = userData || {};
+      const { _id, acceso, nombre, email: newEmail, avatar, cedula } = userData || {};
 
       // Validar que _id existe antes de proceder
       if (!_id) {
@@ -58,6 +59,7 @@ const DataProvider = ({ children }: any) => {
         if (nombre) itemsToStore.push(['nombre', String(nombre)]);
         if (newEmail) itemsToStore.push(['email', String(newEmail)]);
         if (avatar) itemsToStore.push(['avatar', String(avatar)]);
+        if (cedula !== undefined && cedula !== null) itemsToStore.push(['cedula', String(cedula)]);
 
         // Validar que todos los elementos sean arrays válidos
         const validItems = itemsToStore.filter(item =>
@@ -101,6 +103,7 @@ const DataProvider = ({ children }: any) => {
       const nombre = await AsyncStorage.getItem('nombre');
       const email = await AsyncStorage.getItem('email');
       const avatar = await AsyncStorage.getItem('avatar');
+      const cedula = await AsyncStorage.getItem('cedula');
 
       if (userId) {
         setUserId(userId);
@@ -108,6 +111,7 @@ const DataProvider = ({ children }: any) => {
         setNombre(nombre);
         setEmail(email);
         setAvatar(avatar);
+        setCedula(cedula);
       }
     } catch (error) {
       console.error('Error cargando desde AsyncStorage:', error);
@@ -227,6 +231,7 @@ const DataProvider = ({ children }: any) => {
     nombre: _nombre,
     email: _email,
     avatar: _avatar,
+    cedula: _cedula,
     fcmToken,
     updateUserData,
     login: async ({ email, password }: any) => {
@@ -302,6 +307,7 @@ const DataProvider = ({ children }: any) => {
         setNombre(null);
         setEmail(null);
         setAvatar(null);
+        setCedula(null);
         setFcmToken(null);
 
         // Cerrar sesión en Firebase

@@ -78,7 +78,7 @@ export const usePedidoState = () => {
 
         if (reachedEnd && !state.final) {
             dispatch(pedidoActions.setFinal(true));
-            dispatch(pedidoActions.setLimit(state.limit + 10));
+            dispatch(pedidoActions.setLimit(state.limit + 20));
             return true; // Indica que se debe cargar más datos
         } else if (!reachedEnd && state.final) {
             dispatch(pedidoActions.setFinal(false));

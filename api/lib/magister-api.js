@@ -53,10 +53,36 @@ const listTables = async () => {
     }
 };
 
+/**
+ * Obtiene la cartera de un cliente por NIT usando el endpoint /cartera/:nit
+ * en la API REST intermedia.
+ * @param {string|number} nit - NIT del cliente
+ */
+const getCarteraByNit = async (nit) => {
+    if (!nit) {
+        throw new Error('El NIT es obligatorio para consultar la cartera');
+    }
+
+    try {
+        const response = await axios.get(`${API_BASE_URL}/cartera/${encodeURIComponent(nit)}`, {
+            timeout: 15000
+        });
+        // Estructura esperada: { success: true, nit, count, data: [...] }
+        if (!response.data || response.data.error) {
+            const msg = response.data?.message || 'Respuesta inválida de la API de Magister';
+            throw new Error(msg);
+        }
+        return response.data;
+    } catch (error) {
+        throw new Error(`Error obteniendo cartera por NIT: ${error.message}`);
+    }
+};
+
 module.exports = {
     ping,
     query,
-    listTables
+    listTables,
+    getCarteraByNit
 };
 
 

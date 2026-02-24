@@ -620,6 +620,10 @@ export const style = MediaQueryStyleSheet.create({
         backgroundColor: '#007bff',
         shadowColor: 'rgba(0,123,255, .3)',
     },
+    secondaryButtonCartera: {
+        backgroundColor: '#17a2b8',
+        shadowColor: 'rgba(23,162,184, .3)',
+    },
     secondaryButtonIcon: {
         marginRight: 8
     },

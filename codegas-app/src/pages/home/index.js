@@ -11,7 +11,7 @@ import { style } from './style';
 import { colors } from '../../utils/colors';
 
 const Home = ({ navigation }) => {
-  const { login, acceso, userId, nombre } = useContext(DataContext)
+  const { login, acceso, userId, nombre, cedula } = useContext(DataContext)
   limit = acceso === 'conductor' ? 50 : 10
   const dispatch = useDispatch();
   useEffect(() => {
@@ -38,6 +38,15 @@ const Home = ({ navigation }) => {
         gradient: ['#040505ff', '#0A6BB2'],
         onPress: () => navigation.navigate('chart'),
         show: acceso == 'cliente'
+      },
+      {
+        title: 'INFORMACIÓN CREDITICIA',
+        subtitle: 'Ver mi cartera',
+        icon: '📋',
+        color: '#17a2b8',
+        gradient: ['#17a2b8', '#138496'],
+        onPress: () => navigation.navigate('Cartera', { nit: cedula || '', nombreCliente: nombre || '' }),
+        show: acceso === 'cliente'
       },
 
     ];

@@ -29,6 +29,10 @@ const recipients = [
     'fernandooj@ymail.com'
 ];
 
+// const recipients = [
+//     'fernandooj@ymail.com'
+// ];
+
 
 /**
  * Genera una tabla HTML estilizada para mostrar los datos
@@ -220,24 +224,12 @@ module.exports.main = async (event) => {
         const diaMesManana = parseInt(fechaInfo[0].dia_mes_manana);
         const diaMesLunes = parseInt(fechaInfo[0].dia_mes_lunes);
 
-        // Para grupos: determinar qué día buscar y qué fecha usar
-        // Regla especial: Si hoy es sábado, buscar grupos para lunes y crear con fecha lunes (2 días después)
-        // Para todos los demás días, buscar grupos para mañana y crear con fecha mañana (1 día después)
-        let diaSemanaActual;
-        let diaMesActual;
-        let fechaSolicitud;
-
-        if (diaSemanaHoy === 6) {
-            // Si hoy es sábado, buscar grupos para lunes
-            diaSemanaActual = 1; // Lunes
-            diaMesActual = diaMesLunes;
-            fechaSolicitud = fechaLunes; // Fecha de solicitud = lunes
-        } else {
-            // Para otros días, buscar grupos para mañana (1 día antes)
-            diaSemanaActual = diaSemanaManana;
-            diaMesActual = diaMesManana;
-            fechaSolicitud = fechaManana; // Fecha de solicitud = mañana
-        }
+        // IMPORTANTE: Los pedidos se crean para 2 días después (fecha de entrega)
+        // El dia_semana del grupo es el día de ENTREGA, no de ejecución
+        // Ejecución = 2 días antes de la entrega
+        const fechaSolicitud = fechaInfo[0].fecha_lunes; // Siempre 2 días después
+        const diaSemanaObjetivo = diaSemanaLunes; // Día de la semana en 2 días (día de entrega)
+        const diaMesObjetivo = diaMesLunes; // Día del mes en 2 días (día de entrega)
 
         // 1. Obtener todos los grupos de frecuencias
         const GET_GRUPOS = `
@@ -256,69 +248,121 @@ module.exports.main = async (event) => {
 
         const { rows: todosGrupos } = await client.query(GET_GRUPOS);
 
-        // 2. Filtrar grupos que deben crear pedidos HOY
+        // 2. Obtener pedidos con grupos y verificar cuáles deben crear pedidos HOY
+        // IMPORTANTE: Usar la misma lógica que crear-pedidos-frecuencia.js
+        // El dia_semana del grupo es el día de ENTREGA (2 días después)
+        const GET_PEDIDOS_CON_GRUPO = `
+            SELECT 
+                p._id,
+                p.forma,
+                p.cantidadkl,
+                p.cantidadprecio,
+                p.usuarioid,
+                p.usuariocrea,
+                p.puntoid,
+                p.creado,
+                p.observacion,
+                p.grupo_id,
+                u.valorunitario,
+                g.tipo_frecuencia,
+                g.dia_semana,
+                g.intervalo_semanas,
+                g.dia_mes,
+                g.dia_semana_mensual
+            FROM pedidos p
+            JOIN users u ON u._id = p.usuarioid
+            JOIN grupos_frecuencias g ON g._id = p.grupo_id
+            WHERE p.grupo_id IS NOT NULL
+                AND p.eliminado = FALSE
+                AND g.eliminado = FALSE
+        `;
+
+        const { rows: pedidosConGrupo } = await client.query(GET_PEDIDOS_CON_GRUPO);
+
         const gruposQueDebenCrear = [];
         const gruposDetalle = [];
+        const pedidosQueDebenCrear = [];
 
-        for (const grupo of todosGrupos) {
+        for (const pedido of pedidosConGrupo) {
+            const tipoFrecuencia = pedido.tipo_frecuencia;
             let debeCrear = false;
             let razon = '';
 
-            if (grupo.tipo_frecuencia === 'semanal') {
-                // Verificar si el día de la semana coincide
-                if (grupo.dia_semana === diaSemanaActual) {
-                    razon = `Día coincide (${grupo.dia_semana})`;
+            if (tipoFrecuencia === 'semanal') {
+                // IMPORTANTE: El dia_semana del grupo es el día de ENTREGA (2 días después)
+                if (pedido.dia_semana === diaSemanaObjetivo) {
+                    razon = `Día de entrega coincide (${pedido.dia_semana})`;
 
-                    if (grupo.intervalo_semanas === 1) {
-                        // Cada semana: si el día coincide, se crea (sin importar fecha de creación)
+                    if (pedido.intervalo_semanas === 1) {
+                        // Cada semana: si el día de entrega coincide, se crea hoy (2 días antes)
                         debeCrear = true;
                         razon += `, Intervalo 1 semana (semanal)`;
                     } else {
-                        // Para intervalos mayores a 1: calcular días desde la creación del grupo
-                        const fechaCreacionGrupo = new Date(grupo.creado);
-                        const fechaHoyDate = new Date(fechaHoy);
-                        const diffTime = fechaHoyDate.getTime() - fechaCreacionGrupo.getTime();
-                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                        // IMPORTANTE: Usar la fecha de creación del PEDIDO PADRE, no del grupo
+                        let fechaCreacionPedido;
+                        try {
+                            const fechaStr = String(pedido.creado).split('T')[0];
+                            fechaCreacionPedido = new Date(fechaStr + 'T00:00:00.000Z');
+                            fechaCreacionPedido.setUTCHours(0, 0, 0, 0);
+                        } catch (e) {
+                            console.warn(`Error al parsear fecha de creación para pedido ${pedido._id}: ${pedido.creado}`, e);
+                            continue;
+                        }
 
-                        if (grupo.intervalo_semanas === 2) {
-                            // Cada 2 semanas: verificar que hayan pasado múltiplos de 14 días desde la creación
-                            debeCrear = diffDays >= 0 && diffDays % 14 === 0;
-                            razon += `, Intervalo 2 semanas (quincenal), ${diffDays} días desde creación`;
-                        } else if (grupo.intervalo_semanas === 3) {
-                            // Cada 3 semanas: verificar que hayan pasado múltiplos de 21 días desde la creación
-                            debeCrear = diffDays >= 0 && diffDays % 21 === 0;
-                            razon += `, Intervalo 3 semanas, ${diffDays} días desde creación`;
+                        // Calcular desde la primera fecha de entrega hasta la fecha objetivo
+                        const fechaEntregaObjetivo = new Date(fechaSolicitud);
+                        fechaEntregaObjetivo.setUTCHours(0, 0, 0, 0);
+                        const diaObjetivoJS = pedido.dia_semana === 7 ? 0 : pedido.dia_semana;
+
+                        // Encontrar la primera fecha de entrega desde la creación del pedido
+                        let primeraFechaEntrega = new Date(fechaCreacionPedido);
+                        while (primeraFechaEntrega.getUTCDay() !== diaObjetivoJS) {
+                            primeraFechaEntrega.setUTCDate(primeraFechaEntrega.getUTCDate() + 1);
+                        }
+
+                        // Calcular semanas desde la primera fecha de entrega
+                        const diffTimeEntrega = fechaEntregaObjetivo.getTime() - primeraFechaEntrega.getTime();
+                        const diffDaysEntrega = Math.floor(diffTimeEntrega / (1000 * 60 * 60 * 24));
+                        const semanasDesdePrimeraEntrega = Math.floor(diffDaysEntrega / 7);
+
+                        // Verificar que sea múltiplo del intervalo
+                        if (semanasDesdePrimeraEntrega >= 0 && semanasDesdePrimeraEntrega % pedido.intervalo_semanas === 0) {
+                            debeCrear = true;
+                            razon += `, Intervalo ${pedido.intervalo_semanas} semanas, ${semanasDesdePrimeraEntrega} semanas desde primera entrega`;
                         } else {
-                            // Para otros intervalos (4, 5, etc.): múltiplos de (intervalo * 7) días
-                            const diasIntervalo = grupo.intervalo_semanas * 7;
-                            debeCrear = diffDays >= 0 && diffDays % diasIntervalo === 0;
-                            razon += `, Intervalo ${grupo.intervalo_semanas} semanas, ${diffDays} días desde creación`;
+                            razon += `, NO es múltiplo (${semanasDesdePrimeraEntrega} semanas, intervalo ${pedido.intervalo_semanas})`;
                         }
                     }
                 }
-            } else if (grupo.tipo_frecuencia === 'mensual') {
-                // Verificar si el día del mes coincide
-                if (grupo.dia_mes === diaMesActual) {
+            } else if (tipoFrecuencia === 'mensual') {
+                // Para mensual: verificar si el día del mes coincide con el día objetivo (2 días después)
+                if (pedido.dia_mes === diaMesObjetivo) {
                     debeCrear = true;
-                    razon = `Día del mes coincide (${grupo.dia_mes})`;
+                    razon = `Día del mes coincide (${pedido.dia_mes})`;
                 }
             }
 
             if (debeCrear) {
-                gruposQueDebenCrear.push(grupo._id);
-                gruposDetalle.push({
-                    grupo_id: grupo._id,
-                    nombre: grupo.nombre,
-                    tipo_frecuencia: grupo.tipo_frecuencia,
-                    razon: razon
-                });
+                // Agregar el grupo a la lista si no está ya
+                if (!gruposQueDebenCrear.includes(pedido.grupo_id)) {
+                    gruposQueDebenCrear.push(pedido.grupo_id);
+                    gruposDetalle.push({
+                        grupo_id: pedido.grupo_id,
+                        nombre: pedido.grupo_id, // Se actualizará después con el nombre real
+                        tipo_frecuencia: tipoFrecuencia,
+                        razon: razon
+                    });
+                }
+                pedidosQueDebenCrear.push(pedido);
             }
         }
 
-        // 3. Buscar todos los pedidos que pertenecen a esos grupos
+        // 3. Obtener información completa de los pedidos que deben crearse
         let pedidosGrupos = [];
 
-        if (gruposQueDebenCrear.length > 0) {
+        if (pedidosQueDebenCrear.length > 0) {
+            // Obtener información completa de los pedidos y sus grupos
+            const pedidoIds = pedidosQueDebenCrear.map(p => p._id);
             const GET_PEDIDOS_POR_GRUPOS = `
                 SELECT 
                     p._id as pedido_id,
@@ -349,13 +393,21 @@ module.exports.main = async (event) => {
                 JOIN users u ON u._id = p.usuarioid
                 LEFT JOIN puntos pt ON pt._id = p.puntoid
                 JOIN grupos_frecuencias g ON g._id = p.grupo_id
-                WHERE p.grupo_id = ANY($1::int[])
+                WHERE p._id = ANY($1::int[])
                     AND p.eliminado = FALSE
                 ORDER BY g.nombre ASC, u.razon_social ASC, u.nombre ASC
             `;
 
-            const { rows: pedidosEncontrados } = await client.query(GET_PEDIDOS_POR_GRUPOS, [gruposQueDebenCrear]);
+            const { rows: pedidosEncontrados } = await client.query(GET_PEDIDOS_POR_GRUPOS, [pedidoIds]);
             pedidosGrupos = pedidosEncontrados;
+
+            // Actualizar nombres de grupos en gruposDetalle
+            for (const detalle of gruposDetalle) {
+                const grupoInfo = pedidosEncontrados.find(p => p.grupo_id === detalle.grupo_id);
+                if (grupoInfo) {
+                    detalle.nombre = grupoInfo.grupo_nombre;
+                }
+            }
         }
 
         // 4. Crear los pedidos de grupos
@@ -441,13 +493,13 @@ module.exports.main = async (event) => {
             gruposDetalle: gruposDetalle,  // Detalle de grupos que deben crear
             fechaActual: fechaHoy,
             fechaManana: fechaManana,
-            fechaSolicitud: fechaSolicitud,  // Fecha para la cual se crearán los pedidos (mañana o lunes si hoy es sábado)
+            fechaSolicitud: fechaSolicitud,  // Fecha para la cual se crearán los pedidos (2 días después)
             diaSemanaHoy: diaSemanaHoy,
             diaSemanaManana: diaSemanaManana,
-            diaSemanaActual: diaSemanaActual,  // Día de la semana usado para comparar grupos
+            diaSemanaObjetivo: diaSemanaObjetivo,  // Día de la semana objetivo (2 días después = día de entrega)
             diaMesHoy: diaMesHoy,
             diaMesManana: diaMesManana,
-            diaMesActual: diaMesActual,  // Día del mes usado para comparar grupos mensuales
+            diaMesObjetivo: diaMesObjetivo,  // Día del mes objetivo (2 días después)
             pedidosGruposCreadosIds: pedidosGruposCreadosIds,  // IDs de los pedidos creados
             semanal,
             quincenal,

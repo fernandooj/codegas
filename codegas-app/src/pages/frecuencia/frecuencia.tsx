@@ -41,6 +41,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     const [editingGrupo, setEditingGrupo] = useState<GrupoFrecuencia | null>(null);
     const [viewingGrupo, setViewingGrupo] = useState<GrupoFrecuencia | null>(null);
     const [activeTab, setActiveTab] = useState<'individuales' | 'grupos'>('individuales');
+    const [gruposFiltrados, setGruposFiltrados] = useState<GrupoFrecuencia[]>([]);
 
     useEffect(() => {
         const loadFrecuencias = async () => {
@@ -92,6 +93,13 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         }
     }, [pedidos]);
 
+    useEffect(() => {
+        // Inicializar grupos filtrados cuando cambien los grupos
+        if (grupos && grupos.length >= 0) {
+            setGruposFiltrados(grupos);
+        }
+    }, [grupos]);
+
     // Separar frecuencias con grupo y sin grupo
     const frecuenciasConGrupo = pedidos.filter((p: PedidoFrecuencia) => (p as any).grupo_id);
     const frecuenciasSinGrupo = pedidos.filter((p: PedidoFrecuencia) => !(p as any).grupo_id);
@@ -126,9 +134,41 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         }));
     }, [pedidos]);
 
+    const filtrarGrupos = useCallback((termino: string) => {
+        if (!termino.trim()) {
+            setGruposFiltrados(grupos);
+            return;
+        }
+
+        const busqueda = termino.toLowerCase();
+        const gruposFiltrados = grupos.filter((grupo: GrupoFrecuencia) => {
+            const diaSemanaNames = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            const nombreGrupo = String(grupo.nombre || '').toLowerCase();
+            const tipoFrecuencia = String(grupo.tipo_frecuencia || '').toLowerCase();
+            const diaSemanaNombre = grupo.dia_semana ? diaSemanaNames[grupo.dia_semana].toLowerCase() : '';
+            const intervaloText = grupo.intervalo_semanas === 1 ? 'semanal' : grupo.intervalo_semanas === 2 ? 'cada 2 semanas' : grupo.intervalo_semanas === 3 ? 'cada 3 semanas' : `cada ${grupo.intervalo_semanas} semanas`;
+
+            return (
+                nombreGrupo.includes(busqueda) ||
+                tipoFrecuencia.includes(busqueda) ||
+                diaSemanaNombre.includes(busqueda) ||
+                intervaloText.includes(busqueda) ||
+                String(grupo.dia_mes || '').includes(busqueda) ||
+                String(grupo.total_pedidos || '').includes(busqueda)
+            );
+        });
+
+        setGruposFiltrados(gruposFiltrados);
+    }, [grupos]);
+
     const handleSearch = (terminoBuscador: string) => {
         setState(prev => ({ ...prev, terminoBuscador }));
-        filtrarPedidos(terminoBuscador);
+
+        if (activeTab === 'grupos') {
+            filtrarGrupos(terminoBuscador);
+        } else {
+            filtrarPedidos(terminoBuscador);
+        }
     };
 
     const onScroll = (e: any) => {
@@ -398,11 +438,11 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                 <Text style={style.titulo}>Pedidos Frecuentes</Text>
                                 <Text style={style.subtitulo}>
                                     {activeTab === 'individuales'
-                                        ? `${frecuenciasSinGrupo.length} frecuencias individuales`
-                                        : `${grupos.length} grupos de frecuencias`
+                                        ? `${terminoBuscador ? pedidosFiltrados.length : frecuenciasSinGrupo.length} frecuencias individuales`
+                                        : `${terminoBuscador ? gruposFiltrados.length : grupos.length} grupos de frecuencias`
                                     }
-                                    {activeTab === 'grupos' && grupos.length > 0 && (
-                                        ` • ${grupos.reduce((total: number, grupo: GrupoFrecuencia) => total + (grupo.total_pedidos || 0), 0)} pedidos totales`
+                                    {activeTab === 'grupos' && (terminoBuscador ? gruposFiltrados : grupos).length > 0 && (
+                                        ` • ${(terminoBuscador ? gruposFiltrados : grupos).reduce((total: number, grupo: GrupoFrecuencia) => total + (grupo.total_pedidos || 0), 0)} pedidos totales`
                                     )}
                                 </Text>
                             </View>
@@ -487,7 +527,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                             fontWeight: activeTab === 'individuales' ? '700' : '500',
                             color: activeTab === 'individuales' ? '#002587' : '#6c757d'
                         }}>
-                            Individuales ({frecuenciasSinGrupo.length})
+                            Individuales ({terminoBuscador ? pedidosFiltrados.filter(p => !(p as any).grupo_id).length : frecuenciasSinGrupo.length})
                         </Text>
                     </View>
                 </TouchableOpacity>
@@ -518,7 +558,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                             fontWeight: activeTab === 'grupos' ? '700' : '500',
                             color: activeTab === 'grupos' ? '#002587' : '#6c757d'
                         }}>
-                            Grupos ({grupos.length})
+                            Grupos ({terminoBuscador ? gruposFiltrados.length : grupos.length})
                         </Text>
                     </View>
                 </TouchableOpacity>
@@ -561,9 +601,9 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                 {/* Tab de Grupos */}
                 {activeTab === 'grupos' && (
                     <>
-                        {grupos.length > 0 ? (
+                        {gruposFiltrados.length > 0 ? (
                             <View style={{ marginBottom: 30, paddingTop: 20 }}>
-                                {grupos.map((grupo: GrupoFrecuencia, key: number) => {
+                                {gruposFiltrados.map((grupo: GrupoFrecuencia, key: number) => {
                                     const diaSemanaNames = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
                                     const intervaloText = grupo.intervalo_semanas === 1 ? 'Semanal' : grupo.intervalo_semanas === 2 ? 'Cada 2 semanas' : 'Cada 3 semanas';
 

@@ -607,7 +607,7 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                                 style={style.secondaryButtonIcon}
                             />
                             <Text style={style.secondaryButtonText}>
-                                Ver Gráficos
+                                Gráficos
                             </Text>
                         </TouchableOpacity>
                     }
@@ -629,6 +629,29 @@ const PerfilForm: React.FC<PerfilFormProps> = ({
                             />
                             <Text style={style.secondaryButtonText}>
                                 Crear Revisión
+                            </Text>
+                        </TouchableOpacity>
+                    }
+
+                    {/* Ver Cartera: solo cuando el perfil editado es de un cliente (para admin/despacho/comercial) */}
+                    {
+                        (tipoAcceso === "editar" && acceso === "cliente" && (accesoPerfil === "admin" || accesoPerfil === "despacho" || accesoPerfil === "comercial"))
+                        && cedula
+                        && <TouchableOpacity
+                            style={[
+                                style.secondaryButton,
+                                style.secondaryButtonCartera
+                            ]}
+                            onPress={() => onNavigate("Cartera", { nit: cedula.trim(), nombreCliente: razon_social || nombre || '' })}
+                        >
+                            <FontAwesome
+                                name="credit-card"
+                                size={16}
+                                color="white"
+                                style={style.secondaryButtonIcon}
+                            />
+                            <Text style={style.secondaryButtonText}>
+                                Cartera
                             </Text>
                         </TouchableOpacity>
                     }

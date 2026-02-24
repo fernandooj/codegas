@@ -259,7 +259,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 setTimeout(() => {
                     updateState(actions.setShowSpin1(true));
                     // Usar dispatch directamente para recargar pedidos
-                    dispatch(getPedidos(idUsuario, 0, 100, acceso, undefined, currentEstadoFiltro, currentOrdenPor, currentTipoOrden))
+                    dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, currentEstadoFiltro, currentOrdenPor, currentTipoOrden))
                         .then((result: any) => {
                             setPedidosFromCache(result?.fromCache || false);
                             updateState(actions.setShowSpin1(false));
@@ -330,7 +330,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Reiniciar paginación
             updateState(actions.setInicio(0));
             updateState(actions.setFinal(false));
-            updateState(actions.setLimit(100));
+            updateState(actions.setLimit(20));
 
             // Cargar pedidos iniciales
             const loadInitialPedidos = async () => {
@@ -341,7 +341,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     setIsOnline(connected);
                     console.log('🌐 [Pedido] Estado de red antes de cargar pedidos iniciales:', connected);
 
-                    const result = await dispatch(getPedidos(idUsuario, 0, 100, acceso, undefined, estadoFiltro, ordenPor, tipoOrden)) as any;
+                    const result = await dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden)) as any;
                     setPedidosFromCache(result?.fromCache || false);
                     console.log('📦 [Pedido] Resultado de carga inicial:', { fromCache: result?.fromCache, empty: result?.empty });
                 } catch (error) {
@@ -374,7 +374,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     pedidos: []
                 });
 
-                dispatch(getPedidos(idUsuario, 0, 100, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden))
+                dispatch(getPedidos(idUsuario, 0, 20, acceso, terminoBuscador, estadoFiltro, ordenPor, tipoOrden))
                     .then((result: any) => {
                         setPedidosFromCache(result?.fromCache || false);
                     })
@@ -410,14 +410,14 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             // Reiniciar paginación
             updateState(actions.setInicio(0));
             updateState(actions.setFinal(false));
-            updateState(actions.setLimit(100));
+            updateState(actions.setLimit(20));
 
             const loadFilteredPedidos = async () => {
                 try {
                     const result = await dispatch(getPedidos(
                         idUsuario,
                         0,
-                        shouldClearSearch ? 20 : 10,
+                        20,
                         acceso,
                         shouldClearSearch ? undefined : terminoBuscador,
                         estadoFiltro,
@@ -556,26 +556,36 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             return;
         }
 
-        // Optimización: usar valores por defecto más eficientes
-        const currentLimit = type === 'load' ? 10 : limit || 10;
-        const currentStart = 0; // Siempre empezar desde 0
-        const currentTerminoBuscador = type === 'load' ? undefined : terminoBuscador;
+        // Si es 'loadMore', cargar más pedidos (paginación)
+        // Si es 'load', recargar desde el inicio
+        // Si no se especifica, usar el comportamiento actual
+        const isLoadMore = type === 'loadMore';
+        const isLoad = type === 'load';
+        
+        // Calcular el offset basado en cuántos pedidos ya hay cargados
+        const currentStart = isLoadMore ? pedidos.length : 0;
+        const currentLimit = 20; // Siempre cargar 20 pedidos a la vez
+        const currentTerminoBuscador = isLoad ? undefined : terminoBuscador;
 
-        // Solo mostrar spinner si es una carga inicial
-        if (type === 'load') {
+        // Solo mostrar spinner si es una carga inicial o refresh
+        if (isLoad) {
             updateState(actions.setShowSpin1(true));
         }
 
-        dispatch(getPedidos(idUsuario, currentStart, currentLimit, acceso, currentTerminoBuscador, estadoFiltro, ordenPor, tipoOrden))
+        dispatch(getPedidos(idUsuario, currentStart, currentLimit, acceso, currentTerminoBuscador, estadoFiltro, ordenPor, tipoOrden, isLoadMore))
             .then((result: any) => {
                 setPedidosFromCache(result?.fromCache || false);
-                if (type === 'load') {
+                if (isLoad) {
                     updateState(actions.setShowSpin1(false));
+                }
+                // Si es loadMore y no hay más pedidos, marcar como final
+                if (isLoadMore && (!result?.pedidos || result.pedidos.length < currentLimit)) {
+                    updateState(actions.setFinal(true));
                 }
             })
             .catch((error) => {
                 console.error('Error en loadPedidos:', error);
-                if (type === 'load') {
+                if (isLoad) {
                     updateState(actions.setShowSpin1(false));
                 }
             });
@@ -929,7 +939,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 updateState(actions.setShowCalendar(true));
 
                 // Recargar pedidos en segundo plano
-                dispatch(getPedidos(idUsuario, 0, 100, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+                dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
             } else {
                 Alert.alert('Error', 'No se pudo asignar el vehículo');
             }
@@ -970,7 +980,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                 updateState(actions.setShowCalendar(false));
 
                 // Recargar pedidos
-                dispatch(getPedidos(idUsuario, 0, 100, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
+                dispatch(getPedidos(idUsuario, 0, 20, acceso, undefined, estadoFiltro, ordenPor, tipoOrden));
             } else {
                 Alert.alert('Error', 'No se pudo asignar la fecha');
             }
@@ -980,8 +990,13 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
     };
 
-    const onScroll = (_event: ScrollEvent) => {
-        // Paginación deshabilitada - solo se cargan 100 pedidos iniciales
+    const onScroll = (event: ScrollEvent) => {
+        // Habilitar paginación: cargar más pedidos cuando se llega al final
+        const shouldLoadMore = handleScrollPagination(event);
+        if (shouldLoadMore && !final) {
+            // Cargar más pedidos
+            loadPedidos('loadMore');
+        }
     };
 
     const handleResetPedido = async (): Promise<void> => {
@@ -1020,8 +1035,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
 
     // Render functions
     const renderPedidos = (): React.JSX.Element[] => {
-        // Filtrar solo pedidos con entregado=false (amarillos y azules)
-        let pedidosFiltrados = pedidos.filter((p: PedidoType) => p.entregado === false);
+        // Mostrar todos los pedidos (incluyendo entregados)
+        let pedidosFiltrados = pedidos;
 
         // Si el usuario es conductor, ordenar pedidos por fechaEntrega y luego por orden (ascendente)
         let pedidosOrdenados = [...pedidosFiltrados];

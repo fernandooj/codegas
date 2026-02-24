@@ -106,7 +106,7 @@ const getPedidoByUser = userId => {
 };
 
 
-const getPedidos = (idUser, start, limit, acceso, search, estado = 'todos', ordenPor = 'fecha_creacion', tipoOrden = 'DESC') => {
+const getPedidos = (idUser, start, limit, acceso, search, estado = 'todos', ordenPor = 'fecha_creacion', tipoOrden = 'DESC', append = false) => {
   return async (dispatch) => {
     try {
       // Validar parámetros antes de hacer la petición
@@ -180,6 +180,7 @@ const getPedidos = (idUser, start, limit, acceso, search, estado = 'todos', orde
           dispatch({
             type: GET_PEDIDOS,
             pedidos: pedidos,
+            append: append, // Si es true, agregar a los existentes; si es false, reemplazar
           });
 
           // Cargar tanques de cada punto cuando está online (en segundo plano, no bloquea)
@@ -261,6 +262,7 @@ const getPedidos = (idUser, start, limit, acceso, search, estado = 'todos', orde
               dispatch({
                 type: GET_PEDIDOS,
                 pedidos: cachedPedidos,
+                append: append,
               });
 
               // También cargar tanques desde cache si están disponibles

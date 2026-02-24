@@ -50,3 +50,26 @@ magisterListTables:
       - lib/magister-api.js
       - lib/magister-db.js
 
+magisterGetCartera:
+  name: ${self:custom.base}-magister-get-cartera
+  handler: services/magister/src/get-cartera.main
+  timeout: 60
+  environment:
+    # Modo de conexión: 'direct' (directa a Firebird) o 'api' (vía API REST)
+    MAGISTER_CONNECTION_MODE: ${env:MAGISTER_CONNECTION_MODE, 'api'}
+    # URL de la API REST de Magister/Firebird (solo si MODE=api)
+    MAGISTER_API_URL: ${env:MAGISTER_API_URL, 'https://kirby-bimodal-brynlee.ngrok-free.dev'}
+    # Configuración para conexión directa (solo si MODE=direct)
+    MAGISTER_DB_HOST: ${env:MAGISTER_DB_HOST, '181.63.224.174'}
+    MAGISTER_DB_PORT: ${env:MAGISTER_DB_PORT, '3050'}
+    MAGISTER_DB_NAME: ${env:MAGISTER_DB_NAME, 'C:\\MaGister\\Datos\\MaGisterZ.Mgt'}
+    MAGISTER_DB_USER: ${env:MAGISTER_DB_USER, 'SYSDBA'}
+    MAGISTER_DB_PASSWORD: ${env:MAGISTER_DB_PASSWORD, 'masterqey'}
+  events:
+    - httpApi: 'GET /magister/cartera/{nit}'
+  package:
+    include:
+      - services/magister/src/get-cartera.js
+      - lib/magister-api.js
+      - lib/magister-db.js
+

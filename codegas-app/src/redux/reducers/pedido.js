@@ -22,6 +22,14 @@ const getPedido = (state = [], action) => {
 const getPedidos = (state = [], action) => {
   switch (action.type) {
     case GET_PEDIDOS:
+      // Si append es true, agregar los nuevos pedidos a los existentes
+      // Si append es false o undefined, reemplazar (carga inicial o refresh)
+      if (action.append && Array.isArray(action.pedidos)) {
+        // Filtrar duplicados por _id antes de agregar
+        const existingIds = new Set(state.map(p => p._id));
+        const newPedidos = action.pedidos.filter(p => !existingIds.has(p._id));
+        return [...state, ...newPedidos];
+      }
       return action.pedidos;
     case UPDATE_PEDIDO_CHECKLIST:
       // Actualizar el checklist de un pedido específico

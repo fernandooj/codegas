@@ -82,12 +82,12 @@ custom:
   n: my-app:${self:provider.stage}:${self:provider.region}:api
   base: ${self:service}-${self:provider.stage}
   splitStacks:
-    # Estrategia agresiva: dividir por función y tipo, con umbral bajo
+    # Estrategia final: perFunction con threshold bajo y forzar división
     perFunction: true
-    perType: true
+    perType: false
     perGroupFunction: false
-    stackConcurrency: 3
-    stackThreshold: 100
+    stackConcurrency: 10
+    nestedStackCount: 25
 
 package:
   individually: true
@@ -133,8 +133,8 @@ functions:
   - ${file(./services/pedidos/serverless.yml)}
   - ${file(./services/magister/serverless.yml)}
   - ${file(./services/tanques/serverless.yml)}
-  - ${file(./services/revisiones/serverless.yml)}
-  - ${file(./services/alerta-tanque/serverless.yml)}
+  #- ${file(./services/revisiones/serverless.yml)}
+  #- ${file(./services/alerta-tanque/serverless.yml)}
   - ${file(./services/frecuencias/serverless.yml)}
   # - ${file(./services/informes/serverless.yml)}  
   - ${file(./services/reporte-emergencia/serverless.yml)}

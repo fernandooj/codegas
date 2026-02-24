@@ -41,6 +41,7 @@ import reporteEmergenciaComponent from '../pages/reporteEmergencia/reporteEmerge
 import nuevoReporteEmergenciaComponent from '../pages/reporteEmergencia/nuevoReporteEmergencia';
 import planillasComponent from '../pages/planillas';
 import pdfComponent from '../pages/pdf/pdf';
+import CarteraComponent from '../pages/magister/Cartera';
 
 const Stack = createNativeStackNavigator();
 
@@ -93,6 +94,7 @@ function AppNavigator() {
 				<Stack.Screen name="nuevoReporteEmergencia" component={nuevoReporteEmergenciaComponent} />
 				<Stack.Screen name="planillas" component={planillasComponent} />
 				<Stack.Screen name="pdf" component={pdfComponent} />
+				<Stack.Screen name="Cartera" component={CarteraComponent} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	);

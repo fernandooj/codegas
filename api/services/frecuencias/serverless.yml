@@ -35,7 +35,7 @@ crearPedidosFrecuencia:
   name: ${self:custom.base}-crear-pedidos-frecuencia
   handler: services/frecuencias/src/crear-pedidos-frecuencia.main
   events:
-    - schedule: cron(0 6 * * ? *)
+    - schedule: cron(0 3 * * ? *)  # 3:00 AM UTC = 10:00 PM hora de Bogotá (UTC-5) del día anterior
     - httpApi: 'GET /fre/crear-pedidos-frecuencia'
   package:
     include:

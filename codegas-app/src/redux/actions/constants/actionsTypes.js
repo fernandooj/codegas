@@ -77,3 +77,13 @@ export const GET_ZONAS = "GET_ZONAS";
 export const CREATE_ZONA = "CREATE_ZONA";
 export const UPDATE_ZONA = "UPDATE_ZONA";
 export const DELETE_ZONA = "DELETE_ZONA";
+
+
+///////////////////////////////////////////////////////////////////////////
+/*
+   Acciones para Magister/Cartera
+*/
+///////////////////////////////////////////////////////////////////////////
+export const GET_CARTERA = "GET_CARTERA";
+export const GET_CARTERA_REQUEST = "GET_CARTERA_REQUEST";
+export const CLEAR_CARTERA = "CLEAR_CARTERA";
