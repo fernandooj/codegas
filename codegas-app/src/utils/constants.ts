@@ -2,6 +2,7 @@ import type { ChecklistQuestion } from './constants.types';
 
 export const accesos = [
     { label: 'Administrador', value: 'admin', key: 'administrador' },
+    { label: 'Facturación', value: 'facturacion', key: 'facturacion' },
     { label: 'Solución Cliente', value: 'solucion', key: 'solucion' },
     { label: 'Despachos', value: 'despacho', key: 'despacho' },
     { label: 'Conductor', value: 'conductor', key: 'conductor' },

@@ -27,10 +27,10 @@ app.get('/ping', (req, res) => {
         message: err.message
       });
     }
-    
+
     db.query('SELECT 1 AS ok FROM RDB$DATABASE', [], (err, result) => {
       db.detach();
-      
+
       if (err) {
         console.error('Error ejecutando ping:', err);
         return res.status(500).json({
@@ -38,7 +38,7 @@ app.get('/ping', (req, res) => {
           message: err.message
         });
       }
-      
+
       res.json({
         success: true,
         message: 'Conexión exitosa a Firebird',
@@ -148,6 +148,126 @@ app.get('/cartera/:nit', (req, res) => {
   });
 });
 
+// --- POST: Insertar cotización (encabezado + detalle) en COTIZACION_ENCABEZADO y COTIZACIONES ---
+// Body: { encabezado: { COE_EMPRESA, COE_DOCUMENTO, COE_NUMERO, COE_FECHA?, COE_CLIENTE?, COE_CLIENTE_SUCURSAL?, COE_NUMERO_MG, COE_SINCRONIZADO?, COE_OBSERVACIONES? }, items: [ { COT_TIPO_ITEM?, COT_DESCRIPCION_ITEM?, COT_REFERENCIA?, COT_BODEGA?, COT_CANTIDAD, COT_VALOR_UNITARIO, COT_VR_DTO? } ] }
+app.post('/cotizacion', (req, res) => {
+  const { encabezado, items } = req.body || {};
+
+  if (!encabezado || !encabezado.COE_EMPRESA || !encabezado.COE_DOCUMENTO || encabezado.COE_NUMERO == null) {
+    return res.status(400).json({
+      error: true,
+      message: 'encabezado con COE_EMPRESA, COE_DOCUMENTO y COE_NUMERO es requerido'
+    });
+  }
+
+  const empresa = encabezado.COE_EMPRESA;
+  const documento = String(encabezado.COE_DOCUMENTO).trim().substring(0, 7);
+  const numero = String(encabezado.COE_NUMERO).trim().substring(0, 12);
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({
+      error: true,
+      message: 'items (array con al menos un ítem) es requerido'
+    });
+  }
+
+  Firebird.attach(options, (err, db) => {
+    if (err) {
+      console.error('Error conectando a Firebird:', err);
+      return res.status(500).json({
+        error: true,
+        message: err.message
+      });
+    }
+
+    const sqlEncabezado = `
+      INSERT INTO COTIZACION_ENCABEZADO (COE_EMPRESA, COE_DOCUMENTO, COE_NUMERO, COE_FECHA, COE_CLIENTE, COE_CLIENTE_SUCURSAL, COE_SINCRONIZADO, COE_OBSERVACIONES, COE_NUMERO_MG, COE_ANTICIPO, COE_FORMA_PAGO)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const coeFecha = encabezado.COE_FECHA != null ? encabezado.COE_FECHA : null;
+    const coeCliente = encabezado.COE_CLIENTE != null ? encabezado.COE_CLIENTE : null;
+    const coeSincronizado = encabezado.COE_SINCRONIZADO != null ? encabezado.COE_SINCRONIZADO : 0;
+    const coeObservaciones = encabezado.COE_OBSERVACIONES != null ? String(encabezado.COE_OBSERVACIONES) : null;
+    const coeClienteSucursal = encabezado.COE_CLIENTE_SUCURSAL != null ? encabezado.COE_CLIENTE_SUCURSAL : 1;
+    const coeNumeroMg = String(encabezado.COE_NUMERO_MG).trim().substring(0, 12);
+    // -const coeAnticipo  = encabezado.COE_ANTICIPO != null ? encabezado.COE_ANTICIPO : 0;
+    // -const coeFraPrefijo = encabezado.COE_FRA_PREFIJO != null ? String(encabezado.COE_FRA_PREFIJO).trim().substring(0, 7) : null ;    -COE_FRA_PREFIJO, COE_FRA_NUMERO,COE_DEV_CONCEPTO,
+    // -const coeFraNumero  = encabezado.COE_FRA_NUMERO != null ? String(encabezado.COE_FRA_NUMERO).trim().substring(0, 12) : null ;     - coeFraPrefijo, coeFraNumero,  coeAnticipo,
+    const coeDevConcepto = encabezado.COE_DEV_CONCEPTO != null ? encabezado.COE_DEV_CONCEPTO : 0;
+    const coeFormaPago = encabezado.COE_FORMA_PAGO != null ? encabezado.COE_FORMA_PAGO : 3;
+
+    const sqlDetalle = `
+      INSERT INTO COTIZACIONES (COT_EMPRESA, COT_DOCUMENTO, COT_NUMERO, COT_ITEM, COT_TIPO_ITEM, COT_DESCRIPCION_ITEM, COT_REFERENCIA, COT_BODEGA, COT_CANTIDAD, COT_VALOR_UNITARIO, COT_VR_DTO, COT_CENTRO_COSTO, COT_PROYECTO)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    let pending = items.length;
+    let done = 0;
+    let lastError = null;
+
+    const insertarEncabezado = () => {
+      if (lastError) {
+        db.detach();
+        console.error('Error insertando COTIZACIONES:', lastError);
+        return res.status(500).json({
+          error: true,
+          message: lastError.message
+        });
+      }
+
+      db.query(sqlEncabezado, [empresa, documento, numero, coeFecha, coeCliente, coeClienteSucursal, coeSincronizado, coeObservaciones, coeNumeroMg, coeDevConcepto, coeFormaPago], (errEnc) => {
+        db.detach();
+        if (errEnc) {
+          console.error('Error insertando COTIZACION_ENCABEZADO:', errEnc);
+          return res.status(500).json({
+            error: true,
+            message: errEnc.message
+          });
+        }
+
+        res.status(201).json({
+          success: true,
+          message: 'Cotización creada',
+          encabezado: { COE_EMPRESA: empresa, COE_DOCUMENTO: documento, COE_NUMERO: numero },
+          itemsInsertados: items.length
+        });
+      });
+    };
+
+    const onItemDone = (errItem) => {
+      if (errItem) lastError = errItem;
+      done++;
+      if (done === pending) {
+        insertarEncabezado();
+      }
+    };
+
+    // Primero insertar detalle en COTIZACIONES, luego encabezado
+    items.forEach((item, index) => {
+      const cotItem = index + 1;
+      const tipoItem = item.COT_TIPO_ITEM != null ? item.COT_TIPO_ITEM : 1;
+      const descripcion = item.COT_DESCRIPCION_ITEM != null ? String(item.COT_DESCRIPCION_ITEM) : null;
+      const referencia = item.COT_REFERENCIA != null ? String(item.COT_REFERENCIA).substring(0, 40) : null;
+      const bodega = item.COT_BODEGA != null ? item.COT_BODEGA : null;
+      const cantidad = Number(item.COT_CANTIDAD);
+      const valorUnitario = Number(item.COT_VALOR_UNITARIO);
+      const vrDto = item.COT_VR_DTO != null ? Number(item.COT_VR_DTO) : 0;
+      const centroCosto = item.COT_CENTRO_COSTO != null ? String(item.COT_CENTRO_COSTO).substring(0, 40) : null;
+      const proyecto = item.COT_PROYECTO != null ? Number(item.COT_PROYECTO) : 0;
+
+      if (isNaN(cantidad) || isNaN(valorUnitario) || isNaN(proyecto)) {
+        return onItemDone(new Error(`Item ${cotItem}: COT_CANTIDAD, COT_PROYECTO y COT_VALOR_UNITARIO deben ser numéricos`));
+      }
+
+      db.query(
+        sqlDetalle,
+        [empresa, documento, numero, cotItem, tipoItem, descripcion, referencia, bodega, cantidad, valorUnitario, vrDto, centroCosto, proyecto],
+        onItemDone
+      );
+    });
+  });
+});
+
 // Endpoint genérico para ejecutar queries
 app.post('/query', (req, res) => {
   const { sql, params = [] } = req.body;
@@ -193,6 +313,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   GET  /ping          - Probar conexión`);
   console.log(`   GET  /tables        - Listar tablas`);
   console.log(`   GET  /cartera/:nit  - Cartera del cliente por NIT`);
+  console.log(`   POST /cotizacion   - Insertar cotización (encabezado + items)`);
   console.log(`   POST /query         - Ejecutar query (body: {sql, params})`);
 });
 

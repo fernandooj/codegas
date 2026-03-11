@@ -1,155 +1,53 @@
-createFrecuenciaSemanal:
-  name: ${self:custom.base}-crear-frecuencia-semanal
-  handler: services/frecuencias/src/crear-frecuencia-semanal.main
+frecuenciasHandler:
+  name: ${self:custom.base}-frecuencias
+  handler: services/frecuencias/src/handler.main
   events:
-    - schedule: cron(0 7 * * ? *)
+    # === Evento programado principal (creación de pedidos individuales y por grupos) ===
+    # Se ejecuta una sola vez al día a las 10:00 PM hora de Bogotá (03:00 AM UTC del día siguiente)
+    - schedule:
+        rate: cron(0 3 * * ? *)
+        input:
+          action: crearPedidosFrecuencia
+
+    # Notificación de pedidos a 3 días
+    - schedule:
+        rate: cron(0 8 * * ? *)
+        input:
+          action: notificarPedidos3Dias
+
+    # === Endpoints HTTP (todos comparten el mismo handler) ===
     - httpApi: 'GET /fre/frecuencia/semanal'
+    - httpApi: 'GET /fre/frecuencia/quincenal'
+    - httpApi: 'GET /fre/frecuencia/mensual'
+    - httpApi: 'GET /fre/crear-pedidos-frecuencia'
+    - httpApi: 'GET /fre/frecuencia'
+    - httpApi: 'GET /fre/frecuencia/todas'
+    - httpApi: 'PUT /fre/frecuencia/{id}'
+    - httpApi: 'DELETE /fre/frecuencia/{id}'
+    - httpApi: 'GET /fre/notificar-pedidos-3-dias'
+    - httpApi: 'GET /fre/grupos'
+    - httpApi: 'POST /fre/grupos'
+    - httpApi: 'PUT /fre/grupos/{id}'
+    - httpApi: 'DELETE /fre/grupos/{id}'
+    - httpApi: 'GET /fre/grupos/{grupoId}/pedidos'
+    - httpApi: 'DELETE /fre/grupos/pedidos/{pedidoId}'
+
   package:
     include:
       - services/frecuencias/src/crear-frecuencia-semanal.js
-      - lib/errors/database-error.js
-
-createFrecuenciaQuincenal:
-  name: ${self:custom.base}-crear-frecuencia-quincenal
-  handler: services/frecuencias/src/crear-frecuencia-quincenal.main
-  events:
-    - schedule: cron(5 7 * * ? *)
-    - httpApi: 'GET /fre/frecuencia/quincenal'
-  package:
-    include:
       - services/frecuencias/src/crear-frecuencia-quincenal.js
-      - lib/errors/database-error.js
-
-createFrecuenciaMensual:
-  name: ${self:custom.base}-crear-frecuencia-mensual
-  handler: services/frecuencias/src/crear-frecuencia-mensual.main
-  events:
-    - schedule: cron(10 7 * * ? *)
-    - httpApi: 'GET /fre/frecuencia/mensual'
-  package:
-    include:
       - services/frecuencias/src/crear-frecuencia-mensual.js
-      - lib/errors/database-error.js
-
-crearPedidosFrecuencia:
-  name: ${self:custom.base}-crear-pedidos-frecuencia
-  handler: services/frecuencias/src/crear-pedidos-frecuencia.main
-  events:
-    - schedule: cron(0 3 * * ? *)  # 3:00 AM UTC = 10:00 PM hora de Bogotá (UTC-5) del día anterior
-    - httpApi: 'GET /fre/crear-pedidos-frecuencia'
-  package:
-    include:
       - services/frecuencias/src/crear-pedidos-frecuencia.js
-      - lib/errors/database-error.js
-
-getFrecuencias:
-  name: ${self:custom.base}-get-frecuencias
-  handler: services/frecuencias/src/get-frecuencias.main
-  events:
-    - schedule: cron(0 10 * * ? *)  # 5:00 AM hora de Bogotá (UTC-5) = 10:00 AM UTC
-    - httpApi: 'GET /fre/frecuencia'
-  package:
-    include:
       - services/frecuencias/src/get-frecuencias.js
-      - lib/errors/database-error.js
-
-getTodasFrecuencias:
-  name: ${self:custom.base}-get-todas-frecuencias
-  handler: services/frecuencias/src/get-todas-frecuencias.main
-  events:
-    - httpApi: 'GET /fre/frecuencia/todas'
-  package:
-    include:
       - services/frecuencias/src/get-todas-frecuencias.js
-      - lib/errors/database-error.js
-
-editarFrecuencia:
-  name: ${self:custom.base}-editar-frecuencia
-  handler: services/frecuencias/src/editar-frecuencia.main
-  events:
-    - httpApi: 'PUT /fre/frecuencia/{id}'
-  package:
-    include:
       - services/frecuencias/src/editar-frecuencia.js
-      - lib/errors/database-error.js
-
-eliminarFrecuencias:
-  name: ${self:custom.base}-eliminar-frecuencias
-  handler: services/frecuencias/src/eliminar-frecuencias.main
-  events:
-    - httpApi: 'DELETE /fre/frecuencia/{id}'
-  package:
-    include:
       - services/frecuencias/src/eliminar-frecuencias.js
-      - lib/errors/database-error.js
-
-notificarPedidos3Dias:
-  name: ${self:custom.base}-notificar-pedidos-3-dias
-  handler: services/frecuencias/src/notificar-pedidos-3-dias.main
-  events:
-    - schedule: cron(0 8 * * ? *)
-    - httpApi: 'GET /fre/notificar-pedidos-3-dias'
-  package:
-    include:
       - services/frecuencias/src/notificar-pedidos-3-dias.js
-      - lib/errors/database-error.js
-
-getGruposFrecuencias:
-  name: ${self:custom.base}-get-grupos-frecuencias
-  handler: services/frecuencias/src/get-grupos-frecuencias.main
-  events:
-    - httpApi: 'GET /fre/grupos'
-  package:
-    include:
       - services/frecuencias/src/get-grupos-frecuencias.js
-      - lib/errors/database-error.js
-
-createGrupoFrecuencia:
-  name: ${self:custom.base}-create-grupo-frecuencia
-  handler: services/frecuencias/src/create-grupo-frecuencia.main
-  events:
-    - httpApi: 'POST /fre/grupos'
-  package:
-    include:
       - services/frecuencias/src/create-grupo-frecuencia.js
-      - lib/errors/database-error.js
-
-updateGrupoFrecuencia:
-  name: ${self:custom.base}-update-grupo-frecuencia
-  handler: services/frecuencias/src/update-grupo-frecuencia.main
-  events:
-    - httpApi: 'PUT /fre/grupos/{id}'
-  package:
-    include:
       - services/frecuencias/src/update-grupo-frecuencia.js
-      - lib/errors/database-error.js
-
-deleteGrupoFrecuencia:
-  name: ${self:custom.base}-delete-grupo-frecuencia
-  handler: services/frecuencias/src/delete-grupo-frecuencia.main
-  events:
-    - httpApi: 'DELETE /fre/grupos/{id}'
-  package:
-    include:
       - services/frecuencias/src/delete-grupo-frecuencia.js
-      - lib/errors/database-error.js
-
-getPedidosPorGrupo:
-  name: ${self:custom.base}-get-pedidos-por-grupo
-  handler: services/frecuencias/src/get-pedidos-por-grupo.main
-  events:
-    - httpApi: 'GET /fre/grupos/{grupoId}/pedidos'
-  package:
-    include:
       - services/frecuencias/src/get-pedidos-por-grupo.js
-      - lib/errors/database-error.js
-
-removerPedidoDeGrupo:
-  name: ${self:custom.base}-remover-pedido-de-grupo
-  handler: services/frecuencias/src/remover-pedido-de-grupo.main
-  events:
-    - httpApi: 'DELETE /fre/grupos/pedidos/{pedidoId}'
-  package:
-    include:
       - services/frecuencias/src/remover-pedido-de-grupo.js
+      - services/frecuencias/src/handler.js
       - lib/errors/database-error.js

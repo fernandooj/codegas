@@ -78,11 +78,32 @@ const getCarteraByNit = async (nit) => {
     }
 };
 
+/**
+ * Envía una cotización (encabezado + items) a la API de MaGister (POST /cotizacion).
+ * @param {object} payload - { encabezado: {...}, items: [...] }
+ */
+const postCotizacion = async (payload) => {
+    if (!payload || !payload.encabezado || !Array.isArray(payload.items)) {
+        throw new Error('Payload debe tener encabezado e items (array)');
+    }
+    try {
+        const response = await axios.post(`${API_BASE_URL}/cotizacion`, payload, {
+            timeout: 30000,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data;
+    } catch (error) {
+        const msg = error.response?.data?.message || error.message;
+        throw new Error(`Error enviando cotización a MaGister: ${msg}`);
+    }
+};
+
 module.exports = {
     ping,
     query,
     listTables,
-    getCarteraByNit
+    getCarteraByNit,
+    postCotizacion
 };
 
 

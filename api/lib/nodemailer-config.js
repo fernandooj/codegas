@@ -15,17 +15,18 @@ if (!EMAIL_USER || !EMAIL_PASS) {
 }
 
 // Configurar el transporter de Nodemailer
+// Usar SMTP de Gmail por puerto 587 (STARTTLS), que suele estar menos bloqueado que 465
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS en vez de SSL directo
     auth: {
         user: EMAIL_USER,
         pass: EMAIL_PASS
     },
-    // Configuración adicional para mejorar la compatibilidad
     tls: {
         rejectUnauthorized: false
     },
-    // Configuración de timeout
     connectionTimeout: 60000,
     greetingTimeout: 30000,
     socketTimeout: 60000

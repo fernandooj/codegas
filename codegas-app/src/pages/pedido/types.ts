@@ -323,7 +323,7 @@ export interface PedidoProps {
 export interface DataContextType {
     user?: Usuario;
     userId?: string;
-    acceso?: 'admin' | 'cliente' | 'conductor' | 'solucion' | 'comercial' | 'despacho';
+    acceso?: 'admin' | 'cliente' | 'conductor' | 'solucion' | 'comercial' | 'despacho' | 'facturacion';
     nombre?: string;
     email?: string;
     fcmToken?: string;
@@ -516,7 +516,7 @@ export interface CerrarPedidoModalProps {
 // Utility types
 export type EstadoPedido = 'activo' | 'innactivo' | 'espera' | 'noentregado';
 export type FormaPedido = 'cantidad' | 'monto';
-export type AccesoUsuario = 'admin' | 'cliente' | 'conductor' | 'solucion' | 'comercial' | 'despacho';
+export type AccesoUsuario = 'admin' | 'cliente' | 'conductor' | 'solucion' | 'comercial' | 'despacho' | 'facturacion';
 
 // Event types
 export interface ScrollEvent {
@@ -560,5 +560,5 @@ export interface ModalEstadisticasProps {
     visible: boolean;
     onClose: () => void;
     conductorId?: number | null;
-    acceso?: 'admin' | 'conductor' | 'cliente' | 'solucion' | 'comercial' | 'despacho';
+    acceso?: 'admin' | 'conductor' | 'cliente' | 'solucion' | 'comercial' | 'despacho' | 'facturacion';
 }

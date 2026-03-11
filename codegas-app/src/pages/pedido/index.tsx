@@ -14,7 +14,8 @@ import {
     guardarNovedadCerrarPedido,
     cambiarEstadoPedido,
     finalizarPedido,
-    resetPedido
+    resetPedido,
+    aprobarPedidoMaGister
 } from '../../redux/actions/pedidoActions';
 import { getVehiculos } from '../../redux/actions/vehiculoActions';
 
@@ -184,6 +185,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     const [isOnline, setIsOnline] = useState<boolean>(true); // Estado de conexión
     const [pedidosFromCache, setPedidosFromCache] = useState<boolean>(false); // Indica si los pedidos vienen del cache
     const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false); // Panel de debug
+    const [aprobarPedidoId, setAprobarPedidoId] = useState<number | null>(null); // ID del pedido en proceso de aprobar (MaGister)
     const [top] = useState(new Animated.Value(size.height));
     const [modalScale] = useState(new Animated.Value(0));
     const [modalMainScale] = useState(new Animated.Value(0));
@@ -1033,6 +1035,22 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
         }
     };
 
+    const handleAprobarMaGister = async (pedidoId: number) => {
+        setAprobarPedidoId(pedidoId);
+        try {
+            const result = await aprobarPedidoMaGister(pedidoId);
+            if (result?.status) {
+                Toast.show({ type: 'success', text1: 'Aprobado', text2: result.message || 'Enviado a MaGister' });
+            } else {
+                Toast.show({ type: 'error', text1: 'Error', text2: result?.message || 'No se pudo aprobar' });
+            }
+        } catch (_e) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo enviar a MaGister' });
+        } finally {
+            setAprobarPedidoId(null);
+        }
+    };
+
     // Render functions
     const renderPedidos = (): React.JSX.Element[] => {
         // Mostrar todos los pedidos (incluyendo entregados)
@@ -1293,6 +1311,32 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 </Text>
                             </View>
                         </View>
+                    )}
+                    {e.estado === 'activo' && e.entregado && (acceso === 'admin' || acceso === 'facturacion') && (
+                        <TouchableOpacity
+                            style={{
+                                marginTop: 8,
+                                backgroundColor: '#FFFFFF',
+                                borderWidth: 1,
+                                borderColor: estadoColors.activo,
+                                borderRadius: 20,
+                                paddingVertical: 8,
+                                paddingHorizontal: 20,
+                                alignSelf: 'center',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                            onPress={() => handleAprobarMaGister(e._id)}
+                            disabled={aprobarPedidoId === e._id}
+                        >
+                            {aprobarPedidoId === e._id ? (
+                                <ActivityIndicator size="small" color={estadoColors.activo} />
+                            ) : (
+                                <Text style={{ color: estadoColors.activo, fontWeight: '700', fontSize: 14, textAlign: 'center' }}>
+                                    Aprobar
+                                </Text>
+                            )}
+                        </TouchableOpacity>
                     )}
                 </TouchableOpacity>
             );

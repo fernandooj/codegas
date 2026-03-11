@@ -756,6 +756,26 @@ const cambiarEstadoPedido = async (seleccionados) => {
   }
 };
 
+/**
+ * Envía el pedido a MaGister (facturación). Solo para pedidos cerrados (activo + entregado).
+ * POST /magister/pedido/{pedidoId}/aprobar
+ */
+const aprobarPedidoMaGister = async (pedidoId) => {
+  try {
+    const response = await axios.post(`/magister/pedido/${pedidoId}/aprobar`);
+    const raw = response.data;
+    const data = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch { return {}; } })() : (raw || {});
+    if (data.success) {
+      return { status: true, message: data.message || 'Pedido aprobado y enviado a MaGister' };
+    }
+    throw new Error(data.message || 'Error al aprobar pedido');
+  } catch (error) {
+    const body = error.response?.data;
+    const message = (typeof body === 'object' && body?.message) ? body.message : (typeof body === 'string' ? (() => { try { const p = JSON.parse(body); return p.message; } catch { return body; } })() : null) || error.message || 'Error al aprobar pedido';
+    return { status: false, message };
+  }
+};
+
 const resetPedido = async (pedidoId) => {
   try {
     console.log('🔍 resetPedido action - pedidoId:', pedidoId);
@@ -1297,6 +1317,7 @@ export {
   finalizarPedido,
   cambiarEstadoPedido,
   resetPedido,
+  aprobarPedidoMaGister,
   getEstadisticas,
   updateChecklist,
   updateChecklistLocal,

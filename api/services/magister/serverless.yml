@@ -73,3 +73,17 @@ magisterGetCartera:
       - lib/magister-api.js
       - lib/magister-db.js
 
+magisterAprobarPedido:
+  name: ${self:custom.base}-magister-aprobar-pedido
+  handler: services/magister/src/aprobar-pedido.main
+  timeout: 30
+  environment:
+    MAGISTER_API_URL: ${env:MAGISTER_API_URL, 'https://kirby-bimodal-brynlee.ngrok-free.dev'}
+  events:
+    - httpApi: 'POST /magister/pedido/{pedidoId}/aprobar'
+  package:
+    include:
+      - services/magister/src/aprobar-pedido.js
+      - lib/magister-api.js
+      - lib/connection-pg.js
+      - lib/errors/database-error.js
