@@ -1,49 +1,19 @@
-informeGetUsers:
-  name: ${self:custom.base}-informe-users
-  handler: services/informes/src/get-users.main
+informesHandler:
+  name: ${self:custom.base}-informes
+  handler: services/informes/src/handler.main
   events:
     - httpApi: 'GET /informe/users/{acceso}/{start}/{end}/{nombre}'
-  package:
-    include:
-      - services/informes/src/get-users.js
-      - lib/errors/database-error.js
-
-informeGetPedidos:
-  name: ${self:custom.base}-informe-pedidos
-  handler: services/informes/src/get-pedidos.main
-  events:
     - httpApi: 'GET /informe/pedidos/{type}/{start}/{end}/{nombre}'
-  package:
-    include:
-      - services/informes/src/get-pedidos.js
-      - lib/errors/database-error.js
-
-informeGetVehiculos:
-  name: ${self:custom.base}-informe-vehiculos
-  handler: services/informes/src/get-vehiculos.main
-  events:
     - httpApi: 'GET /informe/vehiculos/{start}/{end}/{nombre}'
-  package:
-    include:
-      - services/informes/src/get-vehiculos.js
-      - lib/errors/database-error.js
-
-informeGetTanques:
-  name: ${self:custom.base}-informe-tanques
-  handler: services/informes/src/get-tanques.main
-  events:
     - httpApi: 'GET /informe/tanques/{start}/{end}/{nombre}'
-  package:
-    include:
-      - services/informes/src/get-tanques.js
-      - lib/errors/database-error.js
-
-informeGetRevisiones:
-  name: ${self:custom.base}-informe-revisiones
-  handler: services/informes/src/get-revisiones.main
-  events:
     - httpApi: 'GET /informe/revisiones/{start}/{end}/{nombre}'
   package:
     include:
+      - services/informes/src/handler.js
+      - services/informes/src/get-users.js
+      - services/informes/src/get-pedidos.js
+      - services/informes/src/get-vehiculos.js
+      - services/informes/src/get-tanques.js
       - services/informes/src/get-revisiones.js
+      - lib/connection-pg.js
       - lib/errors/database-error.js
