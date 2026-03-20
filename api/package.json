@@ -24,13 +24,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.0",
     "@babel/runtime": "^7.28.4",
     "@json2csv/plainjs": "^7.0.1",
     "aws-sdk": "^2.1692.0",
     "busboy": "^1.6.0",
+    "cors": "^2.8.5",
     "es-node-firebird": "^1.2.9",
+    "express": "^4.21.0",
     "firebirdsql": "^0.2.0",
     "google-auth-library": "^10.3.0",
     "jimp": "^0.22.7",
@@ -48,6 +48,7 @@
     "serverless-offline": "^8.8.1",
     "sharp": "^0.32.0",
     "twilio": "^5.10.7",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
   }
 }

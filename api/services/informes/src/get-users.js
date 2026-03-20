@@ -29,7 +29,7 @@ const GET_CLIENTES_WITH_PUNTOS = `
     u.valorunitario AS valor_kg,
     u.valor_unitario_2 AS valor_sig_kg,
     u.fecha_expiracion,
-    p.punto AS punto_suministro,
+    p.direccion AS direccion,
     p.activo AS punto_activo,
     p.capacidad,
     p.email AS email_punto,
@@ -143,7 +143,7 @@ const HandleFields = (type) => {
       { label: 'Valor $/Kg', value: 'valor_kg' },
       { label: 'Valor Sig/Kg', value: 'valor_sig_kg' },
       { label: 'Expiración', value: 'fecha_expiracion' },
-      { label: 'Punto Suministro', value: 'punto_suministro' },
+      { label: 'Dirección', value: 'direccion' },
       { label: 'Estado Punto', value: 'estado_punto' },
       { label: 'Capacidad', value: 'capacidad' },
       { label: 'Email - Punto', value: 'email_punto' },
@@ -261,7 +261,7 @@ const buildClientesRows = (rows) =>
     valor_kg: row.valor_kg ?? '',
     valor_sig_kg: row.valor_sig_kg ?? '',
     fecha_expiracion: formatDate(row.fecha_expiracion),
-    punto_suministro: sanitizeText(row.punto_suministro),
+    direccion: sanitizeText(row.direccion),
     estado_punto: row.punto_activo ? 'Activo' : 'Inactivo',
     capacidad: sanitizeText(row.capacidad),
     email_punto: sanitizeText(row.email_punto),
@@ -305,21 +305,13 @@ module.exports.main = async (event) => {
     } else if (isConductores) {
       data = buildConductoresRows(users, placasByConductor);
     }
-    const opts = { fields, withBOM: true };
-    const parser = new Parser(opts);
-    const csv = parser.parse(data);
-
-
-    const response = {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="Usuarios-${fecha}-${acceso}-${nombre}.csv"`
-      },
-      body: csv
-    };
-
-    return response;
+    const format = getExportFormat(event);
+    return buildInformeResponse({
+      fields,
+      data,
+      format,
+      filenameBase: `Usuarios-${fecha}-${acceso}-${nombre}`,
+    });
 
     // return {
     //   users

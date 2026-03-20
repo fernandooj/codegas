@@ -1,7 +1,7 @@
 const moment = require('moment');
-const {Parser}  = require('@json2csv/plainjs');
 const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError  = require('../../../lib/errors/database-error')
+const { getExportFormat, buildInformeResponse } = require('../../../lib/informe-response.js');
 const GET_TANQUES = `
   WITH tanques_json AS (
     SELECT
@@ -28,6 +28,12 @@ const GET_TANQUES = `
     COALESCE(t.j->>'existetanque', t.j->>'existeTanque', t.j->>'existe_tanque', '') AS existetanque,
     COALESCE(t.j->>'propiedad', '') AS propiedad,
     COALESCE(t.j->>'registroonac', t.j->>'registroOnac', t.j->>'registro_onac', '') AS registroonac,
+    COALESCE(
+      t.j->>'codigo_activo',
+      t.j->>'codigoActivo',
+      t.j->>'codigoactivo',
+      ''
+    ) AS codigo_activo,
     COALESCE(u_tanque.razon_social, u_punto.razon_social, '') AS razon_social,
     p.direccion AS punto_suministro
   FROM tanques_json t
@@ -64,6 +70,7 @@ const HandleFields = () => {
     { label: 'ID', value: 'id' },
     { label: 'Estado', value: 'estado' },
     { label: 'Placa TK', value: 'placa_tk' },
+    { label: 'Activo TK', value: 'activo_tk' },
     { label: 'Capacidad', value: 'capacidad' },
     { label: 'Fabricante', value: 'fabricante' },
     { label: 'Año Fabricación', value: 'ano_fabricacion' },
@@ -74,7 +81,7 @@ const HandleFields = () => {
     { label: 'Propiedad', value: 'propiedad' },
     { label: 'Registro ONAC', value: 'registro_onac' },
     { label: 'Razón Social', value: 'razon_social' },
-    { label: 'Punto Suministro', value: 'punto_suministro' }
+    { label: 'Dirección', value: 'punto_suministro' }
   ];
 }
 
@@ -102,6 +109,7 @@ const buildTanquesRows = (rows) =>
       id: row._id ?? '',
       estado: row.activo ? 'Activo' : 'Inactivo',
       placa_tk: sanitizeText(row.placatext),
+      activo_tk: sanitizeText(row.codigo_activo),
       capacidad: sanitizeText(row.capacidad),
       fabricante: sanitizeText(row.fabricante),
       ano_fabricacion: sanitizeText(row.anofabricacion),
@@ -129,21 +137,13 @@ module.exports.main = async (event) => {
     const { rows: tanques } = await client.query(GET_TANQUES, [start, end]);
     const data = buildTanquesRows(tanques);
 
-    const opts = { fields, withBOM: true };
-    const parser = new Parser(opts);
-    const csv = parser.parse(data);
-
- 
-    const response = {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="tanques-${fecha}-${nombre}.csv"`
-      },
-      body: csv
-    };
-
-    return response;
+    const format = getExportFormat(event);
+    return buildInformeResponse({
+      fields,
+      data,
+      format,
+      filenameBase: `tanques-${fecha}-${nombre}`,
+    });
 
     // return tanques
 

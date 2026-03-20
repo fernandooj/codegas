@@ -40,12 +40,23 @@ const getMethodAndPath = (event) => {
 
 module.exports.main = async (event, context) => {
   // Manejo de eventos programados (CloudWatch Events / EventBridge)
-  if (event.source === 'aws.events' || event['detail-type'] === 'Scheduled Event') {
-    const action =
-      event.action ||
-      event.detail?.action ||
-      event.detailType ||
-      event['detail-type'];
+  // Nota: cuando `schedule.input` está definido en serverless, Lambda puede recibir
+  // SOLO ese objeto (ej: { action: 'crearPedidosFrecuencia' }) sin source/detail-type.
+  const action =
+    event?.action ||
+    event?.detail?.action ||
+    event?.detailType ||
+    event?.['detail-type'] ||
+    (typeof event?.body === 'string' ? (() => {
+      try { return JSON.parse(event.body)?.action; } catch (_e) { return undefined; }
+    })() : undefined);
+
+  if (
+    action ||
+    event?.source === 'aws.events' ||
+    event?.source === 'aws.scheduler' ||
+    event?.['detail-type'] === 'Scheduled Event'
+  ) {
 
     console.log('Scheduled event received with action:', action);
 

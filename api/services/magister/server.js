@@ -188,13 +188,15 @@ app.post('/cotizacion', (req, res) => {
     const coeCliente = encabezado.COE_CLIENTE != null ? encabezado.COE_CLIENTE : null;
     const coeSincronizado = encabezado.COE_SINCRONIZADO != null ? encabezado.COE_SINCRONIZADO : 0;
     const coeObservaciones = encabezado.COE_OBSERVACIONES != null ? String(encabezado.COE_OBSERVACIONES) : null;
-    const coeClienteSucursal = encabezado.COE_CLIENTE_SUCURSAL != null ? encabezado.COE_CLIENTE_SUCURSAL : 1;
-    const coeNumeroMg = String(encabezado.COE_NUMERO_MG).trim().substring(0, 12);
+    const coeClienteSucursal = encabezado.COE_CLIENTE_SUCURSAL != null ? Number(encabezado.COE_CLIENTE_SUCURSAL) : 1;
+    const coeNumeroMg = String(encabezado.COE_NUMERO_MG != null ? encabezado.COE_NUMERO_MG : numero).trim().substring(0, 12);
     // -const coeAnticipo  = encabezado.COE_ANTICIPO != null ? encabezado.COE_ANTICIPO : 0;
     // -const coeFraPrefijo = encabezado.COE_FRA_PREFIJO != null ? String(encabezado.COE_FRA_PREFIJO).trim().substring(0, 7) : null ;    -COE_FRA_PREFIJO, COE_FRA_NUMERO,COE_DEV_CONCEPTO,
     // -const coeFraNumero  = encabezado.COE_FRA_NUMERO != null ? String(encabezado.COE_FRA_NUMERO).trim().substring(0, 12) : null ;     - coeFraPrefijo, coeFraNumero,  coeAnticipo,
-    const coeDevConcepto = encabezado.COE_DEV_CONCEPTO != null ? encabezado.COE_DEV_CONCEPTO : 0;
-    const coeFormaPago = encabezado.COE_FORMA_PAGO != null ? encabezado.COE_FORMA_PAGO : 3;
+    const coeAnticipo = encabezado.COE_ANTICIPO != null
+      ? Number(encabezado.COE_ANTICIPO)
+      : (encabezado.COE_DEV_CONCEPTO != null ? Number(encabezado.COE_DEV_CONCEPTO) : 0);
+    const coeFormaPago = encabezado.COE_FORMA_PAGO != null ? Number(encabezado.COE_FORMA_PAGO) : 3;
 
     const sqlDetalle = `
       INSERT INTO COTIZACIONES (COT_EMPRESA, COT_DOCUMENTO, COT_NUMERO, COT_ITEM, COT_TIPO_ITEM, COT_DESCRIPCION_ITEM, COT_REFERENCIA, COT_BODEGA, COT_CANTIDAD, COT_VALOR_UNITARIO, COT_VR_DTO, COT_CENTRO_COSTO, COT_PROYECTO)
@@ -215,7 +217,7 @@ app.post('/cotizacion', (req, res) => {
         });
       }
 
-      db.query(sqlEncabezado, [empresa, documento, numero, coeFecha, coeCliente, coeClienteSucursal, coeSincronizado, coeObservaciones, coeNumeroMg, coeDevConcepto, coeFormaPago], (errEnc) => {
+      db.query(sqlEncabezado, [empresa, documento, numero, coeFecha, coeCliente, coeClienteSucursal, coeSincronizado, coeObservaciones, coeNumeroMg, coeAnticipo, coeFormaPago], (errEnc) => {
         db.detach();
         if (errEnc) {
           console.error('Error insertando COTIZACION_ENCABEZADO:', errEnc);

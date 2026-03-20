@@ -1,7 +1,7 @@
 const moment = require('moment');
-const {Parser}  = require('@json2csv/plainjs');
 const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError  = require('../../../lib/errors/database-error')
+const { getExportFormat, buildInformeResponse } = require('../../../lib/informe-response.js');
 const GET_VEHICULOS = `
   SELECT
     c._id,
@@ -68,21 +68,13 @@ module.exports.main = async (event) => {
     const { rows: vehiculos } = await client.query(GET_VEHICULOS, [start, end]);
     const data = buildVehiculosRows(vehiculos);
 
-    const opts = { fields, withBOM: true };
-    const parser = new Parser(opts);
-    const csv = parser.parse(data);
-
- 
-    const response = {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="Vehiculos-${fecha}-${nombre}.csv"`
-      },
-      body: csv
-    };
-
-    return response;
+    const format = getExportFormat(event);
+    return buildInformeResponse({
+      fields,
+      data,
+      format,
+      filenameBase: `Vehiculos-${fecha}-${nombre}`,
+    });
 
     // return vehiculos
 

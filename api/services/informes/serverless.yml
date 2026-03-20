@@ -7,6 +7,7 @@ informesHandler:
     - httpApi: 'GET /informe/vehiculos/{start}/{end}/{nombre}'
     - httpApi: 'GET /informe/tanques/{start}/{end}/{nombre}'
     - httpApi: 'GET /informe/revisiones/{start}/{end}/{nombre}'
+    - httpApi: 'GET /informe/frecuencias/{start}/{end}/{nombre}'
   package:
     include:
       - services/informes/src/handler.js
@@ -15,5 +16,7 @@ informesHandler:
       - services/informes/src/get-vehiculos.js
       - services/informes/src/get-tanques.js
       - services/informes/src/get-revisiones.js
+      - services/informes/src/get-frecuencias-informe.js
       - lib/connection-pg.js
       - lib/errors/database-error.js
+      - lib/informe-response.js

@@ -1,7 +1,7 @@
 const moment = require('moment');
-const {Parser}  = require('@json2csv/plainjs');
 const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError  = require('../../../lib/errors/database-error')
+const { getExportFormat, buildInformeResponse } = require('../../../lib/informe-response.js');
 const GET_REVISIONES = `
   WITH revisiones_json AS (
     SELECT
@@ -108,21 +108,13 @@ module.exports.main = async (event) => {
     const { rows: revisiones } = await client.query(GET_REVISIONES, [start, end]);
     const data = buildRevisionesRows(revisiones);
 
-    const opts = { fields, withBOM: true };
-    const parser = new Parser(opts);
-    const csv = parser.parse(data);
-
- 
-    const response = {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="Revision-${fecha}-${nombre}.csv"`
-      },
-      body: csv
-    };
-
-    return response;
+    const format = getExportFormat(event);
+    return buildInformeResponse({
+      fields,
+      data,
+      format,
+      filenameBase: `Revision-${fecha}-${nombre}`,
+    });
 
     // return tanques
 

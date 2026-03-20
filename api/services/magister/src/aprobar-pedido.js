@@ -1,9 +1,8 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const { postCotizacion } = require('../../../lib/magister-api');
-const DatabaseError = require('../../../lib/errors/database-error');
 
 /**
- * Formatea COT_NUMERO / COE_NUMERO: "0000GL" + remision, máx 12 caracteres.
+ * Formatea COT_NUMERO / COE_NUMERO: "0000Gl" + remision, máx 12 caracteres.
  * Si al concatenar se pasa de 12, se quita un cero a la izquierda del prefijo.
  */
 function formatNumeroDocumento(remision) {
@@ -34,9 +33,34 @@ function fechaToInteger(fecha) {
  */
 function cedulaSinDigitoVerificacion(cedula) {
   if (cedula == null || cedula === '') return null;
-  const str = String(cedula).replace(/-.*$/, '').replace(/\D/g, '');
+  const str = String(cedula).replace(/[-–—].*$/, '').replace(/\D/g, '');
   const n = parseInt(str, 10);
   return isNaN(n) ? null : n;
+}
+
+function toNumberOr(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function logPayloadMagister(payload, pedidoId) {
+  console.log(`[MaGister][pedido:${pedidoId}] Payload a enviar`);
+
+  if (payload?.encabezado) {
+    console.log('[MaGister] Encabezado:');
+    Object.entries(payload.encabezado).forEach(([campo, valor]) => {
+      console.log(`  - ${campo}:`, valor);
+    });
+  }
+
+  if (Array.isArray(payload?.items)) {
+    payload.items.forEach((item, index) => {
+      console.log(`[MaGister] Item ${index + 1}:`);
+      Object.entries(item).forEach(([campo, valor]) => {
+        console.log(`  - ${campo}:`, valor);
+      });
+    });
+  }
 }
 
 /**
@@ -63,6 +87,7 @@ module.exports.main = async (event) => {
         p.valorunitario,
         p.remision,
         p.fechaentrega,
+        p.forma_pago,
         p.usuarioid,
         p.puntoid,
         p.carroid,
@@ -97,23 +122,29 @@ module.exports.main = async (event) => {
       };
     }
 
-    const kilos = Number(row.kilos);
-    const valorUnitario = Number(row.valorunitario);
-    const descuento = row.descuento != null ? Number(row.descuento) : 0;
-    const bodega = row.carro_bodega != null ? Number(row.carro_bodega) : 40;
+    const kilos = toNumberOr(row.kilos, 0);
+    const valorUnitario = toNumberOr(row.valorunitario, 0);
+    const descuento = toNumberOr(row.descuento, 0);
+    const bodega = toNumberOr(row.carro_bodega, 40);
     const centro = row.carro_centro != null ? String(row.carro_centro) : '53';
-    const cliente = cedulaSinDigitoVerificacion(row.cedula);
-    const clienteSucursal = row.punto_numero != null ? Number(row.punto_numero) : null;
+    const cliente = toNumberOr(cedulaSinDigitoVerificacion(row.cedula), null);
+    const clienteSucursal = toNumberOr(row.punto_numero, 1);
     const coeFecha = fechaToInteger(row.fechaentrega);
+    const formaPago = String(row.forma_pago || '').toLowerCase();
+    const coeFormaPago = formaPago === 'credito' ? 2 : 3;
 
     const payload = {
       encabezado: {
         COE_EMPRESA: 1,
         COE_DOCUMENTO: 'RM',
         COE_NUMERO: numero,
+        COE_NUMERO_MG: numero,
         COE_FECHA: coeFecha,
         COE_CLIENTE: cliente,
         COE_CLIENTE_SUCURSAL: clienteSucursal,
+        COE_ANTICIPO: 0,
+        COE_SINCRONIZADO: 0,
+        COE_FORMA_PAGO: coeFormaPago,
         COE_OBSERVACIONES: `APP${row.pedido_id}`,
       },
       items: [
@@ -135,7 +166,16 @@ module.exports.main = async (event) => {
       ],
     };
 
+    logPayloadMagister(payload, row.pedido_id);
     const result = await postCotizacion(payload);
+    try {
+      await poolConection.query(
+        'UPDATE pedidos SET aprobado_magister = TRUE WHERE _id = $1',
+        [row.pedido_id]
+      );
+    } catch (updateError) {
+      console.warn(`[MaGister] No se pudo actualizar aprobado_magister para pedido ${row.pedido_id}:`, updateError.message);
+    }
 
     return {
       statusCode: 200,

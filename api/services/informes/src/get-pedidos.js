@@ -1,8 +1,31 @@
 const moment = require('moment');
-const {Parser}  = require('@json2csv/plainjs');
 const {poolConection} = require('../../../lib/connection-pg.js')
 const DatabaseError  = require('../../../lib/errors/database-error')
+const { getExportFormat, buildInformeResponse } = require('../../../lib/informe-response.js');
 const GET_PEDIDOS = 'SELECT * FROM informe_get_pedidos($1, $2, $3)';
+
+/** Filtro de rango para No entregados, Facturación y Programación (query ?dateField=). */
+function normalizePedidosDateField(raw) {
+  const v = String(raw || '').toLowerCase().trim();
+  return v === 'fechaentrega' ? 'fechaentrega' : 'creado';
+}
+
+function pedidosDateRangeSql(field) {
+  if (field === 'fechaentrega') {
+    return `p.fechaentrega IS NOT NULL
+    AND p.fechaentrega::timestamp >= $1::timestamp
+    AND p.fechaentrega::timestamp < ($2::timestamp + INTERVAL '1 day')`;
+  }
+  return `p.creado >= $1::timestamp
+    AND p.creado < ($2::timestamp + INTERVAL '1 day')`;
+}
+
+/**
+ * Cliente: usuarioid del pedido; si no, idcliente del punto.
+ * Vendedor: users.idpadre del cliente → mostrar nombre (no razon_social).
+ * Comercial: users.idpadre del vendedor → mostrar nombre.
+ * Tabla explícita public.users (search_path / vistas).
+ */
 const GET_TRAZABILIDAD = `
   SELECT
     p._id AS id_pedido,
@@ -21,8 +44,8 @@ const GET_TRAZABILIDAD = `
     p.forma AS forma,
     ua.nombre AS solicita,
     p.cantidadkl AS cant_kilo,
-    COALESCE(padre_cli.razon_social, padre_cli.nombre, ua.nombre) AS comercial_id_despacho,
-    COALESCE(abuelo_cli.razon_social, abuelo_cli.nombre, padre_cli.razon_social, padre_cli.nombre) AS vendedor_id_padre_id,
+    TRIM(BOTH FROM COALESCE(u_comercial.nombre, '')) AS comercial_id_despacho,
+    TRIM(BOTH FROM COALESCE(u_vendedor.nombre, '')) AS vendedor_id_padre_id,
     p.fechaentregado AS f_entregado,
     p.forma_pago AS forma_pago,
     p.estado AS estado,
@@ -37,21 +60,21 @@ const GET_TRAZABILIDAD = `
     p.observacion AS observaciones_pedido,
     p.imagencerrar AS imagen_remision
   FROM pedidos p
-  LEFT JOIN users cli ON cli._id = p.usuarioid
-  LEFT JOIN users uc ON uc._id = p.usuariocrea
-  LEFT JOIN users ua ON ua._id = p.usuarioasigna
-  LEFT JOIN users cond ON cond._id = p.conductorid
-  LEFT JOIN users padre_cli ON padre_cli._id = cli.idpadre
-  LEFT JOIN users abuelo_cli ON abuelo_cli._id = padre_cli.idpadre
-  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN puntos pt ON pt._id = p.puntoid
+  LEFT JOIN public.users cli ON cli._id = COALESCE(NULLIF(p.usuarioid, 0), NULLIF(pt.idcliente, 0))
+  LEFT JOIN public.users uc ON uc._id = p.usuariocrea
+  LEFT JOIN public.users ua ON ua._id = p.usuarioasigna
+  LEFT JOIN public.users cond ON cond._id = p.conductorid
+  LEFT JOIN public.users u_vendedor ON u_vendedor._id = cli.idpadre
+  LEFT JOIN public.users u_comercial ON u_comercial._id = u_vendedor.idpadre
+  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN zonas z ON z._id = pt.idzona
   WHERE COALESCE(p.eliminado, false) = false
     AND p.creado >= $1::timestamp
     AND p.creado < ($2::timestamp + INTERVAL '1 day')
   ORDER BY p._id DESC
 `;
-const GET_NO_ENTREGADOS = `
+const buildGetNoEntregados = (dateField) => `
   SELECT
     p._id AS id_pedido,
     p.fechasolicitud AS f_solicitud,
@@ -63,28 +86,27 @@ const GET_NO_ENTREGADOS = `
     cli.razon_social AS razon_social,
     pt.direccion AS punto_suministro,
     z.nombre AS zona,
-    COALESCE(padre_cli.razon_social, padre_cli.nombre, ua.nombre) AS comercial_id_despacho,
-    COALESCE(abuelo_cli.razon_social, abuelo_cli.nombre, padre_cli.razon_social, padre_cli.nombre) AS vendedor_id_padre,
+    TRIM(BOTH FROM COALESCE(u_comercial.nombre, '')) AS comercial_id_despacho,
+    TRIM(BOTH FROM COALESCE(u_vendedor.nombre, '')) AS vendedor_id_padre,
     p.perfil_novedad AS perfil_novedad,
     p.motivo_no_cierre AS motivo_no_entrega,
     pt.observacion AS observacion_punto,
     p.observacion AS observaciones_pedido
   FROM pedidos p
-  LEFT JOIN users cli ON cli._id = p.usuarioid
-  LEFT JOIN users ua ON ua._id = p.usuarioasigna
-  LEFT JOIN users cond ON cond._id = p.conductorid
-  LEFT JOIN users padre_cli ON padre_cli._id = cli.idpadre
-  LEFT JOIN users abuelo_cli ON abuelo_cli._id = padre_cli.idpadre
-  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN puntos pt ON pt._id = p.puntoid
+  LEFT JOIN public.users cli ON cli._id = COALESCE(NULLIF(p.usuarioid, 0), NULLIF(pt.idcliente, 0))
+  LEFT JOIN public.users ua ON ua._id = p.usuarioasigna
+  LEFT JOIN public.users cond ON cond._id = p.conductorid
+  LEFT JOIN public.users u_vendedor ON u_vendedor._id = cli.idpadre
+  LEFT JOIN public.users u_comercial ON u_comercial._id = u_vendedor.idpadre
+  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN zonas z ON z._id = pt.idzona
   WHERE COALESCE(p.eliminado, false) = false
-    AND p.creado >= $1::timestamp
-    AND p.creado < ($2::timestamp + INTERVAL '1 day')
+    AND ${pedidosDateRangeSql(dateField)}
     AND p.estado = 'noentregado'
   ORDER BY p._id DESC
 `;
-const GET_FACTURACION = `
+const buildGetFacturacion = (dateField) => `
   SELECT
     p._id AS id_pedido,
     p.creado AS f_creo_hora,
@@ -97,7 +119,7 @@ const GET_FACTURACION = `
     cli.razon_social AS razon_social,
     pt.direccion AS punto_suministro,
     z.nombre AS zona,
-    COALESCE(abuelo_cli.razon_social, abuelo_cli.nombre, padre_cli.razon_social, padre_cli.nombre) AS vendedor_id_padre,
+    TRIM(BOTH FROM COALESCE(u_vendedor.nombre, '')) AS vendedor_id_padre,
     p.fechaentregado AS f_entregado,
     p.forma_pago AS forma_pago,
     p.kilos AS kilos,
@@ -107,21 +129,24 @@ const GET_FACTURACION = `
     p.remision AS remision,
     p.imagencerrar AS imagen_remision
   FROM pedidos p
-  LEFT JOIN users cli ON cli._id = p.usuarioid
-  LEFT JOIN users cond ON cond._id = p.conductorid
-  LEFT JOIN users padre_cli ON padre_cli._id = cli.idpadre
-  LEFT JOIN users abuelo_cli ON abuelo_cli._id = padre_cli.idpadre
-  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN puntos pt ON pt._id = p.puntoid
+  LEFT JOIN public.users cli ON cli._id = COALESCE(NULLIF(p.usuarioid, 0), NULLIF(pt.idcliente, 0))
+  LEFT JOIN public.users cond ON cond._id = p.conductorid
+  LEFT JOIN public.users u_vendedor ON u_vendedor._id = cli.idpadre
+  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN zonas z ON z._id = pt.idzona
   WHERE COALESCE(p.eliminado, false) = false
-    AND p.creado >= $1::timestamp
-    AND p.creado < ($2::timestamp + INTERVAL '1 day')
+    AND ${pedidosDateRangeSql(dateField)}
     AND p.estado = 'activo'
     AND p.entregado = true
   ORDER BY p._id DESC
 `;
-const GET_PROGRAMACION = `
+/**
+ * Cant. promedio kg: cantidadkl del pedido; si no, kilos del pedido si es numérico;
+ * si no, promedio de entregas previas del mismo punto de suministro (puntoid);
+ * si no hay historial en ese punto, promedio del mismo cliente (usuarioid / idcliente).
+ */
+const buildGetProgramacion = (dateField) => `
   SELECT
     p._id AS id_pedido,
     p.fechasolicitud AS f_solicitud,
@@ -136,18 +161,57 @@ const GET_PROGRAMACION = `
     cli.valorunitario AS vr_unitario,
     p.forma AS forma,
     p.cantidadkl AS cant_solicitada,
-    p.kilos AS cant_promedio_kg,
+    COALESCE(
+      CASE WHEN p.cantidadkl IS NOT NULL AND p.cantidadkl > 0 THEN p.cantidadkl::numeric END,
+      CASE
+        WHEN p.kilos IS NOT NULL AND TRIM(p.kilos) != '' AND p.kilos ~ '^[0-9]+\\.?[0-9]*$'
+        THEN TRIM(p.kilos)::numeric
+      END,
+      (
+        SELECT AVG(
+          CASE
+            WHEN ph.kilos IS NOT NULL AND TRIM(ph.kilos) != '' AND ph.kilos ~ '^[0-9]+\\.?[0-9]*$'
+            THEN TRIM(ph.kilos)::numeric
+          END
+        )
+        FROM pedidos ph
+        WHERE p.puntoid IS NOT NULL
+          AND ph.puntoid = p.puntoid
+          AND ph._id <> p._id
+          AND COALESCE(ph.eliminado, false) = false
+          AND ph.entregado = true
+          AND ph.estado = 'activo'
+          AND ph.fechaentregado IS NOT NULL
+      ),
+      (
+        SELECT AVG(
+          CASE
+            WHEN ph.kilos IS NOT NULL AND TRIM(ph.kilos) != '' AND ph.kilos ~ '^[0-9]+\\.?[0-9]*$'
+            THEN TRIM(ph.kilos)::numeric
+          END
+        )
+        FROM pedidos ph
+        WHERE ph.usuarioid = COALESCE(NULLIF(p.usuarioid, 0), NULLIF(pt.idcliente, 0))
+          AND ph._id <> p._id
+          AND COALESCE(ph.eliminado, false) = false
+          AND ph.entregado = true
+          AND ph.estado = 'activo'
+          AND ph.fechaentregado IS NOT NULL
+      )
+    ) AS cant_promedio_kg,
+    TRIM(BOTH FROM COALESCE(u_comercial.nombre, '')) AS comercial_id_despacho,
     pt.observacion AS observacion_punto,
     p.observacion AS observaciones_pedido
   FROM pedidos p
-  LEFT JOIN users cli ON cli._id = p.usuarioid
-  LEFT JOIN users cond ON cond._id = p.conductorid
-  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN puntos pt ON pt._id = p.puntoid
+  LEFT JOIN public.users cli ON cli._id = COALESCE(NULLIF(p.usuarioid, 0), NULLIF(pt.idcliente, 0))
+  LEFT JOIN public.users u_vendedor ON u_vendedor._id = cli.idpadre
+  LEFT JOIN public.users u_comercial ON u_comercial._id = u_vendedor.idpadre
+  LEFT JOIN public.users cond ON cond._id = p.conductorid
+  LEFT JOIN carros c ON c._id = p.carroid
   LEFT JOIN zonas z ON z._id = pt.idzona
   WHERE COALESCE(p.eliminado, false) = false
-    AND p.creado >= $1::timestamp
-    AND p.creado < ($2::timestamp + INTERVAL '1 day')
+    AND ${pedidosDateRangeSql(dateField)}
     AND p.estado = 'activo'
     AND COALESCE(p.entregado, false) = false
     AND p.carroid IS NOT NULL
@@ -177,14 +241,14 @@ const HandleFields = (type) => {
       { label: 'CT', value: 'ct' },
       { label: 'Cedula / Nit', value: 'cedula_nit' },
       { label: 'Razón Social', value: 'razon_social' },
-      { label: 'Punto suministro', value: 'punto_suministro' },
+      { label: 'Dirección', value: 'punto_suministro' },
       { label: 'Zona', value: 'zona' },
       { label: 'Vr Unitario', value: 'vr_unitario' },
       { label: 'Forma', value: 'forma' },
       { label: 'Solicita', value: 'solicita' },
       { label: 'Cant. Kilo', value: 'cant_kilo' },
-      { label: 'Comercial - id despacho', value: 'comercial_id_despacho' },
-      { label: 'Vendedor - Id Padre - Id', value: 'vendedor_id_padre_id' },
+      { label: 'Comercial', value: 'comercial_id_despacho' },
+      { label: 'Vendedor', value: 'vendedor_id_padre_id' },
       { label: 'F. Entregado', value: 'f_entregado' },
       { label: 'Forma pago', value: 'forma_pago' },
       { label: 'Estado', value: 'estado' },
@@ -193,8 +257,6 @@ const HandleFields = (type) => {
       { label: 'Valor Total', value: 'valor_total' },
       { label: 'N° consecutivo / Factura', value: 'n_consecutivo_factura' },
       { label: 'Remisión', value: 'remision' },
-      { label: 'Placa', value: 'placa_2' },
-      { label: 'Conductor', value: 'conductor_2' },
       { label: 'Perfil Novedad', value: 'perfil_novedad' },
       { label: 'Motivo No Entrega / motivo_no_cierre', value: 'motivo_no_entrega' },
       { label: 'Observación Punto', value: 'observacion_punto' },
@@ -212,10 +274,10 @@ const HandleFields = (type) => {
       { label: 'CODT', value: 'codt' },
       { label: 'Cedula / Nit', value: 'cedula_nit' },
       { label: 'Razón Social', value: 'razon_social' },
-      { label: 'Punto suministro', value: 'punto_suministro' },
+      { label: 'Dirección', value: 'punto_suministro' },
       { label: 'Zona', value: 'zona' },
-      { label: 'Comercial - id despacho', value: 'comercial_id_despacho' },
-      { label: 'Vendedor - Id Padre', value: 'vendedor_id_padre' },
+      { label: 'Comercial', value: 'comercial_id_despacho' },
+      { label: 'Vendedor', value: 'vendedor_id_padre' },
       { label: 'Perfil Novedad', value: 'perfil_novedad' },
       { label: 'Motivo No Entrega / motivo_no_cierre', value: 'motivo_no_entrega' },
       { label: 'Observación Punto', value: 'observacion_punto' },
@@ -233,9 +295,9 @@ const HandleFields = (type) => {
       { label: 'CODT', value: 'codt' },
       { label: 'Cedula / Nit', value: 'cedula_nit' },
       { label: 'Razón Social', value: 'razon_social' },
-      { label: 'Punto suministro', value: 'punto_suministro' },
+      { label: 'Dirección', value: 'punto_suministro' },
       { label: 'Zona', value: 'zona' },
-      { label: 'Vendedor - Id Padre', value: 'vendedor_id_padre' },
+      { label: 'Vendedor', value: 'vendedor_id_padre' },
       { label: 'F. Entregado', value: 'f_entregado' },
       { label: 'Forma pago', value: 'forma_pago' },
       { label: 'Kilos', value: 'kilos' },
@@ -256,12 +318,13 @@ const HandleFields = (type) => {
       { label: 'CODT', value: 'codt' },
       { label: 'Cedula / Nit', value: 'cedula_nit' },
       { label: 'Razón Social', value: 'razon_social' },
-      { label: 'Punto suministro', value: 'punto_suministro' },
+      { label: 'Dirección', value: 'punto_suministro' },
       { label: 'Zona', value: 'zona' },
       { label: 'Vr Unitario', value: 'vr_unitario' },
       { label: 'Forma', value: 'forma' },
       { label: 'Cant. Solicitada', value: 'cant_solicitada' },
       { label: 'Cant. Promedio Kg', value: 'cant_promedio_kg' },
+      { label: 'Comercial', value: 'comercial_id_despacho' },
       { label: 'Observación Punto', value: 'observacion_punto' },
       { label: 'Observaciones Pedido', value: 'observaciones_pedido' }
     ];
@@ -280,7 +343,7 @@ const HandleFields = (type) => {
       label: 'Razon Social',
       value: 'razon_social'
   },{
-      label: 'Punto Consumo',
+      label: 'Dirección',
       value: 'direccion'
   },{
       label: 'N. Factura',  
@@ -349,8 +412,6 @@ const buildTrazabilidadRows = (rows) =>
     valor_total: row.valor_total ?? '',
     n_consecutivo_factura: sanitizeText(row.n_consecutivo_factura),
     remision: sanitizeText(row.remision),
-    placa_2: sanitizeText(row.placa),
-    conductor_2: sanitizeText(row.conductor),
     perfil_novedad: sanitizeText(row.perfil_novedad),
     motivo_no_entrega: sanitizeText(row.motivo_no_entrega),
     observacion_punto: sanitizeText(row.observacion_punto),
@@ -417,7 +478,13 @@ const buildProgramacionRows = (rows) =>
     vr_unitario: row.vr_unitario ?? '',
     forma: sanitizeText(row.forma),
     cant_solicitada: row.cant_solicitada ?? '',
-    cant_promedio_kg: row.cant_promedio_kg ?? '',
+    cant_promedio_kg: (() => {
+      const k = row.cant_promedio_kg;
+      if (k === null || k === undefined || k === '') return '';
+      const n = Number(k);
+      return Number.isFinite(n) ? String(n) : sanitizeText(k);
+    })(),
+    comercial_id_despacho: sanitizeText(row.comercial_id_despacho),
     observacion_punto: sanitizeText(row.observacion_punto),
     observaciones_pedido: sanitizeText(row.observaciones_pedido)
   }));
@@ -430,17 +497,20 @@ module.exports.main = async (event) => {
     nombre
   } = event.pathParameters;
 
+  const q = event.queryStringParameters || {};
+  const pedidosDateField = normalizePedidosDateField(q.dateField);
+
   const fields = HandleFields(type)
   try {
     const client = await poolConection.connect();
     const { rows: users } = type === 'all'
       ? await client.query(GET_TRAZABILIDAD, [start, end])
       : type === 'noentregado'
-        ? await client.query(GET_NO_ENTREGADOS, [start, end])
+        ? await client.query(buildGetNoEntregados(pedidosDateField), [start, end])
         : type === 'entregado'
-          ? await client.query(GET_FACTURACION, [start, end])
+          ? await client.query(buildGetFacturacion(pedidosDateField), [start, end])
         : type === 'programacion'
-          ? await client.query(GET_PROGRAMACION, [start, end])
+          ? await client.query(buildGetProgramacion(pedidosDateField), [start, end])
         : await client.query(GET_PEDIDOS, [start, end, type]);
     const data = type === 'all'
       ? buildTrazabilidadRows(users)
@@ -452,21 +522,13 @@ module.exports.main = async (event) => {
           ? buildProgramacionRows(users)
         : users;
 
-    const opts = { fields, withBOM: true };
-    const parser = new Parser(opts);
-    const csv = parser.parse(data);
-
- 
-    const response = {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="Pedidos-${fecha}-${type}-${nombre}.csv"`
-      },
-      body: csv
-    };
-
-    return response;
+    const format = getExportFormat(event);
+    return buildInformeResponse({
+      fields,
+      data,
+      format,
+      filenameBase: `Pedidos-${fecha}-${type}-${nombre}`,
+    });
 
     // return users
 

@@ -3,6 +3,7 @@ const getPedidos = require('./get-pedidos');
 const getVehiculos = require('./get-vehiculos');
 const getTanques = require('./get-tanques');
 const getRevisiones = require('./get-revisiones');
+const getFrecuenciasInforme = require('./get-frecuencias-informe');
 
 const getMethodAndPath = (event) => {
   const method =
@@ -52,6 +53,10 @@ module.exports.main = async (event, context) => {
 
   if (method === 'GET' && cleanPath.startsWith('/informe/revisiones/')) {
     return getRevisiones.main(event, context);
+  }
+
+  if (method === 'GET' && cleanPath.startsWith('/informe/frecuencias/')) {
+    return getFrecuenciasInforme.main(event, context);
   }
 
   return {
