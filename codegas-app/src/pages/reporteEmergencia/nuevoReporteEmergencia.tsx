@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { useFocusEffect } from '@react-navigation/native'
+import { useFocusEffect, useRoute } from '@react-navigation/native'
 import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, Switch, Platform, ActivityIndicator, Alert, Dimensions } from 'react-native'
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import { style } from './style'
@@ -15,8 +15,8 @@ import {
     createReporteEmergencia,
     closeReporteEmergencia,
     uploadImagenReporteEmergencia,
-    uploadMultipleImagesToS3
 } from '../../redux/actions/reporteActions'
+import { uploadPickerImagesToS3 } from '../../utils/s3Upload'
 import { ReporteEmergenciaFormData, ReporteEmergenciaCerrarData, ReporteEmergenciaImagenData, ImagenData, NavigationParams } from './types'
 
 
@@ -25,8 +25,9 @@ interface NuevoReporteEmergenciaProps {
 }
 
 const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => {
+    const route = useRoute() as { key: string; params?: NavigationParams };
     const context = useContext(DataContext) as any;
-    const { acceso, userId: usuarioCrea } = context || {};
+    const { acceso, userId: usuarioCrea, nombre: nombreContexto, cedula: cedulaContexto } = context || {};
     const dispatch = useDispatch() as any;
 
     // Redux state
@@ -102,69 +103,88 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
         setNReporte(''); // Resetear el ID del reporte para permitir crear uno nuevo
     };
 
-    const getData = () => {
-
-        const routeParams = navigation.getState ? navigation.getState().routes.find((route: any) => route.name === 'nuevoReporteEmergencia')?.params : navigation.state?.params;
-        const reporteId = routeParams ? routeParams.reporteId : null;
-        const usuarioIdParam = routeParams ? routeParams.usuarioId : null;
-        const puntoIdParam = routeParams ? routeParams.puntoId : null;
-        const codt = routeParams ? routeParams.codt : null;
-        const razon_social = routeParams ? routeParams.razon_social : null;
-        const nombre = routeParams ? routeParams.nombre : null;
-
-
-        if (reporteId) {
-            dispatch(getReporteEmergenciaById(reporteId));
-            // También cargar los parámetros de navegación cuando se edita un reporte existente
-            setUsuarioId(usuarioIdParam || '');
-            setPuntoId(puntoIdParam || '');
-            setUsuariocodt(codt || '');
-            setUsuarioRazonSocial(razon_social || '');
-            setUsuarioNombre(nombre || '');
-        } else {
-            setUsuarioId(usuarioIdParam);
-            setPuntoId(puntoIdParam);
-            setUsuariocodt(codt);
-            setUsuarioRazonSocial(razon_social);
-            setUsuarioNombre(nombre);
-        }
+    /** Limpia el formulario al abrir un reporte nuevo (evita datos de un reporte anterior en Redux o en estado local). */
+    const resetFormularioNuevoReporte = () => {
+        setNReporte('');
+        setMostrandoReporteCreado(false);
+        setReporteCerrado(false);
+        setTanque(false);
+        setRed(false);
+        setPuntos(false);
+        setFuga(false);
+        setPqr(false);
+        setOtrosText('');
+        setImgRuta([]);
+        setImgUrlsS3([]);
+        setImgRutaCerrar([]);
+        setImgUrlsS3Cerrar([]);
+        setImgDocumento([]);
+        setDocumentosUrlsS3([]);
+        setCerradoText('');
+        setPuntodireccion('');
+        setUsuarioCreaNombre('');
+        setUsuarioCreaRazonSocial('');
+        setUsuarioId('');
+        setPuntoId('');
+        setUsuariocodt('');
+        setUsuarioRazonSocial('');
+        setUsuarioNombre('');
+        setSubiendoImagenes(false);
     };
 
-    useEffect(() => {
+    const reporteIdParam = route.params?.reporteId;
+    const usuarioIdParamNav = route.params?.usuarioId;
+    const puntoIdParamNav = route.params?.puntoId;
+    const codtParamNav = route.params?.codt;
+    const razonSocialParamNav = route.params?.razon_social;
+    const nombreParamNav = route.params?.nombre;
 
-        // Limpiar solo el toast de éxito si existe
-        Toast.hide();
-
-        getData();
-
-        // Cleanup function para limpiar el estado cuando se desmonta el componente
-        return () => {
-            // Solo limpiar si no hay reporte activo
-            if (!nReporte) {
-                dispatch({ type: 'CLEAR_REPORTE_STATE' });
-            }
-        };
-    }, []);
-
-    // Effect para limpiar el estado cuando se regresa a esta pantalla
     useFocusEffect(
         React.useCallback(() => {
-            // Limpiar toasts cuando se enfoca la pantalla
             Toast.hide();
 
-            // Limpiar estado de reporte si no hay reporte activo
-            if (!nReporte && !currentReporte) {
+            const p = route.params ?? {};
+            const reporteId = p.reporteId ?? null;
+
+            if (reporteId) {
+                dispatch(getReporteEmergenciaById(reporteId));
+            } else {
                 dispatch({ type: 'CLEAR_REPORTE_STATE' });
+                resetFormularioNuevoReporte();
             }
 
-            // Cleanup function para cuando se desenfoca la pantalla
-            return () => {
-                // Limpiar estado cuando se sale de la pantalla
-                if (nReporte || currentReporte) {
-                    dispatch({ type: 'CLEAR_REPORTE_STATE' });
-                }
-            };
-        }, [nReporte, currentReporte, dispatch])
+            const codtStr = p.codt != null && p.codt !== undefined ? String(p.codt) : '';
+            let razon = (p.razon_social as string) || '';
+            let nombre = (p.nombre as string) || '';
+
+            if (!reporteId && !razon && !nombre && acceso === 'cliente') {
+                nombre = (nombreContexto as string) || '';
+                razon = (nombreContexto as string) || '';
+            }
+
+            setUsuarioId((p.usuarioId as string) || '');
+            setPuntoId((p.puntoId as string) || '');
+            setUsuariocodt(
+                codtStr ||
+                    (!reporteId && acceso === 'cliente' && cedulaContexto != null
+                        ? String(cedulaContexto)
+                        : '')
+            );
+            setUsuarioRazonSocial(razon);
+            setUsuarioNombre(nombre);
+        }, [
+            dispatch,
+            route.key,
+            reporteIdParam,
+            usuarioIdParamNav,
+            puntoIdParamNav,
+            codtParamNav,
+            razonSocialParamNav,
+            nombreParamNav,
+            acceso,
+            nombreContexto,
+            cedulaContexto,
+        ])
     );
 
     // Effect para manejar cuando se recibe el reporte desde Redux
@@ -271,21 +291,15 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
         }
     }, [currentReporte, loadingCreate, loadingById, nReporte, mostrandoReporteCreado]);
 
-    // Effect para limpiar imágenes cuando se resetea el estado
+    // Limpiar imágenes solo cuando el contexto del reporte cambia (nuevo formulario / sin reporte cargado).
+    // NUNCA incluir imgRuta.length aquí: al subir fotos la longitud cambia y este efecto borraba imgRuta e imgUrlsS3
+    // justo después de elegir imagen o de completar la subida a S3.
     useEffect(() => {
-        // Solo limpiar si no hay reporte Y no se está cargando un reporte existente
         if (!nReporte && !mostrandoReporteCreado && !currentReporte) {
             setImgRuta([]);
             setImgUrlsS3([]);
         }
-    }, [nReporte, mostrandoReporteCreado, currentReporte, imgRuta.length]);
-
-    // Effect para forzar limpieza cuando se resetea completamente
-    useEffect(() => {
-        if (!nReporte && imgRuta.length === 0 && imgUrlsS3.length === 0) {
-            // Estado completamente limpio
-        }
-    }, [nReporte, imgRuta.length, imgUrlsS3.length]);
+    }, [nReporte, mostrandoReporteCreado, currentReporte]);
 
 
     const cerrar = () => {
@@ -356,8 +370,10 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
     };
 
     const handleSubmit = () => {
-        // Validar que se haya subido al menos una foto del problema
-        if (!imgUrlsS3 || imgUrlsS3.length === 0) {
+        const urlsDesdeItems = (Array.isArray(imgRuta) ? imgRuta : []).map((im: any) => im?.s3Url).filter(Boolean);
+        const imgUrlsProblema = [...new Set([...imgUrlsS3, ...urlsDesdeItems])];
+
+        if (imgUrlsProblema.length === 0) {
             Toast.show({
                 type: 'error',
                 text1: 'Foto obligatoria',
@@ -381,7 +397,7 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
             razonSocial: usuarioRazonSocial,
             nombre: usuarioNombre,
             codt: usuariocodt,
-            imgUrlsS3: imgUrlsS3, // Incluir las URLs de las imágenes subidas a S3
+            imgUrlsS3: imgUrlsProblema,
             documentosUrlsS3: documentosUrlsS3 // Incluir las URLs de los documentos subidos a S3
         };
 
@@ -415,12 +431,11 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
         try {
             // Estructurar los datos como lo hace tomarFoto.tsx
             const imageData = [{
-                uri: documento.name, // Usar el nombre como URI para documentos
-                base64: documento.imagen
+                base64: documento.imagen,
+                name: documento.name || 'documento.pdf',
             }];
 
-            // Usar la misma función que tomarFoto.tsx (función de Redux)
-            const result = await dispatch(uploadMultipleImagesToS3(imageData) as any);
+            const result = await uploadPickerImagesToS3(imageData);
 
             if (result && result.length > 0) {
                 // Acumular las URLs de S3 en el estado, evitando duplicados
@@ -1153,6 +1168,7 @@ const NuevoReporteEmergencia = ({ navigation }: NuevoReporteEmergenciaProps) => 
                 {nReporte && (
                     <View style={{ marginHorizontal: 16 }}>
                         <SubirDocumento
+                            navigation={navigation}
                             source={imgDocumento}
                             width="100%"
                             titulo="Documento adjunto"

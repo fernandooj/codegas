@@ -18,7 +18,7 @@ const uploadPDF = async body => {
       Responses._200({ message: 'mime is not allowed ' });
     }
 
-    const pdfData = body.imagen.replace(/^data:application\/\w+;base64,/, '');
+    let pdfData = body.imagen.replace(/^data:application\/\w+;base64,/, '');
     if (body.imagen.substr(0, 7) === 'base64,') {
       pdfData = body.imagen.substr(7, body.imagen.length);
     }

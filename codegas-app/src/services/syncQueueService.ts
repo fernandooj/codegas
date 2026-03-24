@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { uploadImageToS3 } from '../utils/s3Upload';
 import RNFS from 'react-native-fs';
-import { updateChecklistHTTP, finalizarPedidoHTTP, guardarFirmas, updateLlenadoTanquesHTTP, sendFacturaEmail } from '../redux/actions/pedidoActions';
+import { updateChecklistHTTP, finalizarPedidoHTTP, guardarFirmas, updateLlenadoTanquesHTTP, updateTanquesHTTP, sendFacturaEmail } from '../redux/actions/pedidoActions';
 
 // Tipos de operaciones que se pueden sincronizar
 export enum SyncOperationType {
@@ -654,19 +654,23 @@ class SyncQueueService {
 
   // Actualizar pedido (puede incluir llenado de tanques u otros campos)
   private async updatePedido(data: any) {
-    const { pedidoId, llenadoTanques } = data;
+    const { pedidoId, llenadoTanques, updateTanques } = data;
 
     if (!pedidoId) {
       throw new Error('pedidoId es requerido para actualizar pedido');
     }
 
-    // Si hay datos de llenado de tanques, actualizarlos
+    // Checklist / JSONB tanques (SafetyChecklistModal, LlenadoTanquesModal offline)
+    if (updateTanques) {
+      console.log(`🔄 [SyncQueue] Actualizando campo tanques (JSONB) para pedido ${pedidoId}...`);
+      return await updateTanquesHTTP(pedidoId, updateTanques);
+    }
+
     if (llenadoTanques) {
       console.log(`🔄 [SyncQueue] Actualizando llenado de tanques para pedido ${pedidoId}...`);
       return await updateLlenadoTanquesHTTP(pedidoId, llenadoTanques);
     }
 
-    // Aquí se pueden agregar más tipos de actualizaciones de pedido en el futuro
     throw new Error('No se especificó qué actualizar del pedido');
   }
 

@@ -152,6 +152,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
             conductorPedido,
             kilos,
             factura,
+            remision,
             valor_total,
             forma_pago,
             motivo_no_cierre,
@@ -186,6 +187,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
     const [pedidosFromCache, setPedidosFromCache] = useState<boolean>(false); // Indica si los pedidos vienen del cache
     const [showDebugPanel, setShowDebugPanel] = useState<boolean>(false); // Panel de debug
     const [aprobarPedidoId, setAprobarPedidoId] = useState<number | null>(null); // ID del pedido en proceso de aprobar (MaGister)
+    const [modoEdicionCierre, setModoEdicionCierre] = useState<boolean>(false); // Abre CerrarPedidoModal en modo edición
     const [top] = useState(new Animated.Value(size.height));
     const [modalScale] = useState(new Animated.Value(0));
     const [modalMainScale] = useState(new Animated.Value(0));
@@ -1152,8 +1154,8 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             coordenadas: e.coordenadas ? {
                                 x: e.coordenadas.x,
                                 y: e.coordenadas.y,
-                                lat: e.lat || e.coordenadas.y,
-                                lng: e.lng || e.coordenadas.x
+                                lat: e.lat || e.coordenadas.x,
+                                lng: e.lng || e.coordenadas.y
                             } : (e.lat && e.lng) ? {
                                 lat: e.lat,
                                 lng: e.lng
@@ -1205,7 +1207,9 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                     {e.estado === "activo" && !e.entregado ? "Activo" :
                                         e.estado === "innactivo" ? "Inact." :
                                             e.estado === "espera" ? "Espera" :
-                                                e.estado === "activo" && e.entregado ? "Entregado" :
+                                                e.estado === "activo" && e.entregado
+                                                    ? (e.aprobado_magister ? "Entregado • Aprobado" : "Entregado")
+                                                    :
                                                     "Cerrado"}
                                 </Text>
                             </View>
@@ -1311,32 +1315,6 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                                 </Text>
                             </View>
                         </View>
-                    )}
-                    {e.estado === 'activo' && e.entregado && (acceso === 'admin' || acceso === 'facturacion') && (
-                        <TouchableOpacity
-                            style={{
-                                marginTop: 8,
-                                backgroundColor: '#FFFFFF',
-                                borderWidth: 1,
-                                borderColor: estadoColors.activo,
-                                borderRadius: 20,
-                                paddingVertical: 8,
-                                paddingHorizontal: 20,
-                                alignSelf: 'center',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                            onPress={() => handleAprobarMaGister(e._id)}
-                            disabled={aprobarPedidoId === e._id}
-                        >
-                            {aprobarPedidoId === e._id ? (
-                                <ActivityIndicator size="small" color={estadoColors.activo} />
-                            ) : (
-                                <Text style={{ color: estadoColors.activo, fontWeight: '700', fontSize: 14, textAlign: 'center' }}>
-                                    Aprobar
-                                </Text>
-                            )}
-                        </TouchableOpacity>
                     )}
                 </TouchableOpacity>
             );
@@ -1625,6 +1603,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     conductorPedido,
                     kilos,
                     factura,
+                    remision,
                     valor_total,
                     forma_pago,
                     motivo_no_cierre,
@@ -1676,11 +1655,18 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     }, 300);
                 }}
                 onClosePedido={() => {
+                    setModoEdicionCierre(false);
                     // Capturar el ID del pedido y valor unitario
                     setPedidoIdParaCerrar(id);
                     setValorUnitarioParaCerrar(valor_unitarioUsuario?.toString());
 
                     // Abrir el modal de cerrar pedido SIN cerrar el modal principal
+                    updateState(actions.setModalCerrarPedido(true));
+                }}
+                onEditClosedPedido={() => {
+                    setModoEdicionCierre(true);
+                    setPedidoIdParaCerrar(id);
+                    setValorUnitarioParaCerrar(valor_unitarioUsuario?.toString());
                     updateState(actions.setModalCerrarPedido(true));
                 }}
                 // Props para CambiarEstadoModal
@@ -1714,10 +1700,14 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                     updateState(actions.setModalCerrarPedido(false));
                     setPedidoIdParaCerrar(undefined);
                     setValorUnitarioParaCerrar(undefined);
+                    setModoEdicionCierre(false);
                 }}
                 onCerrarPedido={handleCerrarPedido}
                 onGuardarNovedad={handleGuardarNovedadCerrar}
                 valorUnitario={valorUnitarioParaCerrar}
+                onAprobarMaGister={(pedidoId: number) => handleAprobarMaGister(pedidoId)}
+                aprobarPedidoId={aprobarPedidoId}
+                modoEdicionCierre={modoEdicionCierre}
             />
 
             {/* Todos los modales internos ahora se renderizan dentro del EditarPedidoModal */}

@@ -78,7 +78,7 @@ module.exports.main = async (event) => {
             };
         }
 
-        // Validaciones para frecuencia quincenal
+        // Validaciones para frecuencia quincenal (calendario: dos días del mes; cada 2 semanas: dia1=dia2 = día 1–7)
         if (frecuencia === 'quincenal' && (!dia1 || !dia2)) {
             return {
                 statusCode: 400,
@@ -87,6 +87,57 @@ module.exports.main = async (event) => {
                     message: 'Día 1 y día 2 son requeridos para frecuencia quincenal'
                 })
             };
+        }
+
+        if (frecuencia === 'tressemanas' && !dia1) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({
+                    status: false,
+                    message: 'Día de la semana (día 1) es requerido para frecuencia cada 3 semanas'
+                })
+            };
+        }
+
+        if (frecuencia === 'mensual') {
+            if (!dia1) {
+                return {
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        status: false,
+                        message: 'Día del mes es requerido para frecuencia mensual'
+                    })
+                };
+            }
+            const d1n = Number(dia1);
+            if (!Number.isFinite(d1n) || d1n < 1 || d1n > 31) {
+                return {
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        status: false,
+                        message: 'Día del mes debe estar entre 1 y 31'
+                    })
+                };
+            }
+            if (!dia2) {
+                return {
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        status: false,
+                        message: 'Día de la semana (día 2) es requerido para mensual — mismo criterio que grupos (1=Lunes…7=Domingo)'
+                    })
+                };
+            }
+            const d2n = Number(dia2);
+            if (!Number.isFinite(d2n) || d2n < 1 || d2n > 7) {
+                return {
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        status: false,
+                        message: 'Día de la semana mensual debe ser 1–7 (1=Lunes…7=Domingo)'
+                    })
+                };
+            }
         }
 
         const client = await poolConection.connect();

@@ -231,7 +231,6 @@ export const uploadImageToS3 = (imageData, fileName) => {
                 mime: requestBody.mime
             });
 
-            // Subir a S3 a través del endpoint de upload
             const response = await axios({
                 method: 'POST',
                 url: '/upload/s3',
@@ -239,19 +238,32 @@ export const uploadImageToS3 = (imageData, fileName) => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                timeout: 120000,
             });
 
             console.log('📡 [ReporteActions] Response status:', response.status);
             console.log('📡 [ReporteActions] Response data:', response.data);
 
-            if (response.data.error) {
-                throw new Error(response.data.error);
+            let payload = response.data;
+            if (typeof payload === 'string') {
+                try {
+                    payload = JSON.parse(payload);
+                } catch (e) {
+                    throw new Error('Respuesta del servidor no es JSON válido');
+                }
             }
 
-            const imageUrl = response.data.url;
+            if (payload && payload.error) {
+                throw new Error(payload.error);
+            }
+
+            const imageUrl = payload && payload.url;
+            if (!imageUrl || typeof imageUrl !== 'string') {
+                throw new Error('El servidor no devolvió url de imagen');
+            }
             console.log('✅ [ReporteActions] URL de imagen obtenida:', imageUrl);
 
-            return imageUrl; // URL de la imagen en S3
+            return imageUrl;
         } catch (error) {
             console.error('❌ [ReporteActions] Error uploading image to S3:', error);
             throw error;

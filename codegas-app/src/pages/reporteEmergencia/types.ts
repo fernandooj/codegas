@@ -81,6 +81,7 @@ export interface NavigationParams {
     puntoId?: string;
     codt?: string;
     razon_social?: string;
+    nombre?: string;
 }
 
 export interface ImagenData {

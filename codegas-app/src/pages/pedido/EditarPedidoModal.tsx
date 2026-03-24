@@ -4,6 +4,7 @@ import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import moment from 'moment';
 import { style } from './style';
 import { formatCurrency } from '../../utils/number';
+import { estadoColors } from '../../utils/colors';
 import { EstadoPedido, AccesoUsuario, SelectedPedidoData } from './types';
 import CambiarEstadoModal from './CambiarEstadoModal';
 import VehiculosModal from './VehiculosModal';
@@ -11,10 +12,11 @@ import FechaEntregaModal from './FechaEntregaModal';
 import CerrarPedidoModal from './CerrarPedidoModal';
 import LlenadoTanquesModal from './LlenadoTanquesModal';
 import SafetyChecklistModal from './SafetyChecklistModal';
-import { updateLlenadoTanquesHTTP } from '../../redux/actions/pedidoActions';
+import { updateLlenadoTanquesHTTP, shareFacturaPedidoPdf } from '../../redux/actions/pedidoActions';
 import { getTanquesByPunto } from '../../redux/actions/tanqueActions';
 import { tanqueStorageService } from '../../services/tanqueStorageService';
 import NetInfo from '@react-native-community/netinfo';
+import { safetyChecklistQuestions } from '../../utils/constants';
 
 interface EditarPedidoModalProps {
     visible: boolean;
@@ -29,6 +31,7 @@ interface EditarPedidoModalProps {
     onAssignVehicle: () => void;
     onCancelOrder: () => void;
     onClosePedido: () => void;
+    onEditClosedPedido?: () => void;
     onResetPedido: () => void;
     navigation?: any;
     // Props para CambiarEstadoModal
@@ -59,6 +62,9 @@ interface EditarPedidoModalProps {
     onCerrarPedido: (data: any, pedidoId?: string) => void;
     onGuardarNovedad: (novedad: string, pedidoId?: string, motivoKey?: string) => void;
     valorUnitario?: string;
+    onAprobarMaGister?: (pedidoId: number) => void;
+    aprobarPedidoId?: number | null;
+    modoEdicionCierre?: boolean;
 }
 
 const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
@@ -74,6 +80,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     onAssignVehicle,
     onCancelOrder,
     onClosePedido,
+    onEditClosedPedido,
     onResetPedido,
     navigation,
     modalPerfiles,
@@ -100,7 +107,10 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     onCloseCerrarPedido,
     onCerrarPedido,
     onGuardarNovedad,
-    valorUnitario
+    valorUnitario,
+    onAprobarMaGister,
+    aprobarPedidoId,
+    modoEdicionCierre
 }) => {
     const {
         id,
@@ -146,6 +156,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     const [loadingTanques, setLoadingTanques] = useState(false);
     // Estado local para los datos de tanques (se actualiza cuando se guarda)
     const [localTanquesData, setLocalTanquesData] = useState<any[]>(pedidoData.tanques || []);
+    const [downloadingRemisionPdf, setDownloadingRemisionPdf] = useState(false);
 
     // Actualizar localTanquesData cuando cambia pedidoData.tanques
     useEffect(() => {
@@ -167,10 +178,8 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
 
     const openInWaze = () => {
         const { lat, lng } = pedidoData.coordenadas || {};
-
-        // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
-        const realLat = lng; // La latitud real está en el campo lng
-        const realLng = lat; // La longitud real está en el campo lat
+        const realLat = lat;
+        const realLng = lng;
 
         if (realLat && realLng) {
             const url = `waze://?ll=${realLat},${realLng}&navigate=yes`;
@@ -192,10 +201,8 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
 
     const openInGoogleMaps = () => {
         const { lat, lng } = pedidoData.coordenadas || {};
-
-        // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
-        const realLat = lng; // La latitud real está en el campo lng
-        const realLng = lat; // La longitud real está en el campo lat
+        const realLat = lat;
+        const realLng = lng;
 
         if (realLat && realLng) {
             const url = `https://www.google.com/maps/dir/?api=1&destination=${realLat},${realLng}`;
@@ -208,10 +215,8 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
 
     const openInAppleMaps = () => {
         const { lat, lng } = pedidoData.coordenadas || {};
-
-        // Intercambiar coordenadas: lat del backend es realmente lng, y lng del backend es realmente lat
-        const realLat = lng; // La latitud real está en el campo lng
-        const realLng = lat; // La longitud real está en el campo lat
+        const realLat = lat;
+        const realLng = lng;
 
         if (realLat && realLng) {
             const url = `http://maps.apple.com/?daddr=${realLat},${realLng}&dirflg=d`;
@@ -794,6 +799,124 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                             </View>
                                         </View>
 
+                                        {entregado && id && estado !== 'noentregado' && (
+                                            <TouchableOpacity
+                                                style={{
+                                                    marginTop: 12,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    alignSelf: 'center',
+                                                    paddingVertical: 12,
+                                                    paddingHorizontal: 20,
+                                                    borderRadius: 12,
+                                                    borderWidth: 1.5,
+                                                    borderColor: '#002587',
+                                                    backgroundColor: '#fff',
+                                                    minWidth: 220
+                                                }}
+                                                disabled={downloadingRemisionPdf}
+                                                onPress={async () => {
+                                                    if (!id) return;
+                                                    try {
+                                                        setDownloadingRemisionPdf(true);
+                                                        await shareFacturaPedidoPdf(String(id));
+                                                    } catch (e) {
+                                                        console.error('shareFacturaPedidoPdf', e);
+                                                        Alert.alert(
+                                                            'Error',
+                                                            'No se pudo obtener el PDF. Compruebe su conexión o que el pedido esté cerrado en el servidor.'
+                                                        );
+                                                    } finally {
+                                                        setDownloadingRemisionPdf(false);
+                                                    }
+                                                }}
+                                                activeOpacity={0.85}
+                                            >
+                                                {downloadingRemisionPdf ? (
+                                                    <ActivityIndicator size="small" color="#002587" />
+                                                ) : (
+                                                    <FontAwesome name="file-pdf-o" style={{ fontSize: 18, color: '#002587', marginRight: 8 }} />
+                                                )}
+                                                <Text style={{ fontSize: 15, fontWeight: '700', color: '#002587' }}>
+                                                    Descargar remisión PDF
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+
+                                        {estado === 'activo' && entregado && (acceso === 'admin' || acceso === 'facturacion') && (
+                                            <TouchableOpacity
+                                                style={{
+                                                    marginTop: 10,
+                                                    marginBottom: 4,
+                                                    backgroundColor: '#FFFFFF',
+                                                    borderWidth: 1,
+                                                    borderColor: estadoColors.activo,
+                                                    borderRadius: 20,
+                                                    paddingVertical: 10,
+                                                    paddingHorizontal: 24,
+                                                    alignSelf: 'center',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                                onPress={() => {
+                                                    const pedidoId = Number(id);
+                                                    if (Number.isNaN(pedidoId)) {
+                                                        return;
+                                                    }
+
+                                                    Alert.alert(
+                                                        'Confirmar aprobación',
+                                                        `¿Deseas aprobar el pedido #${pedidoId} y enviarlo a MaGister?`,
+                                                        [
+                                                            { text: 'Cancelar', style: 'cancel' },
+                                                            {
+                                                                text: 'Sí, aprobar',
+                                                                style: 'default',
+                                                                onPress: () => onAprobarMaGister?.(pedidoId)
+                                                            }
+                                                        ]
+                                                    );
+                                                }}
+                                                disabled={Number.isNaN(Number(id)) || aprobarPedidoId === Number(id)}
+                                            >
+                                                {aprobarPedidoId === Number(id) ? (
+                                                    <ActivityIndicator size="small" color={estadoColors.activo} />
+                                                ) : (
+                                                    <Text style={{ color: estadoColors.activo, fontWeight: '700', fontSize: 16, textAlign: 'center' }}>
+                                                        Aprobar
+                                                    </Text>
+                                                )}
+                                            </TouchableOpacity>
+                                        )}
+
+                                        {entregado && acceso === 'admin' && (
+                                            <TouchableOpacity
+                                                style={[
+                                                    style.editarModalCerrarButton,
+                                                    {
+                                                        marginTop: 6,
+                                                        alignSelf: 'center',
+                                                        minWidth: 180,
+                                                        backgroundColor: '#f59e0b'
+                                                    }
+                                                ]}
+                                                onPress={() => {
+                                                    if (onEditClosedPedido) {
+                                                        onEditClosedPedido();
+                                                        return;
+                                                    }
+                                                    onClosePedido();
+                                                }}
+                                                activeOpacity={0.8}
+                                            >
+                                                <FontAwesome name="edit" style={style.editarModalCerrarButtonIcon} />
+                                                <Text style={style.editarModalCerrarButtonText}>
+                                                    Editar Cierre
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+
                                         {/* Card de Firmas Digitales */}
                                         {(pedidoData.firma_conductor || pedidoData.firma_usuario) && (
                                             <View style={style.editarModalDetailsCard}>
@@ -964,6 +1087,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                         pedidoId={pedidoData.id}
                         onClose={onCloseCerrarPedido}
                         entregado={pedidoData.entregado}
+                        modoEdicion={modoEdicionCierre}
                         imagenCerrar={pedidoData.imagenCerrar}
                         kilos={pedidoData.kilos}
                         factura={pedidoData.factura}
@@ -1008,10 +1132,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                 <View style={style.navModalCoordBox}>
                                     <Text style={style.navModalCoordText}>
                                         <FontAwesome name="map-pin" style={style.navModalCoordIcon} />
-                                        Lat: {pedidoData.coordenadas.lng}, Lng: {pedidoData.coordenadas.lat}
-                                        <Text style={style.navModalCoordNote}>
-                                            {'\n'}(coordenadas corregidas)
-                                        </Text>
+                                        Lat: {pedidoData.coordenadas.lat}, Lng: {pedidoData.coordenadas.lng}
                                     </Text>
                                 </View>
                             )}
@@ -1102,7 +1223,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                         }
                     }}
                     pedidoId={id || ''}
-                    tanqueId={selectedTanqueForLlenado?._id || 0}
+                    tanqueId={Number(selectedTanqueForLlenado?._id ?? selectedTanqueForLlenado?.id) || 0}
                     puntoId={pedidoData.puntoId?.toString()}
                     usuarioId={pedidoData.usuarioId?.toString()}
                     email={pedidoData.email}
@@ -1112,7 +1233,8 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                     initialData={(() => {
                         // Obtener datos del tanque desde el campo tanques del pedido si existe
                         if (localTanquesData && Array.isArray(localTanquesData) && selectedTanqueForLlenado) {
-                            const tanqueData = localTanquesData.find((t: any) => t.tanque_id === selectedTanqueForLlenado._id);
+                            const lid = Number(selectedTanqueForLlenado._id ?? selectedTanqueForLlenado.id);
+                            const tanqueData = localTanquesData.find((t: any) => Number(t.tanque_id) === lid);
                             if (tanqueData) {
                                 return {
                                     presion_inicial: tanqueData.presion_inicial,
@@ -1128,12 +1250,13 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                     onSave={async (data) => {
                         // Actualizar el estado local de tanques con los nuevos datos guardados
                         if (selectedTanqueForLlenado) {
+                            const lid = Number(selectedTanqueForLlenado._id ?? selectedTanqueForLlenado.id);
                             setLocalTanquesData((prevTanques: any[]) => {
                                 const updatedTanques = [...(prevTanques || [])];
-                                const tanqueIndex = updatedTanques.findIndex((t: any) => t.tanque_id === selectedTanqueForLlenado._id);
+                                const tanqueIndex = updatedTanques.findIndex((t: any) => Number(t.tanque_id) === lid);
 
                                 const updatedTanqueData = {
-                                    tanque_id: selectedTanqueForLlenado._id,
+                                    tanque_id: lid,
                                     presion_inicial: data.presion_inicial,
                                     presion_final: data.presion_final,
                                     porcentaje_inicial: data.porcentaje_inicial,
@@ -1181,32 +1304,103 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                         }
                     }}
                     pedidoId={id || ''}
-                    tanqueId={selectedTanque?._id || 0}
+                    tanqueId={Number(selectedTanque?._id ?? selectedTanque?.id) || 0}
                     initialChecklist={(() => {
-                        // Obtener checklist del tanque desde el campo tanques del pedido si existe
-                        if (pedidoData.tanques && Array.isArray(pedidoData.tanques) && selectedTanque) {
-                            const tanqueData = pedidoData.tanques.find((t: any) => t.tanque_id === selectedTanque._id);
-                            if (tanqueData && tanqueData.checklist && Array.isArray(tanqueData.checklist)) {
-                                // Convertir del formato [{"pregunta": "...", "respuesta": "Sí/No"}] al formato ChecklistItem[]
-                                return tanqueData.checklist.map((item: any, index: number) => ({
-                                    id: index + 1,
-                                    status: item.respuesta === 'Sí'
-                                }));
-                            }
+                        if (!selectedTanque) return [];
+                        const tid = Number(selectedTanque._id ?? selectedTanque.id);
+                        if (!Number.isFinite(tid) || tid <= 0) return [];
+                        const tanqueData = localTanquesData.find((t: any) => Number(t.tanque_id) === tid);
+                        if (tanqueData?.checklist && Array.isArray(tanqueData.checklist)) {
+                            const byPregunta = new Map(
+                                tanqueData.checklist.map((item: any) => [
+                                    item.pregunta,
+                                    item.respuesta === 'Sí'
+                                ])
+                            );
+                            return safetyChecklistQuestions.map((q) => ({
+                                id: q.id,
+                                status: byPregunta.has(q.question) ? Boolean(byPregunta.get(q.question)) : false
+                            }));
                         }
                         return [];
                     })()}
                     initialObservacion={(() => {
-                        // Obtener observación del tanque desde el campo tanques del pedido si existe
-                        if (pedidoData.tanques && Array.isArray(pedidoData.tanques) && selectedTanque) {
-                            const tanqueData = pedidoData.tanques.find((t: any) => t.tanque_id === selectedTanque._id);
-                            return tanqueData?.observacion || null;
-                        }
-                        return null;
+                        if (!selectedTanque) return null;
+                        const tid = Number(selectedTanque._id ?? selectedTanque.id);
+                        if (!Number.isFinite(tid) || tid <= 0) return null;
+                        const tanqueData = localTanquesData.find((t: any) => Number(t.tanque_id) === tid);
+                        return tanqueData?.observacion ?? null;
                     })()}
-                    onSave={(checklist, observacion) => {
-                        // Los datos ya se guardaron en el campo tanques desde SafetyChecklistModal
-                        // Cerrar el modal y reabrir tanques si fue abierto desde ahí
+                    checklistPdfMeta={(() => {
+                        const tid = selectedTanque
+                            ? Number(selectedTanque._id ?? selectedTanque.id)
+                            : NaN;
+                        const tanqueData =
+                            Number.isFinite(tid) && tid > 0
+                                ? localTanquesData.find((t: any) => Number(t.tanque_id) === tid)
+                                : undefined;
+                        const cap =
+                            selectedTanque?.capacidad ??
+                            selectedTanque?.kilos ??
+                            pedidoData.capacidad;
+                        return {
+                            cliente: pedidoData.razon_social || pedidoData.nombre,
+                            codt: pedidoData.codt,
+                            direccion: pedidoData.punto_nombre || '',
+                            telefono: pedidoData.punto_celular,
+                            fecha: pedidoData.fechaEntrega || pedidoData.creado,
+                            presionInicial:
+                                tanqueData?.presion_inicial != null && tanqueData.presion_inicial !== ''
+                                    ? String(tanqueData.presion_inicial)
+                                    : '',
+                            presionFinal:
+                                tanqueData?.presion_final != null && tanqueData.presion_final !== ''
+                                    ? String(tanqueData.presion_final)
+                                    : '',
+                            planillaDiariaNo: '',
+                            placaVehiculo: pedidoData.placaPedido || pedidoData.placa,
+                            noRemision: pedidoData.remision,
+                            capTanque: cap != null && cap !== '' ? String(cap) : '',
+                            noPedido: pedidoData.nPedido || pedidoData.factura,
+                            noTanque:
+                                Number.isFinite(tid) && tid > 0
+                                    ? String(selectedTanque?.codigo ?? selectedTanque?.numero ?? tid)
+                                    : '',
+                            pctInicial:
+                                tanqueData?.porcentaje_inicial != null && tanqueData.porcentaje_inicial !== ''
+                                    ? String(tanqueData.porcentaje_inicial)
+                                    : '',
+                            pctFinal:
+                                tanqueData?.porcentaje_final != null && tanqueData.porcentaje_final !== ''
+                                    ? String(tanqueData.porcentaje_final)
+                                    : '',
+                            conductorNombre: pedidoData.conductorPedido,
+                            pedidoId: pedidoData.id
+                        };
+                    })()}
+                    onSave={(_checklist, _observacion, savedPatch) => {
+                        if (savedPatch && selectedTanque) {
+                            const tid = Number(selectedTanque._id ?? selectedTanque.id);
+                            if (Number.isFinite(tid) && tid > 0) {
+                                setLocalTanquesData((prevTanques: any[]) => {
+                                    const updatedTanques = [...(prevTanques || [])];
+                                    const tanqueIndex = updatedTanques.findIndex((t: any) => Number(t.tanque_id) === tid);
+                                    const base = tanqueIndex >= 0 ? updatedTanques[tanqueIndex] : {};
+                                    const merged = {
+                                        ...base,
+                                        tanque_id: tid,
+                                        checklist: savedPatch.checklist,
+                                        observacion: savedPatch.observacion
+                                    };
+                                    if (tanqueIndex >= 0) {
+                                        updatedTanques[tanqueIndex] = merged;
+                                    } else {
+                                        updatedTanques.push(merged);
+                                    }
+                                    return updatedTanques;
+                                });
+                            }
+                        }
                         setShowChecklistModal(false);
                         if (checklistOpenedFromTanques) {
                             setChecklistOpenedFromTanques(false);

@@ -6,6 +6,15 @@ import axios from 'axios';
 import { style } from './style';
 import { PedidoFrecuencia, FrecuenciaEditData, EditarFrecuenciaModalProps } from './EditarFrecuenciaModal.types';
 
+type TipoUiFrecuencia = 'por_semana' | 'mensual';
+
+/** Quincenal antiguo por calendario (1–15 y 16–31): al editar se migra a mensual (un solo día del mes). */
+function isLegacyQuincenalCalendario(d1?: string | number, d2?: string | number): boolean {
+    const a = parseInt(String(d1 ?? ''), 10);
+    const b = parseInt(String(d2 ?? ''), 10);
+    return Number.isFinite(a) && Number.isFinite(b) && a >= 1 && a <= 15 && b >= 16 && b <= 31;
+}
+
 const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
     visible,
     onClose,
@@ -20,31 +29,62 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
         dia1: '',
         dia2: ''
     });
+    const [tipoUiFrecuencia, setTipoUiFrecuencia] = useState<TipoUiFrecuencia>('por_semana');
+    const [intervaloSemanas, setIntervaloSemanas] = useState<1 | 2 | 3>(1);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (frecuencia && visible) {
-            // Convertir número de día a nombre del día si es necesario
-            let dia1Value = frecuencia.dia1 || '';
-            let dia2Value = frecuencia.dia2 || '';
+            const freq = frecuencia.frecuencia || 'semanal';
 
-            // Si dia1 es un número, convertir a nombre del día
-            if (typeof dia1Value === 'number' || (typeof dia1Value === 'string' && !isNaN(Number(dia1Value)))) {
-                dia1Value = getDayName(Number(dia1Value));
+            if (freq === 'mensual') {
+                setTipoUiFrecuencia('mensual');
+                setIntervaloSemanas(1);
+                const d2 = Number(frecuencia.dia2);
+                setFormData({
+                    forma: frecuencia.forma || 'cantidad',
+                    cantidadKl: frecuencia.cantidadKl || 0,
+                    cantidadPrecio: frecuencia.cantidadPrecio || 0,
+                    frecuencia: 'mensual',
+                    dia1: frecuencia.dia1 !== '' && frecuencia.dia1 !== undefined ? String(frecuencia.dia1) : '',
+                    dia2: !Number.isNaN(d2) && d2 >= 1 && d2 <= 7 ? d2 : ''
+                });
+                return;
             }
 
-            // Si dia2 es un número, convertir a nombre del día
-            if (typeof dia2Value === 'number' || (typeof dia2Value === 'string' && !isNaN(Number(dia2Value)))) {
-                dia2Value = getDayName(Number(dia2Value));
+            if (freq === 'quincenal' && isLegacyQuincenalCalendario(frecuencia.dia1, frecuencia.dia2)) {
+                setTipoUiFrecuencia('mensual');
+                setIntervaloSemanas(1);
+                setFormData({
+                    forma: frecuencia.forma || 'cantidad',
+                    cantidadKl: frecuencia.cantidadKl || 0,
+                    cantidadPrecio: frecuencia.cantidadPrecio || 0,
+                    frecuencia: 'mensual',
+                    dia1: String(frecuencia.dia1 ?? ''),
+                    dia2: ''
+                });
+                return;
             }
+
+            // Igual que grupos (semanal): día L–D + intervalo 1 / 2 / 3 semanas → semanal / quincenal / tressemanas en BD
+            setTipoUiFrecuencia('por_semana');
+            let intv: 1 | 2 | 3 = 1;
+            if (freq === 'semanal') intv = 1;
+            else if (freq === 'quincenal') intv = 2;
+            else if (freq === 'tressemanas') intv = 3;
+            setIntervaloSemanas(intv);
+
+            const n1 = Number(frecuencia.dia1);
+            const diaSemana =
+                !Number.isNaN(n1) && n1 >= 1 && n1 <= 7 ? n1 : '';
 
             setFormData({
                 forma: frecuencia.forma || 'cantidad',
                 cantidadKl: frecuencia.cantidadKl || 0,
                 cantidadPrecio: frecuencia.cantidadPrecio || 0,
-                frecuencia: frecuencia.frecuencia || 'semanal',
-                dia1: dia1Value,
-                dia2: dia2Value
+                frecuencia: freq === 'tressemanas' ? 'tressemanas' : freq === 'quincenal' ? 'quincenal' : 'semanal',
+                dia1: diaSemana,
+                dia2: ''
             });
         }
     }, [frecuencia, visible]);
@@ -57,8 +97,8 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
     };
 
     const validateForm = (): boolean => {
-        if (!formData.forma || !formData.frecuencia) {
-            Alert.alert('Error', 'Forma y frecuencia son campos requeridos');
+        if (!formData.forma) {
+            Alert.alert('Error', 'La forma del pedido es requerida');
             return false;
         }
 
@@ -77,19 +117,25 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
             // No hay validaciones adicionales para lleno
         }
 
-        if (formData.frecuencia === 'semanal' && !formData.dia1) {
-            Alert.alert('Error', 'Día 1 es requerido para frecuencia semanal');
-            return false;
+        if (tipoUiFrecuencia === 'por_semana') {
+            const ds = Number(formData.dia1);
+            if (formData.dia1 === '' || formData.dia1 === undefined || Number.isNaN(ds) || ds < 1 || ds > 7) {
+                Alert.alert('Error', 'Debes seleccionar un día de la semana (Lunes a Domingo)');
+                return false;
+            }
         }
 
-        if (formData.frecuencia === 'quincenal' && (!formData.dia1 || !formData.dia2)) {
-            Alert.alert('Error', 'Día 1 y día 2 son requeridos para frecuencia quincenal');
-            return false;
-        }
-
-        if (formData.frecuencia === 'mensual' && !formData.dia1) {
-            Alert.alert('Error', 'Día del mes es requerido para frecuencia mensual');
-            return false;
+        if (tipoUiFrecuencia === 'mensual') {
+            const dm = parseInt(String(formData.dia1), 10);
+            if (!formData.dia1 || Number.isNaN(dm) || dm < 1 || dm > 31) {
+                Alert.alert('Error', 'Elige un día del mes entre 1 y 31');
+                return false;
+            }
+            const ds = Number(formData.dia2);
+            if (formData.dia2 === '' || formData.dia2 === undefined || Number.isNaN(ds) || ds < 1 || ds > 7) {
+                Alert.alert('Error', 'Debes seleccionar el día de la semana para frecuencia mensual (como en grupos)');
+                return false;
+            }
         }
 
         return true;
@@ -101,11 +147,38 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
         try {
             setLoading(true);
 
-            // Preparar datos para envío, convirtiendo nombres de días a números
+            let frecuenciaSend: PedidoFrecuencia['frecuencia'] = 'semanal';
+            let dia1Send: number | null = null;
+            let dia2Send: number | null = null;
+
+            if (tipoUiFrecuencia === 'por_semana') {
+                const wd = Number(formData.dia1);
+                if (intervaloSemanas === 1) {
+                    frecuenciaSend = 'semanal';
+                    dia1Send = wd >= 1 && wd <= 7 ? wd : null;
+                    dia2Send = null;
+                } else if (intervaloSemanas === 2) {
+                    frecuenciaSend = 'quincenal';
+                    dia1Send = wd >= 1 && wd <= 7 ? wd : null;
+                    dia2Send = dia1Send;
+                } else {
+                    frecuenciaSend = 'tressemanas';
+                    dia1Send = wd >= 1 && wd <= 7 ? wd : null;
+                    dia2Send = null;
+                }
+            } else {
+                frecuenciaSend = 'mensual';
+                const d = parseInt(String(formData.dia1), 10);
+                const wd = Number(formData.dia2);
+                dia1Send = Number.isFinite(d) && d >= 1 && d <= 31 ? d : null;
+                dia2Send = Number.isFinite(wd) && wd >= 1 && wd <= 7 ? wd : null;
+            }
+
             const dataToSend = {
                 ...formData,
-                dia1: formData.dia1 ? getDayNumber(formData.dia1 as string) : null,
-                dia2: formData.dia2 ? getDayNumber(formData.dia2 as string) : null
+                frecuencia: frecuenciaSend,
+                dia1: dia1Send,
+                dia2: dia2Send
             };
 
             const response = await axios.put(`fre/frecuencia/${frecuencia.pedido_id}`, dataToSend);
@@ -117,15 +190,15 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
                     text2: 'La frecuencia se ha actualizado correctamente'
                 });
 
-                // Crear objeto con los datos actualizados para actualizar el listado local
+                const row = response.data.data;
                 const updatedFrecuencia: PedidoFrecuencia = {
                     ...frecuencia,
-                    forma: formData.forma,
-                    cantidadKl: formData.cantidadKl,
-                    cantidadPrecio: formData.cantidadPrecio,
-                    frecuencia: formData.frecuencia,
-                    dia1: formData.dia1,
-                    dia2: formData.dia2
+                    forma: (row?.forma as PedidoFrecuencia['forma']) || formData.forma,
+                    cantidadKl: row?.cantidadkl ?? formData.cantidadKl,
+                    cantidadPrecio: row?.cantidadprecio ?? formData.cantidadPrecio,
+                    frecuencia: (row?.frecuencia as PedidoFrecuencia['frecuencia']) || frecuenciaSend,
+                    dia1: row?.dia1 ?? dia1Send ?? undefined,
+                    dia2: row?.dia2 ?? dia2Send ?? undefined
                 };
 
                 onSuccess(updatedFrecuencia);
@@ -156,13 +229,6 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
         return dayNames[dayNumber - 1] || '';
     };
 
-    // Función para convertir nombre del día a número
-    const getDayNumber = (dayName: string): number => {
-        const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-        const index = dayNames.indexOf(dayName);
-        return index + 1; // Devuelve 1-7
-    };
-
     return (
         <Modal
             visible={visible}
@@ -189,6 +255,32 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
                                 <Text style={style.clientInfoRazon}>{frecuencia.razon_social}</Text>
                             )}
                             <Text style={style.clientInfoCodigo}>Código: {frecuencia.codt}</Text>
+
+                            {(frecuencia.punto_nombre ||
+                                frecuencia.punto_direccion ||
+                                frecuencia.zona_nombre) && (
+                                <View style={style.clientInfoPuntoBlock}>
+                                    <Text style={style.clientInfoPuntoTitle}>Punto de entrega</Text>
+                                    {!!frecuencia.punto_nombre && (
+                                        <Text style={style.clientInfoMetaLine}>
+                                            <Text style={style.clientInfoMetaLabel}>Nombre: </Text>
+                                            {frecuencia.punto_nombre}
+                                        </Text>
+                                    )}
+                                    {!!frecuencia.punto_direccion && (
+                                        <Text style={style.clientInfoMetaLine}>
+                                            <Text style={style.clientInfoMetaLabel}>Dirección: </Text>
+                                            {frecuencia.punto_direccion}
+                                        </Text>
+                                    )}
+                                    {!!frecuencia.zona_nombre && (
+                                        <Text style={style.clientInfoMetaLine}>
+                                            <Text style={style.clientInfoMetaLabel}>Zona: </Text>
+                                            {frecuencia.zona_nombre}
+                                        </Text>
+                                    )}
+                                </View>
+                            )}
                         </View>
                     )}
 
@@ -268,20 +360,24 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
                         </View>
                     )}
 
-                    {/* Frecuencia */}
+                    {/* Frecuencia (misma estructura que Tipo de Frecuencia en grupos: Semanal | Mensual) */}
                     <View style={style.fieldContainer}>
-                        <Text style={style.fieldLabel}>Frecuencia *</Text>
+                        <Text style={style.fieldLabel}>Tipo de Frecuencia *</Text>
+                        <Text style={style.fieldSubLabel}>
+                            Semanal: día de la semana e intervalo (cada 1, 2 o 3 semanas). Mensual: día del mes y día de la
+                            semana, igual que en grupos.
+                        </Text>
                         <View style={style.radioContainer}>
                             <TouchableOpacity
                                 style={[
                                     style.radioButton,
-                                    formData.frecuencia === 'semanal' && style.radioButtonSelected
+                                    tipoUiFrecuencia === 'por_semana' && style.radioButtonSelected
                                 ]}
-                                onPress={() => handleInputChange('frecuencia', 'semanal')}
+                                onPress={() => setTipoUiFrecuencia('por_semana')}
                             >
                                 <Text style={[
                                     style.radioText,
-                                    formData.frecuencia === 'semanal' && style.radioTextSelected
+                                    tipoUiFrecuencia === 'por_semana' && style.radioTextSelected
                                 ]}>
                                     Semanal
                                 </Text>
@@ -289,27 +385,13 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
                             <TouchableOpacity
                                 style={[
                                     style.radioButton,
-                                    formData.frecuencia === 'quincenal' && style.radioButtonSelected
+                                    tipoUiFrecuencia === 'mensual' && style.radioButtonSelected
                                 ]}
-                                onPress={() => handleInputChange('frecuencia', 'quincenal')}
+                                onPress={() => setTipoUiFrecuencia('mensual')}
                             >
                                 <Text style={[
                                     style.radioText,
-                                    formData.frecuencia === 'quincenal' && style.radioTextSelected
-                                ]}>
-                                    Quincenal
-                                </Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[
-                                    style.radioButton,
-                                    formData.frecuencia === 'mensual' && style.radioButtonSelected
-                                ]}
-                                onPress={() => handleInputChange('frecuencia', 'mensual')}
-                            >
-                                <Text style={[
-                                    style.radioText,
-                                    formData.frecuencia === 'mensual' && style.radioTextSelected
+                                    tipoUiFrecuencia === 'mensual' && style.radioTextSelected
                                 ]}>
                                     Mensual
                                 </Text>
@@ -317,93 +399,142 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
                         </View>
                     </View>
 
-                    {/* Días de la semana */}
-                    {formData.frecuencia === 'semanal' && (
-                        <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>Día de la Semana *</Text>
-                            <View style={style.daysContainer}>
-                                {diasSemana.map((dia, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={[
-                                            style.dayButton,
-                                            formData.dia1 === dia && style.dayButtonSelected
-                                        ]}
-                                        onPress={() => handleInputChange('dia1', dia)}
-                                    >
-                                        <Text style={[
-                                            style.dayText,
-                                            formData.dia1 === dia && style.dayTextSelected
-                                        ]}>
-                                            {dia.charAt(0)}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                            <Text style={style.daySelectedText}>
-                                Día seleccionado: {formData.dia1 || 'Ninguno'}
-                            </Text>
-                        </View>
-                    )}
-
-                    {formData.frecuencia === 'quincenal' && (
-                        <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>Días Quincenales *</Text>
-                            <Text style={style.fieldSubLabel}>Selecciona los días para cada quincena del mes</Text>
-
-                            <View style={style.quincenaContainer}>
-                                <Text style={style.quincenaLabel}>Primera Quincena (1-15):</Text>
+                    {/* Patrón por semana (misma UX que Editar Grupo: día L–D + intervalo) */}
+                    {tipoUiFrecuencia === 'por_semana' && (
+                        <>
+                            <View style={style.fieldContainer}>
+                                <Text style={style.fieldLabel}>Día de la Semana *</Text>
+                                <Text style={style.fieldSubLabel}>Selecciona el día de la semana (Lunes a Domingo)</Text>
                                 <View style={style.daysContainer}>
                                     {diasSemana.map((dia, index) => (
                                         <TouchableOpacity
                                             key={index}
                                             style={[
                                                 style.dayButton,
-                                                formData.dia1 === dia && style.dayButtonSelected
+                                                formData.dia1 === index + 1 && style.dayButtonSelected
+                                            ]}
+                                            onPress={() => handleInputChange('dia1', index + 1)}
+                                        >
+                                            <Text style={[
+                                                style.dayText,
+                                                formData.dia1 === index + 1 && style.dayTextSelected
+                                            ]}>
+                                                {dia.charAt(0)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                                <Text style={style.daySelectedText}>
+                                    Día seleccionado:{' '}
+                                    {typeof formData.dia1 === 'number' && formData.dia1 >= 1 && formData.dia1 <= 7
+                                        ? getDayName(formData.dia1)
+                                        : 'Ninguno'}
+                                </Text>
+                            </View>
+
+                            <View style={style.fieldContainer}>
+                                <Text style={style.fieldLabel}>Intervalo de Semanas *</Text>
+                                <View style={style.radioContainer}>
+                                    <TouchableOpacity
+                                        style={[
+                                            style.radioButton,
+                                            intervaloSemanas === 1 && style.radioButtonSelected
+                                        ]}
+                                        onPress={() => setIntervaloSemanas(1)}
+                                    >
+                                        <Text style={[
+                                            style.radioText,
+                                            intervaloSemanas === 1 && style.radioTextSelected
+                                        ]}>
+                                            Semanal
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            style.radioButton,
+                                            intervaloSemanas === 2 && style.radioButtonSelected
+                                        ]}
+                                        onPress={() => setIntervaloSemanas(2)}
+                                    >
+                                        <Text style={[
+                                            style.radioText,
+                                            intervaloSemanas === 2 && style.radioTextSelected
+                                        ]}>
+                                            Cada 2 Semanas
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            style.radioButton,
+                                            intervaloSemanas === 3 && style.radioButtonSelected
+                                        ]}
+                                        onPress={() => setIntervaloSemanas(3)}
+                                    >
+                                        <Text style={[
+                                            style.radioText,
+                                            intervaloSemanas === 3 && style.radioTextSelected
+                                        ]}>
+                                            Cada 3 Semanas
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </>
+                    )}
+
+                    {tipoUiFrecuencia === 'mensual' && (
+                        <>
+                            <View style={style.fieldContainer}>
+                                <Text style={style.fieldLabel}>Día del Mes *</Text>
+                                <Text style={style.fieldSubLabel}>Selecciona el día del mes (1-31)</Text>
+                                <View style={style.daysContainer}>
+                                    {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
+                                        <TouchableOpacity
+                                            key={dia}
+                                            style={[
+                                                style.dayButton,
+                                                formData.dia1 === dia.toString() && style.dayButtonSelected
                                             ]}
                                             onPress={() => {
-                                                if (formData.dia1 === dia) {
+                                                if (formData.dia1 === dia.toString()) {
                                                     handleInputChange('dia1', '');
                                                 } else {
-                                                    handleInputChange('dia1', dia);
+                                                    handleInputChange('dia1', dia.toString());
                                                 }
                                             }}
                                         >
                                             <Text style={[
                                                 style.dayText,
-                                                formData.dia1 === dia && style.dayTextSelected
+                                                formData.dia1 === dia.toString() && style.dayTextSelected
                                             ]}>
-                                                {dia.charAt(0)}
+                                                {dia}
                                             </Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
                                 <Text style={style.daySelectedText}>
-                                    Primera quincena: {formData.dia1 || 'Ninguno'}
+                                    Día seleccionado: {formData.dia1 || 'Ninguno'}
                                 </Text>
                             </View>
 
-                            <View style={style.quincenaContainer}>
-                                <Text style={style.quincenaLabel}>Segunda Quincena (16-31):</Text>
+                            <View style={style.fieldContainer}>
+                                <Text style={style.fieldLabel}>Día de la Semana (Mensual) *</Text>
+                                <Text style={style.fieldSubLabel}>
+                                    Selecciona el día de la semana para frecuencia mensual
+                                </Text>
                                 <View style={style.daysContainer}>
                                     {diasSemana.map((dia, index) => (
                                         <TouchableOpacity
-                                            key={index}
+                                            key={`mensual-${index}`}
                                             style={[
                                                 style.dayButton,
-                                                formData.dia2 === dia && style.dayButtonSelected
+                                                formData.dia2 === index + 1 && style.dayButtonSelected
                                             ]}
-                                            onPress={() => {
-                                                if (formData.dia2 === dia) {
-                                                    handleInputChange('dia2', '');
-                                                } else {
-                                                    handleInputChange('dia2', dia);
-                                                }
-                                            }}
+                                            onPress={() => handleInputChange('dia2', index + 1)}
                                         >
                                             <Text style={[
                                                 style.dayText,
-                                                formData.dia2 === dia && style.dayTextSelected
+                                                formData.dia2 === index + 1 && style.dayTextSelected
                                             ]}>
                                                 {dia.charAt(0)}
                                             </Text>
@@ -411,46 +542,13 @@ const EditarFrecuenciaModal: React.FC<EditarFrecuenciaModalProps> = ({
                                     ))}
                                 </View>
                                 <Text style={style.daySelectedText}>
-                                    Segunda quincena: {formData.dia2 || 'Ninguno'}
+                                    Día seleccionado:{' '}
+                                    {typeof formData.dia2 === 'number' && formData.dia2 >= 1 && formData.dia2 <= 7
+                                        ? getDayName(formData.dia2)
+                                        : 'Ninguno'}
                                 </Text>
                             </View>
-                        </View>
-                    )}
-
-                    {formData.frecuencia === 'mensual' && (
-                        <View style={style.fieldContainer}>
-                            <Text style={style.fieldLabel}>Día del Mes *</Text>
-                            <Text style={style.fieldSubLabel}>Selecciona el día del mes para la frecuencia mensual</Text>
-
-                            <View style={style.daysContainer}>
-                                {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
-                                    <TouchableOpacity
-                                        key={dia}
-                                        style={[
-                                            style.dayButton,
-                                            formData.dia1 === dia.toString() && style.dayButtonSelected
-                                        ]}
-                                        onPress={() => {
-                                            if (formData.dia1 === dia.toString()) {
-                                                handleInputChange('dia1', '');
-                                            } else {
-                                                handleInputChange('dia1', dia.toString());
-                                            }
-                                        }}
-                                    >
-                                        <Text style={[
-                                            style.dayText,
-                                            formData.dia1 === dia.toString() && style.dayTextSelected
-                                        ]}>
-                                            {dia}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                            <Text style={style.daySelectedText}>
-                                Día seleccionado: {formData.dia1 || 'Ninguno'}
-                            </Text>
-                        </View>
+                        </>
                     )}
 
                     {/* Botones */}

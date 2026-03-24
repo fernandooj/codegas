@@ -14,34 +14,41 @@ const getApiUrl = () => {
     throw new Error('La URL base de la API no está configurada. Por favor, configura axios.defaults.baseURL desde App.tsx');
 };
 
-// Función para subir una imagen a S3
+// Función para subir imagen o PDF a S3 (mismo endpoint /upload/s3)
 export const uploadImageToS3 = async (imageUri: string, fileName?: string): Promise<string> => {
     try {
-        console.log('🚀 [S3Upload] Iniciando subida de imagen...');
-        console.log('📸 [S3Upload] Image URI:', imageUri);
+        console.log('🚀 [S3Upload] Iniciando subida...');
+        console.log('📎 [S3Upload] URI (preview):', imageUri.slice(0, 80));
 
-        // Determinar extensión y mime type correctamente
         let fileExtension = 'jpg';
         let mimeType = 'image/jpeg';
-        
-        if (imageUri.startsWith('data:image')) {
-            // Si es base64, extraer el mime type del prefijo
-            const mimeMatch = imageUri.match(/data:image\/([^;]+);base64,/);
-            if (mimeMatch) {
-                const mime = mimeMatch[1].toLowerCase();
-                fileExtension = mime === 'jpeg' ? 'jpg' : mime;
-                mimeType = `image/${mime}`;
+
+        if (imageUri.startsWith('data:')) {
+            const dataMatch = imageUri.match(/^data:([^;]+);base64,/);
+            if (dataMatch) {
+                const fullMime = dataMatch[1].toLowerCase();
+                if (fullMime === 'application/pdf') {
+                    fileExtension = 'pdf';
+                    mimeType = 'application/pdf';
+                } else if (fullMime.startsWith('image/')) {
+                    const sub = fullMime.replace('image/', '');
+                    fileExtension = sub === 'jpeg' ? 'jpg' : sub;
+                    mimeType = fullMime;
+                }
             }
         } else {
-            // Si es una URI de archivo, extraer extensión del path
-            const pathWithoutQuery = imageUri.split('?')[0]; // Remover query params si los hay
+            const pathWithoutQuery = imageUri.split('?')[0];
             const extension = pathWithoutQuery.split('.').pop()?.toLowerCase() || 'jpg';
             fileExtension = extension;
-            mimeType = extension === 'jpg' || extension === 'jpeg' 
-                ? 'image/jpeg' 
-                : extension === 'png' 
-                ? 'image/png' 
-                : `image/${extension}`;
+            if (extension === 'pdf') {
+                mimeType = 'application/pdf';
+            } else if (extension === 'jpg' || extension === 'jpeg') {
+                mimeType = 'image/jpeg';
+            } else if (extension === 'png') {
+                mimeType = 'image/png';
+            } else {
+                mimeType = extension.startsWith('image') ? extension : `image/${extension}`;
+            }
         }
 
         // Crear un nombre único para el archivo
@@ -53,8 +60,7 @@ export const uploadImageToS3 = async (imageUri: string, fileName?: string): Prom
         console.log('📝 [S3Upload] Mime type:', mimeType);
         console.log('📝 [S3Upload] Final file name:', finalFileName);
 
-        // Convertir la imagen a base64
-        console.log('🔄 [S3Upload] Convirtiendo imagen a base64...');
+        console.log('🔄 [S3Upload] Convirtiendo a base64...');
         const base64Data = await convertImageToBase64(imageUri);
         console.log('✅ [S3Upload] Base64 conversion completada. Longitud:', base64Data.length);
 
@@ -80,19 +86,32 @@ export const uploadImageToS3 = async (imageUri: string, fileName?: string): Prom
             headers: {
                 'Content-Type': 'application/json',
             },
-            timeout: 30000, // 30 segundos de timeout
+            timeout: 120000,
         });
 
         console.log('📡 [S3Upload] Response status:', response.status);
-        console.log('✅ [S3Upload] Response recibida:', response.data);
+        console.log('📡 [S3Upload] Response recibida:', response.data);
 
-        const result = response.data;
+        let result: { url?: string; error?: string } = response.data;
+        if (typeof result === 'string') {
+            try {
+                result = JSON.parse(result) as { url?: string; error?: string };
+            } catch {
+                throw new Error('Respuesta del servidor no es JSON válido');
+            }
+        }
 
-        // El endpoint de upload/s3 retorna la URL directamente
-        const imageUrl = result.url;
+        if (result && typeof result === 'object' && result.error) {
+            throw new Error(String(result.error));
+        }
+
+        const imageUrl = result?.url;
+        if (!imageUrl || typeof imageUrl !== 'string') {
+            throw new Error('El servidor no devolvió url de imagen');
+        }
         console.log('🔗 [S3Upload] URL de imagen obtenida:', imageUrl);
 
-        return imageUrl; // URL de la imagen en S3
+        return imageUrl;
     } catch (error) {
         console.error('❌ [S3Upload] Error uploading image to S3:', error);
         throw error;
@@ -114,14 +133,54 @@ export const uploadMultipleImagesToS3 = async (imageUris: string[]): Promise<str
     }
 };
 
-// Función para convertir imagen a base64
+function isPdfPickerItem(item: { uri?: string; base64?: string | null; name?: string }): boolean {
+    const hint = `${item.name || ''} ${item.uri || ''}`.toLowerCase();
+    return hint.includes('.pdf');
+}
+
+/** Data URL o file URI para uploadImageToS3 (PDF si el nombre/uri termina en .pdf) */
+function pickerItemToUploadUri(item: { uri?: string; base64?: string | null; name?: string }): string {
+    const b64 = item.base64?.trim();
+    if (b64) {
+        if (isPdfPickerItem(item)) {
+            return `data:application/pdf;base64,${b64}`;
+        }
+        return `data:image/jpeg;base64,${b64}`;
+    }
+    const u = item.uri;
+    if (!u) {
+        throw new Error('El archivo no tiene uri ni base64');
+    }
+    return u;
+}
+
+/**
+ * Sube imágenes desde react-native-image-picker (`{ uri, base64 }`) sin Redux.
+ * Evita thunks anidados que en algunos entornos no devuelven la promesa correctamente.
+ */
+export const uploadPickerImagesToS3 = async (
+    items: { uri?: string; base64?: string | null; name?: string }[]
+): Promise<string[]> => {
+    const ts = Date.now();
+    const uploads = items.map((item, index) => {
+        const pdf = isPdfPickerItem(item);
+        const ext = pdf ? 'pdf' : 'jpg';
+        const prefix = pdf ? 'documento' : 'emergencia';
+        return uploadImageToS3(
+            pickerItemToUploadUri(item),
+            `${prefix}_${ts}_${index}.${ext}`
+        );
+    });
+    return Promise.all(uploads);
+};
+
 const convertImageToBase64 = async (imageUri: string): Promise<string> => {
     try {
-        // Si ya es base64, retornarlo directamente
-        if (imageUri.startsWith('data:image')) {
-            // Extraer solo la parte base64 sin el prefijo data:image/...;base64,
-            const base64Data = imageUri.split(',')[1] || imageUri.replace(/^data:image\/[^;]+;base64,/, '');
-            return base64Data;
+        if (imageUri.startsWith('data:')) {
+            const comma = imageUri.indexOf(',');
+            if (comma !== -1) {
+                return imageUri.slice(comma + 1);
+            }
         }
 
         // Si es una URI local, leer el archivo con RNFS

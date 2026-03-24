@@ -3,10 +3,18 @@ import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, ActivityIndicat
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import { safetyChecklistQuestions } from '../../utils/constants';
 import type { ChecklistItem } from '../../utils/constants.types';
+
+/** Payload guardado en pedidos.tanques (mismo cuerpo que envía PUT /tanques) */
+export type SavedTanqueChecklistPayload = {
+    tanque_id: number;
+    checklist: { pregunta: string; respuesta: string }[];
+    observacion: string | null;
+};
 import { style } from './style';
 import { updateTanquesHTTP } from '../../redux/actions/pedidoActions';
 import { useSyncQueue } from '../../hooks/useSyncQueue';
 import { SyncOperationType } from '../../services/syncQueueService';
+import { shareSafetyChecklistPdf, type SafetyChecklistPdfMeta } from './safetyChecklistPdf';
 
 interface SafetyChecklistModalProps {
     visible: boolean;
@@ -15,7 +23,9 @@ interface SafetyChecklistModalProps {
     tanqueId: number; // ID del tanque seleccionado
     initialChecklist?: ChecklistItem[];
     initialObservacion?: string | null;
-    onSave?: (checklist: ChecklistItem[], observacion: string) => void;
+    /** Datos del pedido/tanque para el encabezado del PDF (formato calidad). */
+    checklistPdfMeta?: SafetyChecklistPdfMeta;
+    onSave?: (checklist: ChecklistItem[], observacion: string, savedTanquesPatch?: SavedTanqueChecklistPayload) => void;
 }
 
 const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
@@ -25,12 +35,14 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
     tanqueId,
     initialChecklist = [],
     initialObservacion = null,
+    checklistPdfMeta,
     onSave
 }) => {
     const { addToQueue, isOnline } = useSyncQueue();
     const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
     const [observacion, setObservacion] = useState<string>('');
     const [saving, setSaving] = useState(false);
+    const [pdfBusy, setPdfBusy] = useState(false);
     const [activeTab, setActiveTab] = useState<'lista' | 'observaciones'>('lista');
 
     // Refs para rastrear cambios y forzar reinicialización
@@ -182,6 +194,18 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
         try {
             setSaving(true);
 
+            const tid = Number(tanqueId);
+            if (!pedidoId) {
+                Alert.alert('Error', 'No se identificó el pedido');
+                setSaving(false);
+                return;
+            }
+            if (!Number.isFinite(tid) || tid <= 0) {
+                Alert.alert('Error', 'No se identificó el tanque. Vuelva a elegirlo en la lista de tanques.');
+                setSaving(false);
+                return;
+            }
+
             // Validar que haya al menos una respuesta
             if (checklist.length === 0) {
                 Alert.alert('Error', 'Por favor completa al menos una pregunta');
@@ -198,15 +222,15 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
                 };
             });
 
-            const tanqueData = {
-                tanque_id: tanqueId,
+            const tanqueData: SavedTanqueChecklistPayload = {
+                tanque_id: tid,
                 checklist: checklistFormatted,
-                observacion: observacion || null
+                observacion: observacion.trim() ? observacion.trim() : null
             };
 
-            console.log('💾 Guardando checklist para pedido:', pedidoId, 'tanque:', tanqueId);
+            console.log('💾 Guardando checklist para pedido:', pedidoId, 'tanque:', tid);
             console.log('📋 Checklist a guardar:', checklistFormatted);
-            console.log('📝 Observación:', observacion);
+            console.log('📝 Observación:', tanqueData.observacion);
             console.log('🌐 Estado de conexión:', isOnline ? 'ONLINE' : 'OFFLINE');
 
             if (isOnline) {
@@ -225,9 +249,7 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
                             {
                                 text: 'OK',
                                 onPress: () => {
-                                    if (onSave) {
-                                        onSave(checklist, observacion);
-                                    }
+                                    onSave?.(checklist, observacion || '', tanqueData);
                                     onClose();
                                 }
                             }
@@ -249,10 +271,7 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
                 // Actualizar el ref del checklist guardado
                 lastInitialChecklistRef.current = checklist;
 
-                // Actualizar estado local inmediatamente
-                if (onSave) {
-                    onSave(checklist, observacion);
-                }
+                onSave?.(checklist, observacion || '', tanqueData);
 
                 Alert.alert(
                     '📴 Sin Conexión',
@@ -272,6 +291,31 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
             Alert.alert('Error', 'Error al guardar la lista de chequeo');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const buildChecklistForExport = () =>
+        checklist.map((item) => {
+            const question = safetyChecklistQuestions.find((q) => q.id === item.id);
+            return {
+                pregunta: question?.question || `Pregunta ${item.id}`,
+                respuesta: item.status ? 'Sí' : 'No'
+            };
+        });
+
+    const handleDownloadPdf = async () => {
+        try {
+            setPdfBusy(true);
+            const meta: SafetyChecklistPdfMeta = {
+                ...checklistPdfMeta,
+                pedidoId: checklistPdfMeta?.pedidoId || pedidoId
+            };
+            await shareSafetyChecklistPdf(buildChecklistForExport(), observacion, meta);
+        } catch (e) {
+            console.error('Error generando PDF checklist:', e);
+            Alert.alert('Error', 'No se pudo generar el PDF. Intente de nuevo.');
+        } finally {
+            setPdfBusy(false);
         }
     };
 
@@ -629,10 +673,28 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
                             <TouchableOpacity
                                 style={style.checklistCancelButton}
                                 onPress={onClose}
-                                disabled={saving}
+                                disabled={saving || pdfBusy}
                             >
                                 <FontAwesome name="ban" style={style.checklistCancelIcon} />
                                 <Text style={style.checklistCancelText}>Cancelar</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[
+                                    style.checklistPdfButton,
+                                    (saving || pdfBusy) && style.checklistPdfButtonDisabled
+                                ]}
+                                onPress={handleDownloadPdf}
+                                disabled={saving || pdfBusy}
+                            >
+                                {pdfBusy ? (
+                                    <ActivityIndicator size="small" color="#002587" />
+                                ) : (
+                                    <>
+                                        <FontAwesome name="file-pdf-o" style={style.checklistPdfIcon} />
+                                        <Text style={style.checklistPdfText}>PDF</Text>
+                                    </>
+                                )}
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -641,7 +703,7 @@ const SafetyChecklistModal: React.FC<SafetyChecklistModalProps> = ({
                                     saving && style.checklistSaveButtonDisabled
                                 ]}
                                 onPress={handleSave}
-                                disabled={saving}
+                                disabled={saving || pdfBusy}
                             >
                                 {saving ? (
                                     <>

@@ -14,7 +14,8 @@ import { style } from './style';
 interface LlenadoTanquesModalProps {
     visible: boolean;
     onClose: () => void;
-    pedidoId: string;
+    /** Puede ser string o number según el origen del pedido (_id) */
+    pedidoId: string | number;
     tanqueId: number; // ID del tanque seleccionado
     puntoId?: string;
     usuarioId?: string;
@@ -103,8 +104,9 @@ const LlenadoTanquesModal: React.FC<LlenadoTanquesModalProps> = ({
             const shouldInitialize = isNewTanque || !initializedRef.current;
 
             if (shouldInitialize) {
-                // Buscar datos del tanque específico en tanquesData
-                const tanqueData = tanquesData.find((t: any) => t.tanque_id === tanqueId);
+                const tid = Number(tanqueId);
+                // JSON/BD puede traer tanque_id como string; unificar con Number
+                const tanqueData = tanquesData.find((t: any) => Number(t.tanque_id) === tid);
 
                 if (tanqueData) {
                     // Cargar datos del tanque específico
@@ -259,12 +261,24 @@ const LlenadoTanquesModal: React.FC<LlenadoTanquesModalProps> = ({
     };
 
     const handleSave = async () => {
-        // Verificar conexión
-        const netInfo = await NetInfo.fetch();
-        const isOnlineNow = netInfo.isConnected ?? false;
-
         try {
             setSaving(true);
+
+            const pedidoIdStr =
+                pedidoId != null && pedidoId !== ''
+                    ? String(pedidoId).trim()
+                    : '';
+            if (!pedidoIdStr) {
+                Alert.alert('Error', 'No se identificó el pedido');
+                setSaving(false);
+                return;
+            }
+            const tid = Number(tanqueId);
+            if (!Number.isFinite(tid) || tid <= 0) {
+                Alert.alert('Error', 'No se identificó el tanque. Vuelva a elegirlo en la lista de tanques.');
+                setSaving(false);
+                return;
+            }
 
             // Validar que el estado esté seleccionado
             if (!estado || estado === '') {
@@ -340,22 +354,20 @@ const LlenadoTanquesModal: React.FC<LlenadoTanquesModalProps> = ({
                 };
             }
 
-            // Preparar datos para actualizar el campo tanques
+            // Solo campos de llenado: no enviar checklist/observacion/tipo_suministro.
+            // Si se mandan checklist: [] u observacion: null, el API los aplica y borra datos del checklist.
             const tanqueData = {
-                tanque_id: tanqueId,
-                tipo_suministro: null, // Se puede agregar después si es necesario
+                tanque_id: tid,
                 presion_inicial: datosLlenado.presion_inicial,
                 presion_final: datosLlenado.presion_final,
                 porcentaje_inicial: datosLlenado.porcentaje_inicial,
                 porcentaje_final: datosLlenado.porcentaje_final,
-                observacion: null, // Se puede agregar después si es necesario
-                checklist: [], // Se actualiza desde SafetyChecklistModal
                 estado: datosLlenado.estado
             };
 
-            if (isOnlineNow) {
+            if (isOnline) {
                 // Online: actualizar campo tanques directamente
-                await updateTanquesHTTP(pedidoId, tanqueData);
+                await updateTanquesHTTP(pedidoIdStr, tanqueData);
 
                 // También llamar a onSave para mantener compatibilidad
                 await onSave(datosLlenado);
@@ -378,13 +390,13 @@ const LlenadoTanquesModal: React.FC<LlenadoTanquesModalProps> = ({
             } else {
                 // Offline: guardar en cola de sincronización
                 console.log('📴 [LlenadoTanquesModal] Offline - Guardando en cola de sincronización');
-                debugLogger.info('Guardando llenado de tanques offline', { pedidoId, datosLlenado });
+                debugLogger.info('Guardando llenado de tanques offline', { pedidoId: pedidoIdStr, datosLlenado });
 
                 // Guardar en cola para sincronización
                 await addToQueue(
                     SyncOperationType.UPDATE_PEDIDO,
                     {
-                        pedidoId: pedidoId,
+                        pedidoId: pedidoIdStr,
                         updateTanques: tanqueData
                     }
                 );

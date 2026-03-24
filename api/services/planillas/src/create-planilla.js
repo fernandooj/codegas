@@ -16,7 +16,7 @@ module.exports.main = async (event) => {
         const {
             ruta,
             guia,
-            no_planilla,
+            no_planilla: _noPlanillaCliente, // ignorado: consecutivo automático en servidor
             placa_vehiculo,
             fecha,
             kilometraje_inicial,
@@ -39,6 +39,14 @@ module.exports.main = async (event) => {
                 message: 'user_id es requerido'
             };
         }
+
+        // Consecutivo global automático (no reutiliza números de planillas eliminadas)
+        const { rows: seqRows } = await client.query(`
+            SELECT COALESCE(MAX(no_planilla), 0) + 1 AS next_no
+            FROM planillas
+            WHERE COALESCE(eliminado, FALSE) = FALSE
+        `);
+        const no_planilla = parseInt(seqRows[0]?.next_no, 10) || 1;
 
         const INSERT_PLANILLA = `
             INSERT INTO planillas (
@@ -67,7 +75,7 @@ module.exports.main = async (event) => {
         const { rows } = await client.query(INSERT_PLANILLA, [
             ruta || null,
             guia || null,
-            no_planilla || null,
+            no_planilla,
             placa_vehiculo || null,
             fecha || null,
             kilometraje_inicial || null,

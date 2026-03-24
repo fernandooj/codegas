@@ -288,6 +288,8 @@ module.exports.main = async (event) => {
         // ============================================
         // Ya tenemos diaMesDosDias calculado arriba
 
+        // Mensual individual: dia1 = día del mes, dia2 = día de la semana (1–7, igual que grupos.dia_semana_mensual).
+        // Si dia2 es NULL (legado), solo se exige coincidir el día del mes.
         const GET_PEDIDOS_MENSUAL = `
       SELECT 
         p._id,
@@ -308,6 +310,7 @@ module.exports.main = async (event) => {
       JOIN users u ON u._id = p.usuarioid
       WHERE p.frecuencia = 'mensual'
         AND p.dia1 = $1
+        AND (p.dia2 IS NULL OR p.dia2 = $2)
         AND p.eliminado = FALSE
         AND p._id NOT IN (
           SELECT p2.pedidoPadre 
@@ -317,7 +320,10 @@ module.exports.main = async (event) => {
         )
     `;
 
-        const { rows: pedidosMensual } = await client.query(GET_PEDIDOS_MENSUAL, [diaMesDosDias]);
+        const { rows: pedidosMensual } = await client.query(GET_PEDIDOS_MENSUAL, [
+            diaMesDosDias,
+            diaSemanaDosDiasAjustado
+        ]);
 
         pedidosMensual.forEach(pedido => {
             pedidosACrear.mensual.push({
@@ -494,9 +500,14 @@ module.exports.main = async (event) => {
                     console.log(`[DEBUG] Día NO coincide para pedido ${pedido._id}: grupo dia_semana=${pedido.dia_semana}, objetivo=${diaSemanaDosDiasAjustado}`);
                 }
             } else if (tipoFrecuencia === 'mensual') {
-                // Para mensual: verificar si el día del mes coincide con el día objetivo (2 días después)
+                // Igual que individuales mensuales: día del mes + día de la semana de la fecha objetivo (1=Lun…7=Dom)
                 if (pedido.dia_mes === diaMesDosDias) {
-                    debeCrear = true;
+                    const dsem = pedido.dia_semana_mensual;
+                    if (dsem != null && dsem !== '') {
+                        debeCrear = Number(dsem) === diaSemanaDosDiasAjustado;
+                    } else {
+                        debeCrear = true;
+                    }
                 }
             }
 

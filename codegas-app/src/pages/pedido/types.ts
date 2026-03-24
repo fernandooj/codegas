@@ -48,6 +48,7 @@ export interface Pedido {
     valor_total?: number;
     estado: 'activo' | 'innactivo' | 'espera' | 'noentregado';
     entregado: boolean;
+    aprobado_magister?: boolean;
     fechasolicitud?: string;
     fechaentrega?: string;
     creado?: string;
@@ -174,6 +175,7 @@ export interface SelectedPedidoData {
     forma?: 'cantidad' | 'monto' | 'lleno';
     cantidad?: number;
     entregado?: boolean;
+    aprobado_magister?: boolean;
     imagenCerrar?: string;
     factura?: string;
     kilos?: number;
@@ -497,6 +499,7 @@ export interface CerrarPedidoModalProps {
     onClose: () => void;
     pedidoId?: string;
     entregado: boolean | undefined;
+    modoEdicion?: boolean;
     imagenCerrar?: string;
     kilos?: number;
     factura?: string;

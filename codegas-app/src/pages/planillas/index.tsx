@@ -35,6 +35,17 @@ import {
     PlanillaFormData,
     DataContextType
 } from './types';
+import { sharePlanillaAsPdf } from './planillaPdf';
+
+/** Máximo de dígitos en odómetro (sin decimales) */
+const KM_MAX_DIGITS = 6;
+
+const parseKmIntFromInput = (text: string): number | undefined => {
+    const digits = text.replace(/\D/g, '').slice(0, KM_MAX_DIGITS);
+    if (digits === '') return undefined;
+    const n = parseInt(digits, 10);
+    return Number.isNaN(n) ? undefined : n;
+};
 
 const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
     const { userId, acceso } = useContext(DataContext) as DataContextType;
@@ -84,6 +95,16 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
     const [currentGasto, setCurrentGasto] = useState<Gasto>({ concepto: '', valor: 0 });
     const [valorFormateado, setValorFormateado] = useState<string>('');
     const [zonaSearchTerm, setZonaSearchTerm] = useState<string>('');
+    /** Texto en vivo para % inventario (permite un decimal, ej. "12.") */
+    const [pctDraft, setPctDraft] = useState<{ ini?: string; fin?: string }>({});
+    const [pdfGeneratingId, setPdfGeneratingId] = useState<string | null>(null);
+
+    const maxInventarioKl = (): number => {
+        const c = vehiculo?.capacidad;
+        if (c == null || c === '') return 1_000_000;
+        const n = parseFloat(String(c).replace(',', '.'));
+        return Number.isFinite(n) && n > 0 ? n : 1_000_000;
+    };
 
     // Funciones para formatear y desformatear números
     const formatearNumero = (numero: number): string => {
@@ -207,31 +228,63 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
             return;
         }
 
-        // Validar kilometraje final no sea mayor al inicial
-        if (formData.kilometraje_final !== undefined && formData.kilometraje_final !== null &&
-            formData.kilometraje_inicial !== undefined && formData.kilometraje_inicial !== null &&
-            formData.kilometraje_final > formData.kilometraje_inicial) {
+        if (
+            pctDraft.ini !== undefined &&
+            (pctDraft.ini === '.' || pctDraft.ini.endsWith('.'))
+        ) {
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: 'El kilometraje final no puede ser mayor al inicial'
+                text2: 'Complete el inventario inicial % (un decimal como máximo)'
+            });
+            return;
+        }
+        if (
+            pctDraft.fin !== undefined &&
+            (pctDraft.fin === '.' || pctDraft.fin.endsWith('.'))
+        ) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Complete el inventario final % (un decimal como máximo)'
             });
             return;
         }
 
-        // Validar inventarios no sean mayores a 100
-        const inventariosInvalidos = [
-            { campo: 'Inventario Inicial %', valor: formData.inventario_inicial_porcentaje },
-            { campo: 'Inventario Final %', valor: formData.inventario_final_porcentaje },
-            { campo: 'Inventario Inicial KL', valor: formData.inventario_inicial_kl },
-            { campo: 'Inventario Final KL', valor: formData.inventario_final_kl }
-        ].filter(item => item.valor !== undefined && item.valor !== null && item.valor > 100);
-
-        if (inventariosInvalidos.length > 0) {
+        if (formData.kilometraje_final !== undefined && formData.kilometraje_final !== null &&
+            formData.kilometraje_inicial !== undefined && formData.kilometraje_inicial !== null &&
+            formData.kilometraje_final <= formData.kilometraje_inicial) {
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: `${inventariosInvalidos[0].campo} no puede ser mayor a 100`
+                text2: 'El kilometraje final debe ser mayor al inicial'
+            });
+            return;
+        }
+
+        const capKl = maxInventarioKl();
+        const pctInvalidos = [
+            { campo: 'Inventario Inicial %', valor: formData.inventario_inicial_porcentaje },
+            { campo: 'Inventario Final %', valor: formData.inventario_final_porcentaje }
+        ].filter(item => item.valor !== undefined && item.valor !== null && item.valor > 100);
+        if (pctInvalidos.length > 0) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: `${pctInvalidos[0].campo} no puede ser mayor a 100`
+            });
+            return;
+        }
+
+        const klInvalidos = [
+            { campo: 'Inventario Inicial KL', valor: formData.inventario_inicial_kl },
+            { campo: 'Inventario Final KL', valor: formData.inventario_final_kl }
+        ].filter(item => item.valor !== undefined && item.valor !== null && item.valor > capKl);
+        if (klInvalidos.length > 0) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: `${klInvalidos[0].campo} no puede superar la capacidad del vehículo (${capKl})`
             });
             return;
         }
@@ -246,7 +299,12 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
             return;
         }
 
-        const result = await dispatch(createPlanilla(formData) as any);
+        const payload = {
+            ...formData,
+            // El servidor asigna no_planilla (consecutivo único); no enviar valor cliente
+            no_planilla: undefined
+        };
+        const result = await dispatch(createPlanilla(payload) as any);
         if (result.success) {
             Toast.show({
                 type: 'success',
@@ -272,36 +330,46 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
     const handleUpdate = async () => {
         if (!state.editingPlanilla) return;
 
-        // Validar kilometraje final no sea mayor al inicial
         if (formData.kilometraje_final !== undefined && formData.kilometraje_final !== null &&
             formData.kilometraje_inicial !== undefined && formData.kilometraje_inicial !== null &&
-            formData.kilometraje_final > formData.kilometraje_inicial) {
+            formData.kilometraje_final <= formData.kilometraje_inicial) {
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: 'El kilometraje final no puede ser mayor al inicial'
+                text2: 'El kilometraje final debe ser mayor al inicial'
             });
             return;
         }
 
-        // Validar inventarios no sean mayores a 100
-        const inventariosInvalidos = [
+        const capKlU = maxInventarioKl();
+        const pctInvalidosU = [
             { campo: 'Inventario Inicial %', valor: formData.inventario_inicial_porcentaje },
-            { campo: 'Inventario Final %', valor: formData.inventario_final_porcentaje },
+            { campo: 'Inventario Final %', valor: formData.inventario_final_porcentaje }
+        ].filter(item => item.valor !== undefined && item.valor !== null && item.valor > 100);
+        if (pctInvalidosU.length > 0) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: `${pctInvalidosU[0].campo} no puede ser mayor a 100`
+            });
+            return;
+        }
+
+        const klInvalidosU = [
             { campo: 'Inventario Inicial KL', valor: formData.inventario_inicial_kl },
             { campo: 'Inventario Final KL', valor: formData.inventario_final_kl }
-        ].filter(item => item.valor !== undefined && item.valor !== null && item.valor > 100);
-
-        if (inventariosInvalidos.length > 0) {
+        ].filter(item => item.valor !== undefined && item.valor !== null && item.valor > capKlU);
+        if (klInvalidosU.length > 0) {
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: `${inventariosInvalidos[0].campo} no puede ser mayor a 100`
+                text2: `${klInvalidosU[0].campo} no puede superar la capacidad del vehículo (${capKlU})`
             });
             return;
         }
 
-        const result = await dispatch(updatePlanilla(state.editingPlanilla._id, formData) as any);
+        const updatePayload = { ...formData, no_planilla: undefined };
+        const result = await dispatch(updatePlanilla(state.editingPlanilla._id, updatePayload) as any);
         if (result.success) {
             Toast.show({
                 type: 'success',
@@ -325,6 +393,27 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
     };
 
     // Handle delete planilla
+    const handleDownloadPdf = async (planilla: Planilla) => {
+        setPdfGeneratingId(planilla._id);
+        try {
+            await sharePlanillaAsPdf(planilla, { pedidos: reduxPedidos || [] });
+            Toast.show({
+                type: 'success',
+                text1: 'PDF generado',
+                text2: 'Elige Guardar en archivos, Drive o compartir'
+            });
+        } catch (err) {
+            console.error('PDF planilla:', err);
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'No se pudo generar el PDF. Reintente o revise permisos de almacenamiento.'
+            });
+        } finally {
+            setPdfGeneratingId(null);
+        }
+    };
+
     const handleDelete = (planilla: Planilla) => {
         Alert.alert(
             'Confirmar eliminación',
@@ -414,6 +503,7 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
         const esDiaAnterior = esPlanillaDiaAnterior(planilla);
         const puedeEditar = acceso === 'admin' || !esDiaAnterior;
 
+        setPctDraft({});
         setFormData({
             ruta: planilla.ruta || '',
             guia: planilla.guia || '',
@@ -448,6 +538,7 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
     };
 
     const resetForm = () => {
+        setPctDraft({});
         setFormData({
             ruta: '',
             guia: '',
@@ -525,6 +616,25 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
                         {planilla.ruta || 'Sin ruta'} - {planilla.guia || 'Sin guía'}
                     </Text>
                     <View style={style.planillaActions}>
+                        <TouchableOpacity
+                            onPress={(e) => {
+                                e.stopPropagation();
+                                handleDownloadPdf(planilla);
+                            }}
+                            style={[style.actionButton, { flexDirection: 'row', alignItems: 'center' }]}
+                            disabled={pdfGeneratingId === planilla._id}
+                        >
+                            {pdfGeneratingId === planilla._id ? (
+                                <ActivityIndicator size="small" color="#28a745" />
+                            ) : (
+                                <>
+                                    <FontAwesome name="download" style={[style.actionIcon, { color: '#28a745' }]} />
+                                    <Text style={{ fontSize: 13, color: '#28a745', marginLeft: 6, fontWeight: '600' }}>
+                                        Descargar
+                                    </Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
                         {puedeEditar && (
                             <TouchableOpacity
                                 onPress={(e) => {
@@ -589,6 +699,7 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
         const esDiaAnterior = isEdit && state.editingPlanilla ? esPlanillaDiaAnterior(state.editingPlanilla) : false;
         const puedeEditar = acceso === 'admin' || !esDiaAnterior;
         const esSoloLectura = isEdit && acceso === 'conductor' && esDiaAnterior;
+        const capKlForm = maxInventarioKl();
 
         return (
             <Modal
@@ -759,10 +870,39 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
                             );
                         })()}
 
-                        <View style={style.modalHeader}>
-                            <Text style={style.modalTitle}>
+                        <View style={[style.modalHeader, { alignItems: 'center' }]}>
+                            <Text style={[style.modalTitle, { flex: 1, marginRight: 8 }]}>
                                 {esSoloLectura ? 'Ver Planilla' : (isEdit ? 'Editar Planilla' : 'Nueva Planilla')}
                             </Text>
+                            {isEdit && state.editingPlanilla && (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        const merged: Planilla = {
+                                            ...state.editingPlanilla!,
+                                            ...formData
+                                        };
+                                        handleDownloadPdf(merged);
+                                    }}
+                                    disabled={pdfGeneratingId === state.editingPlanilla._id}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginRight: 12,
+                                        opacity: pdfGeneratingId === state.editingPlanilla._id ? 0.5 : 1
+                                    }}
+                                >
+                                    {pdfGeneratingId === state.editingPlanilla._id ? (
+                                        <ActivityIndicator size="small" color="#28a745" />
+                                    ) : (
+                                        <>
+                                            <FontAwesome name="download" style={{ fontSize: 16, color: '#28a745' }} />
+                                            <Text style={{ fontSize: 13, color: '#28a745', marginLeft: 6, fontWeight: '600' }}>
+                                                Descargar
+                                            </Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            )}
                             <TouchableOpacity
                                 onPress={() => {
                                     setState(prev => ({
@@ -789,10 +929,14 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
                                 {acceso === 'conductor' && renderPedidosList()}
 
                                 {/* Campos del formulario principal */}
-                                <Text style={style.formLabel}>No. Planilla</Text>
+                                <Text style={style.formLabel}>No. Planilla (automático)</Text>
                                 <TextInput
                                     style={[style.input, { backgroundColor: '#f0f0f0' }]}
-                                    value={isEdit ? formData.no_planilla?.toString() : getNextPlanillaNumber().toString()}
+                                    value={
+                                        isEdit
+                                            ? (formData.no_planilla != null ? String(formData.no_planilla) : '')
+                                            : `Siguiente estimado: ${getNextPlanillaNumber()} (asignado al guardar)`
+                                    }
                                     editable={false}
                                 />
 
@@ -842,18 +986,23 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
                                     editable={false}
                                 />
 
-                                <Text style={style.formLabel}>Kilometraje Inicial</Text>
+                                <Text style={style.formLabel}>Kilometraje Inicial (máx. {KM_MAX_DIGITS} dígitos)</Text>
                                 <TextInput
                                     style={[style.input, esSoloLectura && { backgroundColor: '#f0f0f0' }]}
-                                    keyboardType="decimal-pad"
-                                    value={formData.kilometraje_inicial !== undefined && formData.kilometraje_inicial !== null ? formData.kilometraje_inicial.toString() : ''}
+                                    keyboardType="number-pad"
+                                    value={formData.kilometraje_inicial !== undefined && formData.kilometraje_inicial !== null ? String(formData.kilometraje_inicial) : ''}
                                     onChangeText={(text) => {
-                                        const valor = parseFloat(text) || undefined;
+                                        const valor = parseKmIntFromInput(text);
                                         setFormData(prev => {
-                                            // Si el kilometraje final existe y es mayor al nuevo inicial, ajustarlo
-                                            const nuevoFinal = prev.kilometraje_final !== undefined && prev.kilometraje_final !== null && valor !== undefined && prev.kilometraje_final > valor
-                                                ? valor
-                                                : prev.kilometraje_final;
+                                            let nuevoFinal = prev.kilometraje_final;
+                                            if (
+                                                valor !== undefined &&
+                                                nuevoFinal !== undefined &&
+                                                nuevoFinal !== null &&
+                                                valor >= nuevoFinal
+                                            ) {
+                                                nuevoFinal = undefined;
+                                            }
                                             return {
                                                 ...prev,
                                                 kilometraje_inicial: valor,
@@ -864,24 +1013,26 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
                                     editable={!esSoloLectura}
                                 />
 
-                                <Text style={style.formLabel}>Kilometraje Final</Text>
+                                <Text style={style.formLabel}>Kilometraje Final (debe ser mayor al inicial)</Text>
                                 <TextInput
                                     style={[style.input, esSoloLectura && { backgroundColor: '#f0f0f0' }]}
-                                    keyboardType="decimal-pad"
-                                    value={formData.kilometraje_final !== undefined && formData.kilometraje_final !== null ? formData.kilometraje_final.toString() : ''}
+                                    keyboardType="number-pad"
+                                    value={formData.kilometraje_final !== undefined && formData.kilometraje_final !== null ? String(formData.kilometraje_final) : ''}
                                     onChangeText={(text) => {
-                                        const valor = parseFloat(text) || undefined;
+                                        const valor = parseKmIntFromInput(text);
                                         setFormData(prev => {
-                                            // Validar que el final no sea mayor al inicial
-                                            if (valor !== undefined && prev.kilometraje_inicial !== undefined && prev.kilometraje_inicial !== null) {
-                                                if (valor > prev.kilometraje_inicial) {
-                                                    Toast.show({
-                                                        type: 'error',
-                                                        text1: 'Error',
-                                                        text2: 'El kilometraje final no puede ser mayor al inicial'
-                                                    });
-                                                    return prev;
-                                                }
+                                            if (
+                                                valor !== undefined &&
+                                                prev.kilometraje_inicial !== undefined &&
+                                                prev.kilometraje_inicial !== null &&
+                                                valor <= prev.kilometraje_inicial
+                                            ) {
+                                                Toast.show({
+                                                    type: 'error',
+                                                    text1: 'Error',
+                                                    text2: 'El kilometraje final debe ser mayor al inicial'
+                                                });
+                                                return prev;
                                             }
                                             return { ...prev, kilometraje_final: valor };
                                         });
@@ -906,82 +1057,142 @@ const Planillas: React.FC<PlanillaProps> = ({ navigation }) => {
                                 />
 
                                 {/* Campos de inventario */}
-                                <Text style={style.formLabel}>Inventario Inicial % (máx. 100)</Text>
+                                <Text style={style.formLabel}>Inventario Inicial % (0–100, un decimal)</Text>
                                 <TextInput
                                     style={[style.input, esSoloLectura && { backgroundColor: '#f0f0f0' }]}
                                     keyboardType="decimal-pad"
-                                    value={formData.inventario_inicial_porcentaje !== undefined && formData.inventario_inicial_porcentaje !== null ? formData.inventario_inicial_porcentaje.toString() : ''}
+                                    value={
+                                        pctDraft.ini !== undefined
+                                            ? pctDraft.ini
+                                            : formData.inventario_inicial_porcentaje === undefined ||
+                                              formData.inventario_inicial_porcentaje === null
+                                              ? ''
+                                              : String(formData.inventario_inicial_porcentaje)
+                                    }
                                     onChangeText={(text) => {
-                                        const valor = parseFloat(text) || undefined;
-                                        if (valor !== undefined && valor > 100) {
+                                        const t = text.replace(',', '.');
+                                        if (!/^\d{0,3}(\.\d{0,1})?$/.test(t)) return;
+                                        setPctDraft(d => ({ ...d, ini: t }));
+                                        if (t === '' || t === '.') {
+                                            setFormData(prev => ({ ...prev, inventario_inicial_porcentaje: undefined }));
+                                            return;
+                                        }
+                                        if (t.endsWith('.')) {
+                                            setFormData(prev => ({ ...prev, inventario_inicial_porcentaje: undefined }));
+                                            return;
+                                        }
+                                        const n = parseFloat(t);
+                                        if (n > 100) {
                                             Toast.show({
                                                 type: 'error',
                                                 text1: 'Error',
-                                                text2: 'El inventario no puede ser mayor a 100'
+                                                text2: 'El porcentaje no puede ser mayor a 100'
                                             });
                                             return;
                                         }
-                                        setFormData(prev => ({ ...prev, inventario_inicial_porcentaje: valor }));
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            inventario_inicial_porcentaje: Math.round(n * 10) / 10
+                                        }));
                                     }}
                                     editable={!esSoloLectura}
                                 />
 
-                                <Text style={style.formLabel}>Inventario Final % (máx. 100)</Text>
+                                <Text style={style.formLabel}>Inventario Final % (0–100, un decimal)</Text>
                                 <TextInput
                                     style={[style.input, esSoloLectura && { backgroundColor: '#f0f0f0' }]}
                                     keyboardType="decimal-pad"
-                                    value={formData.inventario_final_porcentaje !== undefined && formData.inventario_final_porcentaje !== null ? formData.inventario_final_porcentaje.toString() : ''}
+                                    value={
+                                        pctDraft.fin !== undefined
+                                            ? pctDraft.fin
+                                            : formData.inventario_final_porcentaje === undefined ||
+                                              formData.inventario_final_porcentaje === null
+                                              ? ''
+                                              : String(formData.inventario_final_porcentaje)
+                                    }
                                     onChangeText={(text) => {
-                                        const valor = parseFloat(text) || undefined;
-                                        if (valor !== undefined && valor > 100) {
+                                        const t = text.replace(',', '.');
+                                        if (!/^\d{0,3}(\.\d{0,1})?$/.test(t)) return;
+                                        setPctDraft(d => ({ ...d, fin: t }));
+                                        if (t === '' || t === '.') {
+                                            setFormData(prev => ({ ...prev, inventario_final_porcentaje: undefined }));
+                                            return;
+                                        }
+                                        if (t.endsWith('.')) {
+                                            setFormData(prev => ({ ...prev, inventario_final_porcentaje: undefined }));
+                                            return;
+                                        }
+                                        const n = parseFloat(t);
+                                        if (n > 100) {
                                             Toast.show({
                                                 type: 'error',
                                                 text1: 'Error',
-                                                text2: 'El inventario no puede ser mayor a 100'
+                                                text2: 'El porcentaje no puede ser mayor a 100'
                                             });
                                             return;
                                         }
-                                        setFormData(prev => ({ ...prev, inventario_final_porcentaje: valor }));
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            inventario_final_porcentaje: Math.round(n * 10) / 10
+                                        }));
                                     }}
                                     editable={!esSoloLectura}
                                 />
 
-                                <Text style={style.formLabel}>Inventario Inicial KL (máx. 100)</Text>
+                                <Text style={style.formLabel}>
+                                    Inventario Inicial KL (máx. {capKlForm.toLocaleString('es-CO')} según capacidad vehículo)
+                                </Text>
                                 <TextInput
                                     style={[style.input, esSoloLectura && { backgroundColor: '#f0f0f0' }]}
                                     keyboardType="decimal-pad"
-                                    value={formData.inventario_inicial_kl !== undefined && formData.inventario_inicial_kl !== null ? formData.inventario_inicial_kl.toString() : ''}
+                                    value={formData.inventario_inicial_kl !== undefined && formData.inventario_inicial_kl !== null ? String(formData.inventario_inicial_kl) : ''}
                                     onChangeText={(text) => {
-                                        const valor = parseFloat(text) || undefined;
-                                        if (valor !== undefined && valor > 100) {
+                                        const sanitized = text.replace(/,/g, '.').replace(/[^\d.]/g, '');
+                                        const parts = sanitized.split('.');
+                                        let norm = parts[0] || '';
+                                        if (parts.length > 1) {
+                                            norm += '.' + parts.slice(1).join('').replace(/\./g, '').slice(0, 3);
+                                        }
+                                        const n =
+                                            norm === '' || norm === '.' ? undefined : parseFloat(norm);
+                                        if (n !== undefined && n > capKlForm) {
                                             Toast.show({
                                                 type: 'error',
                                                 text1: 'Error',
-                                                text2: 'El inventario no puede ser mayor a 100'
+                                                text2: `No puede superar la capacidad del vehículo (${capKlForm})`
                                             });
                                             return;
                                         }
-                                        setFormData(prev => ({ ...prev, inventario_inicial_kl: valor }));
+                                        setFormData(prev => ({ ...prev, inventario_inicial_kl: n }));
                                     }}
                                     editable={!esSoloLectura}
                                 />
 
-                                <Text style={style.formLabel}>Inventario Final KL (máx. 100)</Text>
+                                <Text style={style.formLabel}>
+                                    Inventario Final KL (máx. {capKlForm.toLocaleString('es-CO')} según capacidad vehículo)
+                                </Text>
                                 <TextInput
                                     style={[style.input, esSoloLectura && { backgroundColor: '#f0f0f0' }]}
                                     keyboardType="decimal-pad"
-                                    value={formData.inventario_final_kl !== undefined && formData.inventario_final_kl !== null ? formData.inventario_final_kl.toString() : ''}
+                                    value={formData.inventario_final_kl !== undefined && formData.inventario_final_kl !== null ? String(formData.inventario_final_kl) : ''}
                                     onChangeText={(text) => {
-                                        const valor = parseFloat(text) || undefined;
-                                        if (valor !== undefined && valor > 100) {
+                                        const sanitized = text.replace(/,/g, '.').replace(/[^\d.]/g, '');
+                                        const parts = sanitized.split('.');
+                                        let norm = parts[0] || '';
+                                        if (parts.length > 1) {
+                                            norm += '.' + parts.slice(1).join('').replace(/\./g, '').slice(0, 3);
+                                        }
+                                        const n =
+                                            norm === '' || norm === '.' ? undefined : parseFloat(norm);
+                                        if (n !== undefined && n > capKlForm) {
                                             Toast.show({
                                                 type: 'error',
                                                 text1: 'Error',
-                                                text2: 'El inventario no puede ser mayor a 100'
+                                                text2: `No puede superar la capacidad del vehículo (${capKlForm})`
                                             });
                                             return;
                                         }
-                                        setFormData(prev => ({ ...prev, inventario_final_kl: valor }));
+                                        setFormData(prev => ({ ...prev, inventario_final_kl: n }));
                                     }}
                                     editable={!esSoloLectura}
                                 />

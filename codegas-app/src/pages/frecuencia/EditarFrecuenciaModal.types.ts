@@ -8,11 +8,15 @@ export interface PedidoFrecuencia {
     forma: 'cantidad' | 'monto' | 'lleno';
     cantidadKl?: number;
     cantidadPrecio?: number;
-    frecuencia: 'semanal' | 'quincenal' | 'mensual';
+    frecuencia: 'semanal' | 'quincenal' | 'mensual' | 'tressemanas';
     dia1?: string | number;
     dia2?: string | number;
     fecha_creacion?: string;
     punto_direccion?: string;
+    /** Nombre del punto (puntos.nombre o place_name) */
+    punto_nombre?: string;
+    /** Nombre de la zona (zonas.nombre) */
+    zona_nombre?: string;
     punto_capacidad?: string;
     puntoId?: number;
     grupo_id?: number; // ID del grupo de frecuencia al que pertenece
@@ -22,7 +26,7 @@ export interface FrecuenciaEditData {
     forma: 'cantidad' | 'monto' | 'lleno';
     cantidadKl?: number;
     cantidadPrecio?: number;
-    frecuencia: 'semanal' | 'quincenal' | 'mensual';
+    frecuencia: 'semanal' | 'quincenal' | 'mensual' | 'tressemanas';
     dia1?: string | number;
     dia2?: string | number;
 }
@@ -45,7 +49,7 @@ export interface EditFrecuenciaRequest {
     forma: 'cantidad' | 'monto' | 'lleno';
     cantidadKl?: number;
     cantidadPrecio?: number;
-    frecuencia: 'semanal' | 'quincenal' | 'mensual';
+    frecuencia: 'semanal' | 'quincenal' | 'mensual' | 'tressemanas';
     dia1?: string;
     dia2?: string;
 }

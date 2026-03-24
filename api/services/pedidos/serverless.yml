@@ -271,6 +271,7 @@ generateFacturaPDF:
   package:
     include:
       - services/pedidos/src/generate-factura-pdf.js
+      - services/pedidos/src/pdf-remision-contrato.js
       - lib/errors/database-error.js
       - lib/pdf.js
       - lib/connection-pg.js
@@ -288,6 +289,7 @@ sendFacturaEmail:
     include:
       - services/pedidos/src/send-factura-email.js
       - services/pedidos/src/generate-factura-pdf.js
+      - services/pedidos/src/pdf-remision-contrato.js
       - lib/errors/database-error.js
       - lib/nodemailer-config.js
       - lib/pdf.js

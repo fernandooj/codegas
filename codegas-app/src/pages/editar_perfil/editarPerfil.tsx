@@ -593,8 +593,8 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         // Función recursiva para buscar VEO en todos los niveles
         const buscarVeoRecursivamente = (veosArray: any[], targetKey: string): any => {
             for (let veo of veosArray) {
-                // Comparar keys como strings
-                if (String(veo.key) === String(targetKey)) {
+                const t = String(targetKey);
+                if (String(veo.key) === t || String(veo._id) === t) {
                     return veo;
                 }
                 // Buscar recursivamente en children
@@ -616,9 +616,12 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             console.log('🔍 asignarVeo - VEO encontrado:', veoEncontrado);
             console.log('🔍 asignarVeo - label del VEO:', veoEncontrado.label);
 
-            // Solo actualizar el estado local
-            // La asignación real se hace cuando se presiona "Actualizar Usuario"
-            updateState({ veo: veoEncontrado.label, modalCliente: false, idVeo });
+            // idPadre en backend = _id del comercial (no el índice/key auxiliar)
+            const idComercial =
+                veoEncontrado._id != null && veoEncontrado._id !== ''
+                    ? String(veoEncontrado._id)
+                    : String(idVeo);
+            updateState({ veo: veoEncontrado.label, modalCliente: false, idVeo: idComercial });
         } else {
             console.log('❌ asignarVeo - VEO no encontrado con idVeo:', idVeo);
             console.log('❌ asignarVeo - Keys disponibles:', veos.map(v => v.key));
@@ -774,8 +777,8 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     // Convertir lat/lng a coordenadas POINT si están disponibles
                     let location = punto.location || null;
                     if (punto.lat && punto.lng && punto.lat.trim() !== '' && punto.lng.trim() !== '') {
-                        // Formato POINT de PostgreSQL: (lng, lat)
-                        location = `(${punto.lng}, ${punto.lat})`;
+                        // Mismo orden que los campos del formulario (lat, lng) para el backend
+                        location = `(${punto.lat}, ${punto.lng})`;
                     }
 
                     return {
@@ -804,8 +807,8 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                     // Convertir lat/lng a coordenadas POINT si están disponibles
                     let location = punto.location || null;
                     if (punto.lat && punto.lng && punto.lat.trim() !== '' && punto.lng.trim() !== '') {
-                        // Formato POINT de PostgreSQL: (lng, lat)
-                        location = `(${punto.lng}, ${punto.lat})`;
+                        // Mismo orden que los campos del formulario (lat, lng) para el backend
+                        location = `(${punto.lat}, ${punto.lng})`;
                     }
 
                     return {
@@ -909,44 +912,6 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             })
     }, [state.tipoAcceso, updateState, navigation]);
 
-
-    /////////////////////////////////////////////////////////////////////////
-    //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
-    ///////////////////////////////////////////////////////////////////////
-    const handleSubmit: HandleSubmitFunction = useCallback((esEditar?: string) => {
-        const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = state;
-        if (acceso === "cliente") {
-            if (razon_social == "" || direccion_factura == "" || nombre == "" || email == "" || tipo == "" || ubicaciones.length < 1) {
-                Alert.alert(
-                    'Todos los campos son obligatorios',
-                    '',
-                    [
-                    ],
-                    { cancelable: false }
-                )
-            } else if (celular.length < 7) {
-                Toast.show({ type: 'error', text1: 'Telefono incorrecto' })
-
-            } else if (cedula.length < 5) {
-                Toast.show({ type: 'error', text1: 'Cedula incorrecta' })
-            } else {
-                esEditar == "editar" ? editarUsuario() : guardarUsuario()
-            }
-        } else {
-            if (cedula == "" || email == "" || nombre == "" || celular == "" || !imagen) {
-                Alert.alert(
-                    'Todos los campos son obligatorios',
-                    "",
-                    [
-                    ],
-                    { cancelable: false }
-                )
-            } else {
-                esEditar == "editar" ? editarUsuario() : guardarUsuario();
-            }
-        }
-    }, [state.razon_social, state.cedula, state.direccion_factura, state.nombre, state.email, state.celular, state.tipo, state.acceso, state.codt, state.imagen, state.ubicaciones, state.valorUnitario]);
-
     /////////////////////////////////////////////////////////////////////////
     //////////////         ELIMINO LA UBICACION SELECCIONADA
     ///////////////////////////////////////////////////////////////////////
@@ -1033,6 +998,12 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
         };
         const generatedPassword = generateSecurePassword();
 
+        const idPadreNum =
+            idVeo != null && String(idVeo).trim() !== ''
+                ? parseInt(String(idVeo), 10)
+                : NaN;
+        const idPadrePayload = Number.isFinite(idPadreNum) ? idPadreNum : null;
+
         signUp({
             razon_social,
             cedula,
@@ -1051,7 +1022,7 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
             descuento: null,
             tokenPhone: null,
             codigoRegistro: null,
-            idPadre: idVeo || null
+            idPadre: idPadrePayload
         })
             .then(async (e) => {
                 if (e.status) {
@@ -1208,6 +1179,44 @@ const VerPerfil: React.FC<EditarPerfilProps> = ({ navigation, route }) => {
                 updateState({ cargando: false });
             })
     }, [state.razon_social, state.cedula, state.direccion_factura, state.nombre, state.email, state.celular, state.tipo, state.acceso, state.codt, state.ubicaciones, state.imagen, state.codMagister, state.valorUnitario, state.idVeo, updateState, navigation, createFirebaseUser, context.updateUserData]);
+
+    /////////////////////////////////////////////////////////////////////////
+    //////////////         VERIFICO QUE EL USUARIO TENGA TODOS LOS DATOS
+    //////////////  (después de guardarUsuario/editarUsuario: evita stale idVeo)
+    ///////////////////////////////////////////////////////////////////////
+    const handleSubmit: HandleSubmitFunction = useCallback((esEditar?: string) => {
+        const { razon_social, cedula, direccion_factura, nombre, email, celular, tipo, acceso, codt, imagen, ubicaciones, valorUnitario } = state;
+        if (acceso === "cliente") {
+            if (razon_social == "" || direccion_factura == "" || nombre == "" || email == "" || tipo == "" || ubicaciones.length < 1) {
+                Alert.alert(
+                    'Todos los campos son obligatorios',
+                    '',
+                    [
+                    ],
+                    { cancelable: false }
+                )
+            } else if (celular.length < 7) {
+                Toast.show({ type: 'error', text1: 'Telefono incorrecto' })
+
+            } else if (cedula.length < 5) {
+                Toast.show({ type: 'error', text1: 'Cedula incorrecta' })
+            } else {
+                esEditar == "editar" ? editarUsuario() : guardarUsuario()
+            }
+        } else {
+            if (cedula == "" || email == "" || nombre == "" || celular == "" || !imagen) {
+                Alert.alert(
+                    'Todos los campos son obligatorios',
+                    "",
+                    [
+                    ],
+                    { cancelable: false }
+                )
+            } else {
+                esEditar == "editar" ? editarUsuario() : guardarUsuario();
+            }
+        }
+    }, [state.razon_social, state.cedula, state.direccion_factura, state.nombre, state.email, state.celular, state.tipo, state.acceso, state.codt, state.imagen, state.ubicaciones, state.valorUnitario, guardarUsuario, editarUsuario]);
 
     const edicionExitosa: EdicionExitosaFunction = useCallback(async (nombre: string) => {
         updateState({ cargando: false });

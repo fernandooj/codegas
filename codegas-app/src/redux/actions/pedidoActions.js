@@ -1257,6 +1257,32 @@ const obtenerFirmas = async (pedidoId) => {
   }
 };
 
+/**
+ * Obtiene URL del PDF remisión+contrato (2 págs.) y lo comparte / guarda vía diálogo nativo.
+ */
+const shareFacturaPedidoPdf = async (pedidoId) => {
+  const { Platform, Share } = require('react-native');
+  const RNFSModule = require('react-native-fs');
+  const RNFS = RNFSModule.default || RNFSModule;
+  const id = String(pedidoId);
+  const res = await axios.get(`/ped/pedido/${id}/factura-pdf`);
+  if (!res.data?.status || !res.data.pdfUrl) {
+    throw new Error(res.data?.message || 'No se pudo generar el PDF');
+  }
+  const dest = `${RNFS.DocumentDirectoryPath}/Remision_pedido_${id}.pdf`;
+  const dl = await RNFS.downloadFile({ fromUrl: res.data.pdfUrl, toFile: dest }).promise;
+  if (dl.statusCode < 200 || dl.statusCode >= 300) {
+    throw new Error('Error al descargar el PDF');
+  }
+  const url = Platform.OS === 'android' ? `file://${dest}` : dest;
+  await Share.share({
+    title: 'Remisión y resumen de contrato',
+    message: `Remisión / contrato pedido #${id}`,
+    url
+  });
+  return { status: true };
+};
+
 // Acción para enviar email con factura PDF adjunta
 const sendFacturaEmail = async (pedidoId, email) => {
   try {
@@ -1328,5 +1354,6 @@ export {
   finalizarPedidoHTTP,
   guardarFirmas,
   obtenerFirmas,
-  sendFacturaEmail
+  sendFacturaEmail,
+  shareFacturaPedidoPdf
 };

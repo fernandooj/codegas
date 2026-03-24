@@ -227,6 +227,14 @@ module.exports.main = async (event) => {
     pass
   } = body;
 
+  let cleanIdPadre = null;
+  if (idPadre !== undefined && idPadre !== null && idPadre !== '') {
+    const n = parseInt(String(idPadre), 10);
+    if (!Number.isNaN(n)) {
+      cleanIdPadre = n;
+    }
+  }
+
   const cleanRazonSocial = cleanAndNormalizeString(razon_social);
   const cleanNombre = cleanAndNormalizeString(nombre);
   const cleanEmail = email ? email.toLowerCase().trim() : email;
@@ -261,7 +269,7 @@ module.exports.main = async (event) => {
   try {
     const client = await poolConection.connect();
     //await client.query('BEGIN');
-    const { rows } = await client.query(SAVE_USER, [cleanRazonSocial, uid, cedula, direccion_factura, cleanEmail, cleanNombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, cleanValorUnitario, idPadre]);
+    const { rows } = await client.query(SAVE_USER, [cleanRazonSocial, uid, cedula, direccion_factura, cleanEmail, cleanNombre, celular, tipo, descuento, acceso, tokenPhone, token, codMagister, codt, codigoRegistro, cleanValorUnitario, cleanIdPadre]);
 
     // Enviar email de bienvenida si el usuario se creó exitosamente
     if (rows[0].save_users) {

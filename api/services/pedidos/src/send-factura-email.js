@@ -57,7 +57,7 @@ const generateEmailTemplate = (pedidoData) => {
                                         Nos complace informarle que su pedido <strong>#${pedidoId}</strong> ha sido entregado exitosamente.
                                     </p>
                                     <p style="margin: 16px 0 0 0; color: #1e293b; font-size: 16px; line-height: 1.8;">
-                                        Adjunto encontrará la <strong>remisión</strong> con todos los detalles de la entrega.
+                                        Adjunto encontrará la <strong>remisión y el resumen de contrato</strong> (documento PDF de 2 páginas) con los detalles de la entrega y las condiciones del servicio.
                                     </p>
                                 </div>
 
@@ -113,7 +113,7 @@ const generateEmailTemplate = (pedidoData) => {
                                 <!-- Información Adicional -->
                                 <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 6px;">
                                     <p style="margin: 0; color: #92400e; font-size: 14px;">
-                                        <strong>📎 Documento Adjunto:</strong> En el archivo PDF adjunto encontrará la información completa de su pedido, incluyendo detalles del servicio, datos de llenado de tanques (si aplica), y lista de chequeo de seguridad.
+                                        <strong>📎 Documento Adjunto:</strong> PDF oficial Codegas: página 1 remisión / datos de entrega; página 2 resumen del contrato de prestación del servicio y punto de pago.
                                     </p>
                                 </div>
 
@@ -220,7 +220,7 @@ const sendFacturaEmail = async (pedidoId, emailDestinatario) => {
                 address: EMAIL_USER
             },
             to: emailToSend,
-            subject: `✅ Pedido #${pedido._id} Entregado Exitosamente - Remisión Adjunta`,
+            subject: `✅ Pedido #${pedido._id} entregado — Remisión y resumen de contrato (PDF)`,
             html: emailHtml,
             attachments: [
                 {
@@ -262,7 +262,8 @@ module.exports.main = async (event) => {
         'Content-Type': 'application/json',
     };
 
-    if (event.httpMethod === 'OPTIONS') {
+    const method = event.httpMethod || event.requestContext?.http?.method;
+    if (method === 'OPTIONS') {
         return {
             statusCode: 200,
             headers,

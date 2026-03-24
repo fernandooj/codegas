@@ -70,14 +70,14 @@ module.exports.updateTanques = async (event) => {
             estado
         } = body;
 
-        // Validar que tanque_id esté presente
-        if (!tanque_id) {
+        const tanqueIdNum = parseInt(tanque_id, 10);
+        if (!Number.isFinite(tanqueIdNum) || tanqueIdNum <= 0) {
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({
                     status: false,
-                    message: 'tanque_id es requerido'
+                    message: 'tanque_id es requerido y debe ser un entero positivo'
                 })
             };
         }
@@ -119,8 +119,10 @@ module.exports.updateTanques = async (event) => {
             tanquesArray = [];
         }
 
-        // Buscar si ya existe un tanque con ese tanque_id
-        const existingIndex = tanquesArray.findIndex(t => t.tanque_id === parseInt(tanque_id));
+        // Buscar si ya existe un tanque con ese tanque_id (JSON puede traer número o string)
+        const existingIndex = tanquesArray.findIndex(
+            (t) => Number(t.tanque_id) === tanqueIdNum
+        );
 
         if (existingIndex >= 0) {
             // Actualizar el tanque existente - hacer merge con los datos existentes
@@ -129,7 +131,7 @@ module.exports.updateTanques = async (event) => {
             // Construir el objeto del tanque actualizado, preservando los datos existentes
             const updatedTanque = {
                 ...existingTanque, // Preservar todos los datos existentes
-                tanque_id: parseInt(tanque_id) // Asegurar que el ID esté correcto
+                tanque_id: tanqueIdNum // Asegurar que el ID esté correcto
             };
 
             // Solo actualizar los campos que se envían (no son undefined)
@@ -162,7 +164,7 @@ module.exports.updateTanques = async (event) => {
         } else {
             // Agregar nuevo tanque - construir objeto completo
             const tanqueData = {
-                tanque_id: parseInt(tanque_id),
+                tanque_id: tanqueIdNum,
                 tipo_suministro: tipo_suministro || null,
                 presion_inicial: presion_inicial !== undefined && presion_inicial !== null ? parseFloat(presion_inicial) : null,
                 presion_final: presion_final !== undefined && presion_final !== null ? parseFloat(presion_final) : null,

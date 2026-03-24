@@ -140,7 +140,11 @@ const ModalVeos: React.FC<ModalVeosProps> = ({
             console.log('❌ ModalVeos - VEO no encontrado con key:', veoKey);
         }
 
-        onSelectVeo(veoKey);
+        if (veoSeleccionado) {
+            onSelectVeo(String(veoSeleccionado._id));
+        } else {
+            onSelectVeo(veoKey);
+        }
         closeModal();
     }, [onSelectVeo, closeModal, veos]);
 

@@ -1,4 +1,5 @@
 const { poolConection } = require('../../../lib/connection-pg.js')
+const { normalizePuntoLocationString } = require('../../../lib/normalize-punto-location.js')
 
 /** save point */
 const SAVE_POINT = 'SELECT * FROM save_puntos($1, $2, $3, $4, $5, $6, $7, $8, $9)';
@@ -31,11 +32,9 @@ module.exports.main = async (event) => {
       // Convertir location a formato point de PostgreSQL
       let coordenadas = null;
       if (location && typeof location === 'string' && location.trim() !== '') {
-        // Si viene como string "(lng, lat)", usar directamente
-        coordenadas = location;
+        coordenadas = normalizePuntoLocationString(location);
       } else if (location && typeof location === 'object' && location.lat && location.lng) {
-        // Si viene como objeto {lat, lng}, convertir a formato point
-        coordenadas = `(${location.lng}, ${location.lat})`;
+        coordenadas = `(${location.lat}, ${location.lng})`;
       }
 
       return client.query(SAVE_POINT, [direccion, capacidad, observacion, punto, coordenadas, place_name, idZona, idCliente, idPadre]);

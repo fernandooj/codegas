@@ -15,6 +15,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     onClose,
     pedidoId, // Agregar pedidoId
     entregado,
+    modoEdicion = false,
     imagenCerrar,
     kilos: kilosProps,
     factura: facturaProps,
@@ -31,23 +32,36 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     onGuardarNovedad
 }) => {
 
-    // Limpiar campos cuando el modal se abre
+    const normalizarFormaPago = (value?: string) => {
+        const raw = (value || '').toString().trim().toLowerCase();
+        if (raw === 'contado') return 'Contado';
+        if (raw === 'credito' || raw === 'crédito') return 'Credito';
+        return '';
+    };
+
+    // Inicializar campos cuando el modal se abre
     useEffect(() => {
         if (visible) {
-            setKilos('');
-            setFactura('');
-            setValorTotal('');
-            setValorTotalRaw('');
-            setRemision('');
-            setFormaPago('');
+            const kilosInicial = kilosProps ? String(kilosProps) : '';
+            const facturaInicial = facturaProps ? String(facturaProps) : '';
+            const valorTotalInicial = valorTotalProps ? String(valorTotalProps) : '';
+            const valorTotalNumerico = valorTotalInicial.replace(/[^0-9]/g, '');
+            const remisionInicial = remisionProps ? String(remisionProps) : '';
+
+            setKilos(kilosInicial);
+            setFactura(facturaInicial);
+            setValorTotalRaw(valorTotalNumerico);
+            setValorTotal(valorTotalNumerico ? formatCurrency(valorTotalNumerico) : '');
+            setRemision(remisionInicial);
+            setFormaPago(normalizarFormaPago(formaPagoProps));
             setNovedad('');
-            setImagen(undefined);
+            setImagen(imagenCerrar || undefined);
             // Resetear el flag de confirmación cuando se abre el modal
             confirmacionAlertShownRef.current = false;
             // Resetear el estado de loading
             setIsClosing(false);
         }
-    }, [visible]);
+    }, [visible, kilosProps, facturaProps, valorTotalProps, remisionProps, formaPagoProps, imagenCerrar]);
 
     // Estados locales para el formulario
     const [kilos, setKilos] = useState(kilosProps || '');
@@ -77,6 +91,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
     
     // Estado para controlar el preloader durante el cierre
     const [isClosing, setIsClosing] = useState(false);
+    const esModoEdicion = !!modoEdicion;
 
     const convertImageToBase64 = async (imageUri: string): Promise<string | null> => {
         try {
@@ -114,6 +129,47 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
             return;
         }
 
+        const guardarEdicionSinFirmas = async () => {
+            setIsClosing(true);
+            try {
+                let imagenParaEditar = imagen;
+                if (imagenParaEditar && !imagenParaEditar.startsWith('data:')) {
+                    const imagenBase64 = await convertImageToBase64(imagenParaEditar);
+                    if (imagenBase64) {
+                        imagenParaEditar = imagenBase64;
+                    }
+                }
+
+                await onCerrarPedido({
+                    kilos,
+                    factura,
+                    valor_total: valorTotalRaw,
+                    remision,
+                    forma_pago: formaPago,
+                    novedad,
+                    imagen: imagenParaEditar
+                }, pedidoId, true);
+                setIsClosing(false);
+            } catch (error: any) {
+                setIsClosing(false);
+                const errorText = formatFullError(error);
+                Alert.alert(
+                    'Error al editar cierre',
+                    errorText,
+                    [
+                        {
+                            text: 'Copiar',
+                            onPress: () => {
+                                copyToClipboard(errorText);
+                            }
+                        },
+                        { text: 'OK' }
+                    ],
+                    { cancelable: true }
+                );
+            }
+        };
+
         // Validación de cálculo: kilos × valor unitario vs valor total factura
         if (valor_unitario && kilos) {
             const kilosNumericos = parseFloat(kilos.replace(',', '.')) || 0;
@@ -140,12 +196,24 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                         {
                             text: 'Sí, cerrar',
                             style: 'destructive',
-                            onPress: () => prepararParaFirmas()
+                            onPress: () => {
+                                if (esModoEdicion) {
+                                    guardarEdicionSinFirmas();
+                                    return;
+                                }
+                                prepararParaFirmas();
+                            }
                         }
                     ]
                 );
                 return;
             }
+        }
+
+        // Si es edición de pedido ya cerrado, guardar directamente SIN firmas
+        if (esModoEdicion) {
+            await guardarEdicionSinFirmas();
+            return;
         }
 
         // Si no hay diferencia significativa, abrir modal de firmas
@@ -267,8 +335,8 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
 
             // 4. Mostrar mensaje de éxito
             const mensajeExito = firmasGuardadas && (firmasGuardadas.firmaConductor || firmasGuardadas.firmaUsuario)
-                ? 'El pedido se ha cerrado correctamente. Las firmas se han guardado y el email con la factura ha sido enviado.'
-                : 'El pedido se ha cerrado correctamente. El email con la factura ha sido enviado.';
+                ? 'El pedido se ha cerrado correctamente. Las firmas se han guardado y se envió el correo con el PDF de remisión y resumen de contrato.'
+                : 'El pedido se ha cerrado correctamente. Se envió el correo con el PDF de remisión y resumen de contrato.';
 
             Alert.alert(
                 '✅ Pedido Cerrado',
@@ -655,14 +723,14 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                     fontWeight: 'bold',
                                     color: '#333'
                                 }}>
-                                    {entregado ? 'Pedido Cerrado' : 'Cerrar Pedido'}
+                                    {entregado ? 'Editar Cierre' : 'Cerrar Pedido'}
                                 </Text>
                                 <Text style={{
                                     fontSize: 14,
                                     color: '#666',
                                     marginTop: 2
                                 }}>
-                                    {entregado ? 'Información del pedido finalizado' : 'Complete la información para finalizar'}
+                                    {entregado ? 'Modifique y guarde la información del cierre' : 'Complete la información para finalizar'}
                                 </Text>
                             </View>
                         </View>
@@ -690,7 +758,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                         contentContainerStyle={{ paddingBottom: 20 }}
                     >
                         <View style={{ padding: 20 }}>
-                            {entregado ? (
+                            {false ? (
                                 // Vista de pedido ya cerrado - Diseño completamente renovado
                                 <View>
                                     {/* Header con icono de éxito */}
@@ -995,8 +1063,24 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                     </View>
                                 </View>
                             ) : (
-                                // Formulario para cerrar pedido
+                                // Formulario para cerrar/editar pedido
                                 <View>
+                                    {entregado && (
+                                        <View style={{
+                                            backgroundColor: '#fff3cd',
+                                            borderRadius: 10,
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 10,
+                                            borderWidth: 1,
+                                            borderColor: '#ffe69c',
+                                            marginBottom: 14
+                                        }}>
+                                            <Text style={{ color: '#7a5a00', fontSize: 13, fontWeight: '600', textAlign: 'center' }}>
+                                                Modo edición: puedes actualizar los datos del cierre.
+                                            </Text>
+                                        </View>
+                                    )}
+
                                     {/* Sección de foto */}
                                     <TomarFoto
                                         source={imagen ? [{ uri: imagen }] : []}
@@ -1352,7 +1436,7 @@ const CerrarPedidoModal: React.FC<CerrarPedidoModalProps> = ({
                                                 fontSize: 16,
                                                 fontWeight: '600'
                                             }}>
-                                                Cerrar Pedido
+                                                {entregado ? 'Guardar Cambios' : 'Cerrar Pedido'}
                                             </Text>
                                         </TouchableOpacity>
 

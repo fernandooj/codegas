@@ -2641,4 +2641,28 @@ export const style = MediaQueryStyleSheet.create({
 		fontWeight: 'bold',
 		color: '#fff',
 	},
+	checklistPdfButton: {
+		flex: 1,
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+		paddingVertical: 14,
+		borderRadius: 10,
+		backgroundColor: '#fff',
+		borderWidth: 1.5,
+		borderColor: '#002587',
+	},
+	checklistPdfButtonDisabled: {
+		opacity: 0.55,
+	},
+	checklistPdfIcon: {
+		fontSize: 17,
+		color: '#002587',
+		marginRight: 6,
+	},
+	checklistPdfText: {
+		fontSize: 14,
+		fontWeight: '600',
+		color: '#002587',
+	},
 })

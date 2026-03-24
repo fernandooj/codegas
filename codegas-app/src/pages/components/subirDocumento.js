@@ -110,6 +110,60 @@ export default class subirDocumento extends Component {
         }
     }
 
+    /**
+     * El API guarda documentos como URLs (strings). Tras elegir archivo es { name, uri, imagen }.
+     */
+    normalizeDocumento(doc, index = 0) {
+        if (doc == null || doc === '') {
+            return { name: 'Documento', uri: null };
+        }
+        if (typeof doc === 'string') {
+            const s = doc.trim();
+            if (!s) return { name: 'Documento', uri: null };
+            try {
+                const parsed = JSON.parse(s);
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    const u = parsed.uri || parsed.url || parsed.s3Url;
+                    return {
+                        name: parsed.name || `Documento ${index + 1}.pdf`,
+                        uri: typeof u === 'string' ? u : null,
+                    };
+                }
+            } catch (e) {
+                /* no es JSON */
+            }
+            if (/^https?:\/\//i.test(s)) {
+                let name = `documento_${index + 1}.pdf`;
+                try {
+                    const part = s.split('/').pop() || '';
+                    const base = decodeURIComponent(part.split('?')[0] || '');
+                    if (base.length > 0) name = base;
+                } catch (e2) { /* ignore */ }
+                return { name, uri: s };
+            }
+            return { name: `Documento ${index + 1}`, uri: null };
+        }
+        const uri = doc.uri || doc.url || doc.s3Url || null;
+        const name = doc.name || `Documento ${index + 1}.pdf`;
+        return { name, uri: typeof uri === 'string' ? uri : null };
+    }
+
+    abrirPdf(uri) {
+        const { navigation, navigate } = this.props;
+        if (!uri) {
+            Alert.alert('Documento', 'No hay una dirección disponible para abrir este archivo.');
+            return;
+        }
+        if (navigation && typeof navigation.navigate === 'function') {
+            navigation.navigate('pdf', { uri });
+            return;
+        }
+        if (typeof navigate === 'function') {
+            navigate('pdf', { uri });
+            return;
+        }
+        Alert.alert('Documento', 'No se puede abrir el visor desde esta pantalla.');
+    }
 
     renderDocumentos() {
         let { imagenes } = this.state
@@ -154,8 +208,9 @@ export default class subirDocumento extends Component {
                     Documentos adjuntos ({imagenes.length})
                 </Text>
                 {imagenes.map((doc, key) => {
+                    const { name, uri } = this.normalizeDocumento(doc, key);
                     return (
-                        <View key={key} style={{
+                        <View key={`${uri || name}-${key}`} style={{
                             backgroundColor: '#fff',
                             borderRadius: 8,
                             padding: 12,
@@ -173,7 +228,7 @@ export default class subirDocumento extends Component {
                         }}>
                             <TouchableOpacity
                                 style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
-                                onPress={() => this.props.navigate && this.props.navigate("pdf", { uri: doc.uri })}
+                                onPress={() => this.abrirPdf(uri)}
                                 activeOpacity={0.7}
                             >
                                 <FontAwesome
@@ -188,7 +243,7 @@ export default class subirDocumento extends Component {
                                     flex: 1,
                                     fontWeight: '500'
                                 }} numberOfLines={1}>
-                                    {doc.name}
+                                    {name}
                                 </Text>
                             </TouchableOpacity>
                             {!soloLectura && (

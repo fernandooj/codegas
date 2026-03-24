@@ -339,6 +339,31 @@ export const style = MediaQueryStyleSheet.create({
 		alignSelf: 'flex-start',
 		fontFamily: 'Comfortaa-Regular'
 	},
+	clientInfoPuntoBlock: {
+		marginTop: 14,
+		paddingTop: 14,
+		borderTopWidth: 1,
+		borderTopColor: '#e9ecef'
+	},
+	clientInfoPuntoTitle: {
+		fontSize: 13,
+		color: '#6c757d',
+		fontWeight: '600',
+		marginBottom: 8,
+		fontFamily: 'Comfortaa-Regular'
+	},
+	clientInfoMetaLine: {
+		fontSize: 14,
+		color: '#495057',
+		marginBottom: 6,
+		lineHeight: 20,
+		fontFamily: 'Comfortaa-Regular'
+	},
+	clientInfoMetaLabel: {
+		fontWeight: '600',
+		color: '#495057',
+		fontFamily: 'Comfortaa-Regular'
+	},
 
 	// Form fields
 	fieldContainer: {

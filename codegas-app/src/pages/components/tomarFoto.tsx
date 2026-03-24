@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, Image, TouchableOpacity, Modal, Alert, Platform, PermissionsAndroid, Dimensions } from 'react-native'
 import ImagePicker from 'react-native-image-crop-picker';
 import { FontAwesome } from '@react-native-vector-icons/fontawesome';
 import Lightbox from 'react-native-lightbox-v2';
 import { launchCamera, launchImageLibrary, MediaType, ImagePickerResponse } from 'react-native-image-picker';
-import { useDispatch } from 'react-redux';
 import { style } from './style'
 import { TomarFotoProps, ImagenData } from './tomarFoto.types'
-import { uploadMultipleImagesToS3 } from '../../redux/actions/reporteActions'
+import { uploadPickerImagesToS3 } from '../../utils/s3Upload'
 
 const TomarFoto: React.FC<TomarFotoProps> = ({
     source = [],
@@ -25,14 +24,13 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
     permitirSubir = true,
     onUploadComplete
 }) => {
-    const dispatch = useDispatch();
-
     const [imagenesState, setImagenesState] = useState<any[]>(source);
     const [showModal, setShowModal] = useState(false);
     const [isAndroidShareOpen, setIsAndroidShareOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [pendingUpdates, setPendingUpdates] = useState<{ imageData: any[], urls: string[] } | null>(null);
     const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
+    const uploadsEnCursoRef = useRef(0);
 
     // Sincronizar el estado interno con el prop source cuando cambie
     // Solo sincronizar si no estamos en modo múltiple O si estamos en modo solo lectura
@@ -111,25 +109,25 @@ const TomarFoto: React.FC<TomarFotoProps> = ({
             return;
         }
 
+        uploadsEnCursoRef.current += 1;
+        setIsUploading(true);
+        const imageData = images.map(img => ({
+            uri: img.uri || img,
+            base64: img.base64
+        }));
+
         try {
-            setIsUploading(true);
-            const imageData = images.map(img => ({
-                uri: img.uri || img,
-                base64: img.base64
-            }));
-
-            const result = await dispatch(uploadMultipleImagesToS3(imageData) as any);
-            const urls = Array.isArray(result) ? result : [];
-
-            // Establecer actualizaciones pendientes para que el useEffect las procese
+            const urls = await uploadPickerImagesToS3(imageData);
             setPendingUpdates({ imageData, urls });
-
             onUploadComplete(urls);
         } catch (error) {
             console.error('Error uploading images to S3:', error);
             Alert.alert('Error', 'No se pudieron subir las imágenes. Inténtalo de nuevo.');
         } finally {
-            setIsUploading(false);
+            uploadsEnCursoRef.current = Math.max(0, uploadsEnCursoRef.current - 1);
+            if (uploadsEnCursoRef.current === 0) {
+                setIsUploading(false);
+            }
         }
     };
     // Función para solicitar permisos de cámara

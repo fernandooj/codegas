@@ -1,4 +1,5 @@
 const { poolConection } = require('../../../lib/connection-pg.js')
+const { normalizePuntoLocationString } = require('../../../lib/normalize-punto-location.js')
 
 /** update point */
 const UPDATE_POINT = 'UPDATE puntos SET observacion = $1, direccion = $2, capacidad = $3, punto = $4, coordenadas = $5, place_name = $6, activo = $7, idZona = $8, idCliente = $9, idPadre = $10, email = $11, celular = $12, nombre = $13 WHERE _id = $14';
@@ -38,9 +39,9 @@ module.exports.main = async (event) => {
             // Convert location to point format if it's a string
             let coordenadas = null;
             if (location && typeof location === 'string') {
-                coordenadas = location; // PostgreSQL point format
+                coordenadas = normalizePuntoLocationString(location);
             } else if (location && location.lat && location.lng) {
-                coordenadas = `${location.lng}, ${location.lat}`; // Convert to lng,lat format
+                coordenadas = `(${location.lat}, ${location.lng})`;
             }
 
             const isActiveVal = activo !== undefined ? activo : true;

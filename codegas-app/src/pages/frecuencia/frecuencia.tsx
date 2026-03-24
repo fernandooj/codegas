@@ -8,12 +8,44 @@ import { AppDispatch } from '../../redux/types';
 
 import { style } from './style';
 import { getFrecuencia } from '../../redux/actions/pedidoActions';
+import { GET_PEDIDOS_FRECUENCIA } from '../../redux/actions/constants/actionsTypes';
 import Footer from '../components/footer';
 import { FrecuenciaState, PedidoFrecuencia, GrupoFrecuencia } from './types';
 import EditarFrecuenciaModal from './EditarFrecuenciaModal';
 import CrearGrupoFrecuenciaModal from './CrearGrupoFrecuenciaModal';
 import EditarGrupoFrecuenciaModal from './EditarGrupoFrecuenciaModal';
 import VerPedidosGrupoModal from './VerPedidosGrupoModal';
+
+function pedidoFrecuenciaMatchesBusqueda(pedido: PedidoFrecuencia, termino: string): boolean {
+    const busqueda = termino.trim().toLowerCase();
+    if (!busqueda) return true;
+    return (
+        String(pedido.nombre || '').toLowerCase().includes(busqueda) ||
+        String(pedido.codt || '').toLowerCase().includes(busqueda) ||
+        String(pedido.pedido_id || '').toLowerCase().includes(busqueda) ||
+        String(pedido.forma || '').toLowerCase().includes(busqueda) ||
+        String(pedido.frecuencia || '').toLowerCase().includes(busqueda) ||
+        String(pedido.razon_social || '').toLowerCase().includes(busqueda) ||
+        String(pedido.dia1 || '').toLowerCase().includes(busqueda) ||
+        String(pedido.dia2 || '').toLowerCase().includes(busqueda) ||
+        String(pedido.punto_direccion || '').toLowerCase().includes(busqueda) ||
+        String(pedido.punto_nombre || '').toLowerCase().includes(busqueda) ||
+        String(pedido.zona_nombre || '').toLowerCase().includes(busqueda)
+    );
+}
+
+function isQuincenalCalendarioIndividual(d1?: string | number, d2?: string | number): boolean {
+    const a = parseInt(String(d1 ?? ''), 10);
+    const b = parseInt(String(d2 ?? ''), 10);
+    return Number.isFinite(a) && Number.isFinite(b) && a >= 1 && a <= 15 && b >= 16 && b <= 31;
+}
+
+/** 1=Lun … 7=Dom, coherente con getDay() de Date en hora local (Domingo JS=0 → 7) */
+function fechaCoincideDiaSemana(d: Date, diaSemana1a7: number): boolean {
+    const j = d.getDay();
+    const our = j === 0 ? 7 : j;
+    return our === diaSemana1a7;
+}
 
 const Frecuencia: React.FC = ({ navigation }: any) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -53,9 +85,6 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                     pedidosFrecuencia: []
                 });
 
-                // Pequeño delay para que se vea el preloader
-                await new Promise(resolve => setTimeout(resolve, 100));
-
                 await dispatch(getFrecuencia());
             } catch (error) {
                 console.error('Error loading frecuencias:', error);
@@ -75,18 +104,23 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         // Solo actualizar cuando realmente cambien los pedidos desde Redux
         if (pedidos !== undefined) {
             // Debug: ver qué datos llegan
-            if (pedidos.length > 0) {
-                console.log('Pedidos cargados:', pedidos.length);
-                console.log('Primer pedido:', pedidos[0]);
-                console.log('Tiene punto_direccion?', pedidos[0]?.punto_direccion);
+            if (__DEV__ && pedidos.length > 0) {
+                console.log('Pedidos frecuencia cargados:', pedidos.length);
             }
 
-            setState(prev => ({
-                ...prev,
-                pedidos: pedidos || [],
-                pedidosFiltrados: pedidos || [],
-                initialLoading: false
-            }));
+            setState(prev => {
+                const list = pedidos || [];
+                const term = prev.terminoBuscador.trim();
+                const filtered = term
+                    ? list.filter((p: PedidoFrecuencia) => pedidoFrecuenciaMatchesBusqueda(p, term))
+                    : list;
+                return {
+                    ...prev,
+                    pedidos: list,
+                    pedidosFiltrados: filtered,
+                    initialLoading: false
+                };
+            });
 
             // Desactivar loading después de recibir datos
             setIsLoadingData(false);
@@ -100,10 +134,6 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         }
     }, [grupos]);
 
-    // Separar frecuencias con grupo y sin grupo
-    const frecuenciasConGrupo = pedidos.filter((p: PedidoFrecuencia) => (p as any).grupo_id);
-    const frecuenciasSinGrupo = pedidos.filter((p: PedidoFrecuencia) => !(p as any).grupo_id);
-
     const filtrarPedidos = useCallback((termino: string) => {
         if (!termino.trim()) {
             setState(prev => ({
@@ -113,24 +143,13 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
             return;
         }
 
-        const pedidosFiltrados = pedidos.filter((pedido: PedidoFrecuencia) => {
-            const busqueda = termino.toLowerCase();
-            return (
-                String(pedido.nombre || '').toLowerCase().includes(busqueda) ||
-                String(pedido.codt || '').toLowerCase().includes(busqueda) ||
-                String(pedido.pedido_id || '').toLowerCase().includes(busqueda) ||
-                String(pedido.forma || '').toLowerCase().includes(busqueda) ||
-                String(pedido.frecuencia || '').toLowerCase().includes(busqueda) ||
-                String(pedido.razon_social || '').toLowerCase().includes(busqueda) ||
-                String(pedido.dia1 || '').toLowerCase().includes(busqueda) ||
-                String(pedido.dia2 || '').toLowerCase().includes(busqueda) ||
-                String(pedido.punto_direccion || '').toLowerCase().includes(busqueda)
-            );
-        });
+        const filtrados = pedidos.filter((pedido: PedidoFrecuencia) =>
+            pedidoFrecuenciaMatchesBusqueda(pedido, termino)
+        );
 
         setState(prev => ({
             ...prev,
-            pedidosFiltrados
+            pedidosFiltrados: filtrados
         }));
     }, [pedidos]);
 
@@ -263,7 +282,11 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
         if (frecuencia === 'mensual') {
-            // Para mensual, solo mostrar el número del día
+            return String(dayValue);
+        }
+
+        // Quincenal calendario: días del mes. Quincenal cada 2 sem.: dia1 es 1–7 como semanal
+        if (frecuencia === 'quincenal') {
             return String(dayValue);
         }
 
@@ -283,17 +306,124 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
         return String(dayValue);
     };
 
+    // Calcula próximas fechas de ejecución para frecuencias individuales (semanal, quincenal, mensual)
+    const calcularFechasEjecucionIndividual = (pedido: PedidoFrecuencia): string[] => {
+        if (!pedido || !pedido.frecuencia) return [];
+
+        const fechas: string[] = [];
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        // Fecha límite: 3 meses desde hoy
+        const fechaLimite = new Date(hoy);
+        fechaLimite.setMonth(fechaLimite.getMonth() + 3);
+
+        // Helper para formatear día y mes (DD-MM)
+        const formatFecha = (d: Date) => {
+            const dia = String(d.getDate()).padStart(2, '0');
+            const mes = String(d.getMonth() + 1).padStart(2, '0');
+            return `${dia}-${mes}`;
+        };
+
+        const pushCadaNSemanas = (diaSemana: number, diasPaso: number) => {
+            if (Number.isNaN(diaSemana) || diaSemana < 1 || diaSemana > 7) return;
+            const diaJS = diaSemana === 7 ? 0 : diaSemana;
+            let primeraFecha = new Date(hoy);
+            while (primeraFecha.getDay() !== diaJS) {
+                primeraFecha.setDate(primeraFecha.getDate() + 1);
+            }
+            let fechaActual = new Date(primeraFecha);
+            while (fechaActual <= fechaLimite && fechas.length < 12) {
+                fechas.push(formatFecha(fechaActual));
+                fechaActual.setDate(fechaActual.getDate() + diasPaso);
+            }
+        };
+
+        if (pedido.frecuencia === 'semanal' && pedido.dia1) {
+            pushCadaNSemanas(Number(pedido.dia1), 7);
+        } else if (pedido.frecuencia === 'tressemanas' && pedido.dia1) {
+            pushCadaNSemanas(Number(pedido.dia1), 21);
+        } else if (pedido.frecuencia === 'quincenal' && pedido.dia1) {
+            const dom1 = Number(pedido.dia1);
+            const dom2 =
+                pedido.dia2 !== undefined && pedido.dia2 !== '' && pedido.dia2 !== null
+                    ? Number(pedido.dia2)
+                    : NaN;
+
+            if (isQuincenalCalendarioIndividual(pedido.dia1, pedido.dia2)) {
+                const candidatos: Date[] = [];
+                let mesCursor = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+                while (mesCursor <= fechaLimite && candidatos.length < 24) {
+                    const y = mesCursor.getFullYear();
+                    const m = mesCursor.getMonth();
+                    const ultimo = new Date(y, m + 1, 0).getDate();
+                    [dom1, dom2].forEach(dom => {
+                        if (dom < 1 || dom > ultimo) return;
+                        const cand = new Date(y, m, dom);
+                        if (cand >= hoy && cand <= fechaLimite) {
+                            candidatos.push(cand);
+                        }
+                    });
+                    mesCursor.setMonth(m + 1);
+                }
+                candidatos.sort((a, b) => a.getTime() - b.getTime());
+                const vistos = new Set<string>();
+                for (const d of candidatos) {
+                    const s = formatFecha(d);
+                    if (!vistos.has(s) && fechas.length < 12) {
+                        vistos.add(s);
+                        fechas.push(s);
+                    }
+                }
+            } else if (!Number.isNaN(dom1) && dom1 >= 1 && dom1 <= 7) {
+                pushCadaNSemanas(dom1, 14);
+            }
+        } else if (pedido.frecuencia === 'mensual' && pedido.dia1) {
+            const diaMes = Number(pedido.dia1);
+            const diaSem = Number(pedido.dia2);
+            const exigeSemana =
+                !Number.isNaN(diaSem) && diaSem >= 1 && diaSem <= 7;
+            if (!Number.isNaN(diaMes) && diaMes >= 1 && diaMes <= 31) {
+                const fechaCursor = new Date(hoy);
+                while (fechaCursor <= fechaLimite && fechas.length < 12) {
+                    const year = fechaCursor.getFullYear();
+                    const month = fechaCursor.getMonth();
+                    const ultimo = new Date(year, month + 1, 0).getDate();
+                    const dom = Math.min(diaMes, ultimo);
+                    const fechaMes = new Date(year, month, dom);
+
+                    if (fechaMes >= hoy && fechaMes <= fechaLimite) {
+                        if (!exigeSemana || fechaCoincideDiaSemana(fechaMes, diaSem)) {
+                            fechas.push(formatFecha(fechaMes));
+                        }
+                    }
+
+                    fechaCursor.setMonth(month + 1);
+                    fechaCursor.setDate(1);
+                }
+            }
+        }
+
+        return fechas;
+    };
+
     const handleEditSuccess = (updatedData?: PedidoFrecuencia) => {
         if (updatedData) {
-            // Actualizar el listado localmente sin llamar al backend
+            const merged = pedidos.map(pedido =>
+                String(pedido.pedido_id) === String(updatedData.pedido_id) ? { ...pedido, ...updatedData } : pedido
+            );
+            dispatch({
+                type: GET_PEDIDOS_FRECUENCIA,
+                pedidosFrecuencia: merged
+            });
             setState(prev => ({
                 ...prev,
-                pedidos: prev.pedidos.map(pedido =>
-                    pedido.pedido_id === updatedData.pedido_id ? updatedData : pedido
-                ),
-                pedidosFiltrados: prev.pedidosFiltrados.map(pedido =>
-                    pedido.pedido_id === updatedData.pedido_id ? updatedData : pedido
-                ),
+                pedidos: merged,
+                pedidosFiltrados: prev.terminoBuscador.trim()
+                    ? prev.pedidosFiltrados.map(pedido =>
+                          String(pedido.pedido_id) === String(updatedData.pedido_id) ? { ...pedido, ...updatedData } : pedido
+                      )
+                    : merged,
                 showEditModal: false,
                 editingFrecuencia: null
             }));
@@ -311,8 +441,6 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     const handleCreateGrupoSuccess = async () => {
         // Recargar frecuencias y grupos
         await dispatch(getFrecuencia());
-        // Pequeño delay para asegurar que Redux se actualice
-        await new Promise(resolve => setTimeout(resolve, 300));
     };
 
     const handleOpenCreateGrupoModal = () => {
@@ -334,10 +462,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     };
 
     const handleEditGrupoSuccess = async () => {
-        // Recargar frecuencias y grupos
         await dispatch(getFrecuencia());
-        // Pequeño delay para asegurar que Redux se actualice
-        await new Promise(resolve => setTimeout(resolve, 300));
     };
 
     const handleVerPedidosGrupo = (grupo: GrupoFrecuencia) => {
@@ -401,6 +526,8 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
 
     const { terminoBuscador, pedidosFiltrados, showSpin, loading, showEditModal, editingFrecuencia } = state;
 
+    const individualesFiltrados = pedidosFiltrados.filter((p: PedidoFrecuencia) => !(p as any).grupo_id);
+
     // Mostrar preloading mientras se cargan los datos
     if (isLoadingData) {
         return (
@@ -438,7 +565,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                 <Text style={style.titulo}>Pedidos Frecuentes</Text>
                                 <Text style={style.subtitulo}>
                                     {activeTab === 'individuales'
-                                        ? `${terminoBuscador ? pedidosFiltrados.length : frecuenciasSinGrupo.length} frecuencias individuales`
+                                        ? `${individualesFiltrados.length} frecuencias individuales`
                                         : `${terminoBuscador ? gruposFiltrados.length : grupos.length} grupos de frecuencias`
                                     }
                                     {activeTab === 'grupos' && (terminoBuscador ? gruposFiltrados : grupos).length > 0 && (
@@ -471,21 +598,27 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                         <View style={style.headerStats}>
                             <View style={style.statItem}>
                                 <Text style={style.statNumber}>
-                                    {pedidosFiltrados.filter(p => p.frecuencia === 'semanal').length}
+                                    {individualesFiltrados.filter(p => p.frecuencia === 'semanal').length}
                                 </Text>
                                 <Text style={style.statLabel}>Semanal</Text>
                             </View>
                             <View style={style.statItem}>
                                 <Text style={style.statNumber}>
-                                    {pedidosFiltrados.filter(p => p.frecuencia === 'quincenal').length}
+                                    {individualesFiltrados.filter(p => p.frecuencia === 'quincenal').length}
                                 </Text>
-                                <Text style={style.statLabel}>Quincenal</Text>
+                                <Text style={style.statLabel}>Cada 2 sem.</Text>
                             </View>
                             <View style={style.statItem}>
                                 <Text style={style.statNumber}>
-                                    {pedidosFiltrados.filter(p => p.frecuencia === 'mensual').length}
+                                    {individualesFiltrados.filter(p => p.frecuencia === 'mensual').length}
                                 </Text>
                                 <Text style={style.statLabel}>Mensual</Text>
+                            </View>
+                            <View style={style.statItem}>
+                                <Text style={style.statNumber}>
+                                    {individualesFiltrados.filter(p => p.frecuencia === 'tressemanas').length}
+                                </Text>
+                                <Text style={style.statLabel}>Cada 3 sem.</Text>
                             </View>
                         </View>
                     )}
@@ -510,7 +643,20 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                         borderBottomColor: activeTab === 'individuales' ? '#002587' : 'transparent',
                         marginRight: 8
                     }}
-                    onPress={() => setActiveTab('individuales')}
+                    onPress={() => {
+                        setActiveTab('individuales');
+                        setState(prev => {
+                            if (!prev.terminoBuscador.trim()) {
+                                return { ...prev, pedidosFiltrados: pedidos };
+                            }
+                            return {
+                                ...prev,
+                                pedidosFiltrados: pedidos.filter((p: PedidoFrecuencia) =>
+                                    pedidoFrecuenciaMatchesBusqueda(p, prev.terminoBuscador)
+                                )
+                            };
+                        });
+                    }}
                     activeOpacity={0.7}
                 >
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -527,7 +673,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                             fontWeight: activeTab === 'individuales' ? '700' : '500',
                             color: activeTab === 'individuales' ? '#002587' : '#6c757d'
                         }}>
-                            Individuales ({terminoBuscador ? pedidosFiltrados.filter(p => !(p as any).grupo_id).length : frecuenciasSinGrupo.length})
+                            Individuales ({individualesFiltrados.length})
                         </Text>
                     </View>
                 </TouchableOpacity>
@@ -541,7 +687,14 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                         borderBottomColor: activeTab === 'grupos' ? '#002587' : 'transparent',
                         marginLeft: 8
                     }}
-                    onPress={() => setActiveTab('grupos')}
+                    onPress={() => {
+                        setActiveTab('grupos');
+                        if (!terminoBuscador.trim()) {
+                            setGruposFiltrados(grupos);
+                        } else {
+                            filtrarGrupos(terminoBuscador);
+                        }
+                    }}
                     activeOpacity={0.7}
                 >
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -708,10 +861,10 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                 {/* Tab de Frecuencias Individuales */}
                 {activeTab === 'individuales' && (
                     <>
-                        {frecuenciasSinGrupo.length > 0 ? (
+                        {individualesFiltrados.length > 0 ? (
                             <View style={{ marginBottom: 30, paddingTop: 20 }}>
-                                {frecuenciasSinGrupo.map((pedido: PedidoFrecuencia, key: number) => (
-                                    <View key={key} style={style.cardContainer}>
+                                {individualesFiltrados.map((pedido: PedidoFrecuencia) => (
+                                    <View key={`${pedido.pedido_id}-${pedido.usuarioid}`} style={style.cardContainer}>
                                         <TouchableOpacity
                                             style={style.cardContent}
                                             onPress={() => navigation.navigate("verPerfil", {
@@ -761,11 +914,22 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                                     </View>
                                                 )}
 
-                                                {pedido.frecuencia === "quincenal" && pedido.dia1 && pedido.dia2 && (
+                                                {pedido.frecuencia === "quincenal" && pedido.dia1 && (
                                                     <View style={style.detailRow}>
                                                         <FontAwesome name="calendar" style={style.detailIcon} />
                                                         <Text style={style.detailText}>
-                                                            Días: {formatDay(pedido.dia1, 'quincenal')} - {formatDay(pedido.dia2, 'quincenal')}
+                                                            {isQuincenalCalendarioIndividual(pedido.dia1, pedido.dia2)
+                                                                ? `Días del mes: ${pedido.dia1} y ${pedido.dia2}`
+                                                                : `Cada 2 semanas: ${formatDay(pedido.dia1, 'semanal')}`}
+                                                        </Text>
+                                                    </View>
+                                                )}
+
+                                                {pedido.frecuencia === "tressemanas" && pedido.dia1 && (
+                                                    <View style={style.detailRow}>
+                                                        <FontAwesome name="calendar" style={style.detailIcon} />
+                                                        <Text style={style.detailText}>
+                                                            Cada 3 semanas: {formatDay(pedido.dia1, 'semanal')}
                                                         </Text>
                                                     </View>
                                                 )}
@@ -773,9 +937,55 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                                 {pedido.frecuencia === "mensual" && pedido.dia1 && (
                                                     <View style={style.detailRow}>
                                                         <FontAwesome name="calendar" style={style.detailIcon} />
-                                                        <Text style={style.detailText}>Día del mes: {formatDay(pedido.dia1, 'mensual')}</Text>
+                                                        <Text style={style.detailText}>
+                                                            Día del mes: {formatDay(pedido.dia1, 'mensual')}
+                                                            {pedido.dia2 !== undefined &&
+                                                            pedido.dia2 !== '' &&
+                                                            pedido.dia2 !== null &&
+                                                            !Number.isNaN(Number(pedido.dia2)) &&
+                                                            Number(pedido.dia2) >= 1 &&
+                                                            Number(pedido.dia2) <= 7
+                                                                ? ` · ${formatDay(Number(pedido.dia2), 'semanal')}`
+                                                                : ''}
+                                                        </Text>
                                                     </View>
                                                 )}
+
+                                                {/* Próximas fechas de ejecución para frecuencias individuales */}
+                                                {(() => {
+                                                    const fechas = calcularFechasEjecucionIndividual(pedido);
+                                                    if (!fechas || fechas.length === 0) return null;
+
+                                                    return (
+                                                        <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#e0e0e0' }}>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                                                <FontAwesome name="calendar-check-o" style={[style.detailIcon, { color: '#002587' }]} />
+                                                                <Text style={[style.detailText, { fontWeight: '600', color: '#002587' }]}>
+                                                                    Próximas fechas de ejecución:
+                                                                </Text>
+                                                            </View>
+                                                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 }}>
+                                                                {fechas.map((fecha, idx) => (
+                                                                    <View
+                                                                        key={idx}
+                                                                        style={{
+                                                                            backgroundColor: '#e3f2fd',
+                                                                            paddingHorizontal: 10,
+                                                                            paddingVertical: 4,
+                                                                            borderRadius: 6,
+                                                                            marginRight: 6,
+                                                                            marginBottom: 4
+                                                                        }}
+                                                                    >
+                                                                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#002587' }}>
+                                                                            {fecha}
+                                                                        </Text>
+                                                                    </View>
+                                                                ))}
+                                                            </View>
+                                                        </View>
+                                                    );
+                                                })()}
 
                                                 {pedido.punto_direccion && (
                                                     <View style={style.detailRow}>
@@ -836,6 +1046,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
 
             {/* Modal de edición */}
             <EditarFrecuenciaModal
+                key={editingFrecuencia ? String(editingFrecuencia.pedido_id) : 'cerrado'}
                 visible={showEditModal}
                 onClose={handleCloseEditModal}
                 frecuencia={editingFrecuencia}

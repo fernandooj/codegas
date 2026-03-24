@@ -25,7 +25,7 @@ module.exports.main = async (event) => {
         const {
             ruta,
             guia,
-            no_planilla,
+            no_planilla: _noPlanillaCliente,
             placa_vehiculo,
             fecha,
             kilometraje_inicial,
@@ -41,25 +41,25 @@ module.exports.main = async (event) => {
             user_id
         } = body;
 
+        // no_planilla no se modifica desde el cliente (consecutivo fijo tras creación)
         const UPDATE_PLANILLA = `
             UPDATE planillas SET
                 ruta = COALESCE($1, ruta),
                 guia = COALESCE($2, guia),
-                no_planilla = COALESCE($3, no_planilla),
-                placa_vehiculo = COALESCE($4, placa_vehiculo),
-                fecha = COALESCE($5, fecha),
-                kilometraje_inicial = COALESCE($6, kilometraje_inicial),
-                kilometraje_final = COALESCE($7, kilometraje_final),
-                remision_inicial = COALESCE($8, remision_inicial),
-                remision_final = COALESCE($9, remision_final),
-                inventario_inicial_porcentaje = COALESCE($10, inventario_inicial_porcentaje),
-                inventario_final_porcentaje = COALESCE($11, inventario_final_porcentaje),
-                inventario_inicial_kl = COALESCE($12, inventario_inicial_kl),
-                inventario_final_kl = COALESCE($13, inventario_final_kl),
-                novedades = COALESCE($14, novedades),
-                gastos = COALESCE($15::jsonb, gastos),
-                user_id = COALESCE($16, user_id)
-            WHERE _id = $17
+                placa_vehiculo = COALESCE($3, placa_vehiculo),
+                fecha = COALESCE($4, fecha),
+                kilometraje_inicial = COALESCE($5, kilometraje_inicial),
+                kilometraje_final = COALESCE($6, kilometraje_final),
+                remision_inicial = COALESCE($7, remision_inicial),
+                remision_final = COALESCE($8, remision_final),
+                inventario_inicial_porcentaje = COALESCE($9, inventario_inicial_porcentaje),
+                inventario_final_porcentaje = COALESCE($10, inventario_final_porcentaje),
+                inventario_inicial_kl = COALESCE($11, inventario_inicial_kl),
+                inventario_final_kl = COALESCE($12, inventario_final_kl),
+                novedades = COALESCE($13, novedades),
+                gastos = COALESCE($14::jsonb, gastos),
+                user_id = COALESCE($15, user_id)
+            WHERE _id = $16
             AND eliminado = FALSE
             RETURNING *
         `;
@@ -69,7 +69,6 @@ module.exports.main = async (event) => {
         const { rows } = await client.query(UPDATE_PLANILLA, [
             ruta || null,
             guia || null,
-            no_planilla || null,
             placa_vehiculo || null,
             fecha || null,
             kilometraje_inicial || null,
