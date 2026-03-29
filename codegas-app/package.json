@@ -27,7 +27,7 @@
     "@react-navigation/native-stack": "^7.3.26",
     "@reduxjs/toolkit": "^2.9.0",
     "@wcj/generate-password": "^1.0.4",
-    "axios": "^1.11.0",
+    "axios": "^1.13.5",
     "lucide-react-native": "^0.544.0",
     "moment-timezone": "^0.6.0",
     "react": "19.1.0",
