@@ -2,12 +2,24 @@ const { transporter } = require('./nodemailer-config');
 const path = require('path');
 const fs = require('fs');
 
-// Destinatarios del email para novedades de pedido
+// Destinatarios fijos del email para novedades de pedido
 const email1 = 'atencionalcliente3@codegascolombia.com'
-const email2 = 'coord.logistica@codegascolombia.com'
-const email3 = 'atencionalcliente4@codegascolombia.com'
-const email4 = 'atencionalcliente2@codegascolombia.com'
-const email5 = 'soluciones@codegascolombia.com'
+const email2 = 'coord.comercial@codegascolombia.com'
+const email3 = 'asist.logistica@codegascolombia.com'
+const email4 = 'atencionalcliente4@codegascolombia.com'
+const email5 = 'atencionalcliente2@codegascolombia.com'
+const email6 = 'soluciones@codegascolombia.com'
+
+const FIXED_RECIPIENTS = [email1, email2, email3, email4, email5, email6];
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 // Función para generar el template HTML del email
 const generateEmailTemplate = (pedidoData) => {
@@ -17,12 +29,25 @@ const generateEmailTemplate = (pedidoData) => {
         perfilNovedad,
         fechaEntrega,
         conductorId,
-        fechaReporte
+        fechaReporte,
+        clienteNombre,
+        clienteCodt,
+        puntoConsumo,
+        vendedorNombre
     } = pedidoData;
 
     // Determinar el nivel de urgencia basado en el tipo de novedad
     const urgenciaColor = '#dc2626'; // Rojo para pedidos no entregados
     const urgenciaTexto = '🚨 PEDIDO NO ENTREGADO';
+    const clienteNombreSafe = escapeHtml(clienteNombre || 'N/A');
+    const clienteCodtSafe = escapeHtml(clienteCodt || 'N/A');
+    const puntoConsumoSafe = escapeHtml(puntoConsumo || 'N/A');
+    const vendedorNombreSafe = escapeHtml(vendedorNombre || 'N/A');
+    const novedadSafe = escapeHtml(novedad);
+    const perfilNovedadSafe = escapeHtml(perfilNovedad);
+    const fechaEntregaSafe = escapeHtml(fechaEntrega || 'N/A');
+    const conductorIdSafe = escapeHtml(conductorId || 'N/A');
+    const fechaReporteSafe = escapeHtml(fechaReporte || new Date().toLocaleString('es-CO'));
 
     return `
     <!DOCTYPE html>
@@ -76,16 +101,32 @@ const generateEmailTemplate = (pedidoData) => {
                                             <td style="color: #1e293b; font-weight: 700; font-size: 16px;">#${pedidoId}</td>
                                         </tr>
                                         <tr>
+                                            <td style="font-weight: 600; color: #475569;">Cliente:</td>
+                                            <td style="color: #1e293b; font-weight: 700;">${clienteNombreSafe}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: 600; color: #475569;">CODT:</td>
+                                            <td style="color: #1e293b; font-weight: 700;">${clienteCodtSafe}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: 600; color: #475569;">Punto de consumo:</td>
+                                            <td style="color: #1e293b;">${puntoConsumoSafe}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: 600; color: #475569;">Vendedor:</td>
+                                            <td style="color: #1e293b;">${vendedorNombreSafe}</td>
+                                        </tr>
+                                        <tr>
                                             <td style="font-weight: 600; color: #475569;">Fecha Reporte:</td>
-                                            <td style="color: #1e293b;">${fechaReporte || new Date().toLocaleString('es-CO')}</td>
+                                            <td style="color: #1e293b;">${fechaReporteSafe}</td>
                                         </tr>
                                         <tr>
                                             <td style="font-weight: 600; color: #475569;">Fecha Entrega:</td>
-                                            <td style="color: #1e293b;">${fechaEntrega || 'N/A'}</td>
+                                            <td style="color: #1e293b;">${fechaEntregaSafe}</td>
                                         </tr>
                                         <tr>
                                             <td style="font-weight: 600; color: #475569;">Conductor ID:</td>
-                                            <td style="color: #1e293b;">${conductorId || 'N/A'}</td>
+                                            <td style="color: #1e293b;">${conductorIdSafe}</td>
                                         </tr>
                                     </table>
                                 </div>
@@ -101,7 +142,7 @@ const generateEmailTemplate = (pedidoData) => {
                                         <div style="display: flex; align-items: center; gap: 8px;">
                                             <span style="font-size: 18px;">📋</span>
                                             <span style="font-weight: 600; color: #dc2626;">Novedad:</span>
-                                            <span style="color: #991b1b; font-weight: 700;">${novedad}</span>
+                                            <span style="color: #991b1b; font-weight: 700;">${novedadSafe}</span>
                                         </div>
                                     </div>
 
@@ -110,7 +151,7 @@ const generateEmailTemplate = (pedidoData) => {
                                         <div style="display: flex; align-items: center; gap: 8px;">
                                             <span style="font-size: 18px;">👤</span>
                                             <span style="font-weight: 600; color: #f59e0b;">Perfil de Novedad:</span>
-                                            <span style="color: #92400e; font-weight: 700;">${perfilNovedad}</span>
+                                            <span style="color: #92400e; font-weight: 700;">${perfilNovedadSafe}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -172,6 +213,15 @@ const generateEmailTemplate = (pedidoData) => {
   `;
 };
 
+function buildRecipients(vendedorEmail) {
+    const recipients = [...FIXED_RECIPIENTS];
+    const email = typeof vendedorEmail === 'string' ? vendedorEmail.trim().toLowerCase() : '';
+    if (email && email.includes('@') && !recipients.map((r) => r.toLowerCase()).includes(email)) {
+        recipients.push(email);
+    }
+    return recipients;
+}
+
 // Función principal para enviar email de novedad de pedido
 const sendNovedadPedidoEmail = async (pedidoData) => {
     const {
@@ -179,7 +229,12 @@ const sendNovedadPedidoEmail = async (pedidoData) => {
         novedad,
         perfilNovedad,
         fechaEntrega,
-        conductorId
+        conductorId,
+        clienteNombre,
+        clienteCodt,
+        puntoConsumo,
+        vendedorEmail,
+        vendedorNombre
     } = pedidoData;
 
     // Determinar asunto del email
@@ -192,6 +247,10 @@ const sendNovedadPedidoEmail = async (pedidoData) => {
         perfilNovedad,
         fechaEntrega,
         conductorId,
+        clienteNombre,
+        clienteCodt,
+        puntoConsumo,
+        vendedorNombre,
         fechaReporte: new Date().toLocaleString('es-CO', {
             weekday: 'long',
             year: 'numeric',
@@ -204,6 +263,7 @@ const sendNovedadPedidoEmail = async (pedidoData) => {
 
     // Generar el HTML del email
     const emailHtml = generateEmailTemplate(emailData);
+    const recipients = buildRecipients(vendedorEmail);
 
     // Buscar la ruta correcta del logo
     const possibleLogoPaths = [
@@ -230,7 +290,7 @@ const sendNovedadPedidoEmail = async (pedidoData) => {
     // Configuración del email
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: [email1, email2, email3, email4, email5],
+        to: recipients,
         subject: asunto,
         html: emailHtml,
         attachments: fs.existsSync(logoPath) ? [
@@ -245,6 +305,10 @@ const sendNovedadPedidoEmail = async (pedidoData) => {
         Novedad de Pedido - CodeGas Colombia
         
         Número de Pedido: ${pedidoId}
+        Cliente: ${clienteNombre || 'N/A'}
+        CODT: ${clienteCodt || 'N/A'}
+        Punto de consumo: ${puntoConsumo || 'N/A'}
+        Vendedor: ${vendedorNombre || 'N/A'}
         Fecha Reporte: ${emailData.fechaReporte}
         Fecha Entrega: ${fechaEntrega || 'N/A'}
         Conductor ID: ${conductorId || 'N/A'}
@@ -264,10 +328,10 @@ const sendNovedadPedidoEmail = async (pedidoData) => {
     };
 
     try {
-        console.log('📧 [EmailNovedadPedido] Enviando email...');
+        console.log('📧 [EmailNovedadPedido] Enviando email a:', recipients.join(', '));
         await transporter.sendMail(mailOptions);
         console.log('✅ [EmailNovedadPedido] Email enviado exitosamente');
-        return { success: true, message: 'Email enviado correctamente' };
+        return { success: true, message: 'Email enviado correctamente', recipients };
     } catch (emailError) {
         console.error('❌ [EmailNovedadPedido] Error enviando email:', emailError);
 

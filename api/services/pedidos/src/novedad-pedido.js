@@ -4,6 +4,25 @@ const { sendNovedadPedidoEmail } = require('../../../lib/email-novedad-pedido.js
 
 const NOVEDAD_PEDIDO = 'SELECT * FROM novedad_pedidos($1, $2, $3, $4, $5)';
 
+/** Cliente del pedido + punto + email del vendedor (users.idpadre del cliente). */
+const GET_PEDIDO_EMAIL_CONTEXT = `
+    SELECT
+        COALESCE(NULLIF(TRIM(cli.razon_social), ''), NULLIF(TRIM(cli.nombre), ''), 'N/A') AS cliente_nombre,
+        COALESCE(NULLIF(TRIM(cli.codt), ''), 'N/A') AS cliente_codt,
+        COALESCE(
+            NULLIF(TRIM(pt.nombre), ''),
+            NULLIF(TRIM(pt.direccion), ''),
+            'N/A'
+        ) AS punto_consumo,
+        NULLIF(TRIM(u_vendedor.email), '') AS vendedor_email,
+        NULLIF(TRIM(u_vendedor.nombre), '') AS vendedor_nombre
+    FROM pedidos p
+    LEFT JOIN puntos pt ON pt._id = p.puntoId
+    LEFT JOIN users cli ON cli._id = COALESCE(NULLIF(p.usuarioId, 0), NULLIF(pt.idCliente, 0))
+    LEFT JOIN users u_vendedor ON u_vendedor._id = cli.idpadre
+    WHERE p._id = $1
+`;
+
 /**
  * Procesa novedad de pedido en la base de datos y envía email de notificación.
  * 
@@ -35,13 +54,37 @@ module.exports.main = async (event) => {
 
         console.log('✅ [NovedadPedido] Novedad guardada en base de datos');
 
+        let clienteNombre = 'N/A';
+        let clienteCodt = 'N/A';
+        let puntoConsumo = 'N/A';
+        let vendedorEmail = null;
+        let vendedorNombre = null;
+
+        try {
+            const { rows } = await client.query(GET_PEDIDO_EMAIL_CONTEXT, [_id]);
+            if (rows[0]) {
+                clienteNombre = rows[0].cliente_nombre || 'N/A';
+                clienteCodt = rows[0].cliente_codt || 'N/A';
+                puntoConsumo = rows[0].punto_consumo || 'N/A';
+                vendedorEmail = rows[0].vendedor_email || null;
+                vendedorNombre = rows[0].vendedor_nombre || null;
+            }
+        } catch (ctxError) {
+            console.error('⚠️ [NovedadPedido] No se pudo obtener contexto del pedido para el email:', ctxError);
+        }
+
         // Datos para el template del email
         const pedidoData = {
             pedidoId: _id,
             novedad,
             perfilNovedad: perfil_novedad,
             fechaEntrega,
-            conductorId
+            conductorId,
+            clienteNombre,
+            clienteCodt,
+            puntoConsumo,
+            vendedorEmail,
+            vendedorNombre
         };
 
         // Enviar email usando la función modularizada

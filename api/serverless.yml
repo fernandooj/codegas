@@ -1,5 +1,5 @@
 service: codegas
-frameworkVersion: '^3.38.0'
+frameworkVersion: '3.38.0'
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
 #org: your-org-name

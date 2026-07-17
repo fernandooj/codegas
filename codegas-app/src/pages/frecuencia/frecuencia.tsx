@@ -10,7 +10,15 @@ import { style } from './style';
 import { getFrecuencia } from '../../redux/actions/pedidoActions';
 import { GET_PEDIDOS_FRECUENCIA } from '../../redux/actions/constants/actionsTypes';
 import Footer from '../components/footer';
-import { FrecuenciaState, PedidoFrecuencia, GrupoFrecuencia } from './types';
+import { FrecuenciaState, PedidoFrecuencia, GrupoFrecuencia, FiltroFrecuencia } from './types';
+
+const FILTROS_FRECUENCIA: { key: FiltroFrecuencia; label: string }[] = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'semanal', label: 'Semanal' },
+    { key: 'quincenal', label: 'Cada 2 sem.' },
+    { key: 'mensual', label: 'Mensual' },
+    { key: 'tressemanas', label: 'Cada 3 sem.' },
+];
 import EditarFrecuenciaModal from './EditarFrecuenciaModal';
 import CrearGrupoFrecuenciaModal from './CrearGrupoFrecuenciaModal';
 import EditarGrupoFrecuenciaModal from './EditarGrupoFrecuenciaModal';
@@ -73,6 +81,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     const [editingGrupo, setEditingGrupo] = useState<GrupoFrecuencia | null>(null);
     const [viewingGrupo, setViewingGrupo] = useState<GrupoFrecuencia | null>(null);
     const [activeTab, setActiveTab] = useState<'individuales' | 'grupos'>('individuales');
+    const [filtroFrecuencia, setFiltroFrecuencia] = useState<FiltroFrecuencia>('todos');
     const [gruposFiltrados, setGruposFiltrados] = useState<GrupoFrecuencia[]>([]);
 
     useEffect(() => {
@@ -527,6 +536,14 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
     const { terminoBuscador, pedidosFiltrados, showSpin, loading, showEditModal, editingFrecuencia } = state;
 
     const individualesFiltrados = pedidosFiltrados.filter((p: PedidoFrecuencia) => !(p as any).grupo_id);
+    const individualesMostrados = filtroFrecuencia === 'todos'
+        ? individualesFiltrados
+        : individualesFiltrados.filter((p: PedidoFrecuencia) => p.frecuencia === filtroFrecuencia);
+
+    const contarIndividualesPorFrecuencia = (filtro: FiltroFrecuencia) => {
+        if (filtro === 'todos') return individualesFiltrados.length;
+        return individualesFiltrados.filter((p: PedidoFrecuencia) => p.frecuencia === filtro).length;
+    };
 
     // Mostrar preloading mientras se cargan los datos
     if (isLoadingData) {
@@ -565,7 +582,7 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                                 <Text style={style.titulo}>Pedidos Frecuentes</Text>
                                 <Text style={style.subtitulo}>
                                     {activeTab === 'individuales'
-                                        ? `${individualesFiltrados.length} frecuencias individuales`
+                                        ? `${individualesMostrados.length} frecuencias individuales`
                                         : `${terminoBuscador ? gruposFiltrados.length : grupos.length} grupos de frecuencias`
                                     }
                                     {activeTab === 'grupos' && (terminoBuscador ? gruposFiltrados : grupos).length > 0 && (
@@ -596,30 +613,24 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                     </View>
                     {activeTab === 'individuales' && (
                         <View style={style.headerStats}>
-                            <View style={style.statItem}>
-                                <Text style={style.statNumber}>
-                                    {individualesFiltrados.filter(p => p.frecuencia === 'semanal').length}
-                                </Text>
-                                <Text style={style.statLabel}>Semanal</Text>
-                            </View>
-                            <View style={style.statItem}>
-                                <Text style={style.statNumber}>
-                                    {individualesFiltrados.filter(p => p.frecuencia === 'quincenal').length}
-                                </Text>
-                                <Text style={style.statLabel}>Cada 2 sem.</Text>
-                            </View>
-                            <View style={style.statItem}>
-                                <Text style={style.statNumber}>
-                                    {individualesFiltrados.filter(p => p.frecuencia === 'mensual').length}
-                                </Text>
-                                <Text style={style.statLabel}>Mensual</Text>
-                            </View>
-                            <View style={style.statItem}>
-                                <Text style={style.statNumber}>
-                                    {individualesFiltrados.filter(p => p.frecuencia === 'tressemanas').length}
-                                </Text>
-                                <Text style={style.statLabel}>Cada 3 sem.</Text>
-                            </View>
+                            {FILTROS_FRECUENCIA.map((filtro) => {
+                                const activo = filtroFrecuencia === filtro.key;
+                                return (
+                                    <TouchableOpacity
+                                        key={filtro.key}
+                                        style={[style.statItem, activo && style.statItemActive]}
+                                        onPress={() => setFiltroFrecuencia(filtro.key)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Text style={[style.statNumber, activo && style.statNumberActive]}>
+                                            {contarIndividualesPorFrecuencia(filtro.key)}
+                                        </Text>
+                                        <Text style={[style.statLabel, activo && style.statLabelActive]}>
+                                            {filtro.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
                     )}
                 </View>
@@ -861,9 +872,9 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                 {/* Tab de Frecuencias Individuales */}
                 {activeTab === 'individuales' && (
                     <>
-                        {individualesFiltrados.length > 0 ? (
+                        {individualesMostrados.length > 0 ? (
                             <View style={{ marginBottom: 30, paddingTop: 20 }}>
-                                {individualesFiltrados.map((pedido: PedidoFrecuencia) => (
+                                {individualesMostrados.map((pedido: PedidoFrecuencia) => (
                                     <View key={`${pedido.pedido_id}-${pedido.usuarioid}`} style={style.cardContainer}>
                                         <TouchableOpacity
                                             style={style.cardContent}
@@ -1021,11 +1032,17 @@ const Frecuencia: React.FC = ({ navigation }: any) => {
                             <View style={style.emptyContainer}>
                                 <FontAwesome name="list" style={style.emptyIcon} />
                                 <Text style={style.emptyText}>
-                                    {terminoBuscador ? 'No se encontraron frecuencias' : 'No hay frecuencias individuales'}
+                                    {terminoBuscador
+                                        ? 'No se encontraron frecuencias'
+                                        : filtroFrecuencia !== 'todos'
+                                            ? 'No hay frecuencias con este filtro'
+                                            : 'No hay frecuencias individuales'}
                                 </Text>
-                                {terminoBuscador && (
+                                {(terminoBuscador || filtroFrecuencia !== 'todos') && (
                                     <Text style={style.emptySubtext}>
-                                        Intenta con otros términos de búsqueda
+                                        {terminoBuscador
+                                            ? 'Intenta con otros términos de búsqueda'
+                                            : 'Prueba seleccionando otro filtro o Todos'}
                                     </Text>
                                 )}
                             </View>

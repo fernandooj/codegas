@@ -48,16 +48,24 @@ export const style = MediaQueryStyleSheet.create({
 	},
 	headerStats: {
 		flexDirection: 'row',
-		justifyContent: 'space-around',
+		flexWrap: 'wrap',
+		justifyContent: 'center',
 		width: '90%',
 		backgroundColor: '#f8f9fa',
 		borderRadius: 12,
 		paddingVertical: 10,
-		paddingHorizontal: 10
+		paddingHorizontal: 6,
+		gap: 6
 	},
 	statItem: {
 		alignItems: 'center',
-		flex: 1
+		paddingVertical: 8,
+		paddingHorizontal: 8,
+		borderRadius: 10,
+		minWidth: 58
+	},
+	statItemActive: {
+		backgroundColor: '#002587'
 	},
 	statNumber: {
 		fontSize: 18,
@@ -65,11 +73,18 @@ export const style = MediaQueryStyleSheet.create({
 		color: '#002587',
 		fontFamily: 'Comfortaa-Bold'
 	},
+	statNumberActive: {
+		color: '#fff'
+	},
 	statLabel: {
-		fontSize: 12,
+		fontSize: 11,
 		color: '#6c757d',
 		marginTop: 2,
-		fontFamily: 'Comfortaa-Regular'
+		fontFamily: 'Comfortaa-Regular',
+		textAlign: 'center'
+	},
+	statLabelActive: {
+		color: '#e9ecef'
 	},
 
 	// Buscador mejorado

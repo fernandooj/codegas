@@ -8242,7 +8242,7 @@ serverless-webpack@^5.15.3:
     lodash "^4.17.21"
     semver "^7.7.2"
 
-"serverless@^1.60.0 || 2 || 3", serverless@^3.38.0, "serverless@1 || 2 || 3 || 4", "serverless@1 || 2 || pre-3 || 3":
+"serverless@^1.60.0 || 2 || 3", "serverless@1 || 2 || 3 || 4", "serverless@1 || 2 || pre-3 || 3", serverless@3.38.0:
   version "3.38.0"
   resolved "https://registry.npmjs.org/serverless/-/serverless-3.38.0.tgz"
   integrity sha512-NJE1vOn8XmQEqfU9UxmVhkUFaCRmx6FhYw/jITN863WlOt4Y3PQbj3hwQyIb5QS1ZrXFq5ojklwewUXH7xGpdA==

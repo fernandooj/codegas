@@ -11,7 +11,8 @@ import { TextInputMask } from 'react-native-masked-text'
 import { useDispatch, useSelector } from "react-redux";
 import { DataContext } from "../../context/context"
 import { getUsuarios, getPointsByClient } from '../../redux/actions/usuarioActions'
-import { verificarPedidoHoy, crearPedido } from '../../redux/actions/pedidoActions'
+import { GET_USUARIOS } from '../../redux/actions/constants/actionsTypes'
+import { verificarPedidoHoy, crearPedido, notificarClienteInactivo } from '../../redux/actions/pedidoActions'
 import Footer from '../components/footer'
 import HeaderLogo from '../../components/HeaderLogo'
 import { style } from './style'
@@ -38,7 +39,6 @@ import {
     DataContextType,
     RootState,
     TextInputMaskRef,
-    FiltroClientesParams,
     VerificacionPedidoParams,
     CrearPedidoParams,
     GetPuntosParams,
@@ -51,6 +51,8 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
     const { acceso, userId: idUsuario, email, nombre } = context;
     const dispatch = useDispatch();
     const campoMonto = useRef<TextInputMaskRef>(null);
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [buscandoClientes, setBuscandoClientes] = useState(false);
 
     // Estados para animaciones del modal
     const [modalAnimation] = useState(new Animated.Value(0));
@@ -200,8 +202,25 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
         }
     };
 
-    const getClientes = (): void => {
-        const { terminoBuscador, idUsuario, acceso } = state;
+    const rankCliente = (cliente: Cliente, termino: string): number => {
+        const t = termino.trim().toLowerCase();
+        if (!t) return 0;
+        const nombreCli = (cliente.nombre || '').toLowerCase();
+        const razon = (cliente.razon_social || '').toLowerCase();
+        const codt = (cliente.codt || '').toLowerCase();
+        let score = 0;
+        if (cliente.activo) score += 1000;
+        if (codt === t) score += 500;
+        if (razon === t || nombreCli === t) score += 400;
+        if (codt.startsWith(t)) score += 300;
+        if (razon.startsWith(t) || nombreCli.startsWith(t)) score += 200;
+        if (razon.includes(t) || nombreCli.includes(t) || codt.includes(t)) score += 100;
+        return score;
+    };
+
+    const getClientes = (searchTerm?: string): void => {
+        const { idUsuario, acceso } = state;
+        const termino = (searchTerm ?? state.terminoBuscador).trim();
 
         // Si el acceso es cliente, no debe llamar a ningún endpoint de usuarios
         if (acceso === 'cliente') {
@@ -213,14 +232,58 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
             return;
         }
 
-        // Usar la misma lógica que en la página de clientes
-        const action = getUsuarios(10, 0, 'cliente', terminoBuscador, idUsuario);
+        if (termino.length < 3) {
+            return;
+        }
+
+        setBuscandoClientes(true);
+        const action = getUsuarios(40, 0, 'cliente', termino, idUsuario);
         if (action && typeof action === 'function') {
-            dispatch(action);
+            Promise.resolve(dispatch(action as any))
+                .catch(() => undefined)
+                .finally(() => setBuscandoClientes(false));
+        } else {
+            setBuscandoClientes(false);
         }
     };
+
+    const handleBuscadorClientesChange = (texto: string): void => {
+        setState(prev => ({ ...prev, terminoBuscador: texto }));
+
+        if (searchDebounceRef.current) {
+            clearTimeout(searchDebounceRef.current);
+            searchDebounceRef.current = null;
+        }
+
+        const termino = texto.trim();
+        if (termino.length < 3) {
+            setBuscandoClientes(false);
+            setState(prev => ({ ...prev, showRenderUsuarios: false }));
+            dispatch({ type: GET_USUARIOS, usuarios: [] });
+            return;
+        }
+
+        setState(prev => ({ ...prev, showRenderUsuarios: true }));
+        searchDebounceRef.current = setTimeout(() => {
+            getClientes(termino);
+        }, 350);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (searchDebounceRef.current) {
+                clearTimeout(searchDebounceRef.current);
+            }
+        };
+    }, []);
+
     const renderUsuarios = (): React.JSX.Element[] => {
-        return clientes.map((e: Cliente, key: number) => {
+        const termino = state.terminoBuscador || '';
+        const clientesOrdenados = [...clientes].sort(
+            (a, b) => rankCliente(b, termino) - rankCliente(a, termino)
+        );
+
+        return clientesOrdenados.map((e: Cliente, key: number) => {
             const isInactive = !e.activo;
             return (
                 <TouchableOpacity
@@ -230,7 +293,6 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                         isInactive && style.clienteCardInactive
                     ]}
                     onPress={() => filtroClientes(e)}
-                    disabled={isInactive}
                     activeOpacity={0.7}
                 >
                     <View style={style.clienteCardContent}>
@@ -412,27 +474,36 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                         <View style={style.modalSearchContainer}>
                             <View style={style.modalSearchInputContainer}>
                                 <TextInput
-                                    placeholder="Buscar por nombre o razón social..."
+                                    placeholder="Escriba al menos 3 letras..."
                                     value={terminoBuscador}
                                     style={style.modalSearchInput}
-                                    onChangeText={(terminoBuscador) => setState(prev => ({ ...prev, terminoBuscador }))}
+                                    onChangeText={handleBuscadorClientesChange}
                                     placeholderTextColor="#999"
+                                    autoCorrect={false}
+                                    autoCapitalize="characters"
                                 />
                                 <TouchableOpacity
                                     style={style.modalSearchButton}
                                     onPress={() => {
-                                        if (terminoBuscador.length > 1) {
-                                            getClientes();
+                                        if (terminoBuscador.trim().length >= 3) {
+                                            if (searchDebounceRef.current) {
+                                                clearTimeout(searchDebounceRef.current);
+                                            }
                                             setState(prev => ({ ...prev, showRenderUsuarios: true }));
+                                            getClientes(terminoBuscador.trim());
                                         } else {
                                             Toast.show({
                                                 type: 'info',
-                                                text1: 'Ingrese al menos 2 caracteres para buscar'
+                                                text1: 'Ingrese al menos 3 caracteres para buscar'
                                             });
                                         }
                                     }}
                                 >
-                                    <FontAwesome name='search' style={style.modalSearchIcon} />
+                                    {buscandoClientes ? (
+                                        <ActivityIndicator size="small" color="#ffffff" />
+                                    ) : (
+                                        <FontAwesome name='search' style={style.modalSearchIcon} />
+                                    )}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -440,8 +511,15 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                         {/* Lista de clientes */}
                         <View style={style.modalContent}>
                             {showRenderUsuarios ? (
-                                clientes.length > 0 ? (
-                                    <ScrollView style={style.modalScrollView}>
+                                buscandoClientes && clientes.length === 0 ? (
+                                    <View style={style.modalEmptyState}>
+                                        <ActivityIndicator size="large" color="#002587" />
+                                        <Text style={[style.modalEmptyText, { marginTop: 12 }]}>
+                                            Buscando clientes...
+                                        </Text>
+                                    </View>
+                                ) : clientes.length > 0 ? (
+                                    <ScrollView style={style.modalScrollView} keyboardShouldPersistTaps="handled">
                                         {renderUsuarios()}
                                     </ScrollView>
                                 ) : (
@@ -470,7 +548,7 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                                         Buscar Clientes
                                     </Text>
                                     <Text style={style.modalEmptySubtext}>
-                                        Ingresa el nombre o razón social del cliente
+                                        Escriba al menos 3 letras para ver resultados
                                     </Text>
                                 </View>
                             )}
@@ -1298,6 +1376,13 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Completa los datos de frecuencia mensual' });
                         } else if (!fechaSolicitud) {
                             Toast.show({ position: 'bottom', type: 'info', text1: 'Inserta una fecha de Entrega' });
+                        } else if (acceso !== 'admin' && fechaSolicitud <= moment().format('YYYY-MM-DD')) {
+                            Toast.show({
+                                position: 'bottom',
+                                type: 'info',
+                                text1: 'Fecha no permitida',
+                                text2: 'Solo el administrador puede crear pedidos con fecha de hoy. Elija a partir de mañana.'
+                            });
                         } else if (!guardando) {
                             verificaPedido();
                         }
@@ -1311,7 +1396,30 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
             </View>
         )
     }
-    const filtroClientes = ({ _id, email, nombre }: FiltroClientesParams): void => {
+    const filtroClientes = (cliente: Cliente): void => {
+        const { _id, email, nombre, razon_social, codt, activo } = cliente;
+
+        if (!activo) {
+            const clienteNombre = razon_social || nombre || 'Cliente sin nombre';
+            Toast.show({
+                type: 'error',
+                text1: 'Cliente inactivo',
+                text2: 'No se puede crear pedido. Se notificó a coordinación comercial.'
+            });
+
+            notificarClienteInactivo({
+                clienteId: _id,
+                usuarioNombre: state.nombre || 'Usuario',
+                usuarioEmail: state.email || '',
+                clienteNombre,
+                clienteCodt: codt || ''
+            }).catch((err) => {
+                console.error('Error notificando cliente inactivo:', err);
+            });
+
+            return;
+        }
+
         setState(prev => ({
             ...prev,
             cliente: nombre,
@@ -1511,11 +1619,15 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
     };
 
     const modalFechaEntrega = (): React.JSX.Element => {
-        const { modalFechaEntrega, fechaSolicitud } = state;
+        const { modalFechaEntrega, fechaSolicitud, acceso: accesoUsuario } = state;
 
-        // Validar que fechaSolicitud no esté vacía antes de formatear
-        const fechaFormateada = fechaSolicitud ? moment(fechaSolicitud).format("YYYY-MM-DD") : moment().format("YYYY-MM-DD");
         const diaActual = moment().format('YYYY-MM-DD');
+        const manana = moment().add(1, 'day').format('YYYY-MM-DD');
+        const minFecha = accesoUsuario === 'admin' ? diaActual : manana;
+        // Validar que fechaSolicitud no esté vacía antes de formatear
+        const fechaFormateada = fechaSolicitud
+            ? moment(fechaSolicitud).format("YYYY-MM-DD")
+            : minFecha;
 
         return (
             <Modal transparent visible={modalFechaEntrega} animationType="fade" >
@@ -1525,13 +1637,23 @@ const Nuevo_pedido: React.FC<NuevoPedidoProps> = ({ navigation }) => {
                             <TouchableOpacity activeOpacity={1} onPress={() => setState(prev => ({ ...prev, showFechaEntrega: false }))} style={style.btnModalClose}>
                                 <FontAwesome name={'times-circle'} style={style.iconCerrar} />
                             </TouchableOpacity>
-                            <Text style={style.tituloModal}>Fecha entrega</Text>
+                            <Text style={style.tituloModal}>
+                                {accesoUsuario === 'admin' ? 'Fecha entrega' : 'Fecha entrega (desde mañana)'}
+                            </Text>
                             <Calendar
                                 style={style.calendar}
                                 current={fechaFormateada}
-                                minDate={diaActual}
+                                minDate={minFecha}
                                 firstDay={1}
                                 onDayPress={(day: CalendarDay) => {
+                                    if (accesoUsuario !== 'admin' && day.dateString <= diaActual) {
+                                        Toast.show({
+                                            type: 'info',
+                                            text1: 'Fecha no permitida',
+                                            text2: 'Solo el administrador puede crear pedidos con fecha de hoy'
+                                        });
+                                        return;
+                                    }
                                     setState(prev => ({
                                         ...prev,
                                         solicitud: true,

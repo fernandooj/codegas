@@ -1325,6 +1325,31 @@ const sendFacturaEmail = async (pedidoId, email) => {
   }
 };
 
+const notificarClienteInactivo = async ({
+  clienteId,
+  usuarioNombre,
+  usuarioEmail,
+  clienteNombre,
+  clienteCodt
+}) => {
+  try {
+    const response = await axios.post('/ped/pedido/notificar-cliente-inactivo', {
+      clienteId,
+      usuarioNombre,
+      usuarioEmail,
+      clienteNombre,
+      clienteCodt
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error en notificarClienteInactivo:', error);
+    return {
+      status: false,
+      message: error?.response?.data?.message || error.message || 'Error al notificar cliente inactivo'
+    };
+  }
+};
+
 export {
   getPedido,
   getPedidos,
@@ -1337,6 +1362,7 @@ export {
   crearPedido,
   getNovedadesByPedido,
   guardarNovedadInactivo,
+  notificarClienteInactivo,
   asignarConductor,
   asignarFechaEntrega,
   guardarNovedadCerrarPedido,

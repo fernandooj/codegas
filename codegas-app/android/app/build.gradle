@@ -85,8 +85,8 @@ android {
         applicationId "com.codegascolombia"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "1.0.7"
+        versionCode 9
+        versionName "1.0.8"
         
         // Solo incluir arquitecturas necesarias para reducir tamaño
         // arm64-v8a: 99% de dispositivos modernos (2014+)

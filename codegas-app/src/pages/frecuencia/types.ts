@@ -20,6 +20,8 @@ export interface PedidoFrecuencia {
     grupo_id?: number; // ID del grupo de frecuencia al que pertenece
 }
 
+export type FiltroFrecuencia = 'todos' | PedidoFrecuencia['frecuencia'];
+
 export interface FrecuenciaState {
     terminoBuscador: string;
     pedidos: PedidoFrecuencia[];

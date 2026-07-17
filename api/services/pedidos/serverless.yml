@@ -120,6 +120,21 @@ novedadPedido:
       - lib/nodemailer-config.js
       - assets/img/logo.jpg
 
+notificarClienteInactivo:
+  name: ${self:custom.base}-notificar-cliente-inactivo
+  handler: services/pedidos/src/notificar-cliente-inactivo.main
+  events:
+    - httpApi: 'POST /ped/pedido/notificar-cliente-inactivo'
+  environment:
+    EMAIL_USER: ${self:custom.emailUser}
+    EMAIL_PASS: ${self:custom.emailPass}
+  package:
+    include:
+      - services/pedidos/src/notificar-cliente-inactivo.js
+      - lib/errors/database-error.js
+      - lib/email-cliente-inactivo.js
+      - lib/nodemailer-config.js
+
 finalizarPedido:
   name: ${self:custom.base}-finalizar-pedido
   handler: services/pedidos/src/finalizar-pedido.main

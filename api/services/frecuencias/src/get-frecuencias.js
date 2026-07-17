@@ -87,7 +87,39 @@ const toDateOnly = (value) => {
     return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 };
 
-const buildFrecuenciaListsAndCreateIndividuales = async (client, fechaSolicitud, diaSemanaObjetivo) => {
+const isQuincenalCalendarioIndividual = (d1, d2) => {
+    const a = parseInt(String(d1 ?? ''), 10);
+    const b = parseInt(String(d2 ?? ''), 10);
+    return Number.isFinite(a) && Number.isFinite(b) && a >= 1 && a <= 15 && b >= 16 && b <= 31;
+};
+
+/** Primer día de entrega (1=Lun…7=Dom) en o después de la fecha base. */
+const getFirstWeekdayOnOrAfter = (baseDate, diaSemana1a7) => {
+    const creada = toDateOnly(baseDate);
+    if (!creada || !Number.isFinite(diaSemana1a7) || diaSemana1a7 < 1 || diaSemana1a7 > 7) {
+        return null;
+    }
+    const diaObjetivoJS = diaSemana1a7 === 7 ? 0 : diaSemana1a7;
+    const primera = new Date(creada.getTime());
+    let guard = 0;
+    while (primera.getUTCDay() !== diaObjetivoJS && guard < 7) {
+        primera.setUTCDate(primera.getUTCDate() + 1);
+        guard++;
+    }
+    return guard < 7 ? primera : null;
+};
+
+/** Misma lógica que grupos: semanas desde la primera entrega alineada, múltiplo del intervalo. */
+const aplicaIntervaloSemanasDesdePrimeraEntrega = (creado, fechaObjetivoStr, diaSemana, intervaloSemanas) => {
+    const primeraEntrega = getFirstWeekdayOnOrAfter(creado, diaSemana);
+    const objetivo = toDateOnly(fechaObjetivoStr);
+    if (!primeraEntrega || !objetivo) return false;
+    const diffDays = Math.floor((objetivo.getTime() - primeraEntrega.getTime()) / (1000 * 60 * 60 * 24));
+    const semanasDesdePrimera = Math.floor(diffDays / 7);
+    return semanasDesdePrimera >= 0 && semanasDesdePrimera % intervaloSemanas === 0;
+};
+
+const buildFrecuenciaListsAndCreateIndividuales = async (client, fechaSolicitud, diaSemanaObjetivo, diaMesObjetivo) => {
     const fechaSolicitudStr = fechaSolicitud instanceof Date
         ? fechaSolicitud.toISOString().split('T')[0]
         : String(fechaSolicitud).split('T')[0];
@@ -199,19 +231,26 @@ const buildFrecuenciaListsAndCreateIndividuales = async (client, fechaSolicitud,
         const frecuenciaWeeks = normalizeFrecuencia(pedido.frecuencia);
         if (!frecuenciaWeeks) continue;
         const dia1 = Number(pedido.dia1);
+        const dia2 =
+            pedido.dia2 !== undefined && pedido.dia2 !== null && pedido.dia2 !== ''
+                ? Number(pedido.dia2)
+                : NaN;
         let aplica = false;
-        if (dia1 === diaSemanaObjetivo) {
-            if (frecuenciaWeeks === 1) {
-                aplica = true;
-            } else {
-                const creada = toDateOnly(pedido.creado);
-                const objetivo = toDateOnly(fechaSolicitudStr);
-                if (creada && objetivo) {
-                    const diffDays = Math.floor((objetivo.getTime() - creada.getTime()) / (1000 * 60 * 60 * 24));
-                    const diffWeeks = Math.floor(diffDays / 7);
-                    aplica = diffWeeks >= frecuenciaWeeks && diffWeeks % frecuenciaWeeks === 0;
-                }
-            }
+
+        if (frecuenciaWeeks === 1) {
+            aplica = dia1 === diaSemanaObjetivo;
+        } else if (
+            pedido.frecuencia === 'quincenal' &&
+            isQuincenalCalendarioIndividual(pedido.dia1, pedido.dia2)
+        ) {
+            aplica = dia1 === diaMesObjetivo || dia2 === diaMesObjetivo;
+        } else if (dia1 === diaSemanaObjetivo) {
+            aplica = aplicaIntervaloSemanasDesdePrimeraEntrega(
+                pedido.creado,
+                fechaSolicitudStr,
+                dia1,
+                frecuenciaWeeks
+            );
         }
 
         if (!aplica) continue;
@@ -611,6 +650,7 @@ module.exports.main = async (event) => {
             client,
             fechaSolicitud,
             diaSemanaObjetivo,
+            diaMesObjetivo,
         );
 
         // Enriquecer con nombre de cliente y dirección para que aparezcan en las tablas del correo

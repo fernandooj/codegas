@@ -1,7 +1,7 @@
 const moment = require('moment');
-const { Parser } = require('@json2csv/plainjs');
 const { poolConection } = require('../../../lib/connection-pg.js')
 const DatabaseError = require('../../../lib/errors/database-error')
+const { getExportFormat, buildInformeResponse } = require('../../../lib/informe-response.js');
 const GET_USERS = 'SELECT * FROM informe_get_users($1, $2, $3)';
 const GET_CONDUCTOR_PLACAS = `
   SELECT
