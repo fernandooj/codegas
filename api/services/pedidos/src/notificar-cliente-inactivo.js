@@ -20,7 +20,6 @@ const GET_CLIENTE_Y_PUNTOS = `
     FROM users u
     LEFT JOIN puntos pt
         ON pt.idCliente = u._id
-        AND COALESCE(pt.eliminado, false) = false
     WHERE u._id = $1
     GROUP BY u._id, u.razon_social, u.nombre, u.codt, u.activo
 `;
