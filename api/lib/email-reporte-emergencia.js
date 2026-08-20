@@ -2,8 +2,8 @@ const { transporter } = require('./nodemailer-config');
 const path = require('path');
 
 // Destinatarios del email para reportes de emergencia
-const email1 = "fernandooj@ymail.com";
 const email2 = "dptotecnico@codegascolombia.com";
+const FIXED_RECIPIENTS = [email2];
 
 // Función para generar el template HTML del email
 const generateEmailTemplate = (reporteData) => {
@@ -264,7 +264,7 @@ const sendReporteEmergenciaEmail = async (reporteData) => {
     // Configuración del email con el nuevo template
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: [email1, email2],
+        to: FIXED_RECIPIENTS,
         subject: asunto,
         html: emailHtml,
         attachments: [

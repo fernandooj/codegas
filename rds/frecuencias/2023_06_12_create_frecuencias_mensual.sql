@@ -17,21 +17,26 @@ LANGUAGE plpgsql AS
 $func$
 DECLARE
     currentDayOfMonth INT;
+    fechaEntrega DATE;
 BEGIN
-    currentDayOfMonth := EXTRACT(DAY FROM current_date)+1;
-
     SET TIME ZONE 'America/Bogota';
 
-    RETURN QUERY 
+    fechaEntrega := CURRENT_DATE + INTERVAL '2 days';
+    currentDayOfMonth := EXTRACT(DAY FROM fechaEntrega)::INT;
+
+    RETURN QUERY
         SELECT currentDayOfMonth, p._id, p.dia1, p.forma, p.cantidadKl, p.cantidadPrecio, p.usuarioId, p.puntoId, p.usuarioCrea, u.valorUnitario
         FROM pedidos p
         JOIN users u ON u._id = p.usuarioId
         WHERE p.frecuencia = _frecuencia
-        AND p.dia1 = currentDayOfMonth;
+          AND p.eliminado = FALSE
+          AND p.pedidopadre IS NULL
+          AND p.grupo_id IS NULL
+          AND p.dia1 = currentDayOfMonth;
 
     INSERT INTO pedidos (
         pedidoPadre,
-        dia1, 
+        dia1,
         forma,
         cantidadKl,
         cantidadPrecio,
@@ -39,11 +44,12 @@ BEGIN
         puntoId,
         usuarioCrea,
         valorUnitario,
-        fechaSolicitud
+        fechaSolicitud,
+        estado
     )
-    SELECT 
-        p._id, 
-        p.dia1, 
+    SELECT
+        p._id,
+        p.dia1,
         p.forma,
         p.cantidadKl,
         p.cantidadPrecio,
@@ -51,11 +57,22 @@ BEGIN
         p.puntoId,
         p.usuarioCrea,
         u.valorUnitario,
-        TO_CHAR(current_date + INTERVAL '1 day', 'YYYY-MM-DD')
+        TO_CHAR(fechaEntrega, 'YYYY-MM-DD'),
+        'espera'
     FROM pedidos p
     JOIN users u ON u._id = p.usuarioId
     WHERE p.frecuencia = _frecuencia
-    AND p.dia1 = currentDayOfMonth;
+      AND p.eliminado = FALSE
+      AND p.pedidopadre IS NULL
+      AND p.grupo_id IS NULL
+      AND p.dia1 = currentDayOfMonth
+      AND NOT EXISTS (
+          SELECT 1
+          FROM pedidos h
+          WHERE h.pedidopadre = p._id
+            AND h.eliminado = FALSE
+            AND h.fechasolicitud::date = fechaEntrega
+      );
 
     RETURN;
 END

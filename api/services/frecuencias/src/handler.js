@@ -95,17 +95,16 @@ module.exports.main = async (event, context) => {
   // Normalizar path (sin querystring)
   const cleanPath = path.split('?')[0];
 
-  // Rutas HTTP sin parámetros
-  if (method === 'GET' && cleanPath === '/fre/frecuencia/semanal') {
-    return crearFrecuenciaSemanal.main(event, context);
-  }
-
-  if (method === 'GET' && cleanPath === '/fre/frecuencia/quincenal') {
-    return crearFrecuenciaQuincenal.main(event, context);
-  }
-
-  if (method === 'GET' && cleanPath === '/fre/frecuencia/mensual') {
-    return crearFrecuenciaMensual.main(event, context);
+  // Legacy: estos endpoints llamaban SQL con ISODOW+1 (duplicaba miércoles).
+  // Redirigen al flujo único diario (individuales + grupos, idempotente).
+  if (
+    method === 'GET' &&
+    (cleanPath === '/fre/frecuencia/semanal' ||
+      cleanPath === '/fre/frecuencia/quincenal' ||
+      cleanPath === '/fre/frecuencia/mensual')
+  ) {
+    console.warn(`[frecuencias] Legacy ${cleanPath} redirigido a crearPedidosDiarios`);
+    return runCrearPedidosDiarios(event, context);
   }
 
   if (method === 'GET' && cleanPath === '/fre/crear-pedidos-frecuencia') {

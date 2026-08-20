@@ -1,28 +1,12 @@
-const nodemailer = require('nodemailer');
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
-
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS
-    }
-});
+const { transporter, EMAIL_USER } = require('../../../lib/nodemailer-config');
 
 const recipients = [
     'gestioncalidad@codegascolombia.com',
     'coord.logistica@codegascolombia.com',
-    'gerencia@codegascolombia.com',
-    'fernandooj@ymail.com'
+    'gerencia@codegascolombia.com'
 ];
-
-// const recipients = [
-//     'fernandooj@ymail.com'
-// ];
 
 /**
  * Enriquecer filas con nombre de cliente y dirección a partir de la tabla pedidos/users/puntos.
@@ -620,6 +604,7 @@ module.exports.main = async (event) => {
                 CURRENT_DATE as fecha_hoy,
                 CURRENT_DATE + INTERVAL '1 day' as fecha_manana,
                 CURRENT_DATE + INTERVAL '2 days' as fecha_lunes,
+                to_char(CURRENT_DATE + INTERVAL '2 days', 'YYYY-MM-DD') as fecha_solicitud_str,
                 EXTRACT(ISODOW FROM CURRENT_DATE) as dia_semana_hoy,
                 EXTRACT(ISODOW FROM CURRENT_DATE + INTERVAL '1 day') as dia_semana_manana,
                 EXTRACT(ISODOW FROM CURRENT_DATE + INTERVAL '2 days') as dia_semana_lunes,
@@ -642,13 +627,17 @@ module.exports.main = async (event) => {
         // El dia_semana del grupo es el día de ENTREGA, no de ejecución
         // Ejecución = 2 días antes de la entrega
         const fechaSolicitud = fechaInfo[0].fecha_lunes; // Siempre 2 días después
+        const fechaSolicitudStr = fechaInfo[0].fecha_solicitud_str
+            || (fechaSolicitud instanceof Date
+                ? fechaSolicitud.toISOString().split('T')[0]
+                : String(fechaSolicitud).split('T')[0]);
         const diaSemanaObjetivo = diaSemanaLunes; // Día de la semana en 2 días (día de entrega)
         const diaMesObjetivo = diaMesLunes; // Día del mes en 2 días (día de entrega)
 
         // Crear/listar pedidos individuales (frecuencia + dia1) en este mismo endpoint
         const individuales = await buildFrecuenciaListsAndCreateIndividuales(
             client,
-            fechaSolicitud,
+            fechaSolicitudStr,
             diaSemanaObjetivo,
             diaMesObjetivo,
         );
@@ -834,11 +823,22 @@ module.exports.main = async (event) => {
             }
         }
 
-        // 4. Crear los pedidos de grupos
+        // 4. Crear los pedidos de grupos (idempotente: no duplicar padre+fecha)
         let pedidosGruposCreados = 0;
         const pedidosGruposCreadosIds = [];
+        const pedidosGruposParaReporte = [];
 
         if (pedidosGrupos.length > 0) {
+            const GET_HIJO_GRUPO_EXISTENTE = `
+                SELECT _id
+                FROM pedidos
+                WHERE pedidopadre = $1
+                  AND eliminado = FALSE
+                  AND fechasolicitud::date = $2::date
+                ORDER BY _id DESC
+                LIMIT 1
+            `;
+
             const INSERT_PEDIDO_GRUPO = `
                 INSERT INTO pedidos (
                     forma,
@@ -863,6 +863,23 @@ module.exports.main = async (event) => {
                     const puntoIdValue = pedido.puntoid;
                     const usuarioCreaValue = pedido.usuariocrea || pedido.usuarioid;
 
+                    const { rows: hijoExistente } = await client.query(GET_HIJO_GRUPO_EXISTENTE, [
+                        pedido.pedido_id,
+                        fechaSolicitudStr
+                    ]);
+
+                    if (hijoExistente.length > 0) {
+                        console.log(
+                            `[frecuencias] Grupo skip duplicado padre=${pedido.pedido_id} fecha=${fechaSolicitudStr} hijo=${hijoExistente[0]._id}`
+                        );
+                        pedidosGruposParaReporte.push({
+                            ...pedido,
+                            pedido_id: hijoExistente[0]._id,
+                            duplicado_omitido: true
+                        });
+                        continue;
+                    }
+
                     const { rows: nuevoPedido } = await client.query(INSERT_PEDIDO_GRUPO, [
                         pedido.forma,
                         pedido.cantidadkl,
@@ -871,7 +888,7 @@ module.exports.main = async (event) => {
                         pedido.observacion || null,
                         pedido.pedido_id,
                         'espera',
-                        fechaSolicitud,
+                        fechaSolicitudStr,
                         usuarioIdValue,
                         puntoIdValue,
                         usuarioCreaValue,
@@ -880,8 +897,12 @@ module.exports.main = async (event) => {
 
                     pedidosGruposCreados++;
                     pedidosGruposCreadosIds.push(nuevoPedido[0]._id);
+                    pedidosGruposParaReporte.push({
+                        ...pedido,
+                        pedido_id: nuevoPedido[0]._id
+                    });
                 } catch (error) {
-                    // Error silencioso, continuar con el siguiente pedido
+                    console.error('[frecuencias] Error creando pedido de grupo:', error.message);
                 }
             }
         }
@@ -908,7 +929,7 @@ module.exports.main = async (event) => {
                 cada3semanas,
                 cada4semanas,
                 cada5semanas,
-                pedidosGrupos
+                pedidosGruposParaReporte
             ),
             attachments: []
         };
@@ -939,7 +960,7 @@ module.exports.main = async (event) => {
             gruposDetalle: gruposDetalle,  // Detalle de grupos que deben crear
             fechaActual: fechaHoy,
             fechaManana: fechaManana,
-            fechaSolicitud: fechaSolicitud,  // Fecha para la cual se crearán los pedidos (2 días después)
+            fechaSolicitud: fechaSolicitudStr,  // Fecha para la cual se crearán los pedidos (2 días después)
             diaSemanaHoy: diaSemanaHoy,
             diaSemanaManana: diaSemanaManana,
             diaSemanaObjetivo: diaSemanaObjetivo,  // Día de la semana objetivo (2 días después = día de entrega)
@@ -952,7 +973,7 @@ module.exports.main = async (event) => {
             tressemanas: cada3semanas,
             cuatrosemanas: cada4semanas,
             cincosemanas: cada5semanas,
-            grupos: pedidosGrupos  // Lista de pedidos que pertenecen a grupos (ya creados)
+            grupos: pedidosGruposParaReporte
         };
 
     } catch (error) {

@@ -1,18 +1,7 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
-const nodemailer = require('nodemailer');
 const path = require('path');
-
-// Configuración de Nodemailer
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS
-  }
-});
+const { transporter, EMAIL_USER } = require('../../../lib/nodemailer-config');
 
 /** create user */
 const SAVE_USER = 'SELECT * FROM save_users($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)';

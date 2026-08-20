@@ -10,6 +10,7 @@ createUser:
     include:
       - services/users/src/save-user.js
       - lib/errors/database-error.js
+      - lib/nodemailer-config.js
       - assets/img/logo.jpg
 
 getUsers:

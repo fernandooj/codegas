@@ -157,52 +157,42 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     // Estado local para los datos de tanques (se actualiza cuando se guarda)
     const [localTanquesData, setLocalTanquesData] = useState<any[]>(pedidoData.tanques || []);
     const [downloadingRemisionPdf, setDownloadingRemisionPdf] = useState(false);
-    const [firmaUsuarioDebug, setFirmaUsuarioDebug] = useState<string | null>(pedidoData.firma_usuario || null);
-    const [firmaDebugStatus, setFirmaDebugStatus] = useState('sin consultar');
-    const [firmaImgError, setFirmaImgError] = useState(false);
+    const [firmaConductorUri, setFirmaConductorUri] = useState<string | null>(pedidoData.firma_conductor || null);
+    const [firmaUsuarioUri, setFirmaUsuarioUri] = useState<string | null>(pedidoData.firma_usuario || null);
 
     // Actualizar localTanquesData cuando cambia pedidoData.tanques
     useEffect(() => {
         setLocalTanquesData(pedidoData.tanques || []);
     }, [pedidoData.tanques]);
 
+    // Firmas desde S3 privado: pedir URL firmada / data URI al API
     useEffect(() => {
         let cancelled = false;
         const loadFirmas = async () => {
-            if (!visible || !id || !entregado) {
-                return;
-            }
-            setFirmaImgError(false);
-            if (pedidoData.firma_usuario) {
-                setFirmaUsuarioDebug(pedidoData.firma_usuario);
-                setFirmaDebugStatus('en el pedido');
-            } else {
-                setFirmaDebugStatus('consultando API...');
-            }
+            if (!visible || !id) return;
+            setFirmaConductorUri(pedidoData.firma_conductor || null);
+            setFirmaUsuarioUri(pedidoData.firma_usuario || null);
+            if (!pedidoData.firma_conductor && !pedidoData.firma_usuario && !entregado) return;
             const res = await obtenerFirmas(String(id));
-            if (cancelled) {
-                return;
-            }
-            const url =
-                res?.data?.firma_usuario_datauri
-                || res?.data?.firma_usuario_url
-                || null;
-            setFirmaUsuarioDebug(url);
-            setFirmaDebugStatus(
-                res?.data?.firma_usuario_datauri
-                    ? 'API: firma en data URI (ok)'
-                    : url
-                        ? `API firmada: ${String(url).slice(0, 90)}`
-                        : res?.data?.firma_usuario
-                            ? 'API: hay URL privada pero no se pudo firmar/leer S3'
-                            : 'API: este pedido no tiene firma_usuario'
+            if (cancelled || !res?.status || !res.data) return;
+            setFirmaConductorUri(
+                res.data.firma_conductor_datauri
+                || res.data.firma_conductor_url
+                || res.data.firma_conductor
+                || null
+            );
+            setFirmaUsuarioUri(
+                res.data.firma_usuario_datauri
+                || res.data.firma_usuario_url
+                || res.data.firma_usuario
+                || null
             );
         };
         loadFirmas();
         return () => {
             cancelled = true;
         };
-    }, [visible, id, entregado, pedidoData.firma_usuario]);
+    }, [visible, id, entregado, pedidoData.firma_conductor, pedidoData.firma_usuario]);
 
     // Funciones para navegación
     const openNavigationModal = () => {
@@ -841,68 +831,9 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                         </View>
 
                                         {entregado && id && estado !== 'noentregado' && (
-                                            <>
-                                            <View
-                                                style={{
-                                                    marginTop: 12,
-                                                    alignSelf: 'center',
-                                                    width: '92%',
-                                                    borderWidth: 2,
-                                                    borderColor: '#e11d48',
-                                                    borderRadius: 12,
-                                                    backgroundColor: '#fff7ed',
-                                                    padding: 8
-                                                }}
-                                            >
-                                                <Text style={{ fontSize: 11, fontWeight: '700', color: '#9f1239', marginBottom: 6 }}>
-                                                    DEBUG firma cliente (temporal)
-                                                </Text>
-                                                <Text style={{ fontSize: 10, color: '#7f1d1d', marginBottom: 2 }}>
-                                                    Nombre: {pedidoData.nombre || pedidoData.razon_social || '—'}
-                                                </Text>
-                                                <Text style={{ fontSize: 10, color: '#7f1d1d', marginBottom: 6 }}>
-                                                    C.C.: {pedidoData.cedula || '—'}
-                                                </Text>
-                                                <Text style={{ fontSize: 10, color: '#7f1d1d', marginBottom: 6 }}>
-                                                    {firmaDebugStatus}
-                                                </Text>
-                                                {firmaUsuarioDebug && !firmaImgError ? (
-                                                    <Image
-                                                        source={{ uri: firmaUsuarioDebug }}
-                                                        style={{
-                                                            width: '100%',
-                                                            height: 90,
-                                                            backgroundColor: '#fff',
-                                                            resizeMode: 'contain'
-                                                        }}
-                                                        onError={() => setFirmaImgError(true)}
-                                                    />
-                                                ) : (
-                                                    <View
-                                                        style={{
-                                                            height: 90,
-                                                            backgroundColor: '#fff',
-                                                            borderWidth: 1,
-                                                            borderColor: '#fda4af',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            paddingHorizontal: 8
-                                                        }}
-                                                    >
-                                                        <Text style={{ fontStyle: 'italic', fontSize: 22, color: '#be123c' }}>
-                                                            Firma cliente
-                                                        </Text>
-                                                        <Text style={{ fontSize: 11, color: '#9f1239', textAlign: 'center', marginTop: 4 }}>
-                                                            {firmaUsuarioDebug
-                                                                ? 'Hay URL pero la imagen no carga (S3 privado)'
-                                                                : 'No hay firma_usuario en este pedido'}
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                            </View>
                                             <TouchableOpacity
                                                 style={{
-                                                    marginTop: 8,
+                                                    marginTop: 12,
                                                     flexDirection: 'row',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
@@ -942,7 +873,6 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                     Descargar remisión PDF
                                                 </Text>
                                             </TouchableOpacity>
-                                            </>
                                         )}
 
                                         {estado === 'activo' && entregado && (acceso === 'admin' || acceso === 'facturacion') && (
@@ -1019,14 +949,14 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                         )}
 
                                         {/* Card de Firmas Digitales */}
-                                        {(pedidoData.firma_conductor || pedidoData.firma_usuario) && (
+                                        {(firmaConductorUri || firmaUsuarioUri) && (
                                             <View style={style.editarModalDetailsCard}>
                                                 <Text style={style.editarModalDetailsCardTitle}>
                                                     ✍️ Firmas Digitales
                                                 </Text>
 
                                                 <View style={style.editarModalDetailsCardContent}>
-                                                    {pedidoData.firma_conductor && (
+                                                    {firmaConductorUri && (
                                                         <View style={{ marginBottom: 16 }}>
                                                             <Text style={[style.editarModalDetailsLabel, { marginBottom: 8 }]}>
                                                                 Firma del Conductor
@@ -1041,7 +971,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                             }}>
                                                                 <Image
                                                                     source={{
-                                                                        uri: pedidoData.firma_conductor,
+                                                                        uri: firmaConductorUri,
                                                                         cache: 'force-cache'
                                                                     }}
                                                                     style={{
@@ -1050,18 +980,12 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                                         resizeMode: 'contain',
                                                                         backgroundColor: '#fff'
                                                                     }}
-                                                                    onLoad={() => {
-                                                                        console.log('✅ [EditarPedidoModal] Firma conductor cargada');
-                                                                    }}
-                                                                    onError={(error) => {
-                                                                        console.error('❌ [EditarPedidoModal] Error cargando firma conductor:', error);
-                                                                    }}
                                                                 />
                                                             </View>
                                                         </View>
                                                     )}
 
-                                                    {pedidoData.firma_usuario && (
+                                                    {firmaUsuarioUri && (
                                                         <View>
                                                             <Text style={[style.editarModalDetailsLabel, { marginBottom: 8 }]}>
                                                                 Firma del Usuario/Cliente
@@ -1076,7 +1000,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                             }}>
                                                                 <Image
                                                                     source={{
-                                                                        uri: pedidoData.firma_usuario,
+                                                                        uri: firmaUsuarioUri,
                                                                         cache: 'force-cache'
                                                                     }}
                                                                     style={{
@@ -1084,12 +1008,6 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                                         height: 150,
                                                                         resizeMode: 'contain',
                                                                         backgroundColor: '#fff'
-                                                                    }}
-                                                                    onLoad={() => {
-                                                                        console.log('✅ [EditarPedidoModal] Firma usuario cargada');
-                                                                    }}
-                                                                    onError={(error) => {
-                                                                        console.error('❌ [EditarPedidoModal] Error cargando firma usuario:', error);
                                                                     }}
                                                                 />
                                                             </View>

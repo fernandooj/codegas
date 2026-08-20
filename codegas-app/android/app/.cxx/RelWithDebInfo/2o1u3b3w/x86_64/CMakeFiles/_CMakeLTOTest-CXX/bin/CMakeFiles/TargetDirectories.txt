@@ -1,0 +1,4 @@
+/Users/fer/Documents/proyects/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/2o1u3b3w/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/Users/fer/Documents/proyects/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/2o1u3b3w/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/Users/fer/Documents/proyects/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/2o1u3b3w/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+/Users/fer/Documents/proyects/codegas/codegas-app/android/app/.cxx/RelWithDebInfo/2o1u3b3w/x86_64/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

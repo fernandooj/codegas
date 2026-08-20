@@ -1,20 +1,11 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
-const nodemailer = require('nodemailer');
-
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS
-    }
-});
+const { transporter, EMAIL_USER } = require('../../../lib/nodemailer-config');
 
 const recipients = [
-    'fernandooj@ymail.com'
+    'gestioncalidad@codegascolombia.com',
+    'coord.logistica@codegascolombia.com',
+    'gerencia@codegascolombia.com'
 ];
 
 /**
@@ -804,7 +795,11 @@ module.exports.main = async (event) => {
             const info = await transporter.sendMail(mailOptions);
             console.log(`[INFO] Correo enviado exitosamente: ${info.messageId}`);
         } catch (error) {
-            console.error('[ERROR] Error al enviar correo:', error);
+            if (error?.code === 'NO_RECIPIENTS') {
+                console.warn('[WARN] Correo de frecuencias omitido: sin destinatarios válidos');
+            } else {
+                console.error('[ERROR] Error al enviar correo:', error);
+            }
             // No lanzar error, solo registrar
         }
 

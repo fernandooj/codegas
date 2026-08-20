@@ -1,6 +1,10 @@
 frecuenciasHandler:
   name: ${self:custom.base}-frecuencias
   handler: services/frecuencias/src/handler.main
+  timeout: 120
+  environment:
+    EMAIL_USER: ${self:custom.emailUser}
+    EMAIL_PASS: ${self:custom.emailPass}
   events:
     # === Evento programado principal (creación de pedidos individuales y por grupos) ===
     # Se ejecuta una sola vez al día a las 10:00 PM hora de Bogotá (03:00 AM UTC del día siguiente)
@@ -51,3 +55,4 @@ frecuenciasHandler:
       - services/frecuencias/src/remover-pedido-de-grupo.js
       - services/frecuencias/src/handler.js
       - lib/errors/database-error.js
+      - lib/nodemailer-config.js

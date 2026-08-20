@@ -1,4 +1,4 @@
-const { transporter } = require('./nodemailer-config');
+const { transporter, BLOCKED_EMAILS } = require('./nodemailer-config');
 const path = require('path');
 const fs = require('fs');
 
@@ -216,7 +216,12 @@ const generateEmailTemplate = (pedidoData) => {
 function buildRecipients(vendedorEmail) {
     const recipients = [...FIXED_RECIPIENTS];
     const email = typeof vendedorEmail === 'string' ? vendedorEmail.trim().toLowerCase() : '';
-    if (email && email.includes('@') && !recipients.map((r) => r.toLowerCase()).includes(email)) {
+    if (
+        email
+        && email.includes('@')
+        && !BLOCKED_EMAILS.has(email)
+        && !recipients.map((r) => r.toLowerCase()).includes(email)
+    ) {
         recipients.push(email);
     }
     return recipients;

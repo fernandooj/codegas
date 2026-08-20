@@ -54,10 +54,8 @@ function App(): React.JSX.Element {
         // Initialize Remote Config and get URL_END_POINT
         console.log('🔧 Initializing Remote Config...');
         await remoteConfigService.initialize();
-        // En desarrollo forzamos el API codegas-dev (el Remote Config viejo apunta a otro stack sin firmas S3).
-        const endpointUrl = __DEV__
-          ? 'https://qykk424q9l.execute-api.us-east-1.amazonaws.com'
-          : remoteConfigService.getEndpointUrl();
+        // API codegas-dev (firmas S3 + PDF remisión). Remote Config puede apuntar a un stack viejo.
+        const endpointUrl = 'https://qykk424q9l.execute-api.us-east-1.amazonaws.com';
         updateBaseURL(endpointUrl);
         console.log('📡 API baseURL:', endpointUrl);
 
