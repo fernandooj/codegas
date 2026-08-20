@@ -23,6 +23,9 @@ codegas-app/Flipper/
 # Bundle artifacts
 codegas-app/*.jsbundle
 
+# Local JDK / build tool downloads (too large for GitHub)
+codegas-app/.tools/
+
 # CocoaPods
 codegas-app/ios/Pods/
 codegas-app/ios/build/
