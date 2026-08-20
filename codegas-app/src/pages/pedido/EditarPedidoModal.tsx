@@ -12,7 +12,7 @@ import FechaEntregaModal from './FechaEntregaModal';
 import CerrarPedidoModal from './CerrarPedidoModal';
 import LlenadoTanquesModal from './LlenadoTanquesModal';
 import SafetyChecklistModal from './SafetyChecklistModal';
-import { updateLlenadoTanquesHTTP, shareFacturaPedidoPdf } from '../../redux/actions/pedidoActions';
+import { updateLlenadoTanquesHTTP, shareFacturaPedidoPdf, obtenerFirmas } from '../../redux/actions/pedidoActions';
 import { getTanquesByPunto } from '../../redux/actions/tanqueActions';
 import { tanqueStorageService } from '../../services/tanqueStorageService';
 import NetInfo from '@react-native-community/netinfo';
@@ -157,11 +157,52 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
     // Estado local para los datos de tanques (se actualiza cuando se guarda)
     const [localTanquesData, setLocalTanquesData] = useState<any[]>(pedidoData.tanques || []);
     const [downloadingRemisionPdf, setDownloadingRemisionPdf] = useState(false);
+    const [firmaUsuarioDebug, setFirmaUsuarioDebug] = useState<string | null>(pedidoData.firma_usuario || null);
+    const [firmaDebugStatus, setFirmaDebugStatus] = useState('sin consultar');
+    const [firmaImgError, setFirmaImgError] = useState(false);
 
     // Actualizar localTanquesData cuando cambia pedidoData.tanques
     useEffect(() => {
         setLocalTanquesData(pedidoData.tanques || []);
     }, [pedidoData.tanques]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const loadFirmas = async () => {
+            if (!visible || !id || !entregado) {
+                return;
+            }
+            setFirmaImgError(false);
+            if (pedidoData.firma_usuario) {
+                setFirmaUsuarioDebug(pedidoData.firma_usuario);
+                setFirmaDebugStatus('en el pedido');
+            } else {
+                setFirmaDebugStatus('consultando API...');
+            }
+            const res = await obtenerFirmas(String(id));
+            if (cancelled) {
+                return;
+            }
+            const url =
+                res?.data?.firma_usuario_datauri
+                || res?.data?.firma_usuario_url
+                || null;
+            setFirmaUsuarioDebug(url);
+            setFirmaDebugStatus(
+                res?.data?.firma_usuario_datauri
+                    ? 'API: firma en data URI (ok)'
+                    : url
+                        ? `API firmada: ${String(url).slice(0, 90)}`
+                        : res?.data?.firma_usuario
+                            ? 'API: hay URL privada pero no se pudo firmar/leer S3'
+                            : 'API: este pedido no tiene firma_usuario'
+            );
+        };
+        loadFirmas();
+        return () => {
+            cancelled = true;
+        };
+    }, [visible, id, entregado, pedidoData.firma_usuario]);
 
     // Funciones para navegación
     const openNavigationModal = () => {
@@ -800,9 +841,68 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                         </View>
 
                                         {entregado && id && estado !== 'noentregado' && (
-                                            <TouchableOpacity
+                                            <>
+                                            <View
                                                 style={{
                                                     marginTop: 12,
+                                                    alignSelf: 'center',
+                                                    width: '92%',
+                                                    borderWidth: 2,
+                                                    borderColor: '#e11d48',
+                                                    borderRadius: 12,
+                                                    backgroundColor: '#fff7ed',
+                                                    padding: 8
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 11, fontWeight: '700', color: '#9f1239', marginBottom: 6 }}>
+                                                    DEBUG firma cliente (temporal)
+                                                </Text>
+                                                <Text style={{ fontSize: 10, color: '#7f1d1d', marginBottom: 2 }}>
+                                                    Nombre: {pedidoData.nombre || pedidoData.razon_social || '—'}
+                                                </Text>
+                                                <Text style={{ fontSize: 10, color: '#7f1d1d', marginBottom: 6 }}>
+                                                    C.C.: {pedidoData.cedula || '—'}
+                                                </Text>
+                                                <Text style={{ fontSize: 10, color: '#7f1d1d', marginBottom: 6 }}>
+                                                    {firmaDebugStatus}
+                                                </Text>
+                                                {firmaUsuarioDebug && !firmaImgError ? (
+                                                    <Image
+                                                        source={{ uri: firmaUsuarioDebug }}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: 90,
+                                                            backgroundColor: '#fff',
+                                                            resizeMode: 'contain'
+                                                        }}
+                                                        onError={() => setFirmaImgError(true)}
+                                                    />
+                                                ) : (
+                                                    <View
+                                                        style={{
+                                                            height: 90,
+                                                            backgroundColor: '#fff',
+                                                            borderWidth: 1,
+                                                            borderColor: '#fda4af',
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center',
+                                                            paddingHorizontal: 8
+                                                        }}
+                                                    >
+                                                        <Text style={{ fontStyle: 'italic', fontSize: 22, color: '#be123c' }}>
+                                                            Firma cliente
+                                                        </Text>
+                                                        <Text style={{ fontSize: 11, color: '#9f1239', textAlign: 'center', marginTop: 4 }}>
+                                                            {firmaUsuarioDebug
+                                                                ? 'Hay URL pero la imagen no carga (S3 privado)'
+                                                                : 'No hay firma_usuario en este pedido'}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                            <TouchableOpacity
+                                                style={{
+                                                    marginTop: 8,
                                                     flexDirection: 'row',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
@@ -842,6 +942,7 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                     Descargar remisión PDF
                                                 </Text>
                                             </TouchableOpacity>
+                                            </>
                                         )}
 
                                         {estado === 'activo' && entregado && (acceso === 'admin' || acceso === 'facturacion') && (

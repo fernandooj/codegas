@@ -1,7 +1,14 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
 const { uploadPDF } = require('../../../lib/pdf');
+const { resolveImageToDataUri } = require('../../../lib/image');
 const { renderRemisionContratoPdf } = require('./pdf-remision-contrato');
+
+function isPedidoCerrado(p) {
+    return p.entregado === true
+        || p.entregado === 't'
+        || String(p.entregado).toLowerCase() === 'true';
+}
 
 /**
  * Genera PDF remisión + resumen contrato (2 páginas) con la información del pedido.
@@ -63,6 +70,11 @@ const generateFacturaPDF = async (pedidoId) => {
         }
 
         const pedido = rows[0];
+
+        if (isPedidoCerrado(pedido) && pedido.firma_usuario) {
+            pedido.firma_usuario_datauri = await resolveImageToDataUri(pedido.firma_usuario);
+            console.log('PDF firma cliente:', pedido.firma_usuario_datauri ? 'incrustada' : `no se pudo leer ${pedido.firma_usuario}`);
+        }
 
         const PDFDocument = require('pdfkit');
 

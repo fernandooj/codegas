@@ -171,10 +171,36 @@ function drawPage1(doc, p) {
     doc.font('Helvetica').fontSize(7);
     doc.text(`ENTREGADO POR: ${t(p.conductor) || '________________________'}`, left, y);
     y += 16;
-    doc.text('RECIBIDO POR (Nombre y Apellido): ________________________', left, y);
+
+    // Nombre y apellido del cliente (no razón social: esa ya va arriba en el encabezado)
+    const recibido = t(p.nombre) || t(p.razon_social) || '';
+    const cc = t(p.cedula);
+    doc.text(
+        `RECIBIDO POR (Nombre y Apellido): ${recibido || '________________________'}`,
+        left,
+        y,
+        { width: w }
+    );
+    y += 14;
+    doc.text(`C.C.: ${cc || '________________________'}`, left, y);
     y += 16;
-    doc.text('FIRMA: ________________________    C.C.: ________________________', left, y);
-    y += 28;
+
+    const firmaData = t(p.firma_usuario_datauri);
+    const firmaY = y;
+    doc.text('FIRMA:', left, firmaY + 18);
+    if (firmaData.startsWith('data:')) {
+        try {
+            const b64 = firmaData.split(',')[1];
+            const buf = Buffer.from(b64, 'base64');
+            doc.image(buf, left + 42, firmaY, { fit: [180, 48] });
+        } catch (e) {
+            console.warn('PDF firma cliente:', e.message);
+            doc.text('________________________', left + 42, firmaY + 18);
+        }
+    } else {
+        doc.text('________________________', left + 42, firmaY + 18);
+    }
+    y = firmaY + 54;
 
     doc.font('Helvetica-Bold').fontSize(9).text('ORIGINAL', left, y, { width: w, align: 'center' });
 }

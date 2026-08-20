@@ -1266,13 +1266,20 @@ const shareFacturaPedidoPdf = async (pedidoId) => {
   const RNFS = RNFSModule.default || RNFSModule;
   const id = String(pedidoId);
   const res = await axios.get(`/ped/pedido/${id}/factura-pdf`);
-  if (!res.data?.status || !res.data.pdfUrl) {
+  if (!res.data?.status) {
     throw new Error(res.data?.message || 'No se pudo generar el PDF');
   }
   const dest = `${RNFS.DocumentDirectoryPath}/Remision_pedido_${id}.pdf`;
-  const dl = await RNFS.downloadFile({ fromUrl: res.data.pdfUrl, toFile: dest }).promise;
-  if (dl.statusCode < 200 || dl.statusCode >= 300) {
-    throw new Error('Error al descargar el PDF');
+  if (res.data.pdfBase64) {
+    const b64 = String(res.data.pdfBase64).replace(/^data:application\/pdf;base64,/, '');
+    await RNFS.writeFile(dest, b64, 'base64');
+  } else if (res.data.pdfUrl) {
+    const dl = await RNFS.downloadFile({ fromUrl: res.data.pdfUrl, toFile: dest }).promise;
+    if (dl.statusCode < 200 || dl.statusCode >= 300) {
+      throw new Error('Error al descargar el PDF');
+    }
+  } else {
+    throw new Error('No se pudo generar el PDF');
   }
   const url = Platform.OS === 'android' ? `file://${dest}` : dest;
   await Share.share({

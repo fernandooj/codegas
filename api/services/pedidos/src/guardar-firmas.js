@@ -1,6 +1,6 @@
 const { poolConection } = require('../../../lib/connection-pg.js');
 const DatabaseError = require('../../../lib/errors/database-error');
-const { uploadImage } = require('../../../lib/image');
+const { uploadImage, signS3Url, resolveImageToDataUri } = require('../../../lib/image');
 
 /**
  * Query SQL para actualizar firmas del pedido
@@ -8,8 +8,8 @@ const { uploadImage } = require('../../../lib/image');
 const UPDATE_FIRMAS_SQL = `
 UPDATE pedidos 
 SET 
-    firma_conductor = $2,
-    firma_usuario = $3
+    firma_conductor = COALESCE($2, firma_conductor),
+    firma_usuario = COALESCE($3, firma_usuario)
 WHERE _id = $1
 RETURNING _id, firma_conductor, firma_usuario;
 `;
@@ -48,14 +48,22 @@ module.exports.main = async (event) => {
 
         client = await poolConection.connect();
 
+        const asS3Url = (value) => (
+            typeof value === 'string' && /^https?:\/\//.test(value) ? value : null
+        );
+
         // Subir firma del conductor si existe
         let firmaConductorUrl = null;
         if (firmaConductor) {
             console.log('📤 Subiendo firma del conductor...');
-            firmaConductorUrl = await uploadImage({
+            const uploaded = await uploadImage({
                 imagen: firmaConductor,
                 mime: firmaConductor.match(/data:([^;]+);base64,/)?.[1] || 'image/png'
             });
+            firmaConductorUrl = asS3Url(uploaded);
+            if (!firmaConductorUrl) {
+                throw new Error(uploaded?.message || 'No se pudo subir la firma del conductor');
+            }
             console.log('✅ Firma conductor subida:', firmaConductorUrl);
         }
 
@@ -63,10 +71,14 @@ module.exports.main = async (event) => {
         let firmaUsuarioUrl = null;
         if (firmaUsuario) {
             console.log('📤 Subiendo firma del usuario...');
-            firmaUsuarioUrl = await uploadImage({
+            const uploaded = await uploadImage({
                 imagen: firmaUsuario,
                 mime: firmaUsuario.match(/data:([^;]+);base64,/)?.[1] || 'image/png'
             });
+            firmaUsuarioUrl = asS3Url(uploaded);
+            if (!firmaUsuarioUrl) {
+                throw new Error(uploaded?.message || 'No se pudo subir la firma del cliente');
+            }
             console.log('✅ Firma usuario subida:', firmaUsuarioUrl);
         }
 
@@ -123,11 +135,28 @@ module.exports.getFirmas = async (event) => {
             };
         }
         
+        const row = result.rows[0];
+        const [firmaConductorDatauri, firmaUsuarioDatauri] = await Promise.all([
+            resolveImageToDataUri(row.firma_conductor),
+            resolveImageToDataUri(row.firma_usuario)
+        ]);
         return {
             statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 status: true,
-                data: result.rows[0]
+                data: {
+                    _id: row._id,
+                    firma_conductor: row.firma_conductor,
+                    firma_usuario: row.firma_usuario,
+                    firma_conductor_url: signS3Url(row.firma_conductor) || null,
+                    firma_usuario_url: signS3Url(row.firma_usuario) || null,
+                    firma_conductor_datauri: firmaConductorDatauri || null,
+                    firma_usuario_datauri: firmaUsuarioDatauri || null
+                }
             })
         };
     } catch (error) {

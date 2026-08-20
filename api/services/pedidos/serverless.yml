@@ -271,10 +271,13 @@ getFirmas:
   handler: services/pedidos/src/guardar-firmas.getFirmas
   events:
     - httpApi: 'GET /ped/pedido/{pedidoId}/firmas'
+  environment:
+    BUCKET: newcodegas
   package:
     include:
       - services/pedidos/src/guardar-firmas.js
       - lib/errors/database-error.js
+      - lib/image.js
 
 generateFacturaPDF:
   name: ${self:custom.base}-generate-factura-pdf
@@ -289,6 +292,7 @@ generateFacturaPDF:
       - services/pedidos/src/pdf-remision-contrato.js
       - lib/errors/database-error.js
       - lib/pdf.js
+      - lib/image.js
       - lib/connection-pg.js
 
 sendFacturaEmail:
@@ -308,6 +312,7 @@ sendFacturaEmail:
       - lib/errors/database-error.js
       - lib/nodemailer-config.js
       - lib/pdf.js
+      - lib/image.js
       - lib/connection-pg.js
 
 editarOrdenConFechaEntrega:
