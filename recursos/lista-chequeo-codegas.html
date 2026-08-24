@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Chequeo - Revisión Técnica Estación de Gas | CODEGAS</title>
+<style>
+  :root{
+    --borde-rosa:#e2007a;
+    --azul-oscuro:#0d2f6e;
+    --gris-claro:#c9c9c9;
+    --gris-medio:#d9d9d9;
+    --gris-fondo:#f2f2f2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    padding:24px;
+    background:#e9e9e9;
+    font-family:Arial, Helvetica, sans-serif;
+    color:#1a1a1a;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:24px;
+  }
+
+  /* ===================== PÁGINA 1 : FORMULARIO ===================== */
+  .pagina1{
+    width:1040px;
+    background:#fff;
+    border:2px solid var(--borde-rosa);
+    border-radius:10px;
+    padding:12px;
+  }
+
+  /* --- Encabezado --- */
+  .encabezado-form{
+    display:flex;
+    border:1px solid var(--azul-oscuro);
+    margin-bottom:12px;
+  }
+  .encabezado-form .logo-cell{
+    width:190px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 14px;
+    border-right:1px solid var(--azul-oscuro);
+  }
+  .encabezado-form .logo-cell img{
+    width:100%;
+    display:block;
+  }
+  .encabezado-form .titulo-cell{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6px 10px;
+    border-right:1px solid var(--azul-oscuro);
+    font-family:'Times New Roman', Times, serif;
+    font-weight:bold;
+    font-size:16px;
+    line-height:1.3;
+    color:var(--azul-oscuro);
+  }
+  table.mini-codigo{
+    border-collapse:collapse;
+    font-size:10px;
+  }
+  table.mini-codigo td{
+    border-bottom:1px solid var(--azul-oscuro);
+    padding:3px 8px;
+  }
+  table.mini-codigo tr:last-child td{border-bottom:none;}
+  table.mini-codigo td.etq{
+    font-weight:bold;
+    color:var(--azul-oscuro);
+    background:var(--gris-medio);
+    border-right:1px solid var(--azul-oscuro);
+    white-space:nowrap;
+  }
+  table.mini-codigo td.val{
+    min-width:90px;
+  }
+
+  /* --- Bloque de datos: Cliente ... % Final --- */
+  .bloque-datos{
+    border:1px solid var(--azul-oscuro);
+    border-radius:8px;
+    margin-bottom:12px;
+  }
+
+  /* --- Filas de datos --- */
+  .fila-datos{
+    display:flex;
+    border-bottom:1px solid var(--azul-oscuro);
+    font-size:11px;
+    font-weight:bold;
+    color:var(--azul-oscuro);
+    position:relative;
+  }
+  .bloque-datos .fila-datos:last-child{
+    border-bottom:none;
+  }
+  .fila-datos > div{
+    padding:4px 8px;
+    border-right:1px solid var(--azul-oscuro);
+  }
+  .fila-datos > div:last-child{border-right:none;}
+
+  .fila-cliente .c-cliente{flex:2.6;}
+  .fila-cliente .c-codt{flex:0.8;}
+  .fila-cliente .c-dir{flex:1.9; display:flex; justify-content:space-between; align-items:center;}
+
+  .caja-fecha-dma{
+    display:flex;
+    align-items:stretch;
+    border:1px solid var(--azul-oscuro);
+    margin-left:8px;
+    flex-shrink:0;
+  }
+  .caja-fecha-dma .etq-fecha{
+    background:var(--gris-medio);
+    padding:2px 8px;
+    font-size:9px;
+    font-weight:bold;
+    color:var(--azul-oscuro);
+    display:flex;
+    align-items:center;
+    border-right:1px solid var(--azul-oscuro);
+  }
+  .caja-fecha-dma .letra{
+    width:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#bbb;
+    font-weight:bold;
+    font-size:12px;
+    border-right:1px solid #ccc;
+  }
+  .caja-fecha-dma .letra:last-child{border-right:none;}
+
+  .fila-tel > div{flex:1;}
+  .fila-tanque .c1{flex:0.85;}
+  .fila-tanque .c2{flex:0.85;}
+  .fila-tanque .c3{flex:1.7;}
+  .fila-tanque .c4{flex:1.4;}
+  .fila-tanque .c5{flex:0.9;}
+
+  /* --- Bloque de preguntas: aviso + tabla --- */
+  .bloque-preguntas{
+    border:1px solid var(--azul-oscuro);
+    border-radius:8px;
+    margin-bottom:10px;
+  }
+  .aviso-importante{
+    border-bottom:1px solid var(--azul-oscuro);
+    padding:5px 8px;
+    font-size:10px;
+    font-weight:bold;
+    text-align:center;
+    line-height:1.35;
+    color:var(--azul-oscuro);
+  }
+
+  /* --- Tabla de checklist --- */
+  table.tabla-check{
+    width:100%;
+    border-collapse:collapse;
+    font-size:10.5px;
+  }
+  table.tabla-check td, table.tabla-check th{
+    border:1px solid var(--azul-oscuro);
+    padding:3px 6px;
+  }
+  table.tabla-check tr > *:first-child{border-left:none;}
+  table.tabla-check tr > *:last-child{border-right:none;}
+  table.tabla-check tbody:last-of-type tr:last-child td{border-bottom:none;}
+  table.tabla-check th{
+    background:var(--gris-fondo);
+    font-weight:bold;
+    color:var(--azul-oscuro);
+    text-align:center;
+  }
+  table.tabla-check th.seccion{
+    text-align:left;
+    font-size:11px;
+  }
+  table.tabla-check td.pregunta{
+    text-align:left;
+  }
+  table.tabla-check td.si, table.tabla-check td.no{
+    width:30px;
+    text-align:center;
+  }
+  table.tabla-check td.comentarios{
+    width:260px;
+  }
+
+  .aviso-firma{
+    padding:0px 4px;
+    font-size:10px;
+    font-weight:bold;
+    text-align:center;
+    color:#1a1a1a;
+  }
+
+  /* --- Firmas --- */
+  .fila-firmas{
+    display:flex;
+    gap:12px;
+    margin-top:12px;
+  }
+  .caja-firma{
+    flex:1;
+    border:1.5px solid var(--azul-oscuro);
+    border-radius:10px;
+    position:relative;
+    min-height:95px;
+    overflow:hidden;
+  }
+  .caja-firma .etq-firma{
+    font-size:9px;
+    font-weight:bold;
+    padding:4px 8px;
+    color:var(--azul-oscuro);
+    background:var(--gris-fondo);
+    border-bottom:1px solid var(--azul-oscuro);
+  }
+  .caja-firma .marca-agua{
+    position:absolute;
+    top:28px;
+    left:0;
+    right:0;
+    text-align:center;
+    font-size:34px;
+    font-weight:bold;
+    letter-spacing:2px;
+    color:#d8d8d8;
+    user-select:none;
+    border-bottom: 1px dashed var(--azul-oscuro);
+    pointer-events:none;
+  }
+  .caja-firma .cc{
+    position:absolute;
+    bottom:4px;
+    left:6px;
+    font-size:9px;
+    font-weight:bold;
+    color:var(--azul-oscuro);
+  }
+  .caja-sgs{
+    width:150px;
+    flex-shrink:0;
+    border:1.5px solid var(--azul-oscuro);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:4px;
+  }
+  .caja-sgs img{
+    width:52px;
+  }
+  .caja-sgs .cod-sgs{
+    font-size:9px;
+    position:absolute;
+    bottom:12px;
+    font-weight:bold;
+    color:var(--azul-oscuro);
+  }
+
+  /* ===================== PÁGINA 2 : INSTRUCCIONES ===================== */
+  .pagina2{
+    width:1040px;
+    background:#fff;
+    border:1px solid var(--azul-oscuro);
+    padding:16px 22px;
+    font-size:10.5px;
+    line-height:1.45;
+  }
+  .pagina2 h2{
+    font-size:11px;
+    margin:0 0 6px;
+    text-transform:uppercase;
+    color:var(--azul-oscuro);
+  }
+  .pagina2 ul{
+    margin:0 0 14px;
+    padding-left:16px;
+  }
+  .pagina2 ul li{
+    margin-bottom:2px;
+  }
+
+  @media print{
+    body{background:#fff;gap:0;padding:0;}
+    .pagina1, .pagina2{box-shadow:none;page-break-after:always;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 1                                                      -->
+<!-- ============================================================ -->
+<div class="pagina1">
+
+  <div class="encabezado-form">
+    <div class="logo-cell">
+      <img src="assets/logo_codegas.jpg" alt="CODEGAS - El gas que no te falla">
+    </div>
+    <div class="titulo-cell">
+      LISTA DE CHEQUEO PARA LA REVISIÓN TÉCNICA DE<br>LA ESTACIÓN DE GAS EN USUARIO FINAL
+    </div>
+    <table class="mini-codigo">
+      <tr><td class="etq">Código</td><td class="val">F-DGR-002</td></tr>
+      <tr><td class="etq">Versión</td><td class="val">06</td></tr>
+      <tr><td class="etq">Fecha</td><td class="val">07/07/2026</td></tr>
+    </table>
+  </div>
+
+  <div class="bloque-datos">
+    <div class="fila-datos fila-cliente">
+      <div class="c-cliente">Cliente:</div>
+      <div class="c-codt">Codt:</div>
+      <div class="c-dir">
+        <span>Dirección:</span>
+        <div class="caja-fecha-dma">
+          <div class="etq-fecha">Fecha</div>
+          <div class="letra">D</div>
+          <div class="letra">M</div>
+          <div class="letra">A</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fila-datos fila-tel">
+      <div>Tel:</div>
+      <div>Presión Inicial</div>
+      <div>Presión Final</div>
+      <div>Planilla Diaria No.</div>
+      <div>Placa Vehiculo:</div>
+      <div>No. Remisión</div>
+    </div>
+
+    <div class="fila-datos fila-tanque">
+      <div class="c1">Cap. Tanque:</div>
+      <div class="c2">No. Pedido</div>
+      <div class="c3">No. Tanque:</div>
+      <div class="c4">% Inicial</div>
+      <div class="c5">% Final</div>
+    </div>
+  </div>
+
+  <div class="bloque-preguntas">
+    <div class="aviso-importante">
+      IMPORTANTE: SEÑOR CONDUCTOR Y CLIENTE, ESTÁN EN LA OBLIGACIÓN DE GARANTIZAR LA SEGURIDAD DE LA OPERACIÓN Y TIENEN LA PLENA AUTONOMÍA
+      PARA SUSPENDER LA OPERACIÓN EN CASO DE PRESENTAR UNA SITUACIÓN DE RIESGOS ANTES, DURANTE Y DESPUÉS DEL SUMINISTRO DEL TANQUE ESTACIONARIO
+    </div>
+
+    <table class="tabla-check">
+      <thead>
+        <tr>
+          <th class="seccion" style="width:auto;">ANTES Y DURANTE LA OPERACIÓN:</th>
+          <th class="si">SI</th>
+          <th class="no">NO</th>
+          <th class="comentarios">COMENTARIOS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="pregunta">1. ¿El vehículo está estacionado en posición de salida respetando la distancia mínima de seguridad?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">2. ¿Acciono el freno de parqueo y ubico las cuñas de seguridad?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">3. ¿El tanque está en una superficie firme y nivelada?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">4. ¿El área clasificada esta señalizada, abierta, ventilada, sin elementos inflamables, fuentes de ignición u otras situaciones de riesgo?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">5. ¿Los accesorios del tanque están en correcto funcionamiento? (válvula de alivio, válvula de llenado, válvulade servicio, dial y grifo).</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">6. ¿Los accesorios del conexionado hacia el tanque están en correcto funcionamiento? (manómetros,regulador, trenza, válvula de cierre).</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">7. ¿El regulador está anclado?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">8. ¿Tengo los elementos de protección para realizar la actividad?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">9. ¿Ubique los extintores correctamente según procedimiento.?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">10. ¿Señalicé el área y restringí el acceso al personal ajeno a la tripulación?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">11. ¿Verifique que NO hay fugas y/o escapes en el conexionado hacia el carrotanque?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+      </tbody>
+      <thead>
+        <tr>
+          <th class="seccion">DESPUES DE LA OPERACIÓN</th>
+          <th class="si">SI</th>
+          <th class="no">NO</th>
+          <th class="comentarios">COMENTARIOS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="pregunta">12. ¿La válvula de alivio se activó?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">13. ¿Hay presencia de fugas y/o escapes?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">14. ¿El dial dio lectura de llenado?</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">15. ¿Los accesorios del tanque quedaron en correcto funcionamiento? (válvula de alivio, válvula de llenado,válvula de servicio, dial y grifo).</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+        <tr><td class="pregunta">16. ¿Los accesorios del conexionado hacia el tanque quedaron en correcto funcionamiento? (manómetros,regulador, trenza, válvula de cierre).</td><td class="si"></td><td class="no"></td><td class="comentarios"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="aviso-firma">
+    INFORMAR AL CLIENTE QUE CON LA FIRMA ACEPTA LA INSPECCIÓN REALIZADA SEGÚN LA RESOLUCIÓN CREC 023 DE 2018 NUMERAL 15 ARTICULO 13
+  </div>
+
+  <div class="fila-firmas">
+    <div class="caja-firma">
+      <div class="etq-firma">NOMBRE CONDUCTOR Y FIRMA</div>
+      <div class="marca-agua">REALIZADO</div>
+      <div class="cc">C.C.</div>
+    </div>
+    <div class="caja-firma">
+      <div class="etq-firma">NOMBRE CLIENTE Y FIRMA</div>
+      <div class="marca-agua">AUTORIZADO</div>
+      <div class="cc">C.C.</div>
+    </div>
+    <div class="caja-sgs">
+      <img src="assets/sgs_iso9001.jpg" alt="SGS ISO 9001">
+      <span class="cod-sgs">CO17/7410</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 2                                                      -->
+<!-- ============================================================ -->
+<div class="pagina2">
+
+  <h2>Antes de salir</h2>
+  <ul>
+    <li>Antes de prender el vehículo haga una revisión de esté, la revisión rutinaria de antes de arrancar, del sistema de trasiego de gas LP (accesorios, acoples para el llenado de tanques estacionarios, disponibilidad de empaquetaduras de neopreno) y documentos de la planta móvil.</li>
+    <li>En el vehículo solo se permite la tripulación asignada (dos personas). No esta permitido ni en el vehiculo, ni en las entregas personal no autorizado.</li>
+    <li>Cuidar en todo momento su presentación personal y la del vehículo.</li>
+  </ul>
+
+  <h2>Al llenar tanques estacionarios</h2>
+  <ul>
+    <li>Verificar visualmente que la zona alrededor, entre el tanque y la planta móvil esté libre de fuentes de ignición, hojarasca, llamas vivas, cigarrillos, procesos de corte o soldadura, herramientas eléctricas portátiles o luces de extensión sin interruptores a prueba de explosión.</li>
+    <li>Verificar el tanque incluyendo los accesorios para identificar daños, fugas ó escapes, antes del suministro.</li>
+    <li>Revisar visualmente la hermeticidad de las mangueras, de las conexiones y de los empaques.</li>
+    <li>Evitar el sobrellenado utilizando el indicador fijo de nivel (grifo) como referencia o el dial del flotador.</li>
+    <li>Colocar las extintores del carro a una distancia de tal forma que puedan ser alcanzados rápida y fácilmente.</li>
+    <li>Colocar los avisos preventivos uno al lado de la plata móvil y otro al lado del tanque estacionario.</li>
+    <li>Dejar siempre una distancia mínima de 3 metros entre la planta móvil y el tanque estacionario. Los 3 metros se miden desde el punto de la válvula de salida de gas LP liquido de la planta móvil al punto de conexión en el tanque estacionario.</li>
+    <li>En la zona de llenado no permitir el acceso o cruce de personas ajenas a la tripulación.</li>
+    <li>Utilizar siempre los guantes y sus implementos de seguridad.</li>
+    <li>Cuando tenga necesidad de golpear algún accesorio, nunca lo haga con instrumentos o herramientas metálicas ni piedras. Utilice el martillo de goma.</li>
+    <li>Están en la obligación de verificar que tanto los recipientes como el sistema de trasiego son adecuados para garantizar la seguridad de la operación y tiene plena autonomía para suspender la operación e inclusive para negarse a hacer el servicio si consideran que no están TODAS las circunstancias para el llenado seguro.</li>
+    <li>Las fuentes de ignición y los motores de combustión interna de otros vehículos deben estar mínimo 5 metros de la planta móvil o del tanque estacionarios a llenar.</li>
+    <li>No fumar ni permitir que otros lo hagan en un radio de 5m, a la redonda de la planta móvil, tanque o de los equipos de gas.</li>
+    <li>Antes de llenar revise que la válvula del tanque estacionario o de la manguera tiene empaques verifique cuando el tanque así lo permite, el nivel de contenido y la presión interna del recipiente en presencia de un funcionario del cliente-comprador y anote esos datos en el recibo de entrega.</li>
+    <li>Asegúrese de que no hay material inflamable alrededor, cerca o encima del tanque. Si los hay pida y exija al usuario que los retire y que tenga el área despejada y libre.</li>
+    <li>Al conectar asegúrese que quedo sin escapes, abriendo la válvula de la manguera y dejando fluir hacia el tanque, el contenido en vapor o líquido que hay en ella. Luego si avise a su compañero para que inicie el llenado.</li>
+    <li>Al llenar se abre primero la válvula de la manguera conectada al tanque estacionario y luego las válvulas de la planta móvil y finalmente si accione la bomba.</li>
+    <li>No acelere la bomba para evitar sobre carga, sobre-presión y desgaste prematuro de la bomba.</li>
+    <li>Mientras este en la operación revise visualmente que no hallan fugas en alguno de los accesorios del tanque, manguera o conexiones. Si las hay detenga el suministro e informe al departamento técnico.</li>
+    <li>Cuando haya terminado el suministro, apagado la bomba y cerrado las válvulas en la planta móvil, deje pasar unos segundos antes de cerrar la válvula conectada al recipiente. Así disminuirá la cantidad de gas LP que escapara a la atmósfera cuando desconecte.</li>
+    <li>En general, siempre que cierre o abra válvulas, hágalo en el orden que es, lenta y completamente.</li>
+    <li>Después de llenar el tanque estacionario verifique que la válvula de llenado del recipiente quedo perfectamente cerrada y sin fugas.</li>
+    <li>Si las hay, accione el mecanismo de chequeo con la mano. Recuerde que siempre debe estar protegida por los guantes y la cara no alineada para evitar contacto directo con el gas.</li>
+    <li>Nunca arrastre la válvula de la manguera de llenado, ni la coloque sobre el piso a menos que la tenga pisada. Sujétela siempre que sea posible con las manos.</li>
+    <li>La factura o remisión de entrega deben llenarse completamente, hacerse firmar por quien recibe, con nombre completo, claro, identificación y firma. En lo posible y cuando se pueda, el sello de la empresa que recibe.</li>
+  </ul>
+
+</div>
+
+</body>
+</html>

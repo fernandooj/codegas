@@ -1163,6 +1163,7 @@ const Pedido: React.FC<PedidoProps> = ({ navigation }) => {
                             punto_email: e.punto_email,
                             punto_celular: e.punto_celular,
                             punto_nombre: e.punto_nombre,
+                            direccion: e.direccion,
                             idVehiculo: e.idVehiculo,
                             placa: e.placa,
                             firma_conductor: e.firma_conductor,

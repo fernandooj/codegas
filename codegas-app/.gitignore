@@ -1,2 +1,5 @@
 # Dependencias
 node_modules
+
+# Play Store publishing credentials
+play-store-service-account.json

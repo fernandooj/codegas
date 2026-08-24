@@ -85,8 +85,8 @@ android {
         applicationId "com.codegascolombia"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.0.9"
+        versionCode 15
+        versionName "1.0.14"
         
         // Solo incluir arquitecturas necesarias para reducir tamaño
         // arm64-v8a: 99% de dispositivos modernos (2014+)
@@ -106,12 +106,10 @@ android {
     // All native libraries (.so files) must be aligned to 16KB boundaries
     packaging {
         jniLibs {
-            // Enable 16KB page size support
-            // This ensures all native libraries are aligned correctly
-            useLegacyPackaging = false  // Modern packaging supports 16KB alignment
-            
-            // Exclude debug symbols to reduce size
-            // keepDebugSymbols += ["**/*.so"]
+            // extractNativeLibs=true: installer copies .so files instead of mmap from the APK.
+            // Sideload was failing with "paquete no es válido" because uncompressed libs
+            // were not page-aligned in the ZIP (INSTALL_FAILED_INVALID_APK).
+            useLegacyPackaging = true
         }
         
         // Excluir archivos innecesarios
@@ -160,6 +158,9 @@ android {
             storePassword 'codegas2024Release'
             keyAlias 'codegas-release'
             keyPassword 'codegas2024Release'
+            // v1 needed for sideload on some OEM installers; v2 for modern Android
+            v1SigningEnabled true
+            v2SigningEnabled true
         }
     }
     buildTypes {

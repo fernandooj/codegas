@@ -1,4 +1,5 @@
-import { Platform, Share, Image } from 'react-native';
+import { Image } from 'react-native';
+import { sharePdfFile } from '../../utils/sharePdfFile';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import RNFS from 'react-native-fs';
@@ -403,10 +404,8 @@ export async function shareSafetyChecklistPdf(
     const path = `${RNFS.DocumentDirectoryPath}/Lista_chequeo_${safeId}.pdf`;
     await RNFS.writeFile(path, base64, 'base64');
 
-    const url = Platform.OS === 'android' ? `file://${path}` : path;
-    await Share.share({
-        title: 'Lista de chequeo de seguridad',
-        message: 'Lista de chequeo de seguridad',
-        url
+    await sharePdfFile({
+        path,
+        title: 'Lista de chequeo de seguridad'
     });
 }

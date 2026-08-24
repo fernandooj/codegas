@@ -214,6 +214,7 @@ export interface SelectedPedidoData {
     punto_email?: string;
     punto_celular?: string;
     punto_nombre?: string;
+    direccion?: string;
     // Firmas digitales (para cerrar pedido)
     firma_conductor?: string;
     firma_usuario?: string;

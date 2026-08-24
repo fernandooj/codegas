@@ -1,4 +1,5 @@
-import { Platform, Share, Image } from 'react-native';
+import { Image } from 'react-native';
+import { sharePdfFile } from '../../utils/sharePdfFile';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import RNFS from 'react-native-fs';
@@ -512,10 +513,8 @@ export async function sharePlanillaAsPdf(planilla: Planilla, opciones?: Planilla
     const path = `${RNFS.DocumentDirectoryPath}/${baseName}.pdf`;
     await RNFS.writeFile(path, base64, 'base64');
 
-    const url = Platform.OS === 'android' ? `file://${path}` : path;
-    await Share.share({
-        title: `Planilla ${planilla.no_planilla ?? ''}`,
-        message: `Planilla ${planilla.no_planilla ?? planilla._id}`,
-        url
+    await sharePdfFile({
+        path,
+        title: `Planilla ${planilla.no_planilla ?? planilla._id}`
     });
 }

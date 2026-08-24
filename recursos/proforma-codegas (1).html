@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proforma CODEGAS S.A. E.S.P.</title>
+<style>
+  :root{
+    --azul-oscuro:#0d2f6e;
+    --azul-medio:#3f6bb0;
+    --rojo-marca:#e2231a;
+    --gris-texto:#1a1a1a;
+    --borde:#0d2f6e;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    padding:24px;
+    background:#e9e9e9;
+    font-family:Arial, Helvetica, sans-serif;
+    color:var(--gris-texto);
+    display:flex;
+    justify-content:center;
+  }
+
+  .hoja{
+    background:#fff;
+    display:flex;
+    gap:14px;
+    padding:14px;
+    box-shadow:0 2px 12px rgba(0,0,0,.25);
+  }
+
+  /* ============ COLUMNA IZQUIERDA: TICKET PROFORMA ============ */
+  .ticket{
+    width:430px;
+    border:2px solid var(--borde);
+    padding:8px 10px 10px;
+    position:relative;
+    font-size:11px;
+    line-height:1.25;
+  }
+
+  .ticket .marca-original{
+    position:absolute;
+    right:8px;
+    bottom:6px;
+    font-size:9px;
+    letter-spacing:1px;
+    color:#333;
+  }
+
+  /* --- Encabezado --- */
+  .encabezado{
+    display:flex;
+    align-items:stretch;
+    gap:0;
+    border:1px solid #999;
+    padding:6px 8px;
+    margin-bottom:6px;
+  }
+
+  .encabezado .columna-logo{
+    width:150px;
+    flex-shrink:0;
+    text-align:center;
+  }
+  .columna-logo .titulo-empresa{
+    font-weight:bold;
+    font-size:8.3px;
+    line-height:1.3;
+    margin-bottom:4px;
+  }
+  .columna-logo img{
+    width:100%;
+    display:block;
+  }
+  .columna-logo .nit{
+    margin-top:4px;
+    font-weight:bold;
+    font-size:9px;
+  }
+
+  .encabezado .caja-direccion{
+    flex:1;
+    align-self:stretch;
+    border-left:1px solid #999;
+    padding:3px 0 3px 6px;
+    margin-left:10px;
+    text-align:center;
+    font-size:9px;
+    line-height:1;
+  }
+
+  /* --- Cuentas / retefuente --- */
+  .cuentas{
+    text-align:center;
+    font-size:7px;
+    font-weight:bold;
+    padding-bottom:4px;
+    margin-bottom:6px;
+    line-height:1.4;
+  }
+  .cuentas .retefuente{
+    font-weight:normal;
+  }
+
+  .espacio-blanco{
+    height:5cm;
+  }
+
+  /* --- Campos de formulario --- */
+  .campo{
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+    margin-bottom:5px;
+  }
+  .campo .etiqueta{
+    white-space:nowrap;
+    font-weight:bold;
+  }
+  .campo .linea{
+    flex:1;
+    border-bottom:1px solid #333;
+    height:12px;
+  }
+  .campo.tres > div{
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+  }
+  .fila-tres{
+    display:flex;
+    gap:10px;
+    margin-bottom:5px;
+  }
+  .fila-tres .campo{
+    margin-bottom:0;
+  }
+  .fila-tres .campo:nth-child(1){flex:1.4;}
+  .fila-tres .campo:nth-child(2){flex:1.4;}
+  .fila-tres .campo:nth-child(3){flex:0.9;}
+
+  .fila-check{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-weight:bold;
+    white-space:nowrap;
+  }
+  .checkbox{
+    width:10px;
+    height:10px;
+    border:1px solid #333;
+    display:inline-block;
+  }
+
+  /* --- Bloque FV PROFORMA / No. GL / Pagos --- */
+  .bloque-fv{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    margin:8px 0 6px;
+  }
+  .fv-contenido{
+    flex:1;
+  }
+  .fila-fv-superior{
+    display:flex;
+    align-items:stretch;
+    gap:8px;
+    margin-bottom:5px;
+  }
+  .fv-texto{
+    text-align:center;
+    font-weight:bold;
+    font-size:11px;
+    color:var(--azul-oscuro);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:2px 4px;
+  }
+  .gl-caja, .numero-caja{
+    border:1px solid var(--borde);
+    text-align:center;
+    padding:2px 10px;
+    min-width:82px;
+  }
+  .gl-caja .gl-numero{
+    width: 160px;
+    font-size:10px;
+    font-weight:bold;
+    margin:1px;
+    text-align: left;
+  }
+  .numero-caja .numero-linea{
+    height:13px;
+    border-bottom:1px solid #333;
+    margin-top:3px;
+  }
+  .info-correo{
+    font-size:7.8px;
+    line-height:1.3;
+  }
+  .iconos-pago{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    width:70px;
+    flex-shrink:0;
+  }
+  .check-verde{
+    width:20px;
+    height:20px;
+  }
+  .iconos-pago img{
+    width:56px;
+  }
+  .iconos-pago .sgs-txt{
+    font-size:7px;
+    font-weight:bold;
+    letter-spacing:.5px;
+  }
+
+  /* --- Tabla de productos --- */
+  table.productos{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:4px;
+    font-size:9.5px;
+  }
+  table.productos th,
+  table.productos td{
+    border:1px solid var(--borde);
+    padding:3px 4px;
+  }
+  table.productos th{
+    background:#f2f2f2;
+    font-weight:bold;
+    text-align:left;
+  }
+  table.productos td.num{
+    height:14px;
+  }
+  table.productos tr.total td{
+    font-weight:bold;
+  }
+
+  .fila-nota{
+    display:flex;
+    border:1px solid var(--borde);
+    border-top:none;
+    font-size:9.5px;
+  }
+  .fila-nota > div{
+    padding:5px 6px;
+    border-right:1px solid var(--borde);
+  }
+  .fila-nota > div:last-child{
+    border-right:none;
+  }
+  .fila-nota .nota-txt{flex:2;}
+  .fila-nota .m3, .fila-nota .factura{
+    flex:1;
+    text-align:center;
+    font-weight:bold;
+    font-size:9px;
+    display:flex;
+  }
+
+  .vigilada{
+    text-align:center;
+    font-size:8.5px;
+    font-weight:bold;
+    margin-top:6px;
+    padding-top:4px;
+    border-top:1px solid #333;
+  }
+
+  .firmas{
+    margin-top:10px;
+    font-size:9.5px;
+  }
+  .firmas .linea-firma{
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+    margin-bottom:9px;
+  }
+  .firmas .linea-firma .etq{
+    white-space:nowrap;
+    font-weight:bold;
+  }
+  .firmas .linea-firma .esp{
+    flex:1;
+    border-bottom:1px solid #333;
+    height:11px;
+  }
+  .firmas .linea-firma.doble .esp1{flex:1;border-bottom:1px solid #333;height:11px;}
+  .firmas .linea-firma.doble .cc{width:70px;text-align:center;font-weight:bold;}
+
+  /* ============ COLUMNA DERECHA: RESUMEN DE CONTRATO ============ */
+  .contrato{
+    width:430px;
+    font-size:8px;
+    line-height:1.35;
+    padding:4px 6px;
+  }
+  .contrato h1{
+    font-size:10.5px;
+    text-align:center;
+    color:var(--azul-oscuro);
+    margin:0 0 8px;
+    letter-spacing:.2px;
+  }
+  .contrato p{
+    margin:0 0 2px;
+    text-align:justify;
+  }
+  .contrato p b{
+    color:var(--azul-oscuro);
+  }
+  .destacado{
+    font-weight:bold;
+  }
+
+  .punto-pago{
+    border:1.5px solid var(--borde);
+    margin:2px 0;
+    padding:0 0 1px;
+    overflow:hidden;
+  }
+  .punto-pago h2{
+    font-size:9px;
+    text-align:center;
+    color:var(--azul-oscuro);
+    background:#d9d9d9;
+    margin:0;
+  }
+  .punto-pago .soporte-pago{
+    text-align:center;
+    background:#d9d9d9;
+    font-size:7px;
+    padding:2px 2px 2px;
+  }
+  table.tabla-medios{
+    width:100%;
+    border-collapse:collapse;
+    font-size:7.5px;
+  }
+  table.tabla-medios th,
+  table.tabla-medios td{
+    border:1px solid #999;
+    padding:3px 4px;
+    text-align:center;
+  }
+  table.tabla-medios th{
+    background:#f2f2f2;
+    font-weight:bold;
+  }
+  table.tabla-medios .col-medios,
+  table.tabla-medios .col-cheque{
+    width:92px;
+    vertical-align:middle;
+    font-weight:bold;
+  }
+  table.tabla-medios .logos-pago{
+    margin-top:5px;
+    font-weight:normal;
+    line-height:1.3;
+  }
+  table.tabla-medios .logos-pago img{
+    width:75%;
+    margin-top:3px;
+  }
+  table.tabla-medios .a-nombre{
+    margin-top:5px;
+    font-weight:normal;
+    font-size:7px;
+    line-height:1.3;
+  }
+
+  .info-importante{
+    border:1.5px solid var(--borde);
+    padding:0 0 4px;
+    overflow:hidden;
+  }
+  .info-importante h2{
+    font-size:9.5px;
+    text-align:center;
+    color:var(--azul-oscuro);
+    background:#d9d9d9;
+    margin:0 0 6px;
+    padding:5px 0;
+  }
+  .info-grid-2col{
+    display:flex;
+    gap:8px;
+    padding:0 8px;
+  }
+  .col-legal{
+    flex:1.1;
+    font-size:7.2px;
+    line-height:1.32;
+  }
+  .col-legal p{
+    margin:0 0 2px;
+    text-align:justify;
+  }
+  .col-legal p b{
+    color:var(--azul-oscuro);
+  }
+  .col-contacto{
+    flex:1;
+    font-size:7.2px;
+  }
+  .caja-centro{
+    border:1px solid #999;
+    padding:5px 5px;
+    margin-bottom:5px;
+  }
+  .caja-centro b{
+    display:block;
+    margin-bottom:4px;
+    color:var(--azul-oscuro);
+  }
+.linea-factura{
+    margin-top: 3px;
+    padding-top: 3px;
+    border-top: 1px solid #999; 
+    font-size: 6.8px;
+}
+  .info-importante .aviso{
+    padding-top: 3px;
+    display:flex;
+    gap:5px;
+    align-items:center;
+    border-top: 1px solid #999; 
+    font-size:6.8px;
+  }
+  .info-importante .aviso .ico{
+    font-size:15px;
+    color:var(--rojo-marca);
+    font-weight:bold;
+    flex-shrink:0;
+  }
+  .fila-contactos{
+    display:flex;
+    gap:4px;
+    margin-top: 2px;
+  }
+  .caja-contacto{
+    flex:1;
+    border:1px solid #999;
+    padding:3px 3px;
+    font-size:6.4px;
+    text-align:center;
+    line-height:1.3;
+  }
+  .caja-contacto b{
+    display:block;
+    color:var(--azul-oscuro);
+    margin-bottom:2px;
+  }
+
+  @media print{
+    body{background:#fff;padding:0;}
+    .hoja{box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hoja">
+
+  <!-- ================= TICKET PROFORMA ================= -->
+  <div class="ticket">
+
+    <div class="encabezado">
+      <div class="columna-logo">
+        <div class="titulo-empresa">COMPAÑÍA DE SERVICIOS PÚBLICOS<br>CODEGAS S.A. E.S.P.</div>
+        <img src="assets/logo_codegas.jpg" alt="CODEGAS - El gas que no te falla">
+        <div class="nit">Nit: 830.130.648-0</div>
+      </div>
+      <div class="caja-direccion">
+        KM 1.8 VÍA MADRID - PTE. PIEDRA / MADRID CUND.<br>
+        PBX: 794 2333 &bull; Línea Nacional (01-800-518-5245)<br>
+        Emergencias: 794 5484 - Medellín: 4310188<br>
+        Cel: 320 805 9341 - 321 475 1283<br>
+        www.codegascolombia.com<br>
+        E-mail: coord.cartera@codegascolombia.com<br>
+        facturacion@codegascolombia.com<br>
+        soluciones@codegascolombia.com
+      </div>
+    </div>
+
+    <div class="cuentas">
+      FAVOR CONSIGNAR A LAS SIGUIENTES CUENTAS: CTA. CTE. 30419858301 BANCOLOMBIA<br>
+      CTA. CTE. 23507654-4 BANCO OCCIDENTE &nbsp;-&nbsp; CTA. CTE. 018044370 BANCO BOGOTÁ
+      <div class="retefuente">Descuento de Retefuente 0.1 % por combustible</div>
+    </div>
+
+    <div class="espacio-blanco"></div>
+
+    <div class="fila-tres">
+      <div class="campo"><span class="etiqueta">Fecha:</span><span class="linea"></span></div>
+      <div class="campo"><span class="etiqueta">Fecha Vto.:</span><span class="linea"></span></div>
+      <div class="campo"><span class="etiqueta">Placa.:</span><span class="linea"></span></div>
+    </div>
+
+    <div class="campo"><span class="etiqueta">Nombre o Razón Social:</span><span class="linea"></span></div>
+    <div class="campo"><span class="linea"></span></div>
+
+    <div class="fila-tres">
+      <div class="campo"><span class="etiqueta">Numero de Pedido APP:</span><span class="linea"></span></div>
+      <div class="campo"><span class="etiqueta">Tel:</span><span class="linea"></span></div>
+    </div>
+
+    <div class="fila-tres">
+      <div class="campo" style="flex:1.6"><span class="etiqueta">NIT.:</span><span class="linea"></span></div>
+      <div class="campo" style="flex:1"><span class="etiqueta">CODT:</span><span class="linea"></span></div>
+      <div class="fila-check">Contado:<span class="checkbox"></span></div>
+    </div>
+
+    <div class="fila-tres">
+      <div class="campo" style="flex:2.6"><span class="etiqueta">Dirección:</span><span class="linea"></span></div>
+      <div class="fila-check"> Crédito:<span class="checkbox"></span></div>
+    </div>
+
+    <div class="campo"><span class="etiqueta">Correo:</span><span class="linea"></span></div>
+
+    <div class="bloque-fv">
+      <div class="fv-contenido">
+        <div class="fila-fv-superior">
+          <div class="fv-texto">FV<br>PROFORMA</div>
+          <div class="gl-caja">
+            <div class="gl-numero">No. GL</div>
+          </div>
+        </div>
+        <div class="info-correo">
+          INFORMAR EL CORREO ELECTRÓNICO, donde desea recibir la factura de venta y registrarlo al correo:
+          <b>facturacion@codegascolombia.com</b> reportando número de FV PROFORMA.
+        </div>
+      </div>
+      <div class="iconos-pago">
+        <svg class="check-verde" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#2e9e3f"/><path d="M7 12.5l3 3 7-7" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <img src="assets/avalpay_pse.png" alt="AvalPay Center / PSE">
+        <span class="sgs-txt">CO17/7410</span>
+      </div>
+    </div>
+
+    <table class="productos">
+      <thead>
+        <tr><th>Productos</th><th>Cantidad</th><th>Precio Unitario</th><th>Valor Total</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>G.l.p. Granel Kg.</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+        <tr><td>CM 18 Kg</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+        <tr><td>CM 15 Kg</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+        <tr><td>Fletes</td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+        <tr class="total"><td colspan="3">Total</td><td class="num"></td></tr>
+      </tbody>
+    </table>
+
+    <div class="fila-nota">
+      <div class="nota-txt"><b>Nota:</b></div>
+      <div class="m3">M³</div>
+      <div class="factura">Factura de<br>Venta No.</div>
+    </div>
+
+    <div class="vigilada">Vigilada Superintendencia de Servicios Públicos</div>
+
+    <div class="firmas">
+      <div class="linea-firma"><span class="etq">ENTREGADO POR:</span><span class="esp"></span></div>
+      <div class="linea-firma"><span class="etq">RECIBIDO POR (Nombre y Apellido):</span><span class="esp"></span></div>
+      <div class="linea-firma doble">
+        <span class="etq">FIRMA :</span><span class="esp1"></span><span class="cc">C.C.</span><span class="esp1">
+      </div>
+    </div>
+
+    <div class="marca-original">ORIGINAL</div>
+  </div>
+
+  <!-- ================= RESUMEN DE CONTRATO ================= -->
+  <div class="contrato">
+    <h1>RESUMEN CONTRATO DE PRESTACIÓN DE SERVICIO<br>PÚBLICO DE GAS PROPANO A TANQUES ESTACIONARIOS</h1>
+
+    <p><b>OBJETO:</b> En virtud del presente contrato la EMPRESA, se obliga con el SUSCRIPTOR o USUARIO a suministrarle GAS LICUADO DE PETROLEO, a granel es decir a través de carrotanque, a solicitud del segundo y entregarlo en la EDIFICACIÓN que aquel indique.</p>
+
+    <p><b>ALCANCE DEL SUMINISTRO:</b> La obligación de prestación del servicio sin interrupciones por parte de la EMPRESA queda enmarcada dentro de las posibilidades técnicas y financieras. La EMPRESA quedará exonerada en casos de fuerza mayor, caso fortuito o cuando se presente problemas de escasez del producto, que no se haya originado por culpa de esta.</p>
+
+    <p><b>CALIDAD DEL GAS:</b> EL GAS que se obliga la EMPRESA a suministrar será de aquella calidad que determinan las autoridades competentes y estará dentro de los mismos estándares del que entregan los grandes comercializadores.</p>
+
+    <p><b>MARGEN DE TOLERANCIA:</b> Por ser un producto entregado en volumen la cantidad, estarán dentro de los márgenes de tolerancia por defecto o por exceso, que señalen las autoridades competentes y a falta de dicho señalamiento, aquellos que deriven de las condiciones técnicas de llenado y disposición de residuos.</p>
+
+    <p><b>PRECIO:</b> El precio del GAS será aquel que resulte de las tarifas aprobadas vigentes por las autoridades competentes, en tanto sigan reguladas.</p>
+
+    <p><b>SOLIDARIDAD:</b> En el cumplimiento de las prestaciones de este contrato existirá solidaridad entre el SUSCRIPTOR y el USUARIO del servicio.</p>
+
+    <p><b>MANTENIMIENTO DE LAS INSTALACIONES:</b> Corresponde al SUSCRIPTOR el mantenimiento adecuado de las instalaciones y gasodomésticos, labor que debe ser contratada con un organismo de inspección acreditado; el SUSCRIPTOR responderá por todo daño que se origine por el inadecuado mantenimiento de las instalaciones.</p>
+
+    <p><b>QUEJA, PETICIÓN Y RECURSO:</b> EL SUSCRIPTOR o USUARIO tendrá derecho a presentar queja, petición o recursos de la EMPRESA, cuando lo considere oportuno, en torno al desarrollo de este contrato. Por los medios publicados en esta factura de venta.</p>
+
+    <p><b>MANIPULACIÓN DEL GAS:</b> Exija a los funcionarios, que todos los equipos necesarios para el suministro de GLP cumplan con las normas de seguridad y que se encuentren en buen estado. Adicionalmente una vez realizado el suministro exija que se verifiquen con agua jabonosa, que no hayan fugas en las válvulas del tanque.</p>
+
+    <p><b>ADHESIÓN INTEGRAL AL CONTENIDO DEL CONTRATO.</b> EL SUSCRIPTOR O USUARIO, libre de cualquier vicio, mediante la firma del presente resumen acepta el contenido integral del contrato para la prestación del servicio del gas licuado de petróleo, en tanques estacionarios, cuyo contenido puede ser revisado completamente a través de la página web www.codegascolombia.com encontrándolo ajustado a su voluntad contractual. En caso que la página web se encuentre caída o exista algún problema técnico, el SUSCRIPTOR O USUARIO está en la obligación de dar aviso a la EMPRESA, para que el contenido del contrato le sea remitido de cualquier otra forma, sin que esto vicie, de ninguna manera y bajo ninguna circunstancia, la aceptación que por esta vía se consolidó.</p>
+
+    <p>Este es el resumen del <b>CONTRATO DE CONDICIONES UNIFORMES DE PRESTACIÓN DEL SERVICIO PÚBLICO DOMICILIARIO DE GLP</b>, por lo tanto, se deja constancia de la existencia del mismo, ya que en caso de que no exista un contrato de condiciones uniformes previo y a pesar de haberle estado prestando el servicio de suministro, este estaba y está publicado en la página web del distribuidor para consultas (www.codegascolombia.com), así como también el respectivo resumen en las remisiones de entrega de producto, factura proforma y/o las facturas de venta. El usuario no podrá utilizar dicho argumento de excusa para informar desconocimiento de lo aquí descrito.</p>
+
+    <p class="destacado">Reclame su remisión en el momento del suministro y verifique que ésta tenga el timbre o el soporte de registro de los kilos suministrados.</p>
+
+    <p class="destacado">La facturación se realizará de manera electrónica al correo registrado por el usuario, ésta facturación se realizará de acuerdo a la normatividad vigente.</p>
+
+    <!-- PUNTO DE PAGO -->
+    <div class="punto-pago">
+      <h2>PUNTO DE PAGO</h2>
+      <div class="soporte-pago">
+        Enviar soporte de pago al E-mail: <b>coord.cartera@codegascolombia.com</b> - <b>aux.cartera2@codegascolombia.com</b>
+      </div>
+      <table class="tabla-medios">
+    <thead>
+        <tr>
+            <th colspan="5" class="titulo-tabla">Pago oficinas de entidades financieras a nombre de CODEGAS S.A.</th>
+        </tr>
+        <tr>
+            <th class="col-medios">Medios de Pago</th>
+            <th>Banco</th>
+            <th>No. de Cuenta</th>
+            <th>Tipo de Cuenta</th>
+            <th class="col-cheque">Para pago en cheque</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan="3" class="medios-pago">www.bancodeoccidente.com.co<br>Ingrese al link:<br>
+                <img src="assets/avalpay_pse.png" alt="AvalPay Center / PSE">
+            </td>
+            <td>Bancolombia</td><td>30419858301</td><td>Corriente</td>
+            <td rowspan="3" class="pago-cheque">A nombre de:<br><strong>Compañía de Servicios Públicos S.A. E.S.P.<br> y/o CODEGAS S.A. E.S.P.</strong>
+            </td>
+        </tr>
+        <tr><td>Bogotá</td><td>018044370</td><td>Corriente</td>
+        </tr>
+        <tr><td>Occidente</td><td>235-07654-4</td><td>Corriente</td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+
+    <!-- INFORMACIÓN IMPORTANTE -->
+    <div class="info-importante">
+      <h2>INFORMACIÓN IMPORTANTE</h2>
+      <div class="info-grid-2col">
+        <div class="col-legal">
+          <p>RECUERDA QUE LA LEY 142 DE 1994 DICE: En caso de presentar una reclamación en relación con el monto de tu factura deberás proceder al pago de las sumas que no se han objeto de reclamación.</p>
+          <p>Art. 130 de la ley 142 de 1994: Esta factura de cobro presta mérito ejecutivo, en concordancia con el art. 774 C. de C. (Esta factura de venta se asimila en todos sus efectos a una letra de cambio).</p>
+          <p>Para mayor información y atención de PQR&rsquo;S (peticiones, quejas y reclamos) marca a nuestras líneas telefónicas o envía al e-mail: administracion@codegascolombia.com &mdash; pqr@codegascolombia.com</p>
+        </div>
+        <div class="col-contacto">
+          <div class="caja-centro">
+            <b>Centro de venta, pagos, servicios y reclamos</b>
+            &bull; Planta Madrid: km 1.8 Vía Madrid - Pte. Piedra - Cund.<br>
+            &bull; Planta Antioquia: Vereda Bellavista - Guarne Antioquia
+          <p class="linea-factura">Para Mayor información sobre su factura marca al: 794 2333 o al E-mail: facturacion@codegascolombia.com</p>
+          <div class="aviso">
+            <span class="ico">!</span>
+            <span>¡Por la seguridad de su hogar! Consulte con nuestro departamento técnico el mantenimiento de tanques y/o instalaciones.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+          <div class="fila-contactos">
+            <div class="caja-contacto"><b>PQR:</b>794 2333 Ext. 601</div>
+            <div class="caja-contacto"><b>Servicio Técnico y Emergencias:</b>794 23 33 Ext. 301<br>321 429 44 59- 314 237 6337</div>
+            <div class="caja-contacto"><b>Atención al Cliente</b>794 23 33 Ext. 205 -313 228 8896<br>310 284 7552 - 314 237 6337</div>
+          </div>
+</div>
+
+</body>
+</html>

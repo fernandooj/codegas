@@ -80,7 +80,8 @@ const generateFacturaPDF = async (pedidoId) => {
 
         const doc = new PDFDocument({
             size: 'LETTER',
-            margins: { top: 36, bottom: 36, left: 36, right: 36 },
+            layout: 'landscape',
+            margins: { top: 8, bottom: 8, left: 8, right: 8 },
             bufferPages: false
         });
 

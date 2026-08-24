@@ -290,10 +290,13 @@ generateFacturaPDF:
     include:
       - services/pedidos/src/generate-factura-pdf.js
       - services/pedidos/src/pdf-remision-contrato.js
+      - services/pedidos/src/pdf-assets.js
       - lib/errors/database-error.js
       - lib/pdf.js
       - lib/image.js
       - lib/connection-pg.js
+      - assets/img/logo.jpg
+      - assets/img/sgs_iso9001.jpg
 
 sendFacturaEmail:
   name: ${self:custom.base}-send-factura-email
@@ -309,11 +312,14 @@ sendFacturaEmail:
       - services/pedidos/src/send-factura-email.js
       - services/pedidos/src/generate-factura-pdf.js
       - services/pedidos/src/pdf-remision-contrato.js
+      - services/pedidos/src/pdf-assets.js
       - lib/errors/database-error.js
       - lib/nodemailer-config.js
       - lib/pdf.js
       - lib/image.js
       - lib/connection-pg.js
+      - assets/img/logo.jpg
+      - assets/img/sgs_iso9001.jpg
 
 editarOrdenConFechaEntrega:
   name: ${self:custom.base}-editar-orden-con-fecha-entrega

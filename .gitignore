@@ -33,8 +33,12 @@ codegas-app/ios/*.xcworkspace
 codegas-app/ios/*.xcuserstate
 codegas-app/ios/.xcode.env.local
 
+# Play Store publishing credentials
+codegas-app/play-store-service-account.json
+
 # Android
 codegas-app/android/app/build/
+codegas-app/android/app/.cxx/
 codegas-app/android/build/
 codegas-app/android/.gradle/
 codegas-app/android/gradle/

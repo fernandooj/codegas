@@ -16,7 +16,7 @@ const store = configStore();
 
 // URL y versión de la app
 export let URL = ''; // Se cargará desde Firebase Remote Config
-export const VERSION = '3.2.0';
+export const VERSION = '3.5.0';
 
 // Función para actualizar la URL desde Remote Config
 export const updateBaseURL = (newURL: string) => {

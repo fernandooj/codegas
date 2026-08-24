@@ -851,7 +851,38 @@ const EditarPedidoModal: React.FC<EditarPedidoModalProps> = ({
                                                     if (!id) return;
                                                     try {
                                                         setDownloadingRemisionPdf(true);
-                                                        await shareFacturaPedidoPdf(String(id));
+                                                        const result = await shareFacturaPedidoPdf(String(id), {
+                                                            creado,
+                                                            fechaEntrega,
+                                                            placa: placaPedido || placa,
+                                                            razon_social,
+                                                            nombre: pedidoData.nombre,
+                                                            punto_celular: pedidoData.punto_celular,
+                                                            cedula,
+                                                            codt,
+                                                            forma_pago,
+                                                            forma,
+                                                            direccion: pedidoData.direccion || pedidoData.punto_nombre,
+                                                            punto_nombre: pedidoData.punto_nombre,
+                                                            email: pedidoData.email,
+                                                            punto_email: pedidoData.punto_email,
+                                                            remision: pedidoData.remision,
+                                                            factura,
+                                                            kilos,
+                                                            cantidadKl,
+                                                            valorUnitario: pedidoData.valor_unitarioUsuario,
+                                                            valor_unitarioUsuario: pedidoData.valor_unitarioUsuario,
+                                                            valor_total,
+                                                            observacion_pedido: observacion_pedido || observacion,
+                                                            conductor: conductorPedido,
+                                                            firma_usuario_datauri: firmaUsuarioUri
+                                                        });
+                                                        if (navigation?.navigate && result?.path) {
+                                                            const uri = String(result.path).startsWith('file://')
+                                                                ? result.path
+                                                                : `file://${result.path}`;
+                                                            navigation.navigate('pdf', { uri });
+                                                        }
                                                     } catch (e) {
                                                         console.error('shareFacturaPedidoPdf', e);
                                                         Alert.alert(
